@@ -24,6 +24,7 @@ gromacs_mr:
 	dihedral_restraints |
 	orientation_restraints |
 	angle_restraints |
+	angle_restraints_z |
 	position_restraints
 	)*
 	EOF;
@@ -73,8 +74,15 @@ angle_restraints:
 	angle_restraint+;
 
 angle_restraint:
-	Integer Integer Integer? Integer? Integer number number Integer;
+	Integer Integer Integer Integer Integer number number Integer;
 	// ai aj ak al funct=1 theta0 kc mult
+
+angle_restraints_z:
+	L_brkt Angle_restraints_z R_brkt
+	angle_restraint_z+;
+
+angle_restraint_z:
+	Integer Integer Integer number number Integer;
 	// ai aj funct=1 theta0 kc mult
 
 /* GROMACS 2022.1 Referece Manual - Position restraints

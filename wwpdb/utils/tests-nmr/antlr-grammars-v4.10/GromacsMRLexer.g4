@@ -42,7 +42,8 @@ Orientation_restraints:	'orientation_restraints';	// ai aj funct=1 exp index alp
           https://manual.gromacs.org/documentation/current/reference-manual/topologies/topology-file-formats.html
 */
 Angle_restraints:	'angle_restraints';		// ai aj ak al funct=1 theta0 kc mult
-							// ai aj funct=1 theta0 kc mult
+
+Angle_restraints_z:	'angle_restraints_z';		// ai aj funct=1 theta0 kc mult
 
 /* GROMACS 2022.1 Referece Manual - Position restraints
  See also https://manual.gromacs.org/documentation/current/reference-manual/functions/restraints.html#position-restraints

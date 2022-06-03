@@ -373,6 +373,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
     polySeq = None if prevCoordCheck is None or 'polymer_sequence' not in prevCoordCheck else prevCoordCheck['polymer_sequence']
     altPolySeq = None if prevCoordCheck is None or 'alt_polymer_sequence' not in prevCoordCheck else prevCoordCheck['alt_polymer_sequence']
+    nonPoly = None if prevCoordCheck is None or 'non_polymer' not in prevCoordCheck else prevCoordCheck['non_polymer']
 
     if polySeq is None:
         changed = True
@@ -398,6 +399,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
                                   ],
                      'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
@@ -454,12 +456,28 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             if verbose:
                 log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error  - {str(e)}\n")
 
+        contentSubtype = 'non_poly'
+
+        lpCategory = _lpCategories[contentSubtype]
+        keyItems = _keyItems[contentSubtype]
+
+        nonPoly = None
+
+        if cR.hasCategory(lpCategory):
+
+            try:
+                nonPoly = cR.getPolymerSequence(lpCategory, keyItems,
+                                                withStructConf=False)
+            except KeyError:
+                nonPoly = None
+
     if not testTag:
         if not changed:
             return prevCoordCheck
 
         return {'polymer_sequence': polySeq,
-                'alt_polymer_sequence': altPolySeq}
+                'alt_polymer_sequence': altPolySeq,
+                'non_polymer': nonPoly}
 
     modelNumName = None if prevCoordCheck is None or 'model_num_name' not in prevCoordCheck else prevCoordCheck['model_num_name']
     authAsymId = None if prevCoordCheck is None or 'auth_asym_id' not in prevCoordCheck else prevCoordCheck['auth_asym_id']
@@ -575,6 +593,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'alt_auth_atom_id': altAuthAtomId,
             'polymer_sequence': polySeq,
             'alt_polymer_sequence': altPolySeq,
+            'non_polymer': nonPoly,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq,

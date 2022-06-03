@@ -243,7 +243,7 @@ class AmberPTParserListener(ParseTreeListener):
         prevAtomName = ''
         prevSeqId = None
         offset = 0
-        for atomNum, atomName, atomType in enumerate(self.__atomName, self.__amberAtomType, start=1):
+        for atomNum, (atomName, atomType) in enumerate(zip(self.__atomName, self.__amberAtomType), start=1):
             _seqId = next(resNum for resNum, (atomNumBegin, atomNumEnd)
                           in enumerate(zip(self.__residuePointer, residuePointer2), start=1)
                           if atomNumBegin <= atomNum <= atomNumEnd)

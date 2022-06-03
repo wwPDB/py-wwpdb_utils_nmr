@@ -228,9 +228,11 @@ try:
     from wwpdb.utils.nmr.mr.BiosymMRReader import BiosymMRReader
     from wwpdb.utils.nmr.mr.CnsMRReader import CnsMRReader
     from wwpdb.utils.nmr.mr.CyanaMRReader import CyanaMRReader
+    from wwpdb.utils.nmr.mr.GromacsMRReader import GromacsMRReader
     from wwpdb.utils.nmr.mr.RosettaMRReader import RosettaMRReader
     from wwpdb.utils.nmr.mr.XplorMRReader import XplorMRReader
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
+    from wwpdb.utils.nmr.mr.GromacsPTReader import GromacsPTReader
 
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -282,9 +284,11 @@ except ImportError:
     from nmr.mr.BiosymMRReader import BiosymMRReader
     from nmr.mr.CnsMRReader import CnsMRReader
     from nmr.mr.CyanaMRReader import CyanaMRReader
+    from nmr.mr.GromacsMRReader import GromacsMRReader
     from nmr.mr.RosettaMRReader import RosettaMRReader
     from nmr.mr.XplorMRReader import XplorMRReader
     from nmr.mr.AmberPTReader import AmberPTReader
+    from nmr.mr.GromacsPTReader import GromacsPTReader
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -7458,7 +7462,8 @@ class NmrDpUtility:
 
             try:
 
-                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio'):
+                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
+                                 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro'):
                     reader = self.__getSimpleMRPTFileReader(file_type, self.__verbose)
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
@@ -7583,7 +7588,7 @@ class NmrDpUtility:
                                 has_plane_restraint = 'plane_restraint' in content_subtype
                                 has_hbond_restraint = 'hbond_restraint' in content_subtype
 
-                                if file_type == 'nm-aux-amb':
+                                if file_type in ('nm-aux-amb', 'nm-aux-gro'):
                                     has_topology = True
                                     content_subtype = {'topology': 1}
 
@@ -7802,7 +7807,7 @@ class NmrDpUtility:
 
                 fileListId += 1
 
-                if (content_subtype is not None and 'dist_restraint' in content_subtype) or file_type == 'nm-aux-amb':
+                if (content_subtype is not None and 'dist_restraint' in content_subtype) or file_type in ('nm-aux-amb', 'nm-aux-gro'):
                     continue
 
                 if content_subtype is None:
@@ -8006,6 +8011,12 @@ class NmrDpUtility:
             return BiosymMRReader(verbose, self.__lfh, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
                                   reasons)
+        if file_type == 'nm-res-gro':
+            return GromacsMRReader(verbose, self.__lfh, None, None, None,
+                                   self.__ccU, self.__csStat, self.__nefT)
+        if file_type == 'nm-aux-gro':
+            return GromacsPTReader(verbose, self.__lfh, None, None, None,
+                                   self.__ccU, self.__csStat, self.__nefT)
 
         return None
 
@@ -8058,6 +8069,9 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-bio':
             # mr_format_name = 'BIOSYM'
+            pass
+        elif file_type in ('nm-res-gro', 'nm-aux-gro'):
+            # mr_format_name = 'GROMACS'
             pass
         else:
             return False
@@ -8903,7 +8917,8 @@ class NmrDpUtility:
 
                 return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset) | corrected
 
-            for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio']:
+            for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
+                                   'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro']:
 
                 if test_file_type == file_type:
                     continue
@@ -9113,6 +9128,9 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-bio':
             # mr_format_name = 'BIOSYM'
+            pass
+        elif file_type in ('nm-res-gro', 'nm-aux-gro'):
+            # mr_format_name = 'GROMACS'
             pass
         else:
             return False
@@ -9756,6 +9774,24 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
+        if (not is_valid or multiple_check) and file_type != 'nm-res-gro':
+            _is_valid, _err, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-gro')
+
+            is_valid |= is_valid
+            err += _err
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-aux-gro':
+            _is_valid, _err, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-gro')
+
+            is_valid |= is_valid
+            err += _err
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
         _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
         _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
 
@@ -9777,6 +9813,8 @@ class NmrDpUtility:
             mr_format_name = 'ROSETTA'
         elif file_type == 'nm-res-bio':
             mr_format_name = 'BIOSYM'
+        elif file_type in ('nm-res-gro', 'nm-aux-gro'):
+            mr_format_name = 'GROMACS'
         elif file_type == 'nm-res-mr':
             mr_format_name = 'MR'
         else:
@@ -9803,6 +9841,12 @@ class NmrDpUtility:
         elif _file_type == 'nm-res-bio':
             _mr_format_name = 'BIOSYM'
             _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-res-gro':
+            _mr_format_name = 'GROMACS'
+            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-aux-gro':
+            _mr_format_name = 'GROMACS'
+            _a_mr_format_name = 'a ' + _mr_format_name + ' parameter/topology'
 
         is_valid = False
         err = ''
@@ -20045,7 +20089,8 @@ class NmrDpUtility:
                               self.__representative_model_id,
                               self.__cR, None)
 
-        atomNumberDict = None
+        amberAtomNumberDict = None
+        gromacsAtomNumberDict = None
         cyanaUplDistRest = 0
         cyanaLolDistRest = 0
 
@@ -20130,7 +20175,78 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
 
-                        atomNumberDict = listener.getAtomNumberDict()
+                        amberAtomNumberDict = listener.getAtomNumberDict()
+
+            if file_type == 'nm-aux-gro' and content_subtype is not None and 'topology' in content_subtype:
+
+                if 'is_valid' in ar and ar['is_valid']:
+
+                    file_name = input_source_dic['file_name']
+
+                    original_file_name = None
+                    if 'original_file_name' in input_source_dic:
+                        original_file_name = input_source_dic['original_file_name']
+                        if file_name != original_file_name and original_file_name is not None:
+                            file_name = f"{original_file_name} ({file_name})"
+
+                    self.__cur_original_ar_file_name = original_file_name
+
+                    reader = GromacsPTReader(self.__verbose, self.__lfh,
+                                             self.__representative_model_id,
+                                             self.__cR, cC,
+                                             self.__ccU, self.__csStat, self.__nefT)
+
+                    listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener is not None:
+
+                        if listener.warningMessage is not None:
+                            messages = listener.warningMessage.split('\n')
+
+                            for warn in messages:
+                                # p = msg.index(']') + 2
+                                # warn = msg[p:]
+
+                                if warn.startswith('[Concatenated sequence]'):
+                                    self.report.warning.appendDescription('concatenated_sequence',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                                elif warn.startswith('[Sequence mismatch]'):
+                                    self.report.warning.appendDescription('conflicted_mr_data',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                                elif warn.startswith('[Unknown atom name]'):
+                                    self.report.warning.appendDescription('inconsistent_mr_data',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                                elif warn.startswith('[Unknown residue name]'):
+                                    self.report.warning.appendDescription('inconsistent_mr_data',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                                else:
+                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+                        gromacsAtomNumberDict = listener.getAtomNumberDict()
 
                 elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
                     if ar['is_upl']:
@@ -20152,7 +20268,7 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
-            if file_type in ('nm-aux-amb', 'nm-res-oth', 'nm-res-mr'):
+            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr'):
                 continue
 
             if content_subtype is None or len(content_subtype) == 0:
@@ -20350,7 +20466,7 @@ class NmrDpUtility:
                                        self.__representative_model_id,
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT,
-                                       atomNumberDict)
+                                       amberAtomNumberDict)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -20686,6 +20802,68 @@ class NmrDpUtility:
 
                             elif warn.startswith('[Unmatched residue name]'):
                                 self.report.warning.appendDescription('conflicted_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+            elif file_type == 'nm-res-gro':
+                reader = GromacsMRReader(self.__verbose, self.__lfh,
+                                         self.__representative_model_id,
+                                         self.__cR, cC,
+                                         self.__ccU, self.__csStat, self.__nefT,
+                                         gromacsAtomNumberDict)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Atom not found]'):
+                                self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Missing data]'):
+                                self.report.error.appendDescription('missing_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Range value error]'):
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]'):
+                                self.report.warning.appendDescription('unusual_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 

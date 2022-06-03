@@ -6565,18 +6565,25 @@ class NmrDpUtility:
 
             if file_type == 'nm-res-xpl':
                 mr_format_name = 'XPLOR-NIH'
+                a_mr_format_name = 'an ' + mr_format_name
             elif file_type == 'nm-res-cns':
                 mr_format_name = 'CNS'
+                a_mr_format_name = 'a ' + mr_format_name
             elif file_type in ('nm-res-amb', 'nm-aux-amb'):
                 mr_format_name = 'AMBER'
+                a_mr_format_name = 'an ' + mr_format_name
             elif file_type == 'nm-res-cya':
                 mr_format_name = 'CYANA'
+                a_mr_format_name = 'a ' + mr_format_name
             elif file_type == 'nm-res-ros':
                 mr_format_name = 'ROSETTA'
+                a_mr_format_name = 'a ' + mr_format_name
             elif file_type == 'nm-res-bio':
                 mr_format_name = 'BIOSYM'
+                a_mr_format_name = 'a ' + mr_format_name
             elif file_type in ('nm-res-gro', 'nm-aux-gro'):
                 mr_format_name = 'GROMACS'
+                a_mr_format_name = 'a ' + mr_format_name
             elif file_type == 'nm-res-mr':
                 mr_format_name = 'MR'
             else:
@@ -7420,19 +7427,17 @@ class NmrDpUtility:
 
             try:
 
-                if file_type == 'nm-res-xpl':
+                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio'):
+                    reader = self.__getSimpleMRPTFileReader(file_type, self.__verbose)
 
-                    reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                    if listener is not None:
+                    if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio'):
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
-                            reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT,
-                                                   reasons)
+                            reader = self.__getSimpleMRPTFileReader(file_type, self.__verbose, reasons)
+
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     err = ''
@@ -7500,7 +7505,7 @@ class NmrDpUtility:
                     if len(err) > 0:
                         valid = False
 
-                        err = f"Could not interpret {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
+                        err = f"Could not interpret {file_name!r} as {a_mr_format_name} restraint file:\n{err[0:-1]}"
 
                         ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
 
@@ -7546,740 +7551,15 @@ class NmrDpUtility:
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
                                 has_plane_restraint = 'plane_restraint' in content_subtype
                                 has_hbond_restraint = 'hbond_restraint' in content_subtype
-                                ar['is_valid'] = True
 
-                elif file_type == 'nm-res-cns':
+                                if file_type == 'nm-aux-amb':
+                                    has_topology = True
+                                    content_subtype = {'topology': 1}
 
-                    reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    if listener is not None:
-                        reasons = listener.getReasonsForReparsing()
-
-                        if reasons is not None:
-                            reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                 self.__ccU, self.__csStat, self.__nefT,
-                                                 reasons)
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    err = ''
-                    err_lines = []
-
-                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-                    content_subtype = listener.getContentSubtype() if listener is not None else None
-                    if content_subtype is not None and len(content_subtype) == 0:
-                        content_subtype = None
-                    has_content = content_subtype is not None
-
-                    if has_lexer_error and has_parser_error and has_content:
-                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
-                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getMessageList()[0],
-                                                                        str(file_path), 0)
-                            div_test = True
-
-                    if has_lexer_error:
-                        messageList = lexer_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                is_not_ascii = False
-                                if enc is not None and enc != 'ascii':
-                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                    is_not_ascii = True
-                                else:
-                                    err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if is_not_ascii:
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-                                elif not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                    if has_parser_error:
-                        messageList = parser_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            len_err = len(err)
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-                            elif not div_test and has_content and self.__remediation_mode:
-                                corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                div_test = True
-
-                            _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
-                                s = '. ' if _err.startswith('Do you') else ':\n'
-                                err = err[:len_err] + "However, the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]
-
-                    if len(err) > 0:
-                        valid = False
-
-                        err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
-
-                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
-
-                        if ar['format_mismatch']:
-                            err += '\n' + _err
-
-                        self.report.error.appendDescription('format_issue',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
-
-                    elif listener is not None:
-
-                        if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n')
-                                        if 'warning' not in msg and 'Unsupported' not in msg]
-                            if len(messages) > 0:
-                                valid = False
-
-                                if len(messages) > 5:
-                                    messages = messages[:5]
-                                    msg = '\n'.join(messages)
-                                    msg += '\nThose similar errors may continue...'
-                                else:
-                                    msg = '\n'.join(messages)
-                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
-
-                                self.report.error.appendDescription('format_issue',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                        if valid:
-
-                            has_chem_shift = has_coordinate = False
-
-                            if content_subtype is not None:
-                                has_dist_restraint = 'dist_restraint' in content_subtype
-                                has_dihed_restraint = 'dihed_restraint' in content_subtype
-                                has_rdc_restraint = 'rdc_restraint' in content_subtype
-                                has_plane_restraint = 'plane_restraint' in content_subtype
-                                ar['is_valid'] = True
-
-                elif file_type == 'nm-res-amb':
-
-                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
-
-                    err = ''
-                    err_lines = []
-
-                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-                    content_subtype = listener.getContentSubtype() if listener is not None else None
-                    if content_subtype is not None and len(content_subtype) == 0:
-                        content_subtype = None
-                    has_content = content_subtype is not None
-
-                    if has_lexer_error and has_parser_error and has_content:
-                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
-                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getMessageList()[0],
-                                                                        str(file_path), 0)
-                            div_test = True
-
-                    if has_lexer_error:
-                        messageList = lexer_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                is_not_ascii = False
-                                if enc is not None and enc != 'ascii':
-                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                    is_not_ascii = True
-                                else:
-                                    err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if is_not_ascii:
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-                                elif not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                    if has_parser_error:
-                        messageList = parser_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            len_err = len(err)
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                            _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
-                                s = '. ' if _err.startswith('Do you') else ':\n'
-                                err = err[:len_err] + "However, the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]
-
-                    if len(err) > 0:
-                        valid = False
-
-                        err = f"Could not interpret {file_name!r} as an {mr_format_name} restraint file:\n{err[0:-1]}"
-
-                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
-
-                        if ar['format_mismatch']:
-                            err += '\n' + _err
-
-                        self.report.error.appendDescription('format_issue',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
-
-                    elif listener is not None:
-
-                        if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n')
-                                        if 'warning' not in msg and 'Unsupported' not in msg]
-                            if len(messages) > 0:
-                                valid = False
-
-                                if len(messages) > 5:
-                                    messages = messages[:5]
-                                    msg = '\n'.join(messages)
-                                    msg += '\nThose similar errors may continue...'
-                                else:
-                                    msg = '\n'.join(messages)
-                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
-
-                                self.report.error.appendDescription('format_issue',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                        if valid:
-
-                            has_chem_shift = has_coordinate = False
-
-                            if content_subtype is not None:
-                                has_dist_restraint = 'dist_restraint' in content_subtype
-                                has_dihed_restraint = 'dihed_restraint' in content_subtype
-                                has_rdc_restraint = 'rdc_restraint' in content_subtype
-                                has_plane_restraint = 'plane_restraint' in content_subtype
-                                ar['is_valid'] = True
-
-                elif file_type == 'nm-aux-amb':
-
-                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    err = ''
-                    err_lines = []
-
-                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-                    content_subtype = listener.getContentSubtype() if listener is not None else None
-                    if content_subtype is not None and len(content_subtype) == 0:
-                        content_subtype = None
-                    has_content = content_subtype is not None
-
-                    if has_lexer_error and has_parser_error and has_content:
-                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
-                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getMessageList()[0],
-                                                                        str(file_path), 0)
-                            div_test = True
-
-                    if has_lexer_error:
-                        messageList = lexer_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                is_not_ascii = False
-                                if enc is not None and enc != 'ascii':
-                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                    is_not_ascii = True
-                                else:
-                                    err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if is_not_ascii:
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-                                elif not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                    if has_parser_error:
-                        messageList = parser_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            len_err = len(err)
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                            _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
-                                s = '. ' if _err.startswith('Do you') else ':\n'
-                                err = err[:len_err] + "However, the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]
-
-                    if len(err) > 0:
-                        valid = False
-
-                        err = f"Could not interpret {file_name!r} as an {mr_format_name} parameter/topology file:\n{err[0:-1]}"
-
-                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
-
-                        if ar['format_mismatch']:
-                            err += '\n' + _err
-
-                        self.report.error.appendDescription('format_issue',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
-
-                    elif listener is not None:
-
-                        if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n')
-                                        if 'warning' not in msg and 'Unsupported' not in msg]
-                            if len(messages) > 0:
-                                valid = False
-
-                                if len(messages) > 5:
-                                    messages = messages[:5]
-                                    msg = '\n'.join(messages)
-                                    msg += '\nThose similar errors may continue...'
-                                else:
-                                    msg = '\n'.join(messages)
-                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
-
-                                self.report.error.appendDescription('format_issue',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                        if valid:
-
-                            has_chem_shift = has_coordinate = False
-
-                            if content_subtype is not None:
-                                has_topology = True
-                                content_subtype = {'topology': 1}
-                                ar['is_valid'] = True
-
-                elif file_type == 'nm-res-cya':
-
-                    cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMRFile()
-
-                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT,
-                                           file_ext=cya_file_ext)
-                    reader.setRemediateMode(self.__remediation_mode)
-                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    if listener is not None:
-                        reasons = listener.getReasonsForReparsing()
-
-                        if reasons is not None:
-                            reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT,
-                                                   reasons,
-                                                   file_ext=cya_file_ext)
-                            reader.setRemediateMode(self.__remediation_mode)
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    err = ''
-                    err_lines = []
-
-                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-                    content_subtype = listener.getContentSubtype() if listener is not None else None
-                    if content_subtype is not None and len(content_subtype) == 0:
-                        content_subtype = None
-                    has_content = content_subtype is not None
-
-                    if has_lexer_error and has_parser_error and has_content:
-                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
-                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getMessageList()[0],
-                                                                        str(file_path), 0)
-                            div_test = True
-
-                    if has_lexer_error:
-                        messageList = lexer_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                is_not_ascii = False
-                                if enc is not None and enc != 'ascii':
-                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                    is_not_ascii = True
-                                else:
-                                    err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if is_not_ascii:
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-                                elif not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                    if has_parser_error:
-                        messageList = parser_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            len_err = len(err)
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                            _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
-                                s = '. ' if _err.startswith('Do you') else ':\n'
-                                err = err[:len_err] + "However, the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]
-
-                    if len(err) > 0:
-                        valid = False
-
-                        err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
-
-                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
-
-                        if ar['format_mismatch']:
-                            err += '\n' + _err
-
-                        self.report.error.appendDescription('format_issue',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
-
-                    elif listener is not None:
-
-                        if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n')
-                                        if 'warning' not in msg and 'Unsupported' not in msg]
-                            if len(messages) > 0:
-                                valid = False
-
-                                if len(messages) > 5:
-                                    messages = messages[:5]
-                                    msg = '\n'.join(messages)
-                                    msg += '\nThose similar errors may continue...'
-                                else:
-                                    msg = '\n'.join(messages)
-                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
-
-                                self.report.error.appendDescription('format_issue',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                        if valid:
-
-                            has_chem_shift = has_coordinate = False
-
-                            if content_subtype is not None:
-                                has_dist_restraint = 'dist_restraint' in content_subtype
-                                has_dihed_restraint = 'dihed_restraint' in content_subtype
-                                has_rdc_restraint = 'rdc_restraint' in content_subtype
-                                ar['is_valid'] = True
-                                if has_dist_restraint:
+                                if file_type == 'nm-res-cya' and has_dist_restraint:
                                     ar['is_upl'] = listener.isUplDistanceRestraint()
 
-                elif file_type == 'nm-res-ros':
-
-                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                    reader.setRemediateMode(self.__remediation_mode)
-                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    if listener is not None:
-                        reasons = listener.getReasonsForReparsing()
-
-                        if reasons is not None:
-                            reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                     self.__ccU, self.__csStat, self.__nefT,
-                                                     reasons)
-                            reader.setRemediateMode(self.__remediation_mode)
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    err = ''
-                    err_lines = []
-
-                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-                    content_subtype = listener.getContentSubtype() if listener is not None else None
-                    if content_subtype is not None and len(content_subtype) == 0:
-                        content_subtype = None
-                    has_content = content_subtype is not None
-
-                    if has_lexer_error and has_parser_error and has_content:
-                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
-                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getMessageList()[0],
-                                                                        str(file_path), 0)
-                            div_test = True
-
-                    if has_lexer_error:
-                        messageList = lexer_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                is_not_ascii = False
-                                if enc is not None and enc != 'ascii':
-                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                    is_not_ascii = True
-                                else:
-                                    err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if is_not_ascii:
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-                                elif not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                    if has_parser_error:
-                        messageList = parser_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            len_err = len(err)
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                            _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
-                                s = '. ' if _err.startswith('Do you') else ':\n'
-                                err = err[:len_err] + "However, the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]
-
-                    if len(err) > 0:
-                        valid = False
-
-                        err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
-
-                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
-
-                        if ar['format_mismatch']:
-                            err += '\n' + _err
-
-                        self.report.error.appendDescription('format_issue',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
-
-                    elif listener is not None:
-
-                        if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n')
-                                        if 'warning' not in msg and 'Unsupported' not in msg]
-                            if len(messages) > 0:
-                                valid = False
-
-                                if len(messages) > 5:
-                                    messages = messages[:5]
-                                    msg = '\n'.join(messages)
-                                    msg += '\nThose similar errors may continue...'
-                                else:
-                                    msg = '\n'.join(messages)
-                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
-
-                                self.report.error.appendDescription('format_issue',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                        if valid:
-
-                            has_chem_shift = has_coordinate = False
-
-                            if content_subtype is not None:
                                 ar['is_valid'] = True
-                                has_dist_restraint = 'dist_restraint' in content_subtype
-                                has_dihed_restraint = 'dihed_restraint' in content_subtype
-                                has_rdc_restraint = 'rdc_restraint' in content_subtype
-
-                elif file_type == 'nm-res-bio':
-
-                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                            self.__ccU, self.__csStat, self.__nefT)
-                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    if listener is not None:
-                        reasons = listener.getReasonsForReparsing()
-
-                        if reasons is not None:
-                            reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                    self.__ccU, self.__csStat, self.__nefT,
-                                                    reasons)
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    err = ''
-                    err_lines = []
-
-                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-                    content_subtype = listener.getContentSubtype() if listener is not None else None
-                    if content_subtype is not None and len(content_subtype) == 0:
-                        content_subtype = None
-                    has_content = content_subtype is not None
-
-                    if has_lexer_error and has_parser_error and has_content:
-                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
-                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__peelLegacyMRIfNecessary(file_path, file_type,
-                                                                        parser_err_listener.getMessageList()[0],
-                                                                        str(file_path), 0)
-                            div_test = True
-
-                    if has_lexer_error:
-                        messageList = lexer_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                is_not_ascii = False
-                                if enc is not None and enc != 'ascii':
-                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                    is_not_ascii = True
-                                else:
-                                    err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if is_not_ascii:
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-                                elif not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                    if has_parser_error:
-                        messageList = parser_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                            len_err = len(err)
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-
-                            _err = self.__retrieveErroneousPreviousInput(description)
-                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
-                                s = '. ' if _err.startswith('Do you') else ':\n'
-                                err = err[:len_err] + "However, the error may be due to the previous input "\
-                                    f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]
-
-                    if len(err) > 0:
-                        valid = False
-
-                        err = f"Could not interpret {file_name!r} as a {mr_format_name} restraint file:\n{err[0:-1]}"
-
-                        ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, err_lines)
-
-                        if ar['format_mismatch']:
-                            err += '\n' + _err
-
-                        self.report.error.appendDescription('format_issue',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
-
-                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
-
-                    elif listener is not None:
-
-                        if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n')
-                                        if 'warning' not in msg and 'Unsupported' not in msg]
-                            if len(messages) > 0:
-                                valid = False
-
-                                if len(messages) > 5:
-                                    messages = messages[:5]
-                                    msg = '\n'.join(messages)
-                                    msg += '\nThose similar errors may continue...'
-                                else:
-                                    msg = '\n'.join(messages)
-                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
-
-                                self.report.error.appendDescription('format_issue',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                        if valid:
-
-                            has_chem_shift = has_coordinate = False
-
-                            if content_subtype is not None:
-                                ar['is_valid'] = True
-                                has_dist_restraint = 'dist_restraint' in content_subtype
-                                has_dihed_restraint = 'dihed_restraint' in content_subtype
 
                 elif file_type == 'nm-res-oth':
                     if not(self.__remediation_mode and file_path.endswith('-div_ext.mr')):
@@ -8660,6 +7940,44 @@ class NmrDpUtility:
 
         return None, False
 
+    def __getSimpleMRPTFileReader(self, file_type, verbose, reasons=None):
+        """ Return simple MR/PT file reader for a given format.
+        """
+
+        if file_type == 'nm-res-xpl':
+            return XplorMRReader(verbose, self.__lfh, None, None, None,
+                                 self.__ccU, self.__csStat, self.__nefT,
+                                 reasons)
+        if file_type == 'nm-res-cns':
+            return CnsMRReader(verbose, self.__lfh, None, None, None,
+                               self.__ccU, self.__csStat, self.__nefT,
+                               reasons)
+        if file_type == 'nm-res-amb':
+            return AmberMRReader(verbose, self.__lfh, None, None, None,
+                                 self.__ccU, self.__csStat, self.__nefT)
+        if file_type == 'nm-aux-amb':
+            return AmberPTReader(verbose, self.__lfh, None, None, None,
+                                 self.__ccU, self.__csStat, self.__nefT)
+        if file_type == 'nm-res-cya':
+            reader = CyanaMRReader(verbose, self.__lfh, None, None, None,
+                                   self.__ccU, self.__csStat, self.__nefT,
+                                   reasons,
+                                   file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
+            reader.setRemediateMode(self.__remediation_mode)
+            return reader
+        if file_type == 'nm-res-ros':
+            reader = RosettaMRReader(verbose, self.__lfh, None, None, None,
+                                     self.__ccU, self.__csStat, self.__nefT,
+                                     reasons)
+            reader.setRemediateMode(self.__remediation_mode)
+            return reader
+        if file_type == 'nm-res-bio':
+            return BiosymMRReader(verbose, self.__lfh, None, None, None,
+                                  self.__ccU, self.__csStat, self.__nefT,
+                                  reasons)
+
+        return None
+
     def __divideLegacyMRIfNecessary(self, file_path, file_type, err_desc, src_path, offset):
         """ Divive legacy NMR restraint file if necessary.
         """
@@ -8782,28 +8100,8 @@ class NmrDpUtility:
             if err_column_position > 0 and not err_input[0:err_column_position].isspace():
                 test_line = err_input[0:err_column_position]
 
-                if file_type == 'nm-res-xpl':
-                    reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cns':
-                    reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-amb':
-                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-aux-amb':
-                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cya':
-                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT,
-                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                elif file_type == 'nm-res-ros':
-                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-bio':
-                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                            self.__ccU, self.__csStat, self.__nefT)
+                if reader is None:
+                    reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                 _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -9128,18 +8426,8 @@ class NmrDpUtility:
                     if len(test_line.strip()) > 0:
                         typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
 
-                        if reader is not None:
-                            pass
-
-                        elif file_type == 'nm-res-xpl':
-                            reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT)
-                        elif file_type == 'nm-res-cns':
-                            reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                 self.__ccU, self.__csStat, self.__nefT)
-                        elif file_type == 'nm-res-amb':
-                            reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT)
+                        if reader is None:
+                            reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                         _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -9192,19 +8480,8 @@ class NmrDpUtility:
                 if comment_code_index != -1:
                     test_line = err_input[0:comment_code_index]
 
-                    if reader is not None:
-                        pass
-
-                    elif file_type == 'nm-res-cya':
-                        reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                    elif file_type == 'nm-res-ros':
-                        reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                 self.__ccU, self.__csStat, self.__nefT)
-                    elif file_type == 'nm-res-bio':
-                        reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                self.__ccU, self.__csStat, self.__nefT)
+                    if reader is None:
+                        reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                     _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -9291,34 +8568,10 @@ class NmrDpUtility:
 
             if not (corrected or concat_xplor_assi or concat_xplor_rest or concat_xplor_set or concat_amber_rst)\
                and (j + j_offset) in (0, err_line_number - 1):
-
                 test_line = err_input
 
-                if reader is not None:
-                    pass
-
-                elif file_type == 'nm-res-xpl':
-                    reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cns':
-                    reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-amb':
-                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-aux-amb':
-                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cya':
-                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT,
-                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                elif file_type == 'nm-res-ros':
-                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-bio':
-                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                            self.__ccU, self.__csStat, self.__nefT)
+                if reader is None:
+                    reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -9388,31 +8641,8 @@ class NmrDpUtility:
             if err_column_position > 0 and not err_input[0:err_column_position].isspace():
                 test_line = err_input[0:err_column_position]
 
-                if reader is not None:
-                    pass
-
-                elif file_type == 'nm-res-xpl':
-                    reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cns':
-                    reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-amb':
-                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-aux-amb':
-                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cya':
-                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT,
-                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                elif file_type == 'nm-res-ros':
-                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-bio':
-                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                            self.__ccU, self.__csStat, self.__nefT)
+                if reader is None:
+                    reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -9430,31 +8660,8 @@ class NmrDpUtility:
             if next_input is not None and re.search(r'[A-Za-z]', next_input) is not None:
                 test_line = next_input
 
-                if reader is not None:
-                    pass
-
-                elif file_type == 'nm-res-xpl':
-                    reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cns':
-                    reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-amb':
-                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-aux-amb':
-                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cya':
-                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT,
-                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                elif file_type == 'nm-res-ros':
-                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-bio':
-                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                            self.__ccU, self.__csStat, self.__nefT)
+                if reader is None:
+                    reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                 _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -9525,31 +8732,8 @@ class NmrDpUtility:
 
                 test_line = g[0]
 
-                if reader is not None:
-                    pass
-
-                elif file_type == 'nm-res-xpl':
-                    reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cns':
-                    reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-amb':
-                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-aux-amb':
-                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cya':
-                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT,
-                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                elif file_type == 'nm-res-ros':
-                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-bio':
-                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                            self.__ccU, self.__csStat, self.__nefT)
+                if reader is None:
+                    reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -9616,38 +8800,9 @@ class NmrDpUtility:
         if self.__mr_debug:
             print('PEEL-MR')
 
-        reader = None
+        reader = self.__getSimpleMRPTFileReader(file_type, False)
 
-        if file_type == 'nm-res-xpl':
-            # mr_format_name = 'XPLOR-NIH'
-            reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT)
-        elif file_type == 'nm-res-cns':
-            # mr_format_name = 'CNS'
-            reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                 self.__ccU, self.__csStat, self.__nefT)
-        elif file_type == 'nm-res-amb':
-            # mr_format_name = 'AMBER'
-            reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT)
-        elif file_type == 'nm-aux-amb':
-            # mr_format_name = 'AMBER'
-            reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT)
-        elif file_type == 'nm-res-cya':
-            # mr_format_name = 'CYANA'
-            reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT,
-                                   file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-        elif file_type == 'nm-res-ros':
-            # mr_format_name = 'ROSETTA'
-            reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT)
-        elif file_type == 'nm-res-bio':
-            # mr_format_name = 'BIOSYM'
-            reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                    self.__ccU, self.__csStat, self.__nefT)
-        else:
+        if reader is None:
             return False
 
         err_message = err_desc['message']
@@ -9722,28 +8877,7 @@ class NmrDpUtility:
                 if test_file_type == file_type:
                     continue
 
-                if test_file_type == 'nm-res-xpl':
-                    test_reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                                self.__ccU, self.__csStat, self.__nefT)
-                elif test_file_type == 'nm-res-cns':
-                    test_reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                              self.__ccU, self.__csStat, self.__nefT)
-                elif test_file_type == 'nm-res-amb':
-                    test_reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                self.__ccU, self.__csStat, self.__nefT)
-                elif test_file_type == 'nm-aux-amb':
-                    test_reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                                self.__ccU, self.__csStat, self.__nefT)
-                elif test_file_type == 'nm-res-cya':
-                    test_reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                self.__ccU, self.__csStat, self.__nefT,
-                                                file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                elif test_file_type == 'nm-res-ros':
-                    test_reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                  self.__ccU, self.__csStat, self.__nefT)
-                elif test_file_type == 'nm-res-bio':
-                    test_reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                 self.__ccU, self.__csStat, self.__nefT)
+                test_reader = self.__getSimpleMRPTFileReader(test_file_type, False)
 
                 _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
@@ -9857,31 +8991,8 @@ class NmrDpUtility:
             if err_column_position > 0 and not err_input[0:err_column_position].isspace():
                 test_line = err_input[0:err_column_position]
 
-                if reader is not None:
-                    pass
-
-                if file_type == 'nm-res-xpl':
-                    reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cns':
-                    reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-amb':
-                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-aux-amb':
-                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cya':
-                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT,
-                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                elif file_type == 'nm-res-ros':
-                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-bio':
-                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                            self.__ccU, self.__csStat, self.__nefT)
+                if reader is None:
+                    reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -10035,7 +9146,7 @@ class NmrDpUtility:
             if concat_xplor_rest or concat_xplor_set:
                 concat_xplor_assi = False
 
-        prev_input = None
+        reader = prev_input = None
 
         i = j = 0
 
@@ -10222,15 +9333,8 @@ class NmrDpUtility:
                     if len(test_line.strip()) > 0:
                         typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
 
-                        if file_type == 'nm-res-xpl':
-                            reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT)
-                        elif file_type == 'nm-res-cns':
-                            reader = CnsMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                 self.__ccU, self.__csStat, self.__nefT)
-                        elif file_type == 'nm-res-amb':
-                            reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT)
+                        if reader is None:
+                            reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                         _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -10283,16 +9387,8 @@ class NmrDpUtility:
                 if comment_code_index != -1:
                     test_line = err_input[0:comment_code_index]
 
-                    if file_type == 'nm-res-cya':
-                        reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                    elif file_type == 'nm-res-ros':
-                        reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                 self.__ccU, self.__csStat, self.__nefT)
-                    elif file_type == 'nm-res-bio':
-                        reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                self.__ccU, self.__csStat, self.__nefT)
+                    if reader is None:
+                        reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                     _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -10379,34 +9475,10 @@ class NmrDpUtility:
 
             if not (corrected or concat_xplor_assi or concat_xplor_rest or concat_xplor_set or concat_amber_rst)\
                and j in (0, err_line_number - 1):
-
                 test_line = err_input
 
-                if reader is not None:
-                    pass
-
-                elif file_type == 'nm-res-xpl':
-                    reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cns':
-                    reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-amb':
-                    reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-aux-amb':
-                    reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-cya':
-                    reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                           self.__ccU, self.__csStat, self.__nefT,
-                                           file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                elif file_type == 'nm-res-ros':
-                    reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                elif file_type == 'nm-res-bio':
-                    reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                            self.__ccU, self.__csStat, self.__nefT)
+                if reader is None:
+                    reader = self.__getSimpleMRPTFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -10524,31 +9596,7 @@ class NmrDpUtility:
 
         try:
 
-            if file_type == 'nm-res-xpl':
-                reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
-            elif file_type == 'nm-res-cns':
-                reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT)
-            elif file_type == 'nm-res-amb':
-                reader = AmberMRReader(self.__verbose, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
-            elif file_type == 'nm-aux-amb':
-                reader = AmberPTReader(self.__verbose, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
-            elif file_type == 'nm-res-cya':
-                cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMRFile()
-                reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT,
-                                       file_ext=cya_file_ext)
-                reader.setRemediateMode(self.__remediation_mode)
-            elif file_type == 'nm-res-ros':
-                reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                reader.setRemediateMode(self.__remediation_mode)
-            elif file_type == 'nm-res-bio':
-                reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                        self.__ccU, self.__csStat, self.__nefT)
+            reader = self.__getSimpleMRPTFileReader(file_type, False)
 
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -10557,28 +9605,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        if file_type == 'nm-res-xpl':
-                            reader = XplorMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT,
-                                                   reasons)
-                        elif file_type == 'nm-res-cns':
-                            reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                                 self.__ccU, self.__csStat, self.__nefT,
-                                                 reasons)
-                        elif file_type == 'nm-res-cya':
-                            reader = CyanaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                   self.__ccU, self.__csStat, self.__nefT,
-                                                   reasons, file_ext=cya_file_ext)
-                            reader.setRemediateMode(self.__remediation_mode)
-                        elif file_type == 'nm-res-ros':
-                            reader = RosettaMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                     self.__ccU, self.__csStat, self.__nefT,
-                                                     reasons)
-                            reader.setRemediateMode(self.__remediation_mode)
-                        elif file_type == 'nm-res-bio':
-                            reader = BiosymMRReader(self.__verbose, self.__lfh, None, None, None,
-                                                    self.__ccU, self.__csStat, self.__nefT,
-                                                    reasons)
+                        reader = self.__getSimpleMRPTFileReader(file_type, False, reasons)
 
                         listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -10630,6 +9657,83 @@ class NmrDpUtility:
         """ Report other possible format as error of a given legacy NMR restraint file.
         """
 
+        is_valid = False
+        err = ''
+        valid_types = {}
+        possible_types = {}
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-cns':
+            _is_valid, _err, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cns')
+
+            is_valid |= is_valid
+            err += _err
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-xpl':
+            _is_valid, _err, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-xpl')
+
+            is_valid |= is_valid
+            err += _err
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-amb':
+            _is_valid, _err, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-amb')
+
+            is_valid |= is_valid
+            err += _err
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-aux-amb':
+            _is_valid, _err, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-amb')
+
+            is_valid |= is_valid
+            err += _err
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-cya':
+            _is_valid, _err, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cya')
+
+            is_valid |= is_valid
+            err += _err
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
+            _is_valid, _err, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ros')
+
+            is_valid |= is_valid
+            err += _err
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-bio':
+            _is_valid, _err, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-bio')
+
+            is_valid |= is_valid
+            err += _err
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
+        _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
+
+        return is_valid, err, _valid_types, _possible_types
+
+    def __detectOtherPossibleFormatAsErrorOfLegacyMR__(self, file_path, file_name, file_type, dismiss_err_lines, _file_type):
+        """ Report other possible format as error of a given legacy NMR restraint file.
+        """
+
         if file_type == 'nm-res-xpl':
             mr_format_name = 'XPLOR-NIH'
         elif file_type == 'nm-res-cns':
@@ -10647,568 +9751,117 @@ class NmrDpUtility:
         else:
             mr_format_name = 'other'
 
+        if _file_type == 'nm-res-xpl':
+            _mr_format_name = 'XPLOR-NIH'
+            _a_mr_format_name = 'an ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-res-cns':
+            _mr_format_name = 'CNS'
+            _a_mr_format_name = 'a ' + _mr_format_name + ' or XPLOR-NIH restraint'
+        elif _file_type == 'nm-res-amb':
+            _mr_format_name = 'AMBER'
+            _a_mr_format_name = 'an ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-aux-amb':
+            _mr_format_name = 'AMBER'
+            _a_mr_format_name = 'an ' + _mr_format_name + ' parameter/topology'
+        elif _file_type == 'nm-res-cya':
+            _mr_format_name = 'CYANA'
+            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-res-ros':
+            _mr_format_name = 'ROSETTA'
+            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-res-bio':
+            _mr_format_name = 'BIOSYM'
+            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
+
+        is_valid = False
+        err = ''
+        valid_types = {}
+        possible_types = {}
+
         try:
 
-            is_valid = False
-            err = ''
-            valid_types = {}
-            possible_types = {}
+            reader = self.__getSimpleMRPTFileReader(_file_type, False)
 
-            if (not is_valid or multiple_check) and file_type != 'nm-res-cns':
+            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                reader = CnsMRReader(False, self.__lfh, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-                has_content = _content_subtype is not None
-
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
-
-                    is_valid = True
-
-                    _mr_format_name = 'CNS'
-                    _mr_format_type = 'nm-res-cns'
-
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} or XPLOR-NIH restraint file, "\
-                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                    if has_content:
-                        _err = ''
-                        if lexer_err_listener is not None:
-                            messageList = lexer_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        enc = detect_encoding(description['input'])
-                                        is_not_ascii = False
-                                        if enc is not None and enc != 'ascii':
-                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                            is_not_ascii = True
-                                        else:
-                                            _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-                                        if is_not_ascii:
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-
-                        if parser_err_listener is not None and len(_err) == 0:
-                            messageList = parser_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-
-                        if len(_err) > 0:
-                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            is_valid = False
-                            err = ''
-
-                        if is_valid:
-                            valid_types[_mr_format_type] = len(_content_subtype)
-                        else:
-                            possible_types[_mr_format_type] = len(_content_subtype)
-
-                    if file_type == 'nm-res-oth':
-                        self.report.error.appendDescription('content_mismatch',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
-
-            if (not is_valid or multiple_check) and file_type != 'nm-res-xpl':
-
-                reader = XplorMRReader(False, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-                has_content = _content_subtype is not None
-
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
-
-                    is_valid = True
-
-                    _mr_format_name = 'XPLOR-NIH'
-                    _mr_format_type = 'nm-res-xpl'
-
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} restraint file, "\
-                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                    if has_content:
-                        _err = ''
-                        if lexer_err_listener is not None:
-                            messageList = lexer_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        enc = detect_encoding(description['input'])
-                                        is_not_ascii = False
-                                        if enc is not None and enc != 'ascii':
-                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                            is_not_ascii = True
-                                        else:
-                                            _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-                                        if is_not_ascii:
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-
-                        if parser_err_listener is not None and len(_err) == 0:
-                            messageList = parser_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-
-                        if len(_err) > 0:
-                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            is_valid = False
-                            err = ''
-
-                        if is_valid:
-                            valid_types[_mr_format_type] = len(_content_subtype)
-                        else:
-                            possible_types[_mr_format_type] = len(_content_subtype)
-
-                    if file_type == 'nm-res-oth':
-                        self.report.error.appendDescription('content_mismatch',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
-
-            if (not is_valid or multiple_check) and file_type != 'nm-res-amb':
-
-                reader = AmberMRReader(False, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None, None)
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-                has_content = _content_subtype is not None
-
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
-
-                    is_valid = True
-
-                    _mr_format_name = 'AMBER'
-                    _mr_format_type = 'nm-res-amb'
-
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} restraint file, "\
-                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                    if has_content:
-                        _err = ''
-                        if lexer_err_listener is not None:
-                            messageList = lexer_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        enc = detect_encoding(description['input'])
-                                        is_not_ascii = False
-                                        if enc is not None and enc != 'ascii':
-                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                            is_not_ascii = True
-                                        else:
-                                            _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-                                        if is_not_ascii:
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-
-                        if parser_err_listener is not None and len(_err) == 0:
-                            messageList = parser_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as an {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-
-                        if len(_err) > 0:
-                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            is_valid = False
-                            err = ''
-
-                        if is_valid:
-                            valid_types[_mr_format_type] = len(_content_subtype)
-                        else:
-                            possible_types[_mr_format_type] = len(_content_subtype)
-
-                    if file_type == 'nm-res-oth':
-                        self.report.error.appendDescription('content_mismatch',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
-
-            if (not is_valid or multiple_check) and file_type != 'nm-aux-amb':
-
-                reader = AmberPTReader(False, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-                has_content = _content_subtype is not None
-
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
-
-                    is_valid = True
-
-                    _mr_format_name = 'AMBER'
-                    _mr_format_type = 'nm-aux-amb'
-
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like an {_mr_format_name} parameter/topology file. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                    if has_content:
-                        _err = ''
-                        if lexer_err_listener is not None:
-                            messageList = lexer_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as an {_mr_format_name} parameter/topology file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        enc = detect_encoding(description['input'])
-                                        is_not_ascii = False
-                                        if enc is not None and enc != 'ascii':
-                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                            is_not_ascii = True
-                                        else:
-                                            _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-                                        if is_not_ascii:
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-
-                        if parser_err_listener is not None and len(_err) == 0:
-                            messageList = parser_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as an {_mr_format_name} parameter/topology file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-
-                        if len(_err) > 0:
-                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            is_valid = False
-                            err = ''
-
-                        if is_valid:
-                            valid_types[_mr_format_type] = len(_content_subtype)
-                        else:
-                            possible_types[_mr_format_type] = len(_content_subtype)
-
-                    if file_type == 'nm-res-oth':
-                        self.report.error.appendDescription('content_mismatch',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
-
-            if (not is_valid or multiple_check) and file_type != 'nm-res-cya':
-
-                reader = CyanaMRReader(False, self.__lfh, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT,
-                                       file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-                has_content = _content_subtype is not None
-
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
-
-                    is_valid = True
-
-                    _mr_format_name = 'CYANA'
-                    _mr_format_type = 'nm-res-cya'
-
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
-                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                    if has_content:
-                        _err = ''
-                        if lexer_err_listener is not None:
-                            messageList = lexer_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        enc = detect_encoding(description['input'])
-                                        is_not_ascii = False
-                                        if enc is not None and enc != 'ascii':
-                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                            is_not_ascii = True
-                                        else:
-                                            _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-                                        if is_not_ascii:
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-
-                        if parser_err_listener is not None and len(_err) == 0:
-                            messageList = parser_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-
-                        if len(_err) > 0:
-                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            is_valid = False
-                            err = ''
-
-                        if is_valid:
-                            valid_types[_mr_format_type] = len(_content_subtype)
-                        else:
-                            possible_types[_mr_format_type] = len(_content_subtype)
-
-                    if file_type == 'nm-res-oth':
-                        self.report.error.appendDescription('content_mismatch',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
-
-            if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
-
-                reader = RosettaMRReader(False, self.__lfh, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                # 'rdc_restraint' occasionally matches with CYANA restraints
-                # 'geo_restraint' include CS-ROSETTA disulfide bond linkage, which matches any integer array
+            # 'rdc_restraint' occasionally matches with CYANA restraints
+            # 'geo_restraint' include CS-ROSETTA disulfide bond linkage, which matches any integer array
+            if _file_type == 'nm-res-ros':
                 _content_subtype = listener.getEffectiveContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-                has_content = _content_subtype is not None
-
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
-
-                    is_valid = True
-
-                    _mr_format_name = 'ROSETTA'
-                    _mr_format_type = 'nm-res-ros'
-
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
-                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
-
-                    if has_content:
-                        _err = ''
-                        if lexer_err_listener is not None:
-                            messageList = lexer_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        enc = detect_encoding(description['input'])
-                                        is_not_ascii = False
-                                        if enc is not None and enc != 'ascii':
-                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                            is_not_ascii = True
-                                        else:
-                                            _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-                                        if is_not_ascii:
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-
-                        if parser_err_listener is not None and len(_err) == 0:
-                            messageList = parser_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-
-                        if len(_err) > 0:
-                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            is_valid = False
-                            err = ''
-
-                        if is_valid:
-                            valid_types[_mr_format_type] = len(_content_subtype)
-                        else:
-                            possible_types[_mr_format_type] = len(_content_subtype)
-
-                    if file_type == 'nm-res-oth':
-                        self.report.error.appendDescription('content_mismatch',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
-
-            if (not is_valid or multiple_check) and file_type != 'nm-res-bio':
-
-                reader = BiosymMRReader(False, self.__lfh, None, None, None,
-                                        self.__ccU, self.__csStat, self.__nefT)
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
+            else:
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-                has_content = _content_subtype is not None
+            if _content_subtype is not None and len(_content_subtype) == 0:
+                _content_subtype = None
+            has_content = _content_subtype is not None
 
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
+            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+               and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
-                    is_valid = True
+                is_valid = True
 
-                    _mr_format_name = 'BIOSYM'
-                    _mr_format_type = 'nm-res-bio'
+                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like {_a_mr_format_name} file, "\
+                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like a {_mr_format_name} restraint file, "\
-                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                if has_content:
+                    _err = ''
+                    if lexer_err_listener is not None:
+                        messageList = lexer_err_listener.getMessageList()
 
-                    if has_content:
-                        _err = ''
-                        if lexer_err_listener is not None:
-                            messageList = lexer_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
-                                        enc = detect_encoding(description['input'])
-                                        is_not_ascii = False
-                                        if enc is not None and enc != 'ascii':
-                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                            is_not_ascii = True
-                                        else:
-                                            _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
-                                        if is_not_ascii:
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
-
-                        if parser_err_listener is not None and len(_err) == 0:
-                            messageList = parser_err_listener.getMessageList()
-
-                            if messageList is not None:
-                                for description in messageList:
-                                    if description['line_number'] in dismiss_err_lines:
-                                        continue
-                                    _err += f"[Syntax error as a {_mr_format_name} restraint file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                    if 'input' in description:
+                        if messageList is not None:
+                            for description in messageList:
+                                if description['line_number'] in dismiss_err_lines:
+                                    continue
+                                _err += f"[Syntax error as {_a_mr_format_name} file] "\
+                                    f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    enc = detect_encoding(description['input'])
+                                    is_not_ascii = False
+                                    if enc is not None and enc != 'ascii':
+                                        _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                        is_not_ascii = True
+                                    else:
                                         _err += f"{description['input']}\n"
-                                        _err += f"{description['marker']}\n"
+                                    _err += f"{description['marker']}\n"
+                                    if is_not_ascii:
+                                        _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
 
-                        if len(_err) > 0:
-                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                            is_valid = False
-                            err = ''
+                    if parser_err_listener is not None and len(_err) == 0:
+                        messageList = parser_err_listener.getMessageList()
 
-                        if is_valid:
-                            valid_types[_mr_format_type] = len(_content_subtype)
-                        else:
-                            possible_types[_mr_format_type] = len(_content_subtype)
+                        if messageList is not None:
+                            for description in messageList:
+                                if description['line_number'] in dismiss_err_lines:
+                                    continue
+                                _err += f"[Syntax error as {_a_mr_format_name} file] "\
+                                    f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                if 'input' in description:
+                                    _err += f"{description['input']}\n"
+                                    _err += f"{description['marker']}\n"
 
-                    if file_type == 'nm-res-oth':
-                        self.report.error.appendDescription('content_mismatch',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                    if len(_err) > 0:
+                        err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
+                    elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                        is_valid = False
+                        err = ''
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
+                    if is_valid:
+                        valid_types[_file_type] = len(_content_subtype)
+                    else:
+                        possible_types[_file_type] = len(_content_subtype)
+
+                if file_type == 'nm-res-oth':
+                    self.report.error.appendDescription('content_mismatch',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR__() ++ Error  - {err}\n")
 
         except ValueError:
             pass
 
-        _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
-        _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
-
-        return is_valid, err, _valid_types, _possible_types
+        return is_valid, err, valid_types, possible_types
 
     def __extractPublicMRFileIntoLegacyMR(self):
         """ Extract/split public MR file into legacy NMR restraint files for NMR restraint remediation.

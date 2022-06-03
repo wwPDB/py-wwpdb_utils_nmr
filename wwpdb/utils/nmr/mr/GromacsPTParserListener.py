@@ -1206,6 +1206,7 @@ class GromacsPTParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by GromacsPTParser#number.
     def exitNumber(self, ctx: GromacsPTParser.NumberContext):
+        """ not used the 'number' in the '[ atoms ]' statement so that pass through for performance
         if ctx.Real():
             self.numberSelection.append(float(str(ctx.Real())))
 
@@ -1214,6 +1215,7 @@ class GromacsPTParserListener(ParseTreeListener):
 
         else:
             self.numberSelection.append(None)
+        """
 
     def getContentSubtype(self):
         """ Return content subtype of GROMACS parameter/topology file.

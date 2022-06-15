@@ -989,6 +989,7 @@ class NmrDpUtility:
                            self.__testDataConsistencyInLoop,
                            self.__detectConflictDataInLoop,
                            self.__testDataConsistencyInAuxLoop,
+                           self.__testNmrCovalentBond,
                            self.__appendSfTagItem,
                            self.__testSfTagConsistency,
                            # self.__validateCSValue,
@@ -1012,7 +1013,7 @@ class NmrDpUtility:
         # cross validation tasks
         __crossCheckTasks = [self.__assignCoordPolymerSequence,
                              self.__testCoordAtomIdConsistency,
-                             self.__testCovalentBond,
+                             self.__testCoordCovalentBond,
                              self.__testResidueVariant,
                              self.__validateCSValue,
                              self.__extractCoordDisulfideBond,
@@ -15527,6 +15528,461 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write(f"+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - {warn}\n")
 
+    def __testNmrCovalentBond(self):
+        """ Perform consistency test on data of auxiliary loops.
+        """
+
+        # if not self.__combined_mode:
+        #    return True
+
+        __errors = self.report.getTotalErrors()
+
+        for fileListId in range(self.__file_path_list_len):
+
+            if fileListId >= len(self.__star_data_type) or self.__star_data_type[fileListId] != 'Entry':
+                continue
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            item_names = self.item_names_in_cs_loop[file_type]
+            chain_id_name = item_names['chain_id']
+            seq_id_name = item_names['seq_id']
+            comp_id_name = item_names['comp_id']
+            atom_id_name = item_names['atom_id']
+            value_name = item_names['value']
+
+            item_names = self.item_names_in_rdc_loop[file_type]
+            chain_id_1_name = item_names['chain_id_1']
+            chain_id_2_name = item_names['chain_id_2']
+            seq_id_1_name = item_names['seq_id_1']
+            seq_id_2_name = item_names['seq_id_2']
+            comp_id_1_name = item_names['comp_id_1']
+            comp_id_2_name = item_names['comp_id_2']
+            atom_id_1_name = item_names['atom_id_1']
+            atom_id_2_name = item_names['atom_id_2']
+
+            content_subtype = 'chem_shift'
+
+            cs_sf_category = self.sf_categories[file_type][content_subtype]
+            cs_lp_category = self.lp_categories[file_type][content_subtype]
+
+            cs_lp_data = None
+
+            for cs_sf_data in self.__star_data[fileListId].get_saveframes_by_category(cs_sf_category):
+
+                cs_sf_framecode = get_first_sf_tag(cs_sf_data, 'sf_framecode')
+
+                if not any(loop for loop in cs_sf_data.loops if loop.category == cs_lp_category):
+                    continue
+
+                cs_lp_data = next((l['data'] for l in self.__lp_data[content_subtype]
+                                   if l['file_name'] == file_name and l['sf_framecode'] == cs_sf_framecode), None)  # noqa: E741
+
+                break
+
+            content_subtype = 'poly_seq'
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            parent_pointer = 0
+
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                parent_pointer += 1
+
+                sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                for loop in sf_data.loops:
+
+                    lp_category = loop.category
+
+                    if lp_category is None:
+                        continue
+
+                    if (file_type == 'nef' and lp_category == '_nef_covalent_links') or (file_type == 'nmr-star' and lp_category == '_Bond'):
+
+                        key_items = self.aux_key_items[file_type][content_subtype][lp_category]
+                        data_items = self.aux_data_items[file_type][content_subtype][lp_category]
+                        allowed_tags = self.aux_allowed_tags[file_type][content_subtype][lp_category]
+
+                        try:
+
+                            aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                                                              test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False,
+                                                              enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                              excl_missing_data=self.__excl_missing_data)[0]
+
+                            disulf_asm = []
+                            other_asm = []
+
+                            item_names = self.item_names_in_rdc_loop[file_type]
+                            chain_id_1_name = item_names['chain_id_1']
+                            chain_id_2_name = item_names['chain_id_2']
+                            seq_id_1_name = item_names['seq_id_1']
+                            seq_id_2_name = item_names['seq_id_2']
+                            comp_id_1_name = item_names['comp_id_1']
+                            comp_id_2_name = item_names['comp_id_2']
+                            atom_id_1_name = item_names['atom_id_1']
+                            atom_id_2_name = item_names['atom_id_2']
+
+                            for i in aux_data:
+                                chain_id_1 = i[chain_id_1_name]
+                                seq_id_1 = i[seq_id_1_name]
+                                comp_id_1 = i[comp_id_1_name]
+                                atom_id_1 = i[atom_id_1_name]
+                                chain_id_2 = i[chain_id_2_name]
+                                seq_id_2 = i[seq_id_2_name]
+                                comp_id_2 = i[comp_id_2_name]
+                                atom_id_2 = i[atom_id_2_name]
+
+                                atom_id_1_ = atom_id_1[0]
+                                atom_id_2_ = atom_id_2[0]
+
+                                if atom_id_1_ == 'S' and atom_id_2_ == 'S' and not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
+
+                                    disulf = {}
+                                    disulf['chain_id_1'] = chain_id_1
+                                    disulf['seq_id_1'] = seq_id_1
+                                    disulf['comp_id_1'] = comp_id_1
+                                    disulf['atom_id_1'] = atom_id_1
+                                    disulf['chain_id_2'] = chain_id_2
+                                    disulf['seq_id_2'] = seq_id_2
+                                    disulf['comp_id_2'] = comp_id_2
+                                    disulf['atom_id_2'] = atom_id_2
+                                    disulf['distance_value'] = None
+                                    disulf['warning_description_1'] = None
+                                    disulf['warning_description_2'] = None
+
+                                    if cs_lp_data is not None:
+
+                                        ca_chem_shift_1 = None
+                                        cb_chem_shift_1 = None
+
+                                        for j in cs_lp_data:
+
+                                            atom_id = j[atom_id_name]
+
+                                            if j[chain_id_name] == chain_id_1 and j[seq_id_name] == seq_id_1 and j[comp_id_name] == 'CYS':
+                                                if atom_id == 'CA':
+                                                    ca_chem_shift_1 = j[value_name]
+                                                elif atom_id == 'CB':
+                                                    cb_chem_shift_1 = j[value_name]
+
+                                            if ca_chem_shift_1 is None or cb_chem_shift_1 is None:
+                                                if j[chain_id_name] == chain_id_1 and j[seq_id_name] > seq_id_1:
+                                                    break
+                                            else:
+                                                break
+
+                                        disulf['ca_chem_shift_1'] = ca_chem_shift_1
+                                        disulf['cb_chem_shift_1'] = cb_chem_shift_1
+
+                                        ca_chem_shift_2 = None
+                                        cb_chem_shift_2 = None
+
+                                        for j in cs_lp_data:
+
+                                            atom_id = j[atom_id_name]
+
+                                            if j[chain_id_name] == chain_id_2 and j[seq_id_name] == seq_id_2 and j[comp_id_name] == 'CYS':
+                                                if atom_id == 'CA':
+                                                    ca_chem_shift_2 = j[value_name]
+                                                elif atom_id == 'CB':
+                                                    cb_chem_shift_2 = j[value_name]
+
+                                            if ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                                                if j[chain_id_name] == chain_id_2 and j[seq_id_name] > seq_id_2:
+                                                    break
+                                            else:
+                                                break
+
+                                        disulf['ca_chem_shift_2'] = ca_chem_shift_2
+                                        disulf['cb_chem_shift_2'] = cb_chem_shift_2
+
+                                        if cb_chem_shift_1 is not None:
+                                            if cb_chem_shift_1 < 32.0:
+                                                disulf['redox_state_pred_1'] = 'reduced'
+                                            elif cb_chem_shift_1 > 35.0:
+                                                disulf['redox_state_pred_1'] = 'oxidized'
+                                            elif cb_chem_shift_2 is not None:
+                                                if cb_chem_shift_2 < 32.0:
+                                                    disulf['redox_state_pred_1'] = 'reduced'
+                                                elif cb_chem_shift_2 > 35.0:
+                                                    disulf['redox_state_pred_1'] = 'oxidized'
+                                                else:
+                                                    disulf['redox_state_pred_1'] = 'ambiguous'
+                                            else:
+                                                disulf['redox_state_pred_1'] = 'ambiguous'
+                                        else:
+                                            disulf['redox_state_pred_1'] = 'unknown'
+
+                                        if cb_chem_shift_2 is not None:
+                                            if cb_chem_shift_2 < 32.0:
+                                                disulf['redox_state_pred_2'] = 'reduced'
+                                            elif cb_chem_shift_2 > 35.0:
+                                                disulf['redox_state_pred_2'] = 'oxidized'
+                                            elif cb_chem_shift_1 is not None:
+                                                if cb_chem_shift_1 < 32.0:
+                                                    disulf['redox_state_pred_2'] = 'reduced'
+                                                elif cb_chem_shift_1 > 35.0:
+                                                    disulf['redox_state_pred_2'] = 'oxidized'
+                                                else:
+                                                    disulf['redox_state_pred_2'] = 'ambiguous'
+                                            else:
+                                                disulf['redox_state_pred_2'] = 'ambiguous'
+                                        else:
+                                            disulf['redox_state_pred_2'] = 'unknown'
+
+                                        if disulf['redox_state_pred_1'] == 'ambiguous' and ((ca_chem_shift_1 is not None) or (cb_chem_shift_1 is not None)):
+                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
+                                            disulf['redox_state_pred_1'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
+
+                                        if disulf['redox_state_pred_2'] == 'ambiguous' and ((ca_chem_shift_2 is not None) or (cb_chem_shift_2 is not None)):
+                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
+                                            disulf['redox_state_pred_2'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
+
+                                        if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
+
+                                            warn = "Disulfide bond "\
+                                                f"({chain_id_1}:{seq_id_1}:{comp_id_1} - {chain_id_2}:{seq_id_2}:{comp_id_2}) can not be verified with "\
+                                                f"the assigned chemical shift values ({chain_id_1}:{seq_id_1}:{comp_id_1}:CA {ca_chem_shift_1} ppm, "\
+                                                f"{chain_id_1}:{seq_id_1}:{comp_id_1}:CB {cb_chem_shift_1} ppm, redox_state_pred {disulf['redox_state_pred_1']})."
+
+                                            item = 'anomalous_chemical_shift' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
+
+                                            disulf['warning_description_1'] = item + ': ' + warn
+
+                                        if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
+
+                                            warn = "Disulfide bond "\
+                                                f"({chain_id_1}:{seq_id_1}:{comp_id_1} - {chain_id_2}:{seq_id_2}:{comp_id_2}) can not be verified with "\
+                                                f"the assigned chemical shift values ({chain_id_2}:{seq_id_2}:{comp_id_2}:CA {ca_chem_shift_2} ppm, "\
+                                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:CB {cb_chem_shift_2} ppm, redox_state_pred {disulf['redox_state_pred_2']})."
+
+                                            item = 'anomalous_chemical_shift' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
+
+                                            disulf['warning_description_2'] = item + ': ' + warn
+
+                                    disulf_asm.append(disulf)
+
+                                elif chain_id_1 == chain_id_2 and seq_id_1 == 1 and atom_id_1 == 'N' and seq_id_2 > 1 and atom_id_2 == 'C':
+                                    self.report.setCyclicPolymer(True)
+
+                                elif atom_id_1 == 'SE' and atom_id_2 == 'SE':  # diselenide bond
+                                    pass
+
+                                # hydrogen bond begins
+
+                                elif (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
+                                    pass
+
+                                elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+                                    pass
+
+                                elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+                                    pass
+
+                                elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+                                    pass
+
+                                elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+                                    pass
+
+                                elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+                                    pass
+
+                                elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+                                    pass
+
+                                # hydrogen bond ends
+
+                                else:
+
+                                    other = {}
+                                    other['c:ain_id_1'] = chain_id_1
+                                    other['seq_id_1'] = seq_id_1
+                                    other['comp_id_1'] = comp_id_1
+                                    other['atom_id_1'] = atom_id_1
+                                    other['chain_id_2'] = chain_id_2
+                                    other['seq_id_2'] = seq_id_2
+                                    other['comp_id_2'] = comp_id_2
+                                    other['atom_id_2'] = atom_id_2
+                                    other['distance_value'] = None
+                                    other['warning_description_1'] = None
+                                    other['warning_description_2'] = None
+
+                                    if cs_lp_data is not None:
+
+                                        ca_chem_shift_1 = None
+                                        cb_chem_shift_1 = None
+
+                                        for j in cs_lp_data:
+
+                                            atom_id = j[atom_id_name]
+
+                                            if j[chain_id_name] == chain_id_1 and j[seq_id_name] == seq_id_1 and j[comp_id_name] == 'CYS':
+                                                if atom_id == 'CA':
+                                                    ca_chem_shift_1 = j[value_name]
+                                                elif atom_id == 'CB':
+                                                    cb_chem_shift_1 = j[value_name]
+
+                                            if ca_chem_shift_1 is None or cb_chem_shift_1 is None:
+                                                if j[chain_id_name] == chain_id_1 and j[seq_id_name] > seq_id_1:
+                                                    break
+                                            else:
+                                                break
+
+                                        other['ca_chem_shift_1'] = ca_chem_shift_1
+                                        other['cb_chem_shift_1'] = cb_chem_shift_1
+
+                                        ca_chem_shift_2 = None
+                                        cb_chem_shift_2 = None
+
+                                        for j in cs_lp_data:
+
+                                            atom_id = j[atom_id_name]
+
+                                            if j[chain_id_name] == chain_id_2 and j[seq_id_name] == seq_id_2 and j[comp_id_name] == 'CYS':
+                                                if atom_id == 'CA':
+                                                    ca_chem_shift_2 = j[value_name]
+                                                elif atom_id == 'CB':
+                                                    cb_chem_shift_2 = j[value_name]
+
+                                            if ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                                                if j[chain_id_name] == chain_id_2 and j[seq_id_name] > seq_id_2:
+                                                    break
+                                            else:
+                                                break
+
+                                        other['ca_chem_shift_2'] = ca_chem_shift_2
+                                        other['cb_chem_shift_2'] = cb_chem_shift_2
+
+                                        if cb_chem_shift_1 is not None:
+                                            if cb_chem_shift_1 < 32.0:
+                                                other['redox_state_pred_1'] = 'reduced'
+                                            elif cb_chem_shift_1 > 35.0:
+                                                other['redox_state_pred_1'] = 'oxidized'
+                                            elif cb_chem_shift_2 is not None:
+                                                if cb_chem_shift_2 < 32.0:
+                                                    other['redox_state_pred_1'] = 'reduced'
+                                                elif cb_chem_shift_2 > 35.0:
+                                                    other['redox_state_pred_1'] = 'oxidized'
+                                                else:
+                                                    other['redox_state_pred_1'] = 'ambiguous'
+                                            else:
+                                                other['redox_state_pred_1'] = 'ambiguous'
+                                        else:
+                                            other['redox_state_pred_1'] = 'unknown'
+
+                                        if cb_chem_shift_2 is not None:
+                                            if cb_chem_shift_2 < 32.0:
+                                                other['redox_state_pred_2'] = 'reduced'
+                                            elif cb_chem_shift_2 > 35.0:
+                                                other['redox_state_pred_2'] = 'oxidized'
+                                            elif cb_chem_shift_1 is not None:
+                                                if cb_chem_shift_1 < 32.0:
+                                                    other['redox_state_pred_2'] = 'reduced'
+                                                elif cb_chem_shift_1 > 35.0:
+                                                    other['redox_state_pred_2'] = 'oxidized'
+                                                else:
+                                                    other['redox_state_pred_2'] = 'ambiguous'
+                                            else:
+                                                other['redox_state_pred_2'] = 'ambiguous'
+                                        else:
+                                            other['redox_state_pred_2'] = 'unknown'
+
+                                        if other['redox_state_pred_1'] == 'ambiguous' and ((ca_chem_shift_1 is not None) or (cb_chem_shift_1 is not None)):
+                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
+                                            other['redox_state_pred_1'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
+
+                                        if other['redox_state_pred_2'] == 'ambiguous' and ((ca_chem_shift_2 is not None) or (cb_chem_shift_2 is not None)):
+                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
+                                            other['redox_state_pred_2'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
+
+                                        if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
+
+                                            warn = "Other bond "\
+                                                f"({chain_id_1}:{seq_id_1}:{comp_id_1} - {chain_id_2}:{seq_id_2}:{comp_id_2}) can not be verified with "\
+                                                f"the assigned chemical shift values ({chain_id_1}:{seq_id_1}:{comp_id_1}:CA {ca_chem_shift_1} ppm, "\
+                                                f"{chain_id_1}:{seq_id_1}:{comp_id_1}:CB {cb_chem_shift_1} ppm, redox_state_pred {other['redox_state_pred_1']})."
+
+                                            item = 'anomalous_chemical_shift' if other['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
+
+                                            other['warning_description_1'] = item + ': ' + warn
+
+                                        if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
+
+                                            warn = "Other bond "\
+                                                f"({chain_id_1}:{seq_id_1}:{comp_id_1} - {chain_id_2}:{seq_id_2}:{comp_id_2}) can not be verified with "\
+                                                f"the assigned chemical shift values ({chain_id_2}:{seq_id_2}:{comp_id_2}:CA {ca_chem_shift_2} ppm, "\
+                                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:CB {cb_chem_shift_2} ppm, redox_state_pred {other['redox_state_pred_2']})."
+
+                                            item = 'anomalous_chemical_shift' if other['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
+
+                                            other['warning_description_2'] = item + ': ' + warn
+
+                                    other_asm.append(other)
+
+                            if len(disulf_asm) > 0:
+                                input_source.setItemValue('disulfide_bond', disulf_asm)
+
+                                self.report.setDisulfideBond(True)
+
+                            if len(other_asm) > 0:
+                                input_source.setItemValue('other_bond', other_asm)
+
+                                self.report.setOtherBond(True)
+
+                        except KeyError as e:
+
+                            self.report.error.appendDescription('multiple_data',
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                 'description': str(e).strip("'")})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__testNmrCovalentBond() ++ KeyError  - {str(e)}\n")
+
+                        except LookupError as e:
+
+                            item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+
+                            self.report.error.appendDescription(item,
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                 'description': str(e).strip("'")})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__testNmrCovalentBond() ++ LookupError  - {str(e)}\n")
+
+                        except ValueError as e:
+
+                            self.report.error.appendDescription('invalid_data',
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                 'description': str(e).strip("'")})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__testNmrCovalentBond() ++ ValueError  - {str(e)}\n")
+
+                        except UserWarning:
+                            pass
+
+                        except Exception as e:
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testNmrCovalentBond() ++ Error  - " + str(e))
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__testNmrCovalentBond() ++ Error  - {str(e)}\n")
+
+        return self.report.getTotalErrors() == __errors
+
     def __testDataConsistencyInAuxLoop(self):
         """ Perform consistency test on data of auxiliary loops.
         """
@@ -19416,7 +19872,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {str(e)}\n")
 
-    def __testCovalentBond(self):
+    def __testCoordCovalentBond(self):
         """ Perform consistency test on covalent bonds.
         """
 
@@ -19446,14 +19902,14 @@ class NmrDpUtility:
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
-                self.__testCovalentBond__(file_name, file_type, content_subtype, sf_framecode, lp_category)
+                self.__testCoordCovalentBond__(file_name, file_type, content_subtype, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                self.__testCovalentBond__(file_name, file_type, content_subtype, sf_framecode, lp_category)
+                self.__testCoordCovalentBond__(file_name, file_type, content_subtype, sf_framecode, lp_category)
 
             else:
 
@@ -19464,11 +19920,11 @@ class NmrDpUtility:
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                         continue
 
-                    self.__testCovalentBond__(file_name, file_type, content_subtype, sf_framecode, lp_category)
+                    self.__testCoordCovalentBond__(file_name, file_type, content_subtype, sf_framecode, lp_category)
 
         return self.report.getTotalErrors() == __errors
 
-    def __testCovalentBond__(self, file_name, file_type, content_subtype, sf_framecode, lp_category):
+    def __testCoordCovalentBond__(self, file_name, file_type, content_subtype, sf_framecode, lp_category):
         """ Perform consistency test on covalent bonds.
         """
 
@@ -19526,15 +19982,15 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testCovalentBond() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__testCoordCovalentBond() ++ Warning  - {warn}\n")
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCovalentBond() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordCovalentBond() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testCovalentBond() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+NmrDpUtility.__testCoordCovalentBond() ++ Error  - {str(e)}\n")
 
     def __getNmrBondLength(self, nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2):
         """ Return the bond length of given two NMR atoms.

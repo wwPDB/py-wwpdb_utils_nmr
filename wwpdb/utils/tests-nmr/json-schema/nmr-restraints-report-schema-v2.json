@@ -893,7 +893,10 @@
           "minLength": 1
         },
         "distance_value": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0.9
         },
         "warning_description_1": {

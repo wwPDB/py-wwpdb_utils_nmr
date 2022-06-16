@@ -142,7 +142,7 @@ pairs_statement:
 	pairs*;
 
 pairs:
-	Integer Integer Integer number number (number number number)?
+	Integer Integer Integer (number number (number number number)?)?
 							// ai aj funct c{2,5}
 	Simple_name*;
 
@@ -151,7 +151,7 @@ pairs_nb_statement:
 	pairs_nb*;
 
 pairs_nb:
-	Integer Integer Integer number number number number
+	Integer Integer Integer (number number number number)?
 							// ai aj funct qi, qj, V, W
 	Simple_name*;
 
@@ -160,8 +160,8 @@ angles_statement:
 	angles*;
 
 angles:
-	Integer Integer Integer Integer number number
-	(number (number (number number)?)?)?		// ai aj ak funct c{2,3,4,6}
+	Integer Integer Integer Integer (number number
+	(number (number (number number)?)?)?)?		// ai aj ak funct c{2,3,4,6}
 	Simple_name*;
 
 dihedrals_statement:
@@ -169,8 +169,8 @@ dihedrals_statement:
 	dihedrals*;
 
 dihedrals:
-	Integer Integer Integer Integer Integer number number
-	(number (number number number?)?)?		// ai aj ak al funct c{2,3,5,6}
+	Integer Integer Integer Integer Integer (number number
+	(number (number number number?)?)?)?		// ai aj ak al funct c{2,3,5,6}
 	Simple_name*;
 
 exclusions_statement:
@@ -186,7 +186,7 @@ constraints_statement:
 	constraints*;
 
 constraints:
-	Integer Integer Integer number			// ai aj funct b0
+	Integer Integer Integer number?			// ai aj funct b0
 	Simple_name*;
 
 settles_statement:
@@ -194,7 +194,7 @@ settles_statement:
 	settles*;
 
 settles:
-	Integer Integer number number			// ai funct dsc_oh dsc_hh
+	Integer Integer (number number)?		// ai funct dsc_oh dsc_hh
 	Simple_name*;
 
 virtual_sites1_statement:
@@ -210,7 +210,7 @@ virtual_sites2_statement:
 	virtual_sites2*;
 
 virtual_sites2:
-	Integer Integer Integer Integer number		// ai aj ak funct c
+	Integer Integer Integer Integer number?		// ai aj ak funct c
 	Simple_name*;
 
 virtual_sites3_statement:
@@ -219,7 +219,7 @@ virtual_sites3_statement:
 
 virtual_sites3:
 	Integer Integer Integer Integer Integer
-	number number number?				// ai aj ak aj funct c{2,3}
+	(number number number?)?			// ai aj ak aj funct c{2,3}
 	Simple_name*;
 
 virtual_sites4_statement:
@@ -228,7 +228,7 @@ virtual_sites4_statement:
 
 virtual_sites4:
 	Integer Integer Integer Integer Integer Integer
-	number number number				// ai aj ak aj al funct a b c
+	(number number number)?				// ai aj ak aj al funct a b c
 	Simple_name*;
 
 virtual_sitesn_statement:

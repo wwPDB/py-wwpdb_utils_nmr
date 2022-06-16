@@ -329,6 +329,7 @@ stop_pattern = re.compile(r'\s*stop_\s*')
 cif_stop_pattern = re.compile(r'#\s*')
 ws_pattern = re.compile(r'\s+')
 comment_pattern = re.compile(r'\s*[#!]+(.*)')
+gromacs_comment_pattern = re.compile(r'\s*;+[^0-9]?(.*)')
 
 category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
 tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
@@ -7485,6 +7486,10 @@ class NmrDpUtility:
                     content_subtype = listener.getContentSubtype() if listener is not None else None
                     if content_subtype is not None and len(content_subtype) == 0:
                         content_subtype = None
+                    elif file_type in ('nm-aux-amb', 'nm-aux-gro'):
+                        has_topology = True
+                        content_subtype = {'topology': 1}
+
                     has_content = content_subtype is not None
 
                     if has_lexer_error and has_parser_error and has_content:
@@ -7588,10 +7593,6 @@ class NmrDpUtility:
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
                                 has_plane_restraint = 'plane_restraint' in content_subtype
                                 has_hbond_restraint = 'hbond_restraint' in content_subtype
-
-                                if file_type in ('nm-aux-amb', 'nm-aux-gro'):
-                                    has_topology = True
-                                    content_subtype = {'topology': 1}
 
                                 if file_type == 'nm-res-cya' and has_dist_restraint:
                                     ar['is_upl'] = listener.isUplDistanceRestraint()
@@ -8084,6 +8085,7 @@ class NmrDpUtility:
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = (file_type == 'nm-res-amb')
+        gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
 
         xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
@@ -8233,7 +8235,8 @@ class NmrDpUtility:
                 i += 1
                 if i < err_line_number - 20:
                     if ws_or_comment:
-                        if line.isspace() or comment_pattern.match(line):
+                        if line.isspace() or comment_pattern.match(line)\
+                           or (gromacs_file_type and gromacs_comment_pattern.match(line)):
                             pass
                         else:
                             ws_or_comment = False
@@ -8242,11 +8245,14 @@ class NmrDpUtility:
                     continue
                 if i < err_line_number:
                     if ws_or_comment:
-                        if line.isspace() or comment_pattern.match(line):
+                        if line.isspace() or comment_pattern.match(line)\
+                           or (gromacs_file_type and gromacs_comment_pattern.match(line)):
                             pass
                         else:
                             ws_or_comment = False
-                    interval.append({'line': line, 'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))})
+                    interval.append({'line': line,
+                                     'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))
+                                     or (gromacs_file_type and bool(gromacs_comment_pattern.match(line)))})
                     if i < err_line_number - 1:
                         continue
                     if i == err_line_number - 1:
@@ -8858,6 +8864,7 @@ class NmrDpUtility:
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type = 'nm-res-amb'
+        gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
 
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
                                                        or (err_message.startswith(no_viable_alt_err_msg)
@@ -8967,7 +8974,9 @@ class NmrDpUtility:
                     j += 1
                     continue
                 if i < err_line_number:
-                    interval.append({'line': line, 'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))})
+                    interval.append({'line': line,
+                                     'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))
+                                     or (gromacs_file_type and bool(gromacs_comment_pattern.match(line)))})
                     if i < err_line_number - 1:
                         continue
                     _k = len(interval) - 1
@@ -8985,7 +8994,8 @@ class NmrDpUtility:
                             j2 += 1
                     continue
                 if not is_valid:
-                    if line.isspace() or comment_pattern.match(line):
+                    if line.isspace() or comment_pattern.match(line)\
+                       or (gromacs_file_type and gromacs_comment_pattern.match(line)):
                         ofp2.write(line)
                         j2 += 1
                         continue
@@ -9002,7 +9012,8 @@ class NmrDpUtility:
                             continue
                     is_valid = True
                 if ws_or_comment:
-                    if line.isspace() or comment_pattern.match(line):
+                    if line.isspace() or comment_pattern.match(line)\
+                       or (gromacs_file_type and gromacs_comment_pattern.match(line)):
                         ofp2.write(line)
                         j2 += 1
                         continue
@@ -9150,6 +9161,7 @@ class NmrDpUtility:
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type = 'nm-res-amb'
+        gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
 
         xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
@@ -9209,7 +9221,8 @@ class NmrDpUtility:
                 i += 1
                 if i < err_line_number:
                     if ws_or_comment:
-                        if line.isspace() or comment_pattern.match(line):
+                        if line.isspace() or comment_pattern.match(line)\
+                           or (gromacs_file_type and gromacs_comment_pattern.match(line)):
                             pass
                         else:
                             ws_or_comment = False

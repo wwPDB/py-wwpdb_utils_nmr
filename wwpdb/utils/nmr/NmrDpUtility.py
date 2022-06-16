@@ -368,6 +368,8 @@ xplor_extra_l_paren_err_msg_pattern = re.compile(r"extraneous input '\(' expecti
 
 cyana_ambig_pattern = re.compile(r'0\s+AMB\s.*')
 
+gromacs_tag_pattern = re.compile(r'\s*[\s+[a-z0-9_]+\s+\]')
+
 mismatched_input_err_msg = "mismatched input"  # NOTICE: depends on ANTLR v4
 extraneous_input_err_msg = "extraneous input"  # NOTICE: depends on ANTLR v4
 no_viable_alt_err_msg = "no viable alternative at input"  # NOTICE: depends on ANTLR v4
@@ -6548,9 +6550,10 @@ class NmrDpUtility:
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
+            fileListId += 1
+
             if file_type == 'nm-res-mr':
                 md5_list.append(None)
-                fileListId += 1
                 continue
 
             file_path = ar['file_name']
@@ -7788,8 +7791,6 @@ class NmrDpUtility:
 
             input_source.setItemValue('content_subtype', content_subtype)
 
-            fileListId += 1
-
         if not self.__legacy_dist_restraint_uploaded:
 
             fileListId = self.__file_path_list_len
@@ -7803,11 +7804,10 @@ class NmrDpUtility:
                 file_type = input_source_dic['file_type']
                 content_subtype = input_source_dic['content_subtype']
 
-                if file_type == 'nm-res-mr':
-                    fileListId += 1
-                    continue
-
                 fileListId += 1
+
+                if file_type == 'nm-res-mr':
+                    continue
 
                 if (content_subtype is not None and 'dist_restraint' in content_subtype) or file_type in ('nm-aux-amb', 'nm-aux-gro'):
                     continue
@@ -8124,6 +8124,9 @@ class NmrDpUtility:
                                  or err_message.startswith(extraneous_input_err_msg))
                             and bool(amber_rst_pattern.search(err_input))
                             and not bool(amber_rst_pattern.match(err_input)))
+
+        concat_gromacs_tag = not gromacs_file_type and bool(gromacs_tag_pattern.search(err_input))
+
         concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio')
                           and err_message.startswith(no_viable_alt_err_msg)
                           and bool(comment_pattern.search(err_input)))
@@ -8143,6 +8146,7 @@ class NmrDpUtility:
                or cyana_ambig_restraint
                or concat_xplor_assi or concat_xplor_rest or concat_xplor_set
                or concat_amber_rst
+               or concat_gromacs_tag
                or concat_comment):
 
             if err_column_position > 0 and not err_input[0:err_column_position].isspace():
@@ -8287,6 +8291,7 @@ class NmrDpUtility:
                 or cyana_ambig_restraint
                 or concat_xplor_assi or concat_xplor_rest or concat_xplor_set
                 or concat_amber_rst
+                or concat_gromacs_tag
                 or concat_comment) or i <= err_line_number or j == 0:
 
             corrected = False
@@ -8518,6 +8523,38 @@ class NmrDpUtility:
 
                                 corrected = True
 
+            if concat_gromacs_tag:
+
+                test_line = err_input[err_column_position + 1:]
+
+                if len(test_line) > 0:
+
+                    test_reader = self.__getSimpleMRPTFileReader('nm-res-gro', False)
+
+                    _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
+
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                    if not has_lexer_error:
+
+                        if self.__mr_debug:
+                            print('DIV-MR-EXIT #3-7')
+
+                        return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+
+                    test_reader = self.__getSimpleMRPTFileReader('nm-aux-gro', False)
+
+                    _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
+
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                    if not has_lexer_error:
+
+                        if self.__mr_debug:
+                            print('DIV-MR-EXIT #3-8')
+
+                        return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
+
             if concat_comment:
 
                 comment_code_index = -1
@@ -8561,7 +8598,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DIV-MR-EXIT #3-7')
+                                print('DIV-MR-EXIT #3-9')
 
                             corrected = True
 
@@ -8594,7 +8631,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-8')
+                        print('DIV-MR-EXIT #3-10')
 
                     corrected = True
 
@@ -8614,7 +8651,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-9')
+                        print('DIV-MR-EXIT #3-11')
 
                     corrected = True
 
@@ -8650,7 +8687,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-10')
+                            print('DIV-MR-EXIT #3-12')
 
                         corrected = True
 
@@ -9197,6 +9234,7 @@ class NmrDpUtility:
                                  or err_message.startswith(extraneous_input_err_msg))
                             and bool(amber_rst_pattern.search(err_input))
                             and not bool(amber_rst_pattern.match(err_input)))
+
         concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio')
                           and err_message.startswith(no_viable_alt_err_msg)
                           and bool(comment_pattern.search(err_input)))
@@ -9978,8 +10016,9 @@ class NmrDpUtility:
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
+            fileListId += 1
+
             if file_type != 'nm-res-mr':
-                fileListId += 1
                 continue
 
             original_file_name = None
@@ -10043,7 +10082,6 @@ class NmrDpUtility:
             ign_dst_file = src_basename + '-ignored.mr'
 
             if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
-                fileListId += 1
                 continue
 
             has_mr_header = False
@@ -20560,6 +20598,9 @@ class NmrDpUtility:
 
         amberAtomNumberDict = None
         gromacsAtomNumberDict = None
+
+        has_gromacs_topology = False
+
         cyanaUplDistRest = 0
         cyanaLolDistRest = 0
 
@@ -20574,6 +20615,11 @@ class NmrDpUtility:
 
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
+
+            fileListId += 1
+
+            if file_type == 'nm-aux-gro':
+                has_gromacs_topology = True
 
             if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
 
@@ -20723,8 +20769,6 @@ class NmrDpUtility:
                     else:
                         cyanaLolDistRest += 1
 
-            fileListId += 1
-
         fileListId = self.__file_path_list_len
 
         for ar in self.__inputParamDict[ar_file_path_list]:
@@ -20737,7 +20781,22 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
+            fileListId += 1
+
             if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr'):
+                continue
+
+            if file_type == 'nm-res-gro' and not has_gromacs_topology:
+
+                err = f"GROMACS parameter/topology file must be uploaded to validate GROMACS restraint file {file_name!r}."
+
+                self.report.error.appendDescription('missing_mandatory_content',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                 continue
 
             if content_subtype is None or len(content_subtype) == 0:
@@ -21345,8 +21404,6 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
-
-            fileListId += 1
 
         return not self.report.isError()
 

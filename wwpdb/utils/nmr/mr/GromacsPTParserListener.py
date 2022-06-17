@@ -1344,6 +1344,22 @@ class GromacsPTParserListener(ParseTreeListener):
             self.numberSelection.append(None)
         """
 
+    # Enter a parse tree produced by GromacsPTParser#position_restraints.
+    def enterPosition_restraints(self, ctx: GromacsPTParser.Position_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by GromacsPTParser#position_restraints.
+    def exitPosition_restraints(self, ctx: GromacsPTParser.Position_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by GromacsPTParser#position_restraint.
+    def enterPosition_restraint(self, ctx: GromacsPTParser.Position_restraintContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by GromacsPTParser#position_restraint.
+    def exitPosition_restraint(self, ctx: GromacsPTParser.Position_restraintContext):  # pylint: disable=unused-argument
+        pass
+
     def getContentSubtype(self):
         """ Return content subtype of GROMACS parameter/topology file.
         """

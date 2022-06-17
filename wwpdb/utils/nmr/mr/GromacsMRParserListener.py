@@ -995,7 +995,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by GromacsMRParser#position_restraint.
     def enterPosition_restraint(self, ctx: GromacsMRParser.Position_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
 

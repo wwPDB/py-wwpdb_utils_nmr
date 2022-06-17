@@ -49,6 +49,13 @@ Virtual_sitesn:		'virtual_sitesn';		// ai funct a{1:} w?
 System:			'system' -> pushMode(STR_ARRAY_MODE);	// any_string
 Molecules:		'molecules';			// name number
 
+/* GROMACS 2022.1 Referece Manual - Position restraints
+ See also https://manual.gromacs.org/documentation/current/reference-manual/functions/restraints.html#position-restraints
+          https://manual.gromacs.org/documentation/current/reference-manual/topologies/topology-file-formats.html
+*/
+Position_restraints:	'position_restraints';		// ai funct=1 kx ky kz
+							// ai funct=2 g r k
+
 Integer:		('+' | '-')? DECIMAL;
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (('E' | 'e') ('+' | '-')? DECIMAL)?;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
@@ -83,7 +90,7 @@ mode STR_ARRAY_MODE;
 R_brkt_A:		']' ' '* [\r\n]+;
 
 SECTION_COMMENT_A:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT_A:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+LINE_COMMENT_A:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ~[\r\n]* [\r\n]+ -> channel(HIDDEN);
 
 Simple_name_A:		SIMPLE_NAME;
 

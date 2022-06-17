@@ -44,7 +44,8 @@ gromacs_pt:
 	virtual_sites4_statement |
 	virtual_sitesn_statement |
 	system_statement |
-	molecules_statement
+	molecules_statement |
+	position_restraints
 	)*
 	EOF;
 
@@ -252,4 +253,17 @@ molecules:
 
 /* number expression in restrains */
 number:	Real | Integer;
+
+/* GROMACS 2022.1 Referece Manual - Position restraints
+ See also https://manual.gromacs.org/documentation/current/reference-manual/functions/restraints.html#position-restraints
+          https://manual.gromacs.org/documentation/current/reference-manual/topologies/topology-file-formats.html
+*/
+position_restraints:
+	L_brkt Position_restraints R_brkt
+	position_restraint+;
+
+position_restraint:
+	Integer Integer number number number            // ai funct=1 kx ky kz
+							// ai funct=2 g r k
+	Simple_name*;
 

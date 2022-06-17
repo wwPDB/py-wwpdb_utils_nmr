@@ -1323,7 +1323,7 @@ class GromacsPTParserListener(ParseTreeListener):
     # Exit a parse tree produced by GromacsPTParser#molecules.
     def exitMolecules(self, ctx: GromacsPTParser.MoleculesContext):
         name = str(ctx.Simple_name())
-        number = int(ctx.Integer())
+        number = int(str(ctx.Integer()))
         if number > 0:
             self.__molecules.append({'molecule_name': name, 'number_of_copies': number})
 

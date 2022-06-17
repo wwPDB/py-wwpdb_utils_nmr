@@ -6116,7 +6116,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.reasonsForReParsing = {}
                                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                             self.reasonsForReParsing['label_seq_scheme'] = True
-                                        if self.__cur_subtype != 'plane':
+                                        if cifCheck and self.__cur_subtype != 'plane':
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 
@@ -6146,8 +6146,9 @@ class XplorMRParserListener(ParseTreeListener):
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
             if self.__cur_subtype != 'plane':
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The {clauseName} has no effect for factor {__factor}.\n"
+                if cifCheck:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The {clauseName} has no effect for factor {__factor}.\n"
             else:
                 self.warningMessage += f"[Atom nomenclature mismatch] {self.__getCurrentRestraint()}"\
                     f"The {clauseName} has no effect for factor {__factor}.\n"

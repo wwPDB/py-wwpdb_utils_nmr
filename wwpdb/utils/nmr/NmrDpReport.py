@@ -64,6 +64,7 @@
 # 14 Apr-2022  M. Yokochi - add 'nm-res-mr' file type for NMR restraint remediation and V5.13
 # 17-May-2022  M. Yokochi - add 'nm-res-bio' file type for BIOSYM restraint format (DAOTHER-7825, NMR restraint remediation)
 # 01-Jun-2022  M. Yokochi - add 'nm-res-gro' and 'nm-aux-gro' file types for GROMACS restraint format (DAOTHER-7769, NMR restraint remediation)
+# 17-Jun-2022  M. Yokochi - add 'nm-res-pal' file type for PALES restraint format (DAOTHER-7872, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1656,6 +1657,7 @@ class NmrDpReportInputSource:
                            'nef', 'nmr-star',
                            'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth',
                            'nm-aux-amb', 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro',
+                           'nm-res-pal',
                            'nm-res-mr')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',

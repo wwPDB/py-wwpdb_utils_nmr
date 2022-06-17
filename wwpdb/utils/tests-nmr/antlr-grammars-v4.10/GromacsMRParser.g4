@@ -40,7 +40,7 @@ distance_restraints:
 distance_restraint:
 	Integer Integer Integer Integer Integer number number number number
 							// ai aj funct=1 index type low up1 up2 kfac
-	Simple_name*;
+	Simple_name?;
 
 /* GROMACS 2022.1 Referece Manual - Dihedral restraints
  See also https://manual.gromacs.org/documentation/current/reference-manual/functions/restraints.html#dihedral-restraints
@@ -53,7 +53,7 @@ dihedral_restraints:
 dihedral_restraint:
 	Integer Integer Integer Integer Integer number number number
 							// ai aj ak al funct=1 phi0 dphi kd
-	Simple_name*;
+	Simple_name?;
 
 /* GROMACS 2022.1 Referece Manual - Orientation restraints
  See also https://manual.gromacs.org/documentation/current/reference-manual/functions/restraints.html#orientation-restraints
@@ -66,7 +66,7 @@ orientation_restraints:
 orientation_restraint:
 	Integer Integer Integer Integer Integer number number number number
 							// ai aj funct=1 exp index alpha const obs weight
-	Simple_name*;
+	Simple_name?;
 
 /* GROMACS 2022.1 Referece Manual - Angle restraints
  See also https://manual.gromacs.org/documentation/current/reference-manual/functions/restraints.html#angle-restraints
@@ -79,7 +79,7 @@ angle_restraints:
 angle_restraint:
 	Integer Integer Integer Integer Integer number number Integer
 							// ai aj ak al funct=1 theta0 kc mult
-	Simple_name*;
+	Simple_name?;
 
 angle_restraints_z:
 	L_brkt Angle_restraints_z R_brkt
@@ -87,7 +87,7 @@ angle_restraints_z:
 
 angle_restraint_z:
 	Integer Integer Integer number number Integer	// ai aj funct=1 theta0 kc mult
-	Simple_name*;
+	Simple_name?;
 
 /* GROMACS 2022.1 Referece Manual - Position restraints
  See also https://manual.gromacs.org/documentation/current/reference-manual/functions/restraints.html#position-restraints
@@ -100,7 +100,7 @@ position_restraints:
 position_restraint:
 	Integer Integer number number number		// ai funct=1 kx ky kz
 							// ai funct=2 g r k
-	Simple_name*;
+	Simple_name?;
 
 /* number expression in restrains */
 number:	Float | Integer;

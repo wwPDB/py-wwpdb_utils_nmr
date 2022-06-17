@@ -55,7 +55,7 @@ gromacs_pt:
 default_statement:
 	L_brkt Default R_brkt
 	Integer Integer Simple_name Real Real		// nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ
-	Simple_name*;
+	Simple_name?;
 
 moleculetype_statement:
 	L_brkt Moleculetype R_brkt
@@ -127,7 +127,7 @@ atoms:
 	Integer Simple_name Integer Simple_name Simple_name
 	Integer number (number (Simple_name number number)?)?
 							// nr type resnr residu atom cgnr charge (mass) (typeB) (chargeB) (massB)
-	Simple_name*;
+	Simple_name?;
 
 bonds_statement:
 	L_brkt Bonds R_brkt
@@ -136,7 +136,7 @@ bonds_statement:
 bonds:
 	Integer Integer Integer (number number number?)?
 							// ai aj funct c{0,2,3}
-	Simple_name*;
+	Simple_name?;
 
 pairs_statement:
 	L_brkt Pairs R_brkt
@@ -145,7 +145,7 @@ pairs_statement:
 pairs:
 	Integer Integer Integer (number number (number number number)?)?
 							// ai aj funct c{2,5}
-	Simple_name*;
+	Simple_name?;
 
 pairs_nb_statement:
 	L_brkt Pairs_nb R_brkt
@@ -154,7 +154,7 @@ pairs_nb_statement:
 pairs_nb:
 	Integer Integer Integer (number number number number)?
 							// ai aj funct qi, qj, V, W
-	Simple_name*;
+	Simple_name?;
 
 angles_statement:
 	L_brkt Angles R_brkt
@@ -163,7 +163,7 @@ angles_statement:
 angles:
 	Integer Integer Integer Integer (number number
 	(number (number (number number)?)?)?)?		// ai aj ak funct c{2,3,4,6}
-	Simple_name*;
+	Simple_name?;
 
 dihedrals_statement:
 	L_brkt Dihedrals R_brkt
@@ -172,7 +172,7 @@ dihedrals_statement:
 dihedrals:
 	Integer Integer Integer Integer Integer (number number
 	(number (number number number?)?)?)?		// ai aj ak al funct c{2,3,5,6}
-	Simple_name*;
+	Simple_name?;
 
 exclusions_statement:
 	L_brkt Exclusions R_brkt
@@ -180,7 +180,7 @@ exclusions_statement:
 
 exclusions:
 	Integer Integer+				// ai a{1,}
-	Simple_name*;
+	Simple_name?;
 
 constraints_statement:
 	L_brkt Constraints R_brkt
@@ -188,7 +188,7 @@ constraints_statement:
 
 constraints:
 	Integer Integer Integer number?			// ai aj funct b0
-	Simple_name*;
+	Simple_name?;
 
 settles_statement:
 	L_brkt Settles R_brkt
@@ -196,7 +196,7 @@ settles_statement:
 
 settles:
 	Integer Integer (number number)?		// ai funct dsc_oh dsc_hh
-	Simple_name*;
+	Simple_name?;
 
 virtual_sites1_statement:
 	L_brkt Virtual_sites1 R_brkt
@@ -204,7 +204,7 @@ virtual_sites1_statement:
 
 virtual_sites1:
 	Integer Integer Integer				// ai aj funct
-	Simple_name*;
+	Simple_name?;
 
 virtual_sites2_statement:
 	L_brkt Virtual_sites2 R_brkt
@@ -212,7 +212,7 @@ virtual_sites2_statement:
 
 virtual_sites2:
 	Integer Integer Integer Integer number?		// ai aj ak funct c
-	Simple_name*;
+	Simple_name?;
 
 virtual_sites3_statement:
 	L_brkt Virtual_sites3 R_brkt
@@ -221,7 +221,7 @@ virtual_sites3_statement:
 virtual_sites3:
 	Integer Integer Integer Integer Integer
 	(number number number?)?			// ai aj ak aj funct c{2,3}
-	Simple_name*;
+	Simple_name?;
 
 virtual_sites4_statement:
 	L_brkt Virtual_sites4 R_brkt
@@ -230,7 +230,7 @@ virtual_sites4_statement:
 virtual_sites4:
 	Integer Integer Integer Integer Integer Integer
 	(number number number)?				// ai aj ak aj al funct a b c
-	Simple_name*;
+	Simple_name?;
 
 virtual_sitesn_statement:
 	L_brkt Virtual_sitesn R_brkt
@@ -238,7 +238,7 @@ virtual_sitesn_statement:
 
 virtual_sitesn:
 	Integer Integer Integer+ number?		// ai funct a{1:} w?
-	Simple_name*;
+	Simple_name?;
 
 system_statement:
 	L_brkt System R_brkt_A
@@ -265,5 +265,5 @@ position_restraints:
 position_restraint:
 	Integer Integer number number number            // ai funct=1 kx ky kz
 							// ai funct=2 g r k
-	Simple_name*;
+	Simple_name?;
 

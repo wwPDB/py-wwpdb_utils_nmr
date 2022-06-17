@@ -8,7 +8,7 @@
 import sys
 import os
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
 
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
@@ -132,6 +132,8 @@ class GromacsPTReader:
 
             stream = CommonTokenStream(lexer)
             parser = GromacsPTParser(stream)
+            # try with simpler/faster SLL prediction mode
+            parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(ptFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
@@ -173,11 +175,5 @@ class GromacsPTReader:
 
 if __name__ == "__main__":
     reader = GromacsPTReader(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2mzh/test.mr',
-                 None)
-    """
-    reader = GromacsPTReader(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mzh/2mzh.top',
                  '../../tests-nmr/mock-data-remediation/2mzh/2mzh.cif')
-    """
-

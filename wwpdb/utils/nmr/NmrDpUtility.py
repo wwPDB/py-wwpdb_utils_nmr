@@ -20599,7 +20599,7 @@ class NmrDpUtility:
         amberAtomNumberDict = None
         gromacsAtomNumberDict = None
 
-        has_gromacs_topology = False
+        has_nm_aux_gro_file = False
 
         cyanaUplDistRest = 0
         cyanaLolDistRest = 0
@@ -20619,7 +20619,7 @@ class NmrDpUtility:
             fileListId += 1
 
             if file_type == 'nm-aux-gro':
-                has_gromacs_topology = True
+                has_nm_aux_gro_file = True
 
             if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
 
@@ -20692,7 +20692,7 @@ class NmrDpUtility:
 
                         amberAtomNumberDict = listener.getAtomNumberDict()
 
-            if file_type == 'nm-aux-gro' and content_subtype is not None and 'topology' in content_subtype:
+            elif file_type == 'nm-aux-gro' and content_subtype is not None and 'topology' in content_subtype:
 
                 if 'is_valid' in ar and ar['is_valid']:
 
@@ -20786,7 +20786,7 @@ class NmrDpUtility:
             if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr'):
                 continue
 
-            if file_type == 'nm-res-gro' and not has_gromacs_topology:
+            if file_type == 'nm-res-gro' and not has_nm_aux_gro_file:
 
                 err = f"GROMACS parameter/topology file must be uploaded to validate GROMACS restraint file {file_name!r}."
 

@@ -836,14 +836,14 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"The relative weight value of '{weight}' must be a positive value.\n"
                 return
-
+            """
             if lower_limit > upper_limit:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.\n"
                 if self.__remediate:
                     self.__dihed_lb_grater_than_ub = True
                 return
-
+            """
             if self.__remediate and upper_limit < 0.0:
                 self.__dihed_ub_always_positive = False
 

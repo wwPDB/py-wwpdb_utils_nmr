@@ -130,6 +130,12 @@ class NmrDpReport:
 
         self.input_sources.append(NmrDpReportInputSource())
 
+    def insertInputSource(self, index):
+        """ Insert empty input source.
+        """
+
+        self.input_sources.insert(index, NmrDpReportInputSource())
+
     def isOk(self):
         """ Return whether processing status is OK.
         """

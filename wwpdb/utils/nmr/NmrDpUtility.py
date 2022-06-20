@@ -6318,6 +6318,9 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_type = input_source_dic['content_type']
 
+            if input_source_dic['content_subtype'] is not None:
+                continue
+
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[fileListId], self.__star_data_type[fileListId])
 
             is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[fileListId], self.__star_data_type[fileListId])  # DAOTHER-7389, issue #4
@@ -7815,7 +7818,7 @@ class NmrDpUtility:
 
                 fileListId += 1
 
-                if file_type == 'nm-res-mr':
+                if file_type in ('nm-res-mr', 'nmr-star'):
                     continue
 
                 if (content_subtype is not None and 'dist_restraint' in content_subtype) or file_type in ('nm-aux-amb', 'nm-aux-gro'):
@@ -10240,8 +10243,6 @@ class NmrDpUtility:
 
                             ofp.write(line)
 
-                    self.__file_path_list_len += 1
-
                     mr_file_path_list = 'restraint_file_path_list'
 
                     if mr_file_path_list not in self.__inputParamDict:
@@ -10249,9 +10250,13 @@ class NmrDpUtility:
                     else:
                         self.__inputParamDict[mr_file_path_list].append(mrPath)
 
-                    self.report.appendInputSource()
+                    insert_index = self.__file_path_list_len
 
-                    input_source = self.report.input_sources[-1]
+                    self.report.insertInputSource(insert_index)
+
+                    self.__file_path_list_len += 1
+
+                    input_source = self.report.input_sources[insert_index]
 
                     file_type = 'nmr-star'
                     file_name = os.path.basename(mrPath)
@@ -10259,8 +10264,6 @@ class NmrDpUtility:
                     input_source.setItemValue('file_name', file_name)
                     input_source.setItemValue('file_type', file_type)
                     input_source.setItemValue('content_type', 'nmr-restraints')
-
-                    file_path_list_len = self.__file_path_list_len - 1
 
                     codec = detect_bom(mrPath, 'utf-8')
 
@@ -10317,7 +10320,7 @@ class NmrDpUtility:
 
                             if star_data_type == 'Saveframe':
                                 self.__has_legacy_sf_issue = True
-                                self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message)
+                                self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message)
                                 _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
 
                             if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
@@ -10329,10 +10332,13 @@ class NmrDpUtility:
                                 self.__star_data_type.append(star_data_type)
                                 self.__star_data.append(star_data)
 
-                                self.__rescueFormerNef(file_path_list_len)
-                                self.__rescueImmatureStr(file_path_list_len)
+                                self.__rescueFormerNef(insert_index)
+                                self.__rescueImmatureStr(insert_index)
 
-                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message):
+                            if _is_done:
+                                self.__detectContentSubType()
+
+                    elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                         pass
 
                     if mrPath_ is not None:
@@ -10396,8 +10402,6 @@ class NmrDpUtility:
 
                     mrPath = _mrPath
 
-                    self.__file_path_list_len += 1
-
                     mr_file_path_list = 'restraint_file_path_list'
 
                     if mr_file_path_list not in self.__inputParamDict:
@@ -10405,9 +10409,13 @@ class NmrDpUtility:
                     else:
                         self.__inputParamDict[mr_file_path_list].append(mrPath)
 
-                    self.report.appendInputSource()
+                    insert_index = self.__file_path_list_len
 
-                    input_source = self.report.input_sources[-1]
+                    self.report.insertInputSource(insert_index)
+
+                    self.__file_path_list_len += 1
+
+                    input_source = self.report.input_sources[insert_index]
 
                     file_type = 'nmr-star'
                     file_name = os.path.basename(mrPath)
@@ -10415,8 +10423,6 @@ class NmrDpUtility:
                     input_source.setItemValue('file_name', file_name)
                     input_source.setItemValue('file_type', file_type)
                     input_source.setItemValue('content_type', 'nmr-restraints')
-
-                    file_path_list_len = self.__file_path_list_len - 1
 
                     codec = detect_bom(mrPath, 'utf-8')
 
@@ -10473,7 +10479,7 @@ class NmrDpUtility:
 
                             if star_data_type == 'Saveframe':
                                 self.__has_legacy_sf_issue = True
-                                self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message)
+                                self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message)
                                 _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
 
                             if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
@@ -10485,10 +10491,13 @@ class NmrDpUtility:
                                 self.__star_data_type.append(star_data_type)
                                 self.__star_data.append(star_data)
 
-                                self.__rescueFormerNef(file_path_list_len)
-                                self.__rescueImmatureStr(file_path_list_len)
+                                self.__rescueFormerNef(insert_index)
+                                self.__rescueImmatureStr(insert_index)
 
-                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message):
+                            if _is_done:
+                                self.__detectContentSubType()
+
+                    elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                         pass
 
                     if mrPath_ is not None:
@@ -10517,7 +10526,7 @@ class NmrDpUtility:
 
                 dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names if div_name.startswith(dst_name_prefix)]
 
-                if len(dst_file_list) == 0:
+                if not file_name.endswith('str') and len(dst_file_list) == 0:
                     dst_file_list.append(dst_file)
 
                 for dst_file in dst_file_list:

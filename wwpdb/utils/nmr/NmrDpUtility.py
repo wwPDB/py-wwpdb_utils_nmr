@@ -29724,7 +29724,7 @@ class NmrDpUtility:
                             or 'auth_atom_id' not in coord_atom_site_)):
 
                     idx_msg = ''
-                    if index_tag is not None:
+                    if index_tag is not None and index_tag in i:
                         idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
                     err = idx_msg + "Atom ("\

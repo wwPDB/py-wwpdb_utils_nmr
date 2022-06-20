@@ -874,7 +874,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-            if carbohydrate:
+            if carbohydrate and angleName in KNOWN_ANGLE_CARBO_ATOM_NAMES:
                 atomNames = KNOWN_ANGLE_CARBO_ATOM_NAMES[angleName]
                 seqOffset = KNOWN_ANGLE_CARBO_SEQ_OFFSET[angleName]
             else:

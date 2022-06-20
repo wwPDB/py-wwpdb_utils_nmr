@@ -145,6 +145,7 @@ noe_annotation:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 dihedral_statement:
+	vector_statement |
 	dihedral_assign |
 	dihedral_assign_loop |
 	Cv Equ_op? Integer |
@@ -161,6 +162,7 @@ dihedral_assign:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 plane_statement:
+	vector_statement |
 	Group group_statement* End |
 	Initialize |
 	Print_any;
@@ -173,6 +175,7 @@ group_statement:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 harmonic_statement:
+	vector_statement |
 	Exponent Equ_op? Integer |
 	Normal Equ_op? L_paren (number_s Comma? number_s Comma? number_s | Tail Equ_op? selection Comma? (Head Equ_op? selection)?) R_paren;
 

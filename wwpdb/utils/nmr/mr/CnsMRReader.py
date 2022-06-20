@@ -8,7 +8,7 @@
 import sys
 import os
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
 
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
@@ -140,6 +140,8 @@ class CnsMRReader:
 
             stream = CommonTokenStream(lexer)
             parser = CnsMRParser(stream)
+            # try with simpler/faster SLL prediction mode
+            parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
@@ -174,6 +176,11 @@ class CnsMRReader:
         except IOError as e:
             if self.__verbose:
                 self.__lfh.write(f"+CnsMRReader.parse() ++ Error - {str(e)}\n")
+            return None, None, None
+
+        except Exception as e:
+            if self.__verbose and isFilePath:
+                self.__lfh.write(f"+CnsMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
 
         finally:

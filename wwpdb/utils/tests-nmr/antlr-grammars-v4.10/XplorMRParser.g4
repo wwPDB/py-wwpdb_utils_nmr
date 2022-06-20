@@ -200,6 +200,7 @@ noe_annotation:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html
 */
 dihedral_statement:
+	vector_statement |
 	dihedral_assign |
 	dihedral_assign_loop |
 	Nassign Equ_op? Integer |
@@ -298,6 +299,7 @@ anis_assign:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
 */
 planar_statement:
+	vector_statement |
 	Group group_statement* End |
 	Initialize;
 
@@ -309,6 +311,7 @@ group_statement:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node176.html
 */
 harmonic_statement:
+	vector_statement |
 	Exponent Equ_op? Integer |
 	Normal Equ_op? L_paren (number_s Comma? number_s Comma? number_s | Tail Equ_op? selection Comma? (Head Equ_op? selection)?) R_paren;
 

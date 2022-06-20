@@ -149,10 +149,10 @@ class PalesMRReader:
 
             walker = ParseTreeWalker()
             listener = PalesMRParserListener(self.__verbose, self.__lfh,
-                                              self.__representativeModelId,
-                                              self.__cR, self.__cC,
-                                              self.__ccU, self.__csStat, self.__nefT,
-                                              self.__reasons)
+                                             self.__representativeModelId,
+                                             self.__cR, self.__cC,
+                                             self.__ccU, self.__csStat, self.__nefT,
+                                             self.__reasons)
             listener.setDebugMode(self.__debug)
             walker.walk(listener, tree)
 
@@ -176,6 +176,11 @@ class PalesMRReader:
         except IOError as e:
             if self.__verbose:
                 self.__lfh.write(f"+PalesMRReader.parse() ++ Error - {str(e)}\n")
+            return None, None, None
+
+        except Exception as e:
+            if self.__verbose and isFilePath:
+                self.__lfh.write(f"+PalesMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
 
         finally:

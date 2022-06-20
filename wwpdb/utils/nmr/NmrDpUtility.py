@@ -15642,6 +15642,9 @@ class NmrDpUtility:
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
+            if file_type not in self.item_names_in_cs_loop:
+                continue
+
             item_names = self.item_names_in_cs_loop[file_type]
             chain_id_name = item_names['chain_id']
             seq_id_name = item_names['seq_id']

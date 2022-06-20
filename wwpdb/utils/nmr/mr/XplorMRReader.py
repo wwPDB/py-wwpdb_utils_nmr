@@ -8,7 +8,7 @@
 import sys
 import os
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
@@ -140,8 +140,6 @@ class XplorMRReader:
 
             stream = CommonTokenStream(lexer)
             parser = XplorMRParser(stream)
-            # try with simpler/faster SLL prediction mode
-            parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, inputString=mrString, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)

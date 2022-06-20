@@ -1143,6 +1143,8 @@ class NmrDpUtility:
 
         self.__cur_original_ar_file_name = None
 
+        self.__remediation_loop_count = 0
+
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
                                      'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt')
@@ -7911,6 +7913,11 @@ class NmrDpUtility:
             self.__detectContentSubType()
             self.__extractPublicMRFileIntoLegacyMR()
             self.__detectContentSubTypeOfLegacyMR()
+
+            self.__remediation_loop_count += 1
+
+            if self.__remediation_loop_count > 5:
+                print(self.__inputParamDictCopy)
 
         return not self.report.isError()
 

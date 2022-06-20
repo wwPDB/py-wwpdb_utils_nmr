@@ -720,7 +720,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         f"Surprisingly '{varName}={valArray}' consists of a single integer.\n"
                             else:
                                 mask = [str(val) + '@' + grnam
-                                        for col_, val, grnam in enumerate(zip(self.igr[varNum], self.grnam[varNum]))
+                                        for col_, (val, grnam) in enumerate(zip(self.igr[varNum], self.grnam[varNum]))
                                         if val > 0 and col_ < maxCol]
                                 varName2 = 'grnam' + str(varNum)
                                 valArray2 = ','.join([val for col_, val in enumerate(self.grnam[varNum]) if len(val) > 0 and col_ < maxCol])

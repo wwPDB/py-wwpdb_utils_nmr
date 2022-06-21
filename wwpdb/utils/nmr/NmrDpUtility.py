@@ -16533,7 +16533,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Warning - {err}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Warning  - {err}\n")
 
                             if min_limits[j] is None or max_limits[j] is None:
                                 continue
@@ -18218,7 +18218,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError - {err}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError  - {err}\n")
 
                         try:
 
@@ -18339,7 +18339,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError - {err}\n")
+                                                self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError  - {err}\n")
 
                                 # Inter-residue ambiguities
                                 elif ambig_code == 5:
@@ -18368,7 +18368,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError - {err}\n")
+                                                self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError  - {err}\n")
 
                                 # Inter-molecular ambiguities
                                 elif ambig_code == 6:
@@ -18398,7 +18398,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError - {err}\n")
+                                                self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError  - {err}\n")
 
                                 for j in ambig_set:
                                     chain_id2 = j[chain_id_name]
@@ -18425,7 +18425,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError - {err}\n")
+                                            self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError  - {err}\n")
 
                                     elif abs(value2 - value) > CS_UNCERT_MAX and value < value2:
 
@@ -18441,7 +18441,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError - {err}\n")
+                                            self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError  - {err}\n")
 
                     else:
 
@@ -18454,7 +18454,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError - {err}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError  - {err}\n")
 
         except StopIteration:
 
@@ -20901,7 +20901,23 @@ class NmrDpUtility:
                         messages = listener.warningMessage.split('\n')
 
                         for warn in messages:
-                            if warn.startswith('[Atom not found]'):
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
                                 self.report.error.appendDescription('atom_not_found',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -20923,7 +20939,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Range value error]'):
                                 self.report.error.appendDescription('anomalous_data',
@@ -20931,7 +20947,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
                                 self.report.warning.appendDescription('unusual_data',
@@ -20939,7 +20955,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Atom nomenclature mismatch]'):
                                 self.report.warning.appendDescription('atom_nomenclature_mismatch',
@@ -20947,7 +20963,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Unsupported data]'):
                                 self.report.warning.appendDescription('unsupported_mr_data',
@@ -20955,7 +20971,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
@@ -20988,7 +21004,23 @@ class NmrDpUtility:
                         messages = listener.warningMessage.split('\n')
 
                         for warn in messages:
-                            if warn.startswith('[Atom not found]'):
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
                                 self.report.error.appendDescription('atom_not_found',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -21010,7 +21042,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Range value error]'):
                                 self.report.error.appendDescription('anomalous_data',
@@ -21018,7 +21050,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
                                 self.report.warning.appendDescription('unusual_data',
@@ -21026,7 +21058,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Atom nomenclature mismatch]'):
                                 self.report.warning.appendDescription('atom_nomenclature_mismatch',
@@ -21034,7 +21066,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Unsupported data]'):
                                 self.report.warning.appendDescription('unsupported_mr_data',
@@ -21042,7 +21074,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
@@ -21096,7 +21128,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
                                 self.report.warning.appendDescription('unusual_data',
@@ -21104,7 +21136,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Redundant data]'):
                                 self.report.warning.appendDescription('redundant_mr_data',
@@ -21112,7 +21144,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
@@ -21166,7 +21198,23 @@ class NmrDpUtility:
                         messages = listener.warningMessage.split('\n')
 
                         for warn in messages:
-                            if warn.startswith('[Atom not found]'):
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
                                 self.report.error.appendDescription('atom_not_found',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -21196,7 +21244,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Range value error]'):
                                 self.report.error.appendDescription('anomalous_data',
@@ -21204,7 +21252,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
                                 self.report.warning.appendDescription('unusual_data',
@@ -21212,16 +21260,16 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
-
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                """ defer to sequence alignment error
                             elif warn.startswith('[Unmatched residue name]'):
                                 self.report.warning.appendDescription('conflicted_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
-
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                """
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
                                 self.report.setError()
@@ -21255,7 +21303,23 @@ class NmrDpUtility:
                         messages = listener.warningMessage.split('\n')
 
                         for warn in messages:
-                            if warn.startswith('[Atom not found]'):
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
                                 self.report.error.appendDescription('atom_not_found',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -21285,7 +21349,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Range value error]'):
                                 self.report.error.appendDescription('anomalous_data',
@@ -21293,7 +21357,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
                                 self.report.warning.appendDescription('unusual_data',
@@ -21301,7 +21365,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Unsupported data]'):
                                 self.report.warning.appendDescription('unsupported_mr_data',
@@ -21309,7 +21373,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
@@ -21342,7 +21406,23 @@ class NmrDpUtility:
                         messages = listener.warningMessage.split('\n')
 
                         for warn in messages:
-                            if warn.startswith('[Atom not found]'):
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
                                 self.report.error.appendDescription('atom_not_found',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -21372,7 +21452,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Range value error]'):
                                 self.report.error.appendDescription('anomalous_data',
@@ -21380,7 +21460,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
                                 self.report.warning.appendDescription('unusual_data',
@@ -21388,16 +21468,16 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
-
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                """ defer to sequence alignment error
                             elif warn.startswith('[Unmatched residue name]'):
                                 self.report.warning.appendDescription('conflicted_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
-
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                """
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
                                 self.report.setError()
@@ -21450,7 +21530,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
                                 self.report.warning.appendDescription('unusual_data',
@@ -21458,7 +21538,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
@@ -21491,7 +21571,23 @@ class NmrDpUtility:
                         messages = listener.warningMessage.split('\n')
 
                         for warn in messages:
-                            if warn.startswith('[Atom not found]'):
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
                                 self.report.error.appendDescription('atom_not_found',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -21521,7 +21617,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Range value error]'):
                                 self.report.error.appendDescription('anomalous_data',
@@ -21529,7 +21625,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError - {warn}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
                                 self.report.warning.appendDescription('unusual_data',
@@ -21537,16 +21633,16 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
-
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                """ defer to sequence alignment error
                             elif warn.startswith('[Unmatched residue name]'):
                                 self.report.warning.appendDescription('conflicted_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning - {warn}\n")
-
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                """
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
                                 self.report.setError()

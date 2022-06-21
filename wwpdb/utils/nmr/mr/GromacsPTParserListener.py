@@ -146,8 +146,9 @@ class GromacsPTParserListener(ParseTreeListener):
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
         # Pairwise align
-        self.__pA = PairwiseAlign()
-        self.__pA.setVerbose(verbose)
+        if self.__hasPolySeqModel:
+            self.__pA = PairwiseAlign()
+            self.__pA.setVerbose(verbose)
 
     # Enter a parse tree produced by GromacsPTParser#gromacs_pt.
     def enterGromacs_pt(self, ctx: GromacsPTParser.Gromacs_ptContext):  # pylint: disable=unused-argument
@@ -1403,15 +1404,15 @@ class GromacsPTParserListener(ParseTreeListener):
         """
         return self.__molecules
 
-    def getPolymerSequence(self):
-        """ Return polymer sequence of GROMACS parameter/topology file.
-        """
-        return self.__polySeqPrmTop
-
     def getAtomNumberDict(self):
         """ Return GROMACS atomic number dictionary.
         """
         return self.__atomNumberDict
+
+    def getPolymerSequence(self):
+        """ Return polymer sequence of GROMACS parameter/topology file.
+        """
+        return self.__polySeqPrmTop
 
     def getSequenceAlignment(self):
         """ Return sequence alignment between coordinates and GROMACS parameter/topology.

@@ -3,7 +3,7 @@
 #
 # Update:
 ##
-""" A collection of classes for parsing PALSE MR files.
+""" A collection of classes for parsing PALES MR files.
 """
 import sys
 import os
@@ -39,7 +39,7 @@ except ImportError:
 
 
 class PalesMRReader:
-    """ Accessor methods for parsing PALSE MR files.
+    """ Accessor methods for parsing PALES MR files.
     """
 
     def __init__(self, verbose=True, log=sys.stdout,
@@ -83,7 +83,7 @@ class PalesMRReader:
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, mrFilePath, cifFilePath=None, isFilePath=True):
-        """ Parse PALSE MR file.
+        """ Parse PALES MR file.
             @return: PalesMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 

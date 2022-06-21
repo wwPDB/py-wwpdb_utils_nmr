@@ -192,8 +192,9 @@ class AmberPTParserListener(ParseTreeListener):
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
         # Pairwise align
-        self.__pA = PairwiseAlign()
-        self.__pA.setVerbose(verbose)
+        if self.__hasPolySeqModel:
+            self.__pA = PairwiseAlign()
+            self.__pA.setVerbose(verbose)
 
     # Enter a parse tree produced by AmberPTParser#amber_pt.
     def enterAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
@@ -1531,15 +1532,15 @@ class AmberPTParserListener(ParseTreeListener):
         """
         return self.__radiusSet
 
-    def getPolymerSequence(self):
-        """ Return polymer sequence of AMBER parameter/topology file.
-        """
-        return self.__polySeqPrmTop
-
     def getAtomNumberDict(self):
         """ Return AMBER atomic number dictionary.
         """
         return self.__atomNumberDict
+
+    def getPolymerSequence(self):
+        """ Return polymer sequence of AMBER parameter/topology file.
+        """
+        return self.__polySeqPrmTop
 
     def getSequenceAlignment(self):
         """ Return sequence alignment between coordinates and AMBER parameter/topology.

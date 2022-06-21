@@ -740,7 +740,7 @@ class AmberPTParserListener(ParseTreeListener):
                     if top_comp_id == '.' and cif_comp_id != '.':
 
                         unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
-
+                        """ unmapped residue is not error
                         if not aligned[i]:
 
                             if not self.__ccU.updateChemCompDict(cif_comp_id):
@@ -753,7 +753,7 @@ class AmberPTParserListener(ParseTreeListener):
 
                             self.warningMessage += f"[Sequence mismatch] {cif_seq_code} is not present "\
                                 f"in the AMBER parameter/topology data (chain_id {chain_id2}).\n"
-
+                        """
                     elif top_comp_id != cif_comp_id and aligned[i]:
 
                         conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,

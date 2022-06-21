@@ -287,22 +287,22 @@ class PalesMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by PalesMRParser#distance_restraints_w_segid.
-    def enterDistance_restraints_w_segid(self, ctx: PalesMRParser.Distance_restraints_w_segidContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by PalesMRParser#distance_restraints_sw_segid.
+    def enterDistance_restraints_sw_segid(self, ctx: PalesMRParser.Distance_restraints_sw_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
 
-    # Exit a parse tree produced by PalesMRParser#distance_restraints_w_segid.
-    def exitDistance_restraints_w_segid(self, ctx: PalesMRParser.Distance_restraints_w_segidContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by PalesMRParser#distance_restraints_sw_segid.
+    def exitDistance_restraints_sw_segid(self, ctx: PalesMRParser.Distance_restraints_sw_segidContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by PalesMRParser#distance_restraint_w_segid.
-    def enterDistance_restraint_w_segid(self, ctx: PalesMRParser.Distance_restraint_w_segidContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by PalesMRParser#distance_restraint_sw_segid.
+    def enterDistance_restraint_sw_segid(self, ctx: PalesMRParser.Distance_restraint_sw_segidContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by PalesMRParser#distance_restraint_w_segid.
-    def exitDistance_restraint_w_segid(self, ctx: PalesMRParser.Distance_restraint_w_segidContext):
+    # Exit a parse tree produced by PalesMRParser#distance_restraint_sw_segid.
+    def exitDistance_restraint_sw_segid(self, ctx: PalesMRParser.Distance_restraint_sw_segidContext):
 
         try:
 
@@ -317,6 +317,90 @@ class PalesMRParserListener(ParseTreeListener):
             seqId2 = int(str(ctx.Integer(3)))
             compId2 = str(ctx.Simple_name(4)).upper()
             atomId2 = str(ctx.Simple_name(5)).upper()
+
+            target_value = None
+            lower_limit = None
+            upper_limit = None
+
+            if None in self.numberSelection:
+                return
+
+            lower_limit = self.numberSelection[0]
+            upper_limit = self.numberSelection[1]
+            # fource_const = self.numberSelection[2]
+            weight = self.numberSelection[3]
+            scale = self.numberSelection[4]
+
+            if weight <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
+                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                return
+
+            if scale <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
+                    f"The relative scale value of '{scale}' must be a positive value.\n"
+                return
+
+            dstFunc = self.validateDistanceRange(index, group, weight, scale, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1, index, group)
+            chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2, index, group)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1, True, index, group)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2, True, index, group)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}, group={group}) "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by PalesMRParser#distance_restraints_ew_segid.
+    def enterDistance_restraints_ew_segid(self, ctx: PalesMRParser.Distance_restraints_ew_segidContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dist'
+
+    # Exit a parse tree produced by PalesMRParser#distance_restraints_ew_segid.
+    def exitDistance_restraints_ew_segid(self, ctx: PalesMRParser.Distance_restraints_ew_segidContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by PalesMRParser#distance_restraint_ew_segid.
+    def enterDistance_restraint_ew_segid(self, ctx: PalesMRParser.Distance_restraint_ew_segidContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by PalesMRParser#distance_restraint_ew_segid.
+    def exitDistance_restraint_ew_segid(self, ctx: PalesMRParser.Distance_restraint_ew_segidContext):
+
+        try:
+
+            index = int(str(ctx.Integer(0)))
+            group = int(str(ctx.Integer(1)))
+
+            seqId1 = int(str(ctx.Integer(2)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+            chainId1 = str(ctx.Simple_name(2))
+            chainId2 = str(ctx.Simple_name(5))
+            seqId2 = int(str(ctx.Integer(3)))
+            compId2 = str(ctx.Simple_name(3)).upper()
+            atomId2 = str(ctx.Simple_name(4)).upper()
+            chainId2 = str(ctx.Simple_name(5))
 
             target_value = None
             lower_limit = None
@@ -776,22 +860,22 @@ class PalesMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by PalesMRParser#torsion_angle_restraints_w_segid.
-    def enterTorsion_angle_restraints_w_segid(self, ctx: PalesMRParser.Torsion_angle_restraints_w_segidContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by PalesMRParser#torsion_angle_restraints_sw_segid.
+    def enterTorsion_angle_restraints_sw_segid(self, ctx: PalesMRParser.Torsion_angle_restraints_sw_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dihed'
 
-    # Exit a parse tree produced by PalesMRParser#torsion_angle_restraints_w_segid.
-    def exitTorsion_angle_restraints_w_segid(self, ctx: PalesMRParser.Torsion_angle_restraints_w_segidContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by PalesMRParser#torsion_angle_restraints_sw_segid.
+    def exitTorsion_angle_restraints_sw_segid(self, ctx: PalesMRParser.Torsion_angle_restraints_sw_segidContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by PalesMRParser#torsion_angle_restraint_w_segid.
-    def enterTorsion_angle_restraint_w_segid(self, ctx: PalesMRParser.Torsion_angle_restraint_w_segidContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by PalesMRParser#torsion_angle_restraint_sw_segid.
+    def enterTorsion_angle_restraint_sw_segid(self, ctx: PalesMRParser.Torsion_angle_restraint_sw_segidContext):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by PalesMRParser#torsion_angle_restraint_w_segid.
-    def exitTorsion_angle_restraint_w_segid(self, ctx: PalesMRParser.Torsion_angle_restraint_w_segidContext):
+    # Exit a parse tree produced by PalesMRParser#torsion_angle_restraint_sw_segid.
+    def exitTorsion_angle_restraint_sw_segid(self, ctx: PalesMRParser.Torsion_angle_restraint_sw_segidContext):
 
         try:
 
@@ -813,6 +897,93 @@ class PalesMRParserListener(ParseTreeListener):
             seqId4 = int(str(ctx.Integer(4)))
             compId4 = str(ctx.Simple_name(10)).upper()
             atomId4 = str(ctx.Simple_name(11)).upper()
+
+            if None in self.numberSelection:
+                return
+
+            target_value = None
+            lower_limit = self.numberSelection[0]
+            upper_limit = self.numberSelection[1]
+            # fource_const = self.numberSelection[2]
+
+            dstFunc = self.validateAngleRange(None, 1.0, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1, index)
+            chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2, index)
+            chainAssign3 = self.assignCoordPolymerSequence(chainId3, seqId3, compId3, atomId3, index)
+            chainAssign4 = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4, index)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0\
+               or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1, False)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2, False)
+            self.selectCoordAtoms(chainAssign3, seqId3, compId3, atomId3, False)
+            self.selectCoordAtoms(chainAssign4, seqId4, compId4, atomId4, False)
+
+            if len(self.atomSelectionSet) < 4:
+                return
+
+            compId = self.atomSelectionSet[0][0]['comp_id']
+            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                if self.__debug:
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           [atom1, atom2, atom3, atom4])
+                    print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by PalesMRParser#torsion_angle_restraints_ew_segid.
+    def enterTorsion_angle_restraints_ew_segid(self, ctx: PalesMRParser.Torsion_angle_restraints_ew_segidContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dihed'
+
+    # Exit a parse tree produced by PalesMRParser#torsion_angle_restraints_ew_segid.
+    def exitTorsion_angle_restraints_ew_segid(self, ctx: PalesMRParser.Torsion_angle_restraints_ew_segidContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by PalesMRParser#torsion_angle_restraint_ew_segid.
+    def enterTorsion_angle_restraint_ew_segid(self, ctx: PalesMRParser.Torsion_angle_restraint_ew_segidContext):  # pylint: disable=unused-argument
+        self.dihedRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by PalesMRParser#torsion_angle_restraint_ew_segid.
+    def exitTorsion_angle_restraint_ew_segid(self, ctx: PalesMRParser.Torsion_angle_restraint_ew_segidContext):
+
+        try:
+
+            index = int(str(ctx.Integer(0)))
+
+            seqId1 = int(str(ctx.Integer(1)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+            chainId1 = str(ctx.Simple_name(2))
+            seqId2 = int(str(ctx.Integer(2)))
+            compId2 = str(ctx.Simple_name(3)).upper()
+            atomId2 = str(ctx.Simple_name(4)).upper()
+            chainId2 = str(ctx.Simple_name(5))
+            seqId3 = int(str(ctx.Integer(3)))
+            compId3 = str(ctx.Simple_name(6)).upper()
+            atomId3 = str(ctx.Simple_name(7)).upper()
+            chainId3 = str(ctx.Simple_name(8))
+            seqId4 = int(str(ctx.Integer(4)))
+            compId4 = str(ctx.Simple_name(9)).upper()
+            atomId4 = str(ctx.Simple_name(10)).upper()
+            chainId4 = str(ctx.Simple_name(11))
 
             if None in self.numberSelection:
                 return
@@ -1069,22 +1240,22 @@ class PalesMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by PalesMRParser#rdc_restraints_w_segid.
-    def enterRdc_restraints_w_segid(self, ctx: PalesMRParser.Rdc_restraints_w_segidContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by PalesMRParser#rdc_restraints_sw_segid.
+    def enterRdc_restraints_sw_segid(self, ctx: PalesMRParser.Rdc_restraints_sw_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'rdc'
 
-    # Exit a parse tree produced by PalesMRParser#rdc_restraints_w_segid.
-    def exitRdc_restraints_w_segid(self, ctx: PalesMRParser.Rdc_restraints_w_segidContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by PalesMRParser#rdc_restraints_sw_segid.
+    def exitRdc_restraints_sw_segid(self, ctx: PalesMRParser.Rdc_restraints_sw_segidContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by PalesMRParser#rdc_restraint_w_segid.
-    def enterRdc_restraint_w_segid(self, ctx: PalesMRParser.Rdc_restraint_w_segidContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by PalesMRParser#rdc_restraint_sw_segid.
+    def enterRdc_restraint_sw_segid(self, ctx: PalesMRParser.Rdc_restraint_sw_segidContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by PalesMRParser#rdc_restraint_w_segid.
-    def exitRdc_restraint_w_segid(self, ctx: PalesMRParser.Rdc_restraint_w_segidContext):
+    # Exit a parse tree produced by PalesMRParser#rdc_restraint_sw_segid.
+    def exitRdc_restraint_sw_segid(self, ctx: PalesMRParser.Rdc_restraint_sw_segidContext):
 
         try:
 
@@ -1096,6 +1267,143 @@ class PalesMRParserListener(ParseTreeListener):
             seqId2 = int(str(ctx.Integer(1)))
             compId2 = str(ctx.Simple_name(4)).upper()
             atomId2 = str(ctx.Simple_name(5)).upper()
+
+            if None in self.numberSelection:
+                return
+
+            target = self.numberSelection[0]
+            error = abs(self.numberSelection[1])
+            weight = self.numberSelection[2]
+
+            if weight <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                return
+
+            target_value = target
+            lower_limit = target - error
+            upper_limit = target + error
+
+            dstFunc = self.validateRdcRange(weight, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            if not self.areUniqueCoordAtoms('an RDC'):
+                return
+
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Non-magnetic susceptible spin appears in RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if abs(seq_id_1 - seq_id_2) == 1:
+
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H') and atom_id_2 == 'C')):
+                    pass
+
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            else:
+
+                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an RDC vector over multiple covalent bonds; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by PalesMRParser#rdc_restraints_ew_segid.
+    def enterRdc_restraints_ew_segid(self, ctx: PalesMRParser.Rdc_restraints_ew_segidContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'rdc'
+
+    # Exit a parse tree produced by PalesMRParser#rdc_restraints_ew_segid.
+    def exitRdc_restraints_ew_segid(self, ctx: PalesMRParser.Rdc_restraints_ew_segidContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by PalesMRParser#rdc_restraint_ew_segid.
+    def enterRdc_restraint_ew_segid(self, ctx: PalesMRParser.Rdc_restraint_ew_segidContext):  # pylint: disable=unused-argument
+        self.rdcRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by PalesMRParser#rdc_restraint_ew_segid.
+    def exitRdc_restraint_ew_segid(self, ctx: PalesMRParser.Rdc_restraint_ew_segidContext):
+
+        try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+            chainId1 = str(ctx.Simple_name(2))
+            seqId2 = int(str(ctx.Integer(1)))
+            compId2 = str(ctx.Simple_name(3)).upper()
+            atomId2 = str(ctx.Simple_name(4)).upper()
+            chainId2 = str(ctx.Simple_name(5))
 
             if None in self.numberSelection:
                 return
@@ -1395,22 +1703,22 @@ class PalesMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by PalesMRParser#coupling_restraints_w_segid.
-    def enterCoupling_restraints_w_segid(self, ctx: PalesMRParser.Coupling_restraints_w_segidContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by PalesMRParser#coupling_restraints_sw_segid.
+    def enterCoupling_restraints_sw_segid(self, ctx: PalesMRParser.Coupling_restraints_sw_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'jcoup'
 
-    # Exit a parse tree produced by PalesMRParser#coupling_restraints_w_segid.
-    def exitCoupling_restraints_w_segid(self, ctx: PalesMRParser.Coupling_restraints_w_segidContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by PalesMRParser#coupling_restraints_sw_segid.
+    def exitCoupling_restraints_sw_segid(self, ctx: PalesMRParser.Coupling_restraints_sw_segidContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by PalesMRParser#coupling_restraint_w_segid.
-    def enterCoupling_restraint_w_segid(self, ctx: PalesMRParser.Coupling_restraint_w_segidContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by PalesMRParser#coupling_restraint_sw_segid.
+    def enterCoupling_restraint_sw_segid(self, ctx: PalesMRParser.Coupling_restraint_sw_segidContext):  # pylint: disable=unused-argument
         self.jcoupRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by PalesMRParser#coupling_restraint_w_segid.
-    def exitCoupling_restraint_w_segid(self, ctx: PalesMRParser.Coupling_restraint_w_segidContext):
+    # Exit a parse tree produced by PalesMRParser#coupling_restraint_sw_segid.
+    def exitCoupling_restraint_sw_segid(self, ctx: PalesMRParser.Coupling_restraint_sw_segidContext):
 
         try:
 
@@ -1432,6 +1740,107 @@ class PalesMRParserListener(ParseTreeListener):
             seqId4 = int(str(ctx.Integer(4)))
             compId4 = str(ctx.Simple_name(10)).upper()
             atomId4 = str(ctx.Simple_name(11)).upper()
+
+            if None in self.numberSelection:
+                return
+
+            A = self.numberSelection[0]
+            B = self.numberSelection[1]
+            C = self.numberSelection[2]
+            phase = self.numberSelection[3]
+            target_value = self.numberSelection[4]
+            lower_limit = upper_limit = None
+            # fource_const = self.numberSelection[5]
+
+            dstFunc = self.validateCoupRange(index, 1.0, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1, index)
+            chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2, index)
+            chainAssign3 = self.assignCoordPolymerSequence(chainId3, seqId3, compId3, atomId3, index)
+            chainAssign4 = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4, index)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0\
+               or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1, False)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2, False)
+            self.selectCoordAtoms(chainAssign3, seqId3, compId3, atomId3, False)
+            self.selectCoordAtoms(chainAssign4, seqId4, compId4, atomId4, False)
+
+            if len(self.atomSelectionSet) < 4:
+                return
+
+            compId = self.atomSelectionSet[0][0]['comp_id']
+            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                if self.__debug:
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           [atom1, atom2, atom3, atom4])
+                    if angleName == 'PHI':
+                        self.auxAtomSelectionSet.clear()
+                        self.selectAuxCoordAtoms(chainAssign2, seqId2, compId2, 'H', False)
+                        self.selectAuxCoordAtoms(chainAssign3, seqId3, compId3, 'HA', False)
+                        if len(self.auxAtomSelectionSet) == 2:
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
+                                  f"A={A} B={B} C={C} phase={phase} "
+                                  f"atom1={self.auxAtomSelectionSet[0][0]} atom2={self.auxAtomSelectionSet[1][0]} {dstFunc}")
+                            continue
+                    else:
+                        print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
+                              f"A={A} B={B} C={C} phase={phase} "
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by PalesMRParser#coupling_restraints_ew_segid.
+    def enterCoupling_restraints_ew_segid(self, ctx: PalesMRParser.Coupling_restraints_ew_segidContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'jcoup'
+
+    # Exit a parse tree produced by PalesMRParser#coupling_restraints_ew_segid.
+    def exitCoupling_restraints_ew_segid(self, ctx: PalesMRParser.Coupling_restraints_ew_segidContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by PalesMRParser#coupling_restraint_ew_segid.
+    def enterCoupling_restraint_ew_segid(self, ctx: PalesMRParser.Coupling_restraint_ew_segidContext):  # pylint: disable=unused-argument
+        self.jcoupRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by PalesMRParser#coupling_restraint_ew_segid.
+    def exitCoupling_restraint_ew_segid(self, ctx: PalesMRParser.Coupling_restraint_ew_segidContext):
+
+        try:
+
+            index = int(str(ctx.Integer(0)))
+
+            seqId1 = int(str(ctx.Integer(1)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+            chainId1 = str(ctx.Simple_name(2))
+            seqId2 = int(str(ctx.Integer(2)))
+            compId2 = str(ctx.Simple_name(3)).upper()
+            atomId2 = str(ctx.Simple_name(4)).upper()
+            chainId2 = str(ctx.Simple_name(5))
+            seqId3 = int(str(ctx.Integer(3)))
+            compId3 = str(ctx.Simple_name(6)).upper()
+            atomId3 = str(ctx.Simple_name(7)).upper()
+            chainId3 = str(ctx.Simple_name(8))
+            seqId4 = int(str(ctx.Integer(4)))
+            compId4 = str(ctx.Simple_name(9)).upper()
+            atomId4 = str(ctx.Simple_name(10)).upper()
+            chainId4 = str(ctx.Simple_name(11))
 
             if None in self.numberSelection:
                 return

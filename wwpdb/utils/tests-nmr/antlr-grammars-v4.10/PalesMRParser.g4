@@ -22,13 +22,17 @@ pales_mr:
 	(
 	sequence |
 	distance_restraints |
-	distance_restraints_w_segid |
+	distance_restraints_sw_segid |
+	distance_restraints_ew_segid |
 	torsion_angle_restraints |
-	torsion_angle_restraints_w_segid |
+	torsion_angle_restraints_sw_segid |
+	torsion_angle_restraints_ew_segid |
 	rdc_restraints |
-	rdc_restraints_w_segid |
+	rdc_restraints_sw_segid |
+	rdc_restraints_ew_segid |
 	coupling_restraints |
-	coupling_restraints_w_segid |
+	coupling_restraints_sw_segid |
+	coupling_restraints_ew_segid |
 	talos_restraints
 	)*
 	EOF;
@@ -61,7 +65,7 @@ distance_restraint:
 	Integer Simple_name Simple_name
 	number number number number number;
 
-distance_restraints_w_segid:
+distance_restraints_sw_segid:
 	Vars Index Group
 		Segname_I Resid_I Resname_I Atomname_I
 		Segname_J Resid_J Resname_J Atomname_J
@@ -70,12 +74,29 @@ distance_restraints_w_segid:
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code Format_code RETURN_F
-	distance_restraint_w_segid+;
+	distance_restraint_sw_segid+;
 
-distance_restraint_w_segid:
+distance_restraint_sw_segid:
 	Integer Integer
 	Simple_name Integer Simple_name Simple_name
 	Simple_name Integer Simple_name Simple_name
+	number number number number number;
+
+distance_restraints_ew_segid:
+	Vars Index Group
+		Resid_I Resname_I Atomname_I Segname_I
+		Resid_J Resname_J Atomname_J Segname_J
+		D_Lo D_Hi FC W S RETURN_V
+	Format Format_code Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code Format_code Format_code RETURN_F
+	distance_restraint_ew_segid+;
+
+distance_restraint_ew_segid:
+	Integer Integer
+	Integer Simple_name Simple_name Simple_name
+	Integer Simple_name Simple_name Simple_name
 	number number number number number;
 
 torsion_angle_restraints:
@@ -101,7 +122,7 @@ torsion_angle_restraint:
 		Integer Simple_name Simple_name
 		number number number;
 
-torsion_angle_restraints_w_segid:
+torsion_angle_restraints_sw_segid:
 	Vars Index
 		Segname_I Resid_I Resname_I Atomname_I
 		Segname_J Resid_J Resname_J Atomname_J
@@ -114,14 +135,37 @@ torsion_angle_restraints_w_segid:
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code RETURN_F
-	torsion_angle_restraint_w_segid+;
+	torsion_angle_restraint_sw_segid+;
 
-torsion_angle_restraint_w_segid:
+torsion_angle_restraint_sw_segid:
 	Integer
 		Simple_name Integer Simple_name Simple_name
 		Simple_name Integer Simple_name Simple_name
 		Simple_name Integer Simple_name Simple_name
 		Simple_name Integer Simple_name Simple_name
+		number number number;
+
+torsion_angle_restraints_ew_segid:
+	Vars Index
+		Resid_I Resname_I Atomname_I Segname_I
+		Resid_J Resname_J Atomname_J Segname_J
+		Resid_K Resname_K Atomname_K Segname_K
+		Resid_L Resname_L Atomname_L Segname_L
+		Angle_Lo Angle_Hi FC RETURN_V
+	Format Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code RETURN_F
+	torsion_angle_restraint_ew_segid+;
+
+torsion_angle_restraint_ew_segid:
+	Integer
+		Integer Simple_name Simple_name Simple_name
+		Integer Simple_name Simple_name Simple_name
+		Integer Simple_name Simple_name Simple_name
+		Integer Simple_name Simple_name Simple_name
 		number number number;
 
 rdc_restraints:
@@ -140,7 +184,7 @@ rdc_restraint:
 	Integer Simple_name Simple_name
 	number number number;
 
-rdc_restraints_w_segid:
+rdc_restraints_sw_segid:
 	Vars
 		Segname_I Resid_I Resname_I Atomname_I
 		Segname_J Resid_J Resname_J Atomname_J
@@ -149,11 +193,27 @@ rdc_restraints_w_segid:
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code RETURN_F
-	rdc_restraint_w_segid+;
+	rdc_restraint_sw_segid+;
 
-rdc_restraint_w_segid:
+rdc_restraint_sw_segid:
 	Simple_name Integer Simple_name Simple_name
 	Simple_name Integer Simple_name Simple_name
+	number number number;
+
+rdc_restraints_ew_segid:
+	Vars
+		Resid_I Resname_I Atomname_I Segname_I
+		Resid_J Resname_J Atomname_J Segname_J
+		D DD W RETURN_V
+	Format
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code RETURN_F
+	rdc_restraint_ew_segid+;
+
+rdc_restraint_ew_segid:
+	Integer Simple_name Simple_name Simple_name
+	Integer Simple_name Simple_name Simple_name
 	number number number;
 
 coupling_restraints:
@@ -182,7 +242,7 @@ coupling_restraint:
 		number number number
 		number number number;
 
-coupling_restraints_w_segid:
+coupling_restraints_sw_segid:
 	Vars Index
 		Segname_I Resid_I Resname_I Atomname_I
 		Segname_J Resid_J Resname_J Atomname_J
@@ -197,14 +257,40 @@ coupling_restraints_w_segid:
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code RETURN_F
-	coupling_restraint_w_segid+;
+	coupling_restraint_sw_segid+;
 
-coupling_restraint_w_segid:
+coupling_restraint_sw_segid:
 	Integer
 		Simple_name Integer Simple_name Simple_name
 		Simple_name Integer Simple_name Simple_name
 		Simple_name Integer Simple_name Simple_name
 		Simple_name Integer Simple_name Simple_name
+		number number number
+		number number number;
+
+coupling_restraints_ew_segid:
+	Vars Index
+		Resid_I Resname_I Atomname_I Segname_I
+		Resid_J Resname_J Atomname_J Segname_J
+		Resid_K Resname_K Atomname_K Segname_K
+		Resid_L Resname_L Atomname_L Segname_L
+		A B C
+		Phase ObsJ FC RETURN_V
+	Format Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code
+		Format_code Format_code Format_code RETURN_F
+	coupling_restraint_ew_segid+;
+
+coupling_restraint_ew_segid:
+	Integer
+		Integer Simple_name Simple_name Simple_name
+		Integer Simple_name Simple_name Simple_name
+		Integer Simple_name Simple_name Simple_name
+		Integer Simple_name Simple_name Simple_name
 		number number number
 		number number number;
 

@@ -52,6 +52,6 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
 

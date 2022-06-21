@@ -82,15 +82,15 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
 
 mode STR_ARRAY_MODE;
 
 R_brkt_A:		']' ' '* [\r\n]+;
 
-SECTION_COMMENT_A:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT_A:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | 'REMARK') ~[\r\n]* [\r\n]+ -> channel(HIDDEN);
+SECTION_COMMENT_A:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT_A:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* [\r\n]+ -> channel(HIDDEN);
 
 Simple_name_A:		SIMPLE_NAME;
 

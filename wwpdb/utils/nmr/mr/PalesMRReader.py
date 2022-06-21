@@ -191,5 +191,10 @@ class PalesMRReader:
 if __name__ == "__main__":
     reader = PalesMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5kqj/ANT2_FINALTAB.tab',
+                 '../../tests-nmr/mock-data-remediation/5kqj/5kqj.cif')
+
+    reader = PalesMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7kn0/dObsA_ngel2.tab',
                  '../../tests-nmr/mock-data-remediation/7kn0/7kn0.cif')

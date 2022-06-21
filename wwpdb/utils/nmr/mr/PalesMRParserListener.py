@@ -23,11 +23,14 @@ try:
                                                        ANGLE_RESTRAINT_RANGE,
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_ERROR)
+                                                       RDC_RESTRAINT_ERROR,
+                                                       KNOWN_ANGLE_ATOM_NAMES,
+                                                       KNOWN_ANGLE_SEQ_OFFSET)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+    from wwpdb.utils.nmr.AlignUtil import monDict3
 except ImportError:
     from nmr.mr.PalesMRParser import PalesMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
@@ -39,11 +42,14 @@ except ImportError:
                                            ANGLE_RESTRAINT_RANGE,
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_ERROR)
+                                           RDC_RESTRAINT_ERROR,
+                                           KNOWN_ANGLE_ATOM_NAMES,
+                                           KNOWN_ANGLE_SEQ_OFFSET)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+    from nmr.AlignUtil import monDict3
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -65,6 +71,10 @@ RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
 
 RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
 RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
+
+
+TALOS_PREDICTION_CLASSES = ('Strong', 'Good', 'Generous', 'Warn', 'Bad', 'None')
+TALOS_PREDICTION_MIN_CLASSES = ('Strong', 'Good')
 
 
 # This class defines a complete listener for a parse tree produced by PalesMRParser.
@@ -812,7 +822,7 @@ class PalesMRParserListener(ParseTreeListener):
             upper_limit = self.numberSelection[1]
             # fource_const = self.numberSelection[2]
 
-            dstFunc = self.validateAngleRange(index, 1.0, target_value, lower_limit, upper_limit)
+            dstFunc = self.validateAngleRange(None, 1.0, target_value, lower_limit, upper_limit)
 
             if dstFunc is None:
                 return
@@ -870,19 +880,19 @@ class PalesMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit}"
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                    f"The lower limit value='{lower_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit}"
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                    f"The upper limit value='{upper_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
         """
         if target_value is not None:
 
@@ -890,13 +900,13 @@ class PalesMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                        f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                        f"The upper limit value='{upper_limit}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
         """
         if not validRange:
             return None
@@ -913,14 +923,14 @@ class PalesMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -1557,6 +1567,139 @@ class PalesMRParserListener(ParseTreeListener):
 
         return dstFunc
 
+    # Enter a parse tree produced by PalesMRParser#talos_restraints.
+    def enterTalos_restraints(self, ctx: PalesMRParser.Talos_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dihed'
+
+    # Exit a parse tree produced by PalesMRParser#talos_restraints.
+    def exitTalos_restraints(self, ctx: PalesMRParser.Talos_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by PalesMRParser#talos_restraint.
+    def enterTalos_restraint(self, ctx: PalesMRParser.Talos_restraintContext):  # pylint: disable=unused-argument
+        self.dihedRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by PalesMRParser#talos_restraint.
+    def exitTalos_restraint(self, ctx: PalesMRParser.Talos_restraintContext):
+
+        try:
+
+            seqId = int(str(ctx.Integer(0)))
+            compId = str(ctx.Simple_name(0)).upper()
+
+            if compId not in monDict3.values() and compId not in monDict3:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found unknown residue name {compId!r}.\n"
+                return
+
+            if compId in monDict3:
+                pass
+            else:
+                compId = next(k for k, v in monDict3.items() if v == compId)
+
+            if None in self.numberSelection:
+                return
+
+            # phi
+            phi_target_value = self.numberSelection[0]
+            psi_target_value = self.numberSelection[1]
+
+            delta_phi_value = self.numberSelection[2]
+            delta_psi_value = self.numberSelection[3]
+
+            # dist = self.numberSelection[4]
+            # s2 = self.numberSelection[5]
+
+            # count = int(str(ctx.Integer(1)))
+            # cs_count = int(str(ctx.Integer(2)))
+
+            _class = str(ctx.Simple_name(1))
+
+            if _class not in TALOS_PREDICTION_CLASSES:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The class name {_class!r} should be one of {TALOS_PREDICTION_CLASSES}.\n"
+                return
+
+            if _class not in TALOS_PREDICTION_MIN_CLASSES:  # ignore suspicious predictions
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            for angleName in ('PHI', 'PSI'):
+                atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+                seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+                if angleName == 'PHI':
+                    target_value = phi_target_value
+                    lower_limit = phi_target_value - delta_phi_value
+                    upper_limit = phi_target_value + delta_phi_value
+                else:
+                    target_value = psi_target_value
+                    lower_limit = psi_target_value - delta_psi_value
+                    upper_limit = psi_target_value + delta_psi_value
+
+                dstFunc = self.validateAngleRange(None, 1.0, target_value, lower_limit, upper_limit)
+
+                if dstFunc is None:
+                    return
+
+                atomId = next(name for name, offset in zip(atomNames, seqOffset) if offset == 0)
+
+                chainAssign = self.assignCoordPolymerSequence(None, seqId, compId, atomId)
+
+                if len(chainAssign) == 0:
+                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                        f"{seqId}:{compId} is not present in the coordinates.\n"
+                    return
+
+                for chainId, cifSeqId, cifCompId in chainAssign:
+                    ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+
+                    atomSelection = []
+
+                    for atomId, offset in zip(atomNames, seqOffset):
+
+                        atomSelection.clear()
+
+                        _cifSeqId = cifSeqId + offset
+                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+
+                        if _cifCompId is None:
+                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                f"The sequence number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates.\n"
+                            return
+
+                        self.__ccU.updateChemCompDict(_cifCompId)
+
+                        cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+
+                        if cifAtomId is None:
+                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                            return
+
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+
+                        if len(atomSelection) > 0:
+                            self.atomSelectionSet.append(atomSelection)
+
+                    if len(self.atomSelectionSet) < 4:
+                        return
+
+                    for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                        self.atomSelectionSet[1],
+                                                                        self.atomSelectionSet[2],
+                                                                        self.atomSelectionSet[3]):
+                        if self.__debug:
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
+
     # Enter a parse tree produced by PalesMRParser#number.
     def enterNumber(self, ctx: PalesMRParser.NumberContext):  # pylint: disable=unused-argument
         pass
@@ -1576,7 +1719,9 @@ class PalesMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints (index={n}, group={g})] "
         if self.__cur_subtype == 'dihed':
-            return f"[Check the {self.dihedRestraints}th row of torsion angle restraints (index={n})] "
+            if n is not None:
+                return f"[Check the {self.dihedRestraints}th row of torsion angle restraints (index={n})] "
+            return f"[Check the {self.dihedRestraints}th row of torsion angle restraints] "
         if self.__cur_subtype == 'rdc':
             return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
         if self.__cur_subtype == 'jcoup':

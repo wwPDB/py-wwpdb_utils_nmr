@@ -28,7 +28,8 @@ pales_mr:
 	rdc_restraints |
 	rdc_restraints_w_segid |
 	coupling_restraints |
-	coupling_restraints_w_segid
+	coupling_restraints_w_segid |
+	talos_restraints
 	)*
 	EOF;
 
@@ -41,7 +42,7 @@ pales_mr:
 */
 
 sequence:
-	Data Sequence One_letter_code+ RETURN_D;
+	Data (First_resid Integer_D | Sequence One_letter_code+) RETURN_D;
 
 distance_restraints:
 	Vars Index Group
@@ -206,6 +207,20 @@ coupling_restraint_w_segid:
 		Simple_name Integer Simple_name Simple_name
 		number number number
 		number number number;
+
+talos_restraints:
+	Vars Resid Resname
+		Phi Psi Dphi Dpsi Dist S2
+		Count Cs_count Class RETURN_V
+	Format Format_code Format_code
+		Format_code Format_code Format_code Format_code Format_code Format_code
+		Format_code Format_code Format_code RETURN_F
+	talos_restraint+;
+
+talos_restraint:
+	Integer Simple_name
+		number number number number number number
+		Integer Integer Simple_name;
 
 /* number expression in restrains */
 number:	Float | Integer;

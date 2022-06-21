@@ -47,7 +47,7 @@ Simple_name:		SIMPLE_NAME;
 //Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
 //Atom_type:		ALPHA ATM_TYPE_CHAR*;
 
-fragment ALPHA:		[A-Z];
+fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#';
@@ -62,9 +62,12 @@ LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | 
 
 mode DATA_MODE;
 
+First_resid:		'FIRST_RESID';
 Sequence:		'SEQUENCE';
 
 One_letter_code:	[ABCDEFGHIKLMNPQRSTVWYZ]+;
+
+Integer_D:		('+' | '-')? DECIMAL;
 
 SPACE_D:		[ \t]+ -> skip;
 RETURN_D:		[\r\n]+ -> popMode;
@@ -97,6 +100,9 @@ Resid_L:		'RESID_L';
 Resname_L:		'RESNAME_L';
 Atomname_L:		'ATOMNAME_L';
 
+Resid:			'RESID';
+Resname:		'RESNAME';
+
 A:			[Aa];
 B:			[Bb];
 C:			[Cc];
@@ -113,6 +119,16 @@ Angle_Hi:		'ANGLE_HI';
 Phase:			'PHASE';
 ObsJ:			'OBSJ';
 
+Phi:			'PHI';
+Psi:			'PSI';
+Dphi:			'DPHI';
+Dpsi:			'DPSI';
+Dist:			'DIST';
+S2:			'S2';
+Count:			'COUNT';
+Cs_count:		'CS_COUNT';
+Class:			'CLASS';
+
 SPACE_V:		[ \t]+ -> skip;
 RETURN_V:		[\r\n]+ -> popMode;
 
@@ -121,7 +137,7 @@ LINE_COMMENT_V:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ 
 
 mode FORMAT_MODE;
 
-Format_code:		'%' (DECIMAL 's' | DECIMAL 'd' | (DECIMAL)? '.' DECIMAL 'f');
+Format_code:		'%' DECIMAL? ('s' | 'd' | '.' DECIMAL 'f');
 
 SPACE_F:		[ \t]+ -> skip;
 RETURN_F:		[\r\n]+ -> popMode;

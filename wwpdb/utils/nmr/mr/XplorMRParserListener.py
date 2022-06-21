@@ -5633,6 +5633,9 @@ class XplorMRParserListener(ParseTreeListener):
                     if _atom not in atomSelection:
                         atomSelection.append(_atom)
 
+        if '*' in atomSelection:
+            atomSelection.remove('*')
+
         if self.__sel_expr_debug:
             print("  " * self.depth + f"atom selection: {atomSelection}")
 
@@ -5732,6 +5735,11 @@ class XplorMRParserListener(ParseTreeListener):
             return _factor
 
         if not any(key for key in _factor if key != 'atom_selection'):
+            return _factor
+
+        if len(_factor) == 2 and 'chain_id' in _factor and len(_factor['chain_id']) == 0 and 'alt_chain_id' in _factor:
+            _factor['atom_selection'] = ['*']
+            del _factor['chain_id']
             return _factor
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
@@ -6229,8 +6237,14 @@ class XplorMRParserListener(ParseTreeListener):
         if atomSelection is None or len(atomSelection) == 0:
             _factor['atom_selection'] = []
 
+        elif isinstance(atomSelection[0], str) and atomSelection[0] == '*':
+            return _factor
+
         _atomSelection = []
         for _atom in _factor['atom_selection']:
+            if isinstance(_atom, str) and _atom == '*':
+                _factor['atom_selection'] = atomSelection
+                return _factor
             if _atom in atomSelection:
                 _atomSelection.append(_atom)
 

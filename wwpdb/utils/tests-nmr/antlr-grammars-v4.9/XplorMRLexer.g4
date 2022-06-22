@@ -624,6 +624,13 @@ Show:			S H O W -> pushMode(VECTOR_SHOW_MODE);		// Vector_show_property
 Evaluate_Lp:		E V A L U? A? T? E? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 								// ( evaluate_statement )
 
+/* XPLOR-NIH: Patching the Molecular Structure - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node86.html
+*/
+Patch:			P A T C H;				// ( patch_statement )
+Reference:		R E F E R? E? N? C? E?;
+Nil:			N I L;
+
 /* XPLOR-NIH: Control statement - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/doc/current/xplor/node24.html
 */

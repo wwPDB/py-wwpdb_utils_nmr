@@ -35,6 +35,7 @@ cns_mr:
 	flag_statement |
 	vector_statement |
 	evaluate_statement |
+	patch_statement |
 	noe_assign_loop |		// allowing bare assign clauses for Distance restraints
 	dihedral_assign_loop |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign_loop |		// allowing bare assign clauses for RDC restraints
@@ -485,6 +486,12 @@ evaluate_statement:
 
 evaluate_operation:
 	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) evaluate_operation)?;
+
+/* CNS: Patch molecular topology database - Syntax
+ See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
+*/
+patch_statement:
+	Patch Simple_name? Reference Equ_op (Nil | Integer) Equ_op selection (Reference Equ_op (Nil | Integer) Equ_op selection)? End;
 
 /* CNS: Control statement - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

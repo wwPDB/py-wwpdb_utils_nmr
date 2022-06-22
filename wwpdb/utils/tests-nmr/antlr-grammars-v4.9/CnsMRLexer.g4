@@ -355,11 +355,18 @@ Do_Lp:			D O ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 Identify_Lp:		I D E N T? I? F? Y? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 Show:			S H O W -> pushMode(VECTOR_SHOW_MODE);	// Vector_show_property
 
-/* CNS: Gloval statement/Evaluate statement - Syntax_
+/* CNS: Gloval statement/Evaluate statement - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 Evaluate_Lp:		E V A L U? A? T? E? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 								// ( evaluate_statement )
+
+/* CNS: Patch molecular topology database - Syntax
+ See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
+*/
+Patch:			P A T C H;				// ( patch_statement )
+Reference:		R E F E R? E? N? C? E?;
+Nil:			N I L;
 
 /* CNS: Control statement - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

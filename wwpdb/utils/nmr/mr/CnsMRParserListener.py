@@ -5749,6 +5749,17 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Exp_op_VE():
             self.__cur_vflc_op_code = '^'
 
+    # Enter a parse tree produced by CnsMRParser#patch_statement.
+    def enterPatch_statement(self, ctx: CnsMRParser.Patch_statementContext):  # pylint: disable=unused-argument
+        self.geoRestraints += 1
+        self.__cur_subtype = 'geo'
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CnsMRParser#patch_statement.
+    def exitPatch_statement(self, ctx: CnsMRParser.Patch_statementContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by CnsMRParser#noe_assign_loop.
     def enterNoe_assign_loop(self, ctx: CnsMRParser.Noe_assign_loopContext):
         symbol_name = None

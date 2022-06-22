@@ -189,6 +189,11 @@ class CnsMRReader:
 if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6th8/hbond_patches.tbl',
+                 '../../tests-nmr/mock-data-remediation/6th8/6th8.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/4by9/4by9-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/4by9/4by9.cif')
 

@@ -38,10 +38,11 @@ try:
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from wwpdb.utils.nmr.AlignUtil import (hasLargeSeqGap,
-                                           fillBlankCompIdWithOffset, beautifyPolySeq,
-                                           getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
-                                           getOneLetterCodeSequence)
+    from wwpdb.utils.nmr.AlignUtil import (updatePolySeqRstFromAtomSelectionSet,
+                                           sortPolySeqRst,
+                                           alignPolymerSequence,
+                                           assignPolymerSequence,
+                                           trimSequenceAlignment)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberMRParser import AmberMRParser
@@ -66,10 +67,11 @@ except ImportError:
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from nmr.AlignUtil import (hasLargeSeqGap,
-                               fillBlankCompIdWithOffset, beautifyPolySeq,
-                               getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
-                               getOneLetterCodeSequence)
+    from nmr.AlignUtil import (updatePolySeqRstFromAtomSelectionSet,
+                               sortPolySeqRst,
+                               alignPolymerSequence,
+                               assignPolymerSequence,
+                               trimSequenceAlignment)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -176,12 +178,6 @@ class AmberMRParserListener(ParseTreeListener):
     pcsRestraints = 0       # AMBER: Psuedocontact shift restraints
     rdcRestraints = 0       # AMBER: Direct dipolar coupling restraints
     csaRestraints = 0       # AMBER: Residual CSA or pseudo-CSA restraints
-
-    # criterion for low sequence coverage
-    low_seq_coverage = 0.3
-
-    # criterion for minimum sequence coverage when conflict occurs (NMR separated deposition)
-    # min_seq_coverage_w_conflict = 0.95
 
     # CCD accessing utility
     __ccU = None
@@ -559,10 +555,15 @@ class AmberMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberMRParser#amber_mr.
     def exitAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
         if self.__hasPolySeq and self.__polySeqRst is not None:
-            self.sortPolySeqRst()
+            sortPolySeqRst(self.__polySeqRst)
 
-            self.alignPolymerSequence()
-            self.assignPolymerSequence()
+            file_type = 'nm-res-amb'
+
+            self.__seqAlign = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+
+            if len(message) > 0:
+                self.warningMessage += message
 
             if self.__chainAssign is not None:
 
@@ -581,10 +582,10 @@ class AmberMRParserListener(ParseTreeListener):
                         if ps['chain_id'] in chain_mapping:
                             ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                    self.alignPolymerSequence()
-                    self.assignPolymerSequence()
+                    self.__seqAlign = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                    self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
-                self.trimPolymerSequence()
+                trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -864,7 +865,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print('# ' + self.lastComment)
 
-                self.updatePolySeqRstFromAtomSelectionSet()
+                updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
                 if self.__cur_subtype == 'dist':
 
@@ -1343,7 +1344,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print('# ' + self.lastComment)
 
-                self.updatePolySeqRstFromAtomSelectionSet()
+                updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
                 if self.__cur_subtype == 'dist':
 
@@ -3283,7 +3284,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     dstFunc = self.validateNoexpRange(imix, ipeak, awt, arange)
 
-                    self.updatePolySeqRstFromAtomSelectionSet()
+                    updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
                     for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                           self.atomSelectionSet[1]):
@@ -3575,7 +3576,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     self.atomSelectionSet.append(atomSelection)
 
-                    self.updatePolySeqRstFromAtomSelectionSet()
+                    updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
                     for atom in self.atomSelectionSet[0]:
                         if self.__debug:
@@ -3985,7 +3986,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                self.updatePolySeqRstFromAtomSelectionSet()
+                updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
                 for atom in self.atomSelectionSet[0]:
                     if self.__debug:
@@ -4397,7 +4398,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                self.updatePolySeqRstFromAtomSelectionSet()
+                updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -4986,7 +4987,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                self.updatePolySeqRstFromAtomSelectionSet()
+                updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
                 for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                              self.atomSelectionSet[1],
@@ -5391,441 +5392,6 @@ class AmberMRParserListener(ParseTreeListener):
             return
 
         self.funcExprs.append(self.inCom_funcExprs)
-
-    def updatePolySeqRstFromAtomSelectionSet(self):
-        """ Update polymer sequence of the current MR file.
-        """
-
-        if len(self.atomSelectionSet) == 0:
-            return
-
-        for atomSelection in self.atomSelectionSet:
-            if len(atomSelection) == 0:
-                continue
-            for atom in atomSelection:
-                chainId = atom['chain_id']
-                seqId = atom['seq_id']
-
-                ps = next((ps for ps in self.__polySeqRst if ps['chain_id'] == chainId), None)
-                if ps is None:
-                    self.__polySeqRst.append({'chain_id': chainId, 'seq_id': [], 'comp_id': []})
-                    ps = self.__polySeqRst[-1]
-
-                if seqId not in ps['seq_id']:
-                    ps['seq_id'].append(seqId)
-                    ps['comp_id'].append(atom['comp_id'])
-
-    def sortPolySeqRst(self):
-        """ Sort polymer sequence of the current MR file by sequence number.
-        """
-
-        if not self.__hasPolySeq or self.__polySeqRst is None:
-            return
-
-        for ps in self.__polySeqRst:
-            minSeqId = min(ps['seq_id'])
-            maxSeqId = max(ps['seq_id'])
-
-            _seqIds = list(range(minSeqId, maxSeqId + 1))
-            _compIds = ["."] * (maxSeqId - minSeqId + 1)
-
-            for idx, seqId in enumerate(ps['seq_id']):
-                _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
-
-            ps['seq_id'] = _seqIds
-            ps['comp_id'] = _compIds
-
-    def alignPolymerSequence(self):
-        if not self.__hasPolySeq or self.__polySeqRst is None:
-            return
-
-        self.__seqAlign = []
-
-        for s1 in self.__polySeq:
-            chain_id = s1['auth_chain_id']
-
-            for s2 in self.__polySeqRst:
-                chain_id2 = s2['chain_id']
-
-                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                self.__pA.addTestSequence(s2['comp_id'], chain_id)
-                self.__pA.doAlign()
-
-                myAlign = self.__pA.getAlignment(chain_id)
-
-                length = len(myAlign)
-
-                if length == 0:
-                    continue
-
-                _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
-
-                if length == unmapped + conflict or _matched <= conflict:
-                    continue
-
-                _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
-                if conflict > 0 and hasLargeSeqGap(_s1, _s2):
-                    __s1, __s2 = beautifyPolySeq(_s1, _s2)
-                    _s1_ = __s1
-                    _s2_ = __s2
-
-                    self.__pA.setReferenceSequence(_s1_['comp_id'], 'REF' + chain_id)
-                    self.__pA.addTestSequence(_s2_['comp_id'], chain_id)
-                    self.__pA.doAlign()
-
-                    myAlign = self.__pA.getAlignment(chain_id)
-
-                    length = len(myAlign)
-
-                    _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
-
-                    if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
-                        conflict = 0
-                        offset_1 = _offset_1
-                        offset_2 = _offset_2
-                        _s1 = __s1
-                        _s2 = __s2
-
-                ref_length = len(s1['seq_id'])
-
-                ref_code = getOneLetterCodeSequence(_s1['comp_id'])
-                test_code = getOneLetterCodeSequence(_s2['comp_id'])
-                mid_code = getMiddleCode(ref_code, test_code)
-                ref_gauge_code = getGaugeCode(_s1['seq_id'])
-                test_gauge_code = getGaugeCode(_s2['seq_id'])
-
-                if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                       in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
-                       if __c1 != '.' and __c2 != '.' and __c1 != __c2):
-                    seq_id1 = []
-                    seq_id2 = []
-                    comp_id1 = []
-                    comp_id2 = []
-                    idx1 = 0
-                    idx2 = 0
-                    for i in range(length):
-                        myPr = myAlign[i]
-                        myPr0 = str(myPr[0])
-                        myPr1 = str(myPr[1])
-                        if myPr0 != '.':
-                            while idx1 < len(_s1['seq_id']):
-                                if _s1['comp_id'][idx1] == myPr0:
-                                    seq_id1.append(_s1['seq_id'][idx1])
-                                    comp_id1.append(myPr0)
-                                    idx1 += 1
-                                    break
-                                idx1 += 1
-                        else:
-                            seq_id1.append(None)
-                            comp_id1.append('.')
-                        if myPr1 != '.':
-                            while idx2 < len(_s2['seq_id']):
-                                if _s2['comp_id'][idx2] == myPr1:
-                                    seq_id2.append(_s2['seq_id'][idx2])
-                                    comp_id2.append(myPr1)
-                                    idx2 += 1
-                                    break
-                                idx2 += 1
-                        else:
-                            seq_id2.append(None)
-                            comp_id2.append('.')
-                    ref_code = getOneLetterCodeSequence(comp_id1)
-                    test_code = getOneLetterCodeSequence(comp_id2)
-                    mid_code = getMiddleCode(ref_code, test_code)
-                    ref_gauge_code = getGaugeCode(seq_id1, offset_1)
-                    test_gauge_code = getGaugeCode(seq_id2, offset_2)
-                    if ' ' in ref_gauge_code:
-                        for p, g in enumerate(ref_gauge_code):
-                            if g == ' ':
-                                ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
-                    if ' ' in test_gauge_code:
-                        for p, g in enumerate(test_gauge_code):
-                            if g == ' ':
-                                test_code = test_code[0:p] + '-' + test_code[p + 1:]
-
-                matched = mid_code.count('|')
-
-                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length,
-                             'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
-                             'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                             'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
-                             'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
-                             'test_code': test_code, 'test_gauge_code': test_gauge_code}
-
-                self.__seqAlign.append(seq_align)
-
-    def assignPolymerSequence(self):
-        if self.__seqAlign is None:
-            return
-
-        mr_chains = len(self.__polySeqRst)
-
-        mat = []
-        indices = []
-
-        for s1 in self.__polySeq:
-            chain_id = s1['auth_chain_id']
-
-            cost = [0 for i in range(mr_chains)]
-
-            for s2 in self.__polySeqRst:
-                chain_id2 = s2['chain_id']
-
-                result = next((seq_align for seq_align in self.__seqAlign
-                               if seq_align['ref_chain_id'] == chain_id
-                               and seq_align['test_chain_id'] == chain_id2), None)
-
-                if result is not None:
-                    cost[self.__polySeqRst.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
-                    if result['length'] >= len(s1['seq_id']) - result['unmapped']:
-                        indices.append((self.__polySeq.index(s1), self.__polySeqRst.index(s2)))
-
-            mat.append(cost)
-
-        self.__chainAssign = []
-
-        for row, column in indices:
-
-            if mat[row][column] >= 0:
-                _cif_chains = []
-                for _row, _column in indices:
-                    if column == _column:
-                        _cif_chains.append(self.__polySeq[_row]['auth_chain_id'])
-
-                if len(_cif_chains) > 1:
-                    chain_id2 = self.__polySeqRst[column]['chain_id']
-
-                    self.warningMessage += f"[Concatenated sequence] The chain ID {chain_id2!r} of the sequences in the AMBER restraint file "\
-                        f"will be re-assigned to the chain IDs {_cif_chains} in the coordinates during biocuration.\n"
-
-            chain_id = self.__polySeq[row]['auth_chain_id']
-            chain_id2 = self.__polySeqRst[column]['chain_id']
-
-            result = next(seq_align for seq_align in self.__seqAlign
-                          if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
-
-            chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
-                            'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
-                            'sequence_coverage': result['sequence_coverage']}
-
-            s1 = next(s for s in self.__polySeq if s['auth_chain_id'] == chain_id)
-            s2 = next(s for s in self.__polySeqRst if s['chain_id'] == chain_id2)
-
-            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-            self.__pA.addTestSequence(s2['comp_id'], chain_id)
-            self.__pA.doAlign()
-
-            myAlign = self.__pA.getAlignment(chain_id)
-
-            length = len(myAlign)
-
-            _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
-
-            _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-            _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
-            if conflict > 0 and hasLargeSeqGap(_s1, _s2):
-                __s1, __s2 = beautifyPolySeq(_s1, _s2)
-                _s1 = __s1
-                _s2 = __s2
-
-                self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
-                self.__pA.addTestSequence(_s2['comp_id'], chain_id)
-                self.__pA.doAlign()
-
-                myAlign = self.__pA.getAlignment(chain_id)
-
-                length = len(myAlign)
-
-                _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
-
-                if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
-                    result['conflict'] = 0
-                    s2 = __s2
-
-            if result['unmapped'] > 0 or result['conflict'] > 0:
-
-                aligned = [True] * length
-                seq_id1 = []
-                seq_id2 = []
-
-                j = 0
-                for i in range(length):
-                    if str(myAlign[i][0]) != '.':
-                        seq_id1.append(s1['seq_id'][j])
-                        j += 1
-                    else:
-                        seq_id1.append(None)
-
-                j = 0
-                for i in range(length):
-                    if str(myAlign[i][1]) != '.':
-                        seq_id2.append(s2['seq_id'][j])
-                        j += 1
-                    else:
-                        seq_id2.append(None)
-
-                for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
-                    if myPr0 == '.' or myPr1 == '.':
-                        aligned[i] = False
-                    elif myPr0 != myPr1:
-                        pass
-                    else:
-                        break
-
-                for i in reversed(range(length)):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
-                    if myPr0 == '.' or myPr1 == '.':
-                        aligned[i] = False
-                    elif myPr0 != myPr1:
-                        pass
-                    else:
-                        break
-
-                _conflicts = 0
-
-                for i in range(length):
-                    myPr = myAlign[i]
-                    if myPr[0] == myPr[1]:
-                        continue
-
-                    cif_comp_id = str(myPr[0])
-                    mr_comp_id = str(myPr[1])
-
-                    if mr_comp_id == '.' and cif_comp_id != '.':
-                        pass
-
-                    elif mr_comp_id != cif_comp_id and aligned[i]:
-                        _conflicts += 1
-
-                # if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < self.min_seq_coverage_w_conflict:
-                #    continue
-
-                if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < self.low_seq_coverage:  # DAOTHER-7825 (2lyw)
-                    continue
-
-                unmapped = []
-                conflict = []
-
-                for i in range(length):
-                    myPr = myAlign[i]
-                    if myPr[0] == myPr[1]:
-                        continue
-
-                    cif_comp_id = str(myPr[0])
-                    mr_comp_id = str(myPr[1])
-
-                    if mr_comp_id == '.' and cif_comp_id != '.':
-
-                        unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
-                        """ unmapped residue is not error
-                        if not aligned[i]:
-
-                            if not self.__ccU.updateChemCompDict(cif_comp_id):
-                                continue
-
-                            if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
-                                continue
-
-                            cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
-
-                            self.warningMessage += f"[Sequence mismatch] {cif_seq_code} is not present "\
-                                f"in the AMBER restraint data (chain_id {chain_id2}).\n"
-                        """
-                    elif mr_comp_id != cif_comp_id and aligned[i]:
-
-                        conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
-                                         'test_seq_id': seq_id2[i], 'test_comp_id': mr_comp_id})
-
-                        cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
-                        if cif_comp_id == '.':
-                            cif_seq_code += ', insertion error'
-                        mr_seq_code = f"{chain_id2}:{seq_id2[i]}:{mr_comp_id}"
-                        if mr_comp_id == '.':
-                            mr_seq_code += ', insertion error'
-
-                        if cif_comp_id != '.':
-
-                            if not self.__ccU.updateChemCompDict(cif_comp_id):
-                                continue
-
-                            if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
-                                continue
-
-                        self.warningMessage += f"[Sequence mismatch] Sequence alignment error between the coordinate ({cif_seq_code}) "\
-                            f"and the AMBER restraint data ({mr_seq_code}). "\
-                            "Please verify the two sequences and re-upload the correct file(s) if required.\n"
-
-                if len(unmapped) > 0:
-                    chain_assign['unmapped_sequence'] = unmapped
-
-                if len(conflict) > 0:
-                    chain_assign['conflict_sequence'] = conflict
-                    chain_assign['conflict'] = len(conflict)
-                    chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
-                    if chain_assign['unmapped'] < 0:
-                        chain_assign['conflict'] -= chain_assign['unmapped']
-                        chain_assign['unmapped'] = 0
-
-                    result['conflict'] = chain_assign['conflict']
-                    result['unmapped'] = chain_assign['unmapped']
-
-            self.__chainAssign.append(chain_assign)
-
-        if len(self.__chainAssign) > 0:
-
-            if len(self.__polySeq) > 1:
-
-                if any(s for s in self.__polySeq if 'identical_chain_id' in s):
-
-                    for chain_assign in self.__chainAssign:
-
-                        if chain_assign['conflict'] > 0:
-                            continue
-
-                        chain_id = chain_assign['ref_chain_id']
-
-                        try:
-                            identity = next(s['identical_chain_id'] for s in self.__polySeq
-                                            if s['auth_chain_id'] == chain_id and 'identical_chain_id' in s)
-
-                            for chain_id in identity:
-
-                                if not any(_chain_assign for _chain_assign in self.__chainAssign if _chain_assign['ref_chain_id'] == chain_id):
-                                    _chain_assign = copy.copy(chain_assign)
-                                    _chain_assign['ref_chain_id'] = chain_id
-                                    self.__chainAssign.append(_chain_assign)
-
-                        except StopIteration:
-                            pass
-
-    def trimPolymerSequence(self):
-        if self.__seqAlign is None or self.__chainAssign is None:
-            return
-
-        uneffSeqAlignIdx = list(range(len(self.__seqAlign) - 1, -1, -1))
-
-        for chain_assign in self.__chainAssign:
-            ref_chain_id = chain_assign['ref_chain_id']
-            test_chain_id = chain_assign['test_chain_id']
-
-            effSeqAligIdx = next((idx for idx, seq_align in enumerate(self.__seqAlign)
-                                  if seq_align['ref_chain_id'] == ref_chain_id
-                                  and seq_align['test_chain_id'] == test_chain_id), None)
-
-            if effSeqAligIdx is not None:
-                uneffSeqAlignIdx.remove(effSeqAligIdx)
-
-        if len(uneffSeqAlignIdx) > 0:
-            for idx in uneffSeqAlignIdx:
-                del self.__seqAlign[idx]
 
     def __getCurrentRestraint(self, dataset=None, n=None):
         if self.__cur_subtype == 'dist':

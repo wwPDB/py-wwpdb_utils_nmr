@@ -195,7 +195,9 @@ try:
                                                              ALLOWED_ISOTOPE_NUMBERS,
                                                              MAX_DIM_NUM_OF_SPECTRA)
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue,
+    from wwpdb.utils.nmr.AlignUtil import (LOW_SEQ_COVERAGE,
+                                           MIN_SEQ_COVERAGE_W_CONFLICT,
+                                           emptyValue, trueValue,
                                            monDict3, hasLargeSeqGap,
                                            fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
                                            getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
@@ -252,7 +254,9 @@ except ImportError:
                                                  ALLOWED_ISOTOPE_NUMBERS,
                                                  MAX_DIM_NUM_OF_SPECTRA)
     from nmr.NmrDpReport import NmrDpReport
-    from nmr.AlignUtil import (emptyValue, trueValue,
+    from nmr.AlignUtil import (LOW_SEQ_COVERAGE,
+                               MIN_SEQ_COVERAGE_W_CONFLICT,
+                               emptyValue, trueValue,
                                monDict3, hasLargeSeqGap,
                                fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
                                getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
@@ -1226,12 +1230,6 @@ class NmrDpUtility:
                                        'non_poly_alias': 'ndb_nonpoly_scheme'
                                        }
                               }
-
-        # criterion for low sequence coverage
-        self.low_seq_coverage = 0.3
-
-        # criterion for minimum sequence coverage when conflict occurs (NMR conventional deposition)
-        self.min_seq_coverage_w_conflict = 0.95
 
         # cutoff value for detection of aromatic atoms
         self.cutoff_aromatic = 5.0
@@ -21862,7 +21860,7 @@ class NmrDpUtility:
                         sc['length'] = seq_align['length']
                         sc['sequence_coverage'] = seq_align['sequence_coverage']
 
-                        if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
+                        if seq_align['sequence_coverage'] < LOW_SEQ_COVERAGE and seq_align['length'] > 1:
                             if ('exp_type' not in ent)\
                                or (ent['exp_type'] not in ('disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling')):
                                 low_seq_coverage += f"coverage {seq_align['sequence_coverage']} for chain_id {seq_align['chain_id']}, length {seq_align['length']}, "
@@ -28906,10 +28904,10 @@ class NmrDpUtility:
                                 elif nmr_comp_id != cif_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < self.min_seq_coverage_w_conflict:
+                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < self.low_seq_coverage:  # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
                                 continue
 
                         unmapped = []
@@ -29279,10 +29277,10 @@ class NmrDpUtility:
                                 elif cif_comp_id != nmr_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < self.min_seq_coverage_w_conflict:
+                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < self.low_seq_coverage:  # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
                                 continue
 
                         unmapped = []

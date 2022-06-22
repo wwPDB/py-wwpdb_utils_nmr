@@ -793,6 +793,9 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                         if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
                             continue
 
+                        if getOneLetterCode(cif_comp_id) == 'X':
+                            continue
+
                     warningMessage += f"[Sequence mismatch] Sequence alignment error between the coordinate ({cif_seq_code}) "\
                         f"and {_a_mr_format_name} data ({mr_seq_code}). "\
                         "Please verify the two sequences and re-upload the correct file(s) if required.\n"

@@ -27938,6 +27938,16 @@ class NmrDpUtility:
                         self.__auth_to_label_seq[(label_to_auth_chain[chain_id], int(auth_seq_id))] = seq_key
             self.__label_to_auth_seq = {v: k for k, v in self.__auth_to_label_seq.items()}
 
+            no_seq_schema_mapping = len(self.__auth_to_label_seq) == 0
+
+            if no_seq_schema_mapping:
+                for chain_id in chain_ids:
+                    seq_ids = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
+                    for seq_id in seq_ids:
+                        seq_key = (chain_id, seq_id)
+                        self.__auth_to_label_seq[seq_key] = seq_key
+                self.__label_to_auth_seq = self.__auth_to_label_seq
+
             # DAOTHER-7665
             self.__coord_unobs_res = []
             unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
@@ -27954,7 +27964,9 @@ class NmrDpUtility:
                     seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
                     for seq_id in seq_ids:
                         seq_key = (chain_id, seq_id)
-                        if seq_key in self.__auth_to_label_seq:
+                        if no_seq_schema_mapping:
+                            self.__coord_unobs_res.append(seq_key)
+                        elif seq_key in self.__auth_to_label_seq:
                             self.__coord_unobs_res.append(self.__auth_to_label_seq[seq_key])
 
             return True

@@ -559,6 +559,14 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                         labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = seqKey
             authToLabelSeq = {v: k for k, v in labelToAuthSeq.items()}
 
+            if len(authToLabelSeq) == 0:
+                for chainId in chainIds:
+                    seqIds = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chainId)
+                    for seqId in seqIds:
+                        seqKey = (chainId, seqId)
+                        authToLabelSeq[seqKey] = seqKey
+                labelToAuthSeq = authToLabelSeq
+
         if coordUnobsRes is None:
             coordUnobsRes = {}
             unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',

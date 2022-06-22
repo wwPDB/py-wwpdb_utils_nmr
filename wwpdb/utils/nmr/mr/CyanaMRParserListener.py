@@ -298,6 +298,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.alignPolymerSequence()
                     self.assignPolymerSequence()
 
+                self.trimPolymerSequence()
+
         if len(self.warningMessage) == 0:
             self.warningMessage = None
         else:
@@ -482,7 +484,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
-                if not self.areUniqueCoordAtoms('a Scalar coupling constant'):
+                if not self.areUniqueCoordAtoms('a Scalar coupling'):
                     return
 
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -534,6 +536,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if atom1['chain_id'] != atom2['chain_id']:
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -1162,6 +1166,27 @@ class CyanaMRParserListener(ParseTreeListener):
                         except StopIteration:
                             pass
 
+    def trimPolymerSequence(self):
+        if self.__seqAlign is None or self.__chainAssign is None:
+            return
+
+        uneffSeqAlignIdx = list(range(len(self.__seqAlign) - 1, -1, -1))
+
+        for chain_assign in self.__chainAssign:
+            ref_chain_id = chain_assign['ref_chain_id']
+            test_chain_id = chain_assign['test_chain_id']
+
+            effSeqAligIdx = next((idx for idx, seq_align in enumerate(self.__seqAlign)
+                                  if seq_align['ref_chain_id'] == ref_chain_id
+                                  and seq_align['test_chain_id'] == test_chain_id), None)
+
+            if effSeqAligIdx is not None:
+                uneffSeqAlignIdx.remove(effSeqAligIdx)
+
+        if len(uneffSeqAlignIdx) > 0:
+            for idx in uneffSeqAlignIdx:
+                del self.__seqAlign[idx]
+
     def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True):
         """ Select atoms of the coordinates.
         """
@@ -1467,10 +1492,16 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.atomSelectionSet) < 4:
                         return
 
+                    if not self.areUniqueCoordAtoms('a Torsion angle'):
+                        return
+
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
+                        if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                           or atom3['chain_id'] != atom4['chain_id']:
+                            continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
@@ -1536,11 +1567,17 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.atomSelectionSet) < 5:
                         return
 
+                    if not self.areUniqueCoordAtoms('a Torsion angle'):
+                        return
+
                     for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                                self.atomSelectionSet[1],
                                                                                self.atomSelectionSet[2],
                                                                                self.atomSelectionSet[3],
                                                                                self.atomSelectionSet[4]):
+                        if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                           or atom3['chain_id'] != atom4['chain_id'] or atom4['chain_id'] != atom5['chain_id']:
+                            continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
@@ -1784,6 +1821,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -2915,7 +2954,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 2:
                 return
 
-            if not self.areUniqueCoordAtoms('a Scalar coupling constant'):
+            if not self.areUniqueCoordAtoms('a Scalar coupling'):
                 return
 
             chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -2967,6 +3006,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")

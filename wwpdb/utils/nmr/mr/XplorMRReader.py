@@ -189,6 +189,11 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2bjc/test.mr',
+                 '../../tests-nmr/mock-data-remediation/2bjc/2bjc.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/4by9/test.mr',
                  '../../tests-nmr/mock-data-remediation/4by9/4by9.cif')
 

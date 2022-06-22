@@ -438,6 +438,8 @@ class XplorMRParserListener(ParseTreeListener):
                     self.alignPolymerSequence()
                     self.assignPolymerSequence()
 
+                self.trimPolymerSequence()
+
         if len(self.warningMessage) == 0:
             self.warningMessage = None
         else:
@@ -1198,6 +1200,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                   or atom3['chain_id'] != atom4['chain_id']:
+                    continue
                 if self.__debug:
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                            [atom1, atom2, atom3, atom4])
@@ -1534,6 +1539,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -1886,6 +1893,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XDIP) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -2134,6 +2143,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                   or atom3['chain_id'] != atom4['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (VEAN) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
@@ -2389,6 +2401,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (TENSO) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -2463,6 +2477,9 @@ class XplorMRParserListener(ParseTreeListener):
             dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
                                             target_value, lower_limit, upper_limit)
 
+            if dstFunc is None:
+                return
+
             if not self.__hasPolySeq:
                 return
 
@@ -2535,6 +2552,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                   or atom3['chain_id'] != atom4['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (ANIS) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
@@ -2872,6 +2892,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
+                    if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                       or atom3['chain_id'] != atom4['chain_id']:
+                        continue
                     if self.__debug:
                         if dstFunc2 is None:
                             print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
@@ -2885,6 +2908,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
+                    if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                       or atom3['chain_id'] != atom4['chain_id']:
+                        continue
                     if self.__debug:
                         if dstFunc2 is None:
                             print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
@@ -2897,6 +2923,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[5],
                                                                     self.atomSelectionSet[6],
                                                                     self.atomSelectionSet[7]):
+                    if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                       or atom3['chain_id'] != atom4['chain_id']:
+                        continue
                     if self.__debug:
                         if dstFunc2 is None:
                             print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
@@ -3018,6 +3047,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                        self.atomSelectionSet[2],
                                                                        self.atomSelectionSet[3],
                                                                        self.atomSelectionSet[4]):
+                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                   or atom3['chain_id'] != atom4['chain_id'] or atom4['chain_id'] != atom5['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CARB) id={self.hvycsRestraints} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
@@ -3250,6 +3282,8 @@ class XplorMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
+            if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']:
+                continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (PROTON/ANIS) id={self.procsRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
@@ -3342,6 +3376,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                        self.atomSelectionSet[2],
                                                                        self.atomSelectionSet[3],
                                                                        self.atomSelectionSet[4]):
+                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                   or atom3['chain_id'] != atom4['chain_id'] or atom4['chain_id'] != atom5['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (PROTON/RING) id={self.procsRestraints} "
                           f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5}")
@@ -3353,6 +3390,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                                               self.atomSelectionSet[3],
                                                                               self.atomSelectionSet[4],
                                                                               self.atomSelectionSet[5]):
+                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                   or atom3['chain_id'] != atom4['chain_id'] or atom4['chain_id'] != atom5['chain_id']\
+                   or atom5['chain_id'] != atom6['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (PROTON/RING) id={self.procsRestraints} "
                           f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} atom6={atom6}")
@@ -3484,6 +3525,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[i + 1],
                                                                 self.atomSelectionSet[i + 2],
                                                                 self.atomSelectionSet[i + 3]):
+                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                   or atom3['chain_id'] != atom4['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (RAMA) id={self.ramaRestraints} "
                           f"atom{i+1}={atom1} atom{i+2}={atom2} atom{i+3}={atom3} atom{i+4}={atom4}")
@@ -3696,6 +3740,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (DANI) id={self.diffRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -3951,6 +3997,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
                                                             self.atomSelectionSet[3]):
+            if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+               or atom3['chain_id'] != atom4['chain_id']:
+                continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (ORIE) id={self.nbaseRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}")
@@ -4200,6 +4249,8 @@ class XplorMRParserListener(ParseTreeListener):
             for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[4],
                                                          self.atomSelectionSet[5],
                                                          self.atomSelectionSet[6]):
+                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.csaRestraints} "
                           f"atom1(CSA central)={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
@@ -5094,6 +5145,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XRDC) id={self.prdcRestraints} "
                           f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
@@ -5224,6 +5277,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XANG) id={self.pangRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc} {dstFunc2}")
@@ -5351,6 +5406,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
                                                   self.atomSelectionSet[2]):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XCCR) id={self.prdcRestraints} "
                           f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
@@ -5599,6 +5656,8 @@ class XplorMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
+            if atom1['chain_id'] != atom2['chain_id']:
+                continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (HBDA) id={self.hbondRestraints} "
                       f"donor={atom1} hydrogen={atom2} acceptor={atom3}")
@@ -6694,6 +6753,27 @@ class XplorMRParserListener(ParseTreeListener):
 
                         except StopIteration:
                             pass
+
+    def trimPolymerSequence(self):
+        if self.__seqAlign is None or self.__chainAssign is None:
+            return
+
+        uneffSeqAlignIdx = list(range(len(self.__seqAlign) - 1, -1, -1))
+
+        for chain_assign in self.__chainAssign:
+            ref_chain_id = chain_assign['ref_chain_id']
+            test_chain_id = chain_assign['test_chain_id']
+
+            effSeqAligIdx = next((idx for idx, seq_align in enumerate(self.__seqAlign)
+                                  if seq_align['ref_chain_id'] == ref_chain_id
+                                  and seq_align['test_chain_id'] == test_chain_id), None)
+
+            if effSeqAligIdx is not None:
+                uneffSeqAlignIdx.remove(effSeqAligIdx)
+
+        if len(uneffSeqAlignIdx) > 0:
+            for idx in uneffSeqAlignIdx:
+                del self.__seqAlign[idx]
 
     def intersectionFactor_expressions(self, atomSelection=None):
         self.consumeFactor_expressions(cifCheck=False)

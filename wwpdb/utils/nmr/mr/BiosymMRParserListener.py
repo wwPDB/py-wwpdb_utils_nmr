@@ -224,6 +224,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     self.alignPolymerSequence()
                     self.assignPolymerSequence()
 
+                self.trimPolymerSequence()
+
         if len(self.warningMessage) == 0:
             self.warningMessage = None
         else:
@@ -974,6 +976,27 @@ class BiosymMRParserListener(ParseTreeListener):
                         except StopIteration:
                             pass
 
+    def trimPolymerSequence(self):
+        if self.__seqAlign is None or self.__chainAssign is None:
+            return
+
+        uneffSeqAlignIdx = list(range(len(self.__seqAlign) - 1, -1, -1))
+
+        for chain_assign in self.__chainAssign:
+            ref_chain_id = chain_assign['ref_chain_id']
+            test_chain_id = chain_assign['test_chain_id']
+
+            effSeqAligIdx = next((idx for idx, seq_align in enumerate(self.__seqAlign)
+                                  if seq_align['ref_chain_id'] == ref_chain_id
+                                  and seq_align['test_chain_id'] == test_chain_id), None)
+
+            if effSeqAligIdx is not None:
+                uneffSeqAlignIdx.remove(effSeqAligIdx)
+
+        if len(uneffSeqAlignIdx) > 0:
+            for idx in uneffSeqAlignIdx:
+                del self.__seqAlign[idx]
+
     def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True):
         """ Select atoms of the coordinates.
         """
@@ -1192,6 +1215,9 @@ class BiosymMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 4:
                 return
 
+            if not self.areUniqueCoordAtoms('a Dihedral angle'):
+                return
+
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1199,6 +1225,9 @@ class BiosymMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                   or atom3['chain_id'] != atom4['chain_id']:
+                    continue
                 if self.__debug:
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                            [atom1, atom2, atom3, atom4])
@@ -1279,6 +1308,9 @@ class BiosymMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 4:
                 return
 
+            if not self.areUniqueCoordAtoms('a Dihedral angle'):
+                return
+
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1286,6 +1318,9 @@ class BiosymMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
+                   or atom3['chain_id'] != atom4['chain_id']:
+                    continue
                 if self.__debug:
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                            [atom1, atom2, atom3, atom4])
@@ -1399,7 +1434,7 @@ class BiosymMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 2:
             return
 
-        if not self.areUniqueCoordAtoms('a chirality'):
+        if not self.areUniqueCoordAtoms('a Chirality'):
             return
 
         for atom1 in self.atomSelectionSet[0]:

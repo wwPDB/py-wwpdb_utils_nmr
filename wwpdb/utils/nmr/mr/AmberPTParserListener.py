@@ -425,6 +425,8 @@ class AmberPTParserListener(ParseTreeListener):
                 self.alignPolymerSequence()
                 self.assignPolymerSequence()
 
+            self.trimPolymerSequence()
+
             if self.__nonPolyModel is not None:
 
                 # metal ion
@@ -820,6 +822,27 @@ class AmberPTParserListener(ParseTreeListener):
 
                         except StopIteration:
                             pass
+
+    def trimPolymerSequence(self):
+        if self.__seqAlign is None or self.__chainAssign is None:
+            return
+
+        uneffSeqAlignIdx = list(range(len(self.__seqAlign) - 1, -1, -1))
+
+        for chain_assign in self.__chainAssign:
+            ref_chain_id = chain_assign['ref_chain_id']
+            test_chain_id = chain_assign['test_chain_id']
+
+            effSeqAligIdx = next((idx for idx, seq_align in enumerate(self.__seqAlign)
+                                  if seq_align['ref_chain_id'] == ref_chain_id
+                                  and seq_align['test_chain_id'] == test_chain_id), None)
+
+            if effSeqAligIdx is not None:
+                uneffSeqAlignIdx.remove(effSeqAligIdx)
+
+        if len(uneffSeqAlignIdx) > 0:
+            for idx in uneffSeqAlignIdx:
+                del self.__seqAlign[idx]
 
     def assignMetalIon(self):
         if self.__nonPolyModel is None:

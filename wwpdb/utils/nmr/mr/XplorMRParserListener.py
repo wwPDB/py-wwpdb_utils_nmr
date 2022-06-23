@@ -1510,7 +1510,8 @@ class XplorMRParserListener(ParseTreeListener):
             if abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                     pass
 
                 else:
@@ -1871,7 +1872,8 @@ class XplorMRParserListener(ParseTreeListener):
             if abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                     pass
 
                 else:
@@ -2112,7 +2114,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                         pass
 
                     else:
@@ -2371,7 +2374,8 @@ class XplorMRParserListener(ParseTreeListener):
             if abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                     pass
 
                 else:
@@ -2520,7 +2524,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                         pass
 
                     else:
@@ -2858,7 +2863,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                         pass
 
                     else:
@@ -3484,7 +3490,8 @@ class XplorMRParserListener(ParseTreeListener):
             if abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                     pass
 
                 else:
@@ -3701,7 +3708,8 @@ class XplorMRParserListener(ParseTreeListener):
             if abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                     pass
 
                 else:
@@ -4160,7 +4168,8 @@ class XplorMRParserListener(ParseTreeListener):
             if abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                     pass
 
                 else:
@@ -4174,7 +4183,8 @@ class XplorMRParserListener(ParseTreeListener):
             elif abs(seq_id_2 - seq_id_3) == 1:
 
                 if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
-                   ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA')) or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')):
+                        ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA'))
+                         or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')):
                     pass
 
                 else:
@@ -4188,7 +4198,8 @@ class XplorMRParserListener(ParseTreeListener):
             elif abs(seq_id_3 - seq_id_1) == 1:
 
                 if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
-                   ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H', 'CA')) or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H', 'CA') and atom_id_1 == 'C')):
+                        ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H', 'CA'))
+                         or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H', 'CA') and atom_id_1 == 'C')):
                     pass
 
                 else:
@@ -5105,7 +5116,8 @@ class XplorMRParserListener(ParseTreeListener):
             if abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                     pass
 
                 else:
@@ -5237,7 +5249,8 @@ class XplorMRParserListener(ParseTreeListener):
             if abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                     pass
 
                 else:
@@ -5366,7 +5379,8 @@ class XplorMRParserListener(ParseTreeListener):
             if abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                     pass
 
                 else:

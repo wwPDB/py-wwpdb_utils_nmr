@@ -3456,7 +3456,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#shf_statement.
     def exitShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
-        if self.nprot < 0 and self.iprot.keys() is not None:
+        if self.nprot < 0 and len(self.iprot.keys()) > 0:  # pylint: disable=chained-comparison
             self.nprot = max(self.iprot.keys())
 
         if self.nprot <= 0:
@@ -3900,7 +3900,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#pcshf_statement.
     def exitPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
-        if self.nprot < 0 and self.iprot.keys() is not None:
+        if self.nprot < 0 and len(self.iprot.keys()) > 0:  # pylint: disable=chained-comparison
             self.nprot = max(self.iprot.keys())
 
         if self.nprot <= 0:
@@ -3910,7 +3910,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         atomSelection = []
 
-        if self.nme < 0 and self.optphi.keys() is not None:
+        if self.nme < 0 and len(self.optphi.keys()) > 0:  # pylint: disable=chained-comparison
             self.nme = max(self.optphi.keys())
         """
         if self.nme <= 0:
@@ -4249,7 +4249,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#align_statement.
     def exitAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
-        if self.ndip < 0 and self.id.keys() is not None:
+        if self.ndip < 0 and len(self.id.keys()) > 0:  # pylint: disable=chained-comparison
             self.ndip = max(self.id.keys())
 
         if self.ndip <= 0:
@@ -4361,7 +4361,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                         pass
 
                     else:
@@ -4762,7 +4763,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#csa_statement.
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
-        if self.ncsa < 0 and self.icsa.keys() is not None:
+        if self.ncsa < 0 and len(self.icsa.keys()) > 0:  # pylint: disable=chained-comparison
             self.ncsa = max(self.icsa.keys())
 
         if self.ncsa <= 0:
@@ -4905,7 +4906,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                       ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA')) or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
                         pass
 
                     else:
@@ -4919,7 +4921,8 @@ class AmberMRParserListener(ParseTreeListener):
                 elif abs(seq_id_2 - seq_id_3) == 1:
 
                     if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
-                       ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA')) or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')):
+                            ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA'))
+                             or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')):
                         pass
 
                     else:
@@ -4933,7 +4936,8 @@ class AmberMRParserListener(ParseTreeListener):
                 elif abs(seq_id_3 - seq_id_1) == 1:
 
                     if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
-                       ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H', 'CA')) or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H', 'CA') and atom_id_1 == 'C')):
+                            ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H', 'CA'))
+                             or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H', 'CA') and atom_id_1 == 'C')):
                         pass
 
                     else:

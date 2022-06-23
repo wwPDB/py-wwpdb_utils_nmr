@@ -268,7 +268,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                 if len(candidates) == 1:
                     atomId = candidates[0]
                     return atomId[:-1] if atomId.endswith('1') else atomId
-            elif atomId[0] + 'N' + atomId[1:] in refAtomIdList or atomId[0] + 'N' + atomId[1:] + '1' in refAtomIdList:  # 5CM
+            elif (atomId[0] + 'N' + atomId[1:] in refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in refAtomIdList):  # 5CM
                 return atomId[0] + 'N' + atomId[1:]
             elif atomId[0].endswith('2') and (atomId[0:-1] + 'A') in refAtomIdList:
                 return atomId[0:-1] + 'A'

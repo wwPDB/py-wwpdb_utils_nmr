@@ -39,7 +39,8 @@ try:
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from wwpdb.utils.nmr.AlignUtil import (updatePolySeqRstFromAtomSelectionSet,
+    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+                                           updatePolySeqRstFromAtomSelectionSet,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -69,7 +70,8 @@ except ImportError:
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from nmr.AlignUtil import (updatePolySeqRstFromAtomSelectionSet,
+    from nmr.AlignUtil import (monDict3,
+                               updatePolySeqRstFromAtomSelectionSet,
                                sortPolySeqRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -525,9 +527,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.ang_sander_pat = re.compile(r'(\d+) (\S+) (\S+): '
                                          r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
                                          r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                         r'\(\s*(\d+) (\S+) (\S+)\s*\) '
-                                         r'([-+]?\d*\.?\d+) '
-                                         r'([-+]?\d*\.?\d+).*')
+                                         r'\(\s*(\d+) (\S+) (\S+)\s*\).*')  # r'([-+]?\d*\.?\d+) [-+]?\d*\.?\d+).*')
         self.ang_nang_sander_pat = re.compile(r'N angles for residue (\d+).*')
 
         self.ang_nang_atoms = [['H', 'N', 'C'],
@@ -2448,7 +2448,7 @@ class AmberMRParserListener(ParseTreeListener):
                 cifSeqId = None if useDefault else ps['seq_id'][idx]
                 authCompId = factor['auth_comp_id'].upper()
 
-                if ((authCompId in (compId, origCompId) and useDefault) or not useDefault)\
+                if (((authCompId in (compId, origCompId) or compId not in monDict3) and useDefault) or not useDefault)\
                    or compId == translateToStdResName(authCompId):
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)

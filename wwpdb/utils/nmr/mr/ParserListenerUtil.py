@@ -242,6 +242,38 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
             refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
             if atomId in refAtomIdList:
                 return atomId
+            # DNA/RNA OH 5/3 prime terminus
+            if atomId.startswith("H1'"):
+                if atomId == "H1''" and "H1'A" in refAtomIdList:  # 4DG
+                    return "H1'A"
+            elif atomId.startswith("H2'"):
+                if atomId == "H2'" and "H2'1" in refAtomIdList:  # DCZ, THM
+                    return "H2'1"
+                if atomId == "H2''" and "H2'2" in refAtomIdList:  # DCZ, THM
+                    return "H2'2"
+            elif atomId.startswith("H4'"):
+                if atomId == "H4''" and "H4'A" in refAtomIdList:  # 4DG
+                    return "H4'A"
+            elif atomId.startswith("H5'"):
+                if atomId == "H5'" and "H5'1" in refAtomIdList:  # DCZ, THM
+                    return "H5'1"
+                if atomId == "H5''" and "H5'2" in refAtomIdList:  # DCZ, THM
+                    return "H5'2"
+                if atomId == "H5''" and "H5'A" in refAtomIdList:  # 4DG, 23G
+                    return "H5'A"
+            elif atomId.startswith('M'):  # methyl group
+                if 'H' + atomId[1:] + '1' in refAtomIdList:
+                    return 'H' + atomId[1:]
+                candidates = ccU.getRepresentativeMethylProtons(refCompId)
+                if len(candidates) == 1:
+                    atomId = candidates[0]
+                    return atomId[:-1] if atomId.endswith('1') else atomId
+            elif atomId[0] + 'N' + atomId[1:] in refAtomIdList or atomId[0] + 'N' + atomId[1:] + '1' in refAtomIdList:  # 5CM
+                return atomId[0] + 'N' + atomId[1:]
+            elif atomId[0].endswith('2') and (atomId[0:-1] + 'A') in refAtomIdList:
+                return atomId[0:-1] + 'A'
+            elif atomId[0].endswith('3') and (atomId[0:-1] + 'B') in refAtomIdList:
+                return atomId[0:-1] + 'B'
 
     # GROMACS atom nomenclature
     if refCompId is not None:

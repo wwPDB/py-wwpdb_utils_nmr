@@ -164,6 +164,55 @@ class ChemCompUtil:
 
         return self.lastStatus
 
+    def getMethylAtoms(self, compId):
+        """ Return atoms in methyl group of a given comp_id.
+        """
+
+        if not self.updateChemCompDict(compId):
+            return []
+
+        atmList = []
+
+        carbons = (a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'C')
+
+        for carbon in carbons:
+            protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != carbon else b[self.ccbAtomId2])
+                       for b in self.lastBonds
+                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] == 'H')
+                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] == 'H')]
+            if len(protons) != 3:
+                continue
+            atmList.append(carbon)
+            atmList.extend(protons)
+
+        return atmList
+
+    def getRepresentativeMethylProtons(self, compId):
+        """ Return representative protons in methyl group of a given comp_id.
+        """
+
+        ends_w_num = [a for a in self.getMethylAtoms(compId) if a.startswith('H') and a[-1].isdigit()]
+        ends_w_alp = [a for a in self.getMethylAtoms(compId) if a.startswith('H') and not a[-1].isdigit()]
+
+        atmList = []
+
+        if len(ends_w_num) > 0:
+            atmList.extend([a for a in ends_w_num if a.endswith('1')])
+
+        if len(ends_w_alp) > 0:
+            min_len = min([len(a) for a in ends_w_alp])
+            atmList.extend([a for a in ends_w_alp if len(a) == min_len])
+
+        return atmList
+
+    def getNonRepresentativeMethylProtons(self, compId):
+        """ Return non-representative protons in methyl group of a given comp_id.
+        """
+
+        repList = self.getRepresentativeMethylProtons(compId)
+
+        return [a for a in self.getMethylAtoms(compId) if a.startswith('H') and a not in repList]
+
     def write_std_dict_as_pickle(self):
         """ Write dictionary for standard residues as pickle file.
         """

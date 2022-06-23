@@ -218,6 +218,12 @@ class AmberMRReader:
 if __name__ == "__main__":
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6alu/dd09_RST',
+                 '../../tests-nmr/mock-data-remediation/6alu/6alu.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6i4o/all.rest',
                  '../../tests-nmr/mock-data-remediation/6i4o/6i4o.cif',
                  None)
@@ -275,3 +281,4 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-daother-7421/D_1292118884_mr-upload_P1.amber.V1',
                  '../../tests-nmr/mock-data-daother-7421/D_800450_model_P1.cif.V1',
                  '../../tests-nmr/mock-data-daother-7421/D_1292118884_mr-upload_P1.dat.V1')
+

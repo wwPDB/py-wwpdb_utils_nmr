@@ -800,12 +800,11 @@ class BiosymMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                   or atom3['chain_id'] != atom4['chain_id']:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                if angleName is None:
                     continue
                 if self.__debug:
-                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4])
                     _dstFunc = f"{dstFunc}"
                     if dstFunc2 is not None:
                         _dstFunc += f" {dstFunc2}"
@@ -893,12 +892,11 @@ class BiosymMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                   or atom3['chain_id'] != atom4['chain_id']:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                if angleName is None:
                     continue
                 if self.__debug:
-                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4])
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 

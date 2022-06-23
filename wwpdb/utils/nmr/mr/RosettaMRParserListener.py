@@ -20,6 +20,7 @@ try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        translateToStdAtomName,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -42,6 +43,7 @@ except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            translateToStdAtomName,
                                            REPRESENTATIVE_MODEL_ID,
@@ -818,7 +820,7 @@ class RosettaMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
-            if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']:
+            if isLongRangeRestraint([atom1, atom2, atom3]):
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
@@ -1090,12 +1092,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
                                                             self.atomSelectionSet[3]):
-            if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-               or atom3['chain_id'] != atom4['chain_id']:
+            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                   [atom1, atom2, atom3, atom4])
+            if angleName is None:
                 continue
             if self.__debug:
-                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4])
                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
@@ -1183,12 +1184,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
                                                             self.atomSelectionSet[3]):
-            if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-               or atom3['chain_id'] != atom4['chain_id']:
+            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                   [atom1, atom2, atom3, atom4])
+            if angleName is None:
                 continue
             if self.__debug:
-                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4])
                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}")
 
@@ -1199,12 +1199,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[5],
                                                             self.atomSelectionSet[6],
                                                             self.atomSelectionSet[7]):
-            if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-               or atom3['chain_id'] != atom4['chain_id']:
+            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                   [atom1, atom2, atom3, atom4])
+            if angleName is None:
                 continue
             if self.__debug:
-                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4])
                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                       f"atom5={atom1} atom6={atom2} atom7={atom3} atom8={atom4} {dstFunc}")
 
@@ -2604,7 +2603,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if atom1['chain_id'] != atom2['chain_id']:
+                if isLongRangeRestraint([atom1, atom2]):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CS-ROSETTA: RDC) id={self.rdcRestraints} "

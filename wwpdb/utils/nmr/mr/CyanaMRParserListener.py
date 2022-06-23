@@ -18,6 +18,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       isLongRangeRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
@@ -48,6 +49,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           isLongRangeRestraint,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
@@ -536,7 +538,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if atom1['chain_id'] != atom2['chain_id']:
+                    if isLongRangeRestraint([atom1, atom2]):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
@@ -697,7 +699,7 @@ class CyanaMRParserListener(ParseTreeListener):
         chainAssign = []
         _seqId = seqId
 
-        updatePolySeqRst(self.__polySeq[0]['chain_id'], _seqId, translateToStdResName(compId))
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'], _seqId, translateToStdResName(compId))
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -1072,8 +1074,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                           or atom3['chain_id'] != atom4['chain_id']:
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
@@ -1148,8 +1149,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                                self.atomSelectionSet[2],
                                                                                self.atomSelectionSet[3],
                                                                                self.atomSelectionSet[4]):
-                        if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                           or atom3['chain_id'] != atom4['chain_id'] or atom4['chain_id'] != atom5['chain_id']:
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5]):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
@@ -1394,7 +1394,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if atom1['chain_id'] != atom2['chain_id']:
+                if isLongRangeRestraint([atom1, atom2]):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -2579,7 +2579,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if atom1['chain_id'] != atom2['chain_id']:
+                if isLongRangeRestraint([atom1, atom2]):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "

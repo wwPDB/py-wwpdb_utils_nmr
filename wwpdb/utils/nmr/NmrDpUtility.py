@@ -26124,7 +26124,8 @@ class NmrDpUtility:
 
             data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
 
-            data_type = data_type.lower()
+            if data_type is not None:
+                data_type = data_type.lower()
 
             if data_type in emptyValue:
                 data_type = 'undefined'
@@ -34651,7 +34652,7 @@ class NmrDpUtility:
 
                 data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
 
-                if data_type.lower() not in ('phi', 'psi'):
+                if data_type is None or data_type.lower() not in ('phi', 'psi'):
                     return False
 
                 dh_chains.add(chain_id_1)

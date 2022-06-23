@@ -16,6 +16,7 @@ try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.GromacsMRParser import GromacsMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
@@ -37,6 +38,7 @@ except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.GromacsMRParser import GromacsMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
@@ -508,12 +510,11 @@ class GromacsMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                   or atom3['chain_id'] != atom4['chain_id']:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                if angleName is None:
                     continue
                 if self.__debug:
-                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4])
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
@@ -744,7 +745,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if atom1['chain_id'] != atom2['chain_id']:
+                if isLongRangeRestraint([atom1, atom2]):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} exp={exp} index={index} "
@@ -947,7 +948,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[atom_order[0]],
                                                              self.atomSelectionSet[atom_order[1]],
                                                              self.atomSelectionSet[atom_order[2]]):
-                    if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']:
+                    if isLongRangeRestraint([atom1, atom2, atom3]):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
@@ -959,8 +960,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
-                    if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                       or atom3['chain_id'] != atom4['chain_id']:
+                    if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
@@ -1057,7 +1057,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if atom1['chain_id'] != atom2['chain_id']:
+                if isLongRangeRestraint([atom1, atom2]):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "

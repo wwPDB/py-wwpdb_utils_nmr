@@ -20,6 +20,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
                                                        translateToStdAtomName,
                                                        translateToStdResName,
+                                                       isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
@@ -49,6 +50,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
                                            translateToStdAtomName,
                                            translateToStdResName,
+                                           isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
@@ -956,7 +958,7 @@ class AmberMRParserListener(ParseTreeListener):
                     for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                  self.atomSelectionSet[1],
                                                                  self.atomSelectionSet[2]):
-                        if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']:
+                        if isLongRangeRestraint([atom1, atom2, atom3]):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
@@ -988,12 +990,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                           or atom3['chain_id'] != atom4['chain_id']:
+                        angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                               [atom1, atom2, atom3, atom4])
+                        if angleName is None:
                             continue
                         if self.__debug:
-                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                   [atom1, atom2, atom3, atom4])
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
@@ -1473,7 +1474,7 @@ class AmberMRParserListener(ParseTreeListener):
                     for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                  self.atomSelectionSet[1],
                                                                  self.atomSelectionSet[2]):
-                        if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']:
+                        if isLongRangeRestraint([atom1, atom2, atom3]):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
@@ -1511,12 +1512,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                           or atom3['chain_id'] != atom4['chain_id']:
+                        angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                               [atom1, atom2, atom3, atom4])
+                        if angleName is None:
                             continue
                         if self.__debug:
-                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                   [atom1, atom2, atom3, atom4])
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
@@ -4402,7 +4402,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if atom1['chain_id'] != atom2['chain_id']:
+                    if isLongRangeRestraint([atom1, atom2]):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} dataset={self.dataset} n={n} "
@@ -4992,7 +4992,7 @@ class AmberMRParserListener(ParseTreeListener):
                 for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                              self.atomSelectionSet[1],
                                                              self.atomSelectionSet[2]):
-                    if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']:
+                    if isLongRangeRestraint([atom1, atom2, atom3]):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} dataset={self.datasetc} n={n} "

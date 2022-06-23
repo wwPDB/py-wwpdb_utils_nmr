@@ -608,6 +608,19 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'auth_to_label_seq': authToLabelSeq}
 
 
+def isLongRangeRestraint(atoms):
+    """ Return whether restraint is neither an intra residue nor sequential residues.
+    """
+
+    chainIds = [a['chain_id'] for a in atoms]
+    seqIds = [a['seq_id'] for a in atoms]
+
+    if len(collections.Counter(chainIds).most_common()) > 1:
+        return True
+
+    return len(collections.Counter(seqIds).most_common()) > 1
+
+
 def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms):
     """ Return type of dihedral angle restraint.
     """
@@ -616,10 +629,8 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     seqIds = [a['seq_id'] for a in atoms]
     atomIds = [a['atom_id'] for a in atoms]
 
-    commonChainId = collections.Counter(chainIds).most_common()
-
-    if len(commonChainId) > 1:
-        return '.'
+    if len(collections.Counter(chainIds).most_common()) > 1:
+        return None
 
     commonSeqId = collections.Counter(seqIds).most_common()
 
@@ -694,6 +705,29 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
 
                 if found:
                     return dataType
+
+        testDataType = ['PHI', 'PSI', 'OMEGA',
+                        'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
+                        'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42']
+
+        for dataType in testDataType:
+
+            found = True
+
+            for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_ATOM_NAMES[dataType]):
+
+                if isinstance(angAtomId, str):
+                    if atomId != angAtomId:
+                        found = False
+                        break
+
+                else:
+                    if not angAtomId.match(atomId):
+                        found = False
+                        break
+
+            if found:
+                return None
 
     elif polynucleotide:
 
@@ -788,6 +822,55 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                     if found:
                         return dataType
 
+        testDataType = ['ETA', "ETA'",
+                        'ALPHA', 'EPSILON', 'ZETA', 'THETA', "THETA'",
+                        'BETA', 'GAMMA', 'DELTA', 'NU0', 'NU1', 'NU2', 'NU3', 'NU4']
+
+        for dataType in testDataType:
+
+            found = True
+
+            for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_ATOM_NAMES[dataType]):
+
+                if isinstance(angAtomId, str):
+                    if atomId != angAtomId:
+                        found = False
+                        break
+
+                else:
+                    if not angAtomId.match(atomId):
+                        found = False
+                        break
+
+            if found:
+                return None
+
+        if 'N1' in atomIds:
+
+            found = True
+
+            for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_ATOM_NAMES['CHI']['Y']):
+
+                if atomId != angAtomId:
+                    found = False
+                    break
+
+            if found:
+                return None
+
+        elif 'N9' in atomIds:
+
+            found = True
+
+            for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_ATOM_NAMES['CHI']['R']):
+
+                if atomId != angAtomId:
+                    found = False
+                    break
+
+            if found:
+                return None
+
     elif carbohydrates:
 
         if lenCommonSeqId == 2:
@@ -823,7 +906,26 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         if found:
                             return dataType
 
-    return '.'
+        testDataType = ['PHI', 'PSI', 'OMEGA']
+
+        found = True
+
+        for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_CARBO_ATOM_NAMES[dataType]):
+
+            if isinstance(angAtomId, str):
+                if atomId != angAtomId:
+                    found = False
+                    break
+
+            else:
+                if not angAtomId.match(atomId):
+                    found = False
+                    break
+
+        if found:
+            return None
+
+    return '.' if lenCommonSeqId == 1 else None
 
 
 def startsWithPdbRecord(line):

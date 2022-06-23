@@ -16,6 +16,7 @@ try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.PalesMRParser import PalesMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                                       isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
@@ -42,6 +43,7 @@ except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.PalesMRParser import PalesMRParser
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
+                                           isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            translateToStdResName,
                                            translateToStdAtomName,
@@ -633,7 +635,7 @@ class PalesMRParserListener(ParseTreeListener):
         chainAssign = []
         _seqId = seqId
 
-        updatePolySeqRst(self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, translateToStdResName(compId))
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, translateToStdResName(compId))
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -959,12 +961,11 @@ class PalesMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                   or atom3['chain_id'] != atom4['chain_id']:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                if angleName is None:
                     continue
                 if self.__debug:
-                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4])
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
@@ -1052,12 +1053,11 @@ class PalesMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                   or atom3['chain_id'] != atom4['chain_id']:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                if angleName is None:
                     continue
                 if self.__debug:
-                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4])
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
@@ -1145,12 +1145,11 @@ class PalesMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                   or atom3['chain_id'] != atom4['chain_id']:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                if angleName is None:
                     continue
                 if self.__debug:
-                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4])
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
@@ -1356,7 +1355,7 @@ class PalesMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if atom1['chain_id'] != atom2['chain_id']:
+                if isLongRangeRestraint([atom1, atom2]):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -1495,7 +1494,7 @@ class PalesMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if atom1['chain_id'] != atom2['chain_id']:
+                if isLongRangeRestraint([atom1, atom2]):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -1634,7 +1633,7 @@ class PalesMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if atom1['chain_id'] != atom2['chain_id']:
+                if isLongRangeRestraint([atom1, atom2]):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -1815,12 +1814,11 @@ class PalesMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                   or atom3['chain_id'] != atom4['chain_id']:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                if angleName is None:
                     continue
                 if self.__debug:
-                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4])
                     if angleName == 'PHI':
                         self.auxAtomSelectionSet.clear()
                         self.selectAuxCoordAtoms(chainAssign2, seqId2, compId2, 'H', False)
@@ -1922,12 +1920,11 @@ class PalesMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                   or atom3['chain_id'] != atom4['chain_id']:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                if angleName is None:
                     continue
                 if self.__debug:
-                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4])
                     if angleName == 'PHI':
                         self.auxAtomSelectionSet.clear()
                         self.selectAuxCoordAtoms(chainAssign2, seqId2, compId2, 'H', False)
@@ -2029,12 +2026,11 @@ class PalesMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                   or atom3['chain_id'] != atom4['chain_id']:
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                if angleName is None:
                     continue
                 if self.__debug:
-                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4])
                     if angleName == 'PHI':
                         self.auxAtomSelectionSet.clear()
                         self.selectAuxCoordAtoms(chainAssign2, seqId2, compId2, 'H', False)
@@ -2150,10 +2146,10 @@ class PalesMRParserListener(ParseTreeListener):
                     f"Found unknown residue name {compId!r}.\n"
                 return
 
-            if compId in monDict3:
+            if len(compId) >= 3:
                 pass
             else:
-                compId = next(k for k, v in monDict3.items() if v == compId)
+                compId = next(k for k, v in monDict3.items() if v == compId and len(k) == 3)
 
             if None in self.numberSelection:
                 return
@@ -2252,8 +2248,7 @@ class PalesMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if atom1['chain_id'] != atom2['chain_id'] or atom2['chain_id'] != atom3['chain_id']\
-                           or atom3['chain_id'] != atom4['chain_id']:
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "

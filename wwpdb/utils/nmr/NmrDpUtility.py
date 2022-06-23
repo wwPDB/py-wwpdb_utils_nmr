@@ -27934,41 +27934,26 @@ class NmrDpUtility:
                     elif any(not self.__nefT.validate_comp_atom(comp_id, atom_id) for atom_id in atom_ids):
                         auth_atom_ids = [self.__getRepresentativeAtomIdInXplor(comp_id, atom_id) for atom_id in atom_ids]
                         self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
-                    auth_seq_id = next((c['auth_seq_id'] for c in coord if c['chain_id'] == chain_id and c['seq_id'] == seq_id), None)
-                    if auth_seq_id is not None and auth_seq_id.isdigit():
-                        self.__auth_to_label_seq[(label_to_auth_chain[chain_id], int(auth_seq_id))] = seq_key
+                    auth_seq_id = next((c['auth_seq_id'] for c in coord if c['chain_id'] == chain_id and c['seq_id'] is not None and int(c['seq_id']) == seq_id), None)
+                    if auth_seq_id is not None:
+                        self.__auth_to_label_seq[(label_to_auth_chain[chain_id], auth_seq_id)] = seq_key
             self.__label_to_auth_seq = {v: k for k, v in self.__auth_to_label_seq.items()}
-
-            no_seq_schema_mapping = len(self.__auth_to_label_seq) == 0
-
-            if no_seq_schema_mapping:
-                for chain_id in chain_ids:
-                    seq_ids = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
-                    for seq_id in seq_ids:
-                        seq_key = (chain_id, seq_id)
-                        self.__auth_to_label_seq[seq_key] = seq_key
-                self.__label_to_auth_seq = self.__auth_to_label_seq
 
             # DAOTHER-7665
             self.__coord_unobs_res = []
             unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                         {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'}
                                                          ],
                                                         [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
                                                          ])
 
             if len(unobs_res) > 0:
-                chain_ids = set(u['chain_id'] for u in unobs_res)
                 for chain_id in chain_ids:
                     seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
                     for seq_id in seq_ids:
                         seq_key = (chain_id, seq_id)
-                        if no_seq_schema_mapping:
-                            self.__coord_unobs_res.append(seq_key)
-                        elif seq_key in self.__auth_to_label_seq:
-                            self.__coord_unobs_res.append(self.__auth_to_label_seq[seq_key])
+                        self.__coord_unobs_res.append(seq_key)
 
             return True
 
@@ -29904,7 +29889,7 @@ class NmrDpUtility:
 
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
 
-                    if self.__nonblk_bad_nterm and (seq_id == 1 or cif_seq_id == 1) and atom_id_ == 'H'\
+                    if self.__nonblk_bad_nterm and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__coord_unobs_res) and atom_id_ == 'H'\
                        and (cyclic or comp_id == 'PRO' or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_)):  # DAOTHER-7665
 
                         err += " However, it is acceptable if corresponding atom name, H1, is given during biocuration "

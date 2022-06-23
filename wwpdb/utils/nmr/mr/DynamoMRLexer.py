@@ -1,4 +1,4 @@
-# Generated from PalesMRLexer.g4 by ANTLR 4.10.1
+# Generated from DynamoMRLexer.g4 by ANTLR 4.10.1
 from antlr4 import *
 from io import StringIO
 import sys
@@ -441,7 +441,7 @@ def serializedATN():
         2,0,5,3,0,0,1,0,6,0,0,4,0,0
     ]
 
-class PalesMRLexer(Lexer):
+class DynamoMRLexer(Lexer):
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -572,7 +572,7 @@ class PalesMRLexer(Lexer):
                   "Format_code", "SPACE_F", "RETURN_F", "SECTION_COMMENT_F", 
                   "LINE_COMMENT_F" ]
 
-    grammarFileName = "PalesMRLexer.g4"
+    grammarFileName = "DynamoMRLexer.g4"
 
     def __init__(self, input=None, output:TextIO = sys.stdout):
         super().__init__(input, output)

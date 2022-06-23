@@ -1,5 +1,5 @@
 /*
- PALES (DYNAMO) MR (Magnetic Restraint) parser grammar for ANTLR v4.
+ DYNAMO/PALES/TALOS MR (Magnetic Restraint) parser grammar for ANTLR v4.
  Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-parser grammar PalesMRParser;
+parser grammar DynamoMRParser;
 
-options { tokenVocab=PalesMRLexer; }
+options { tokenVocab=DynamoMRLexer; }
 
-pales_mr:
+dynamo_mr:
 	(
 	sequence |
 	distance_restraints |
@@ -37,12 +37,12 @@ pales_mr:
 	)*
 	EOF;
 
-/* PALES: Syntax
- See also https://spin.niddk.nih.gov/bax/software/PALES/
-*/
-
 /* DYNAMO: Syntax
  See also https://spin.niddk.nih.gov/NMRPipe/dynamo/
+*/
+
+/* PALES: Syntax
+ See also https://spin.niddk.nih.gov/bax/software/PALES/
 */
 
 sequence:

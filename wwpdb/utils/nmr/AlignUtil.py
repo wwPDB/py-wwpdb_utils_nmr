@@ -590,8 +590,8 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
     elif fileType == 'nm-aux-gro':
         _mr_format_name = 'GROMACS'
         _a_mr_format_name = 'the ' + _mr_format_name + ' parameter/topology'
-    elif fileType == 'nm-res-pal':
-        _mr_format_name = 'PALES/DYNAMO'
+    elif fileType == 'nm-res-dyn':
+        _mr_format_name = 'DYNAMO/PALES/TALOS'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
 
     mr_chains = len(polySeqRst)

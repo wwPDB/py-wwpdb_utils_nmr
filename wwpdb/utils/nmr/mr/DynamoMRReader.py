@@ -1,9 +1,9 @@
 ##
-# PalesMRReader.py
+# DynamoMRReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing PALES MR files.
+""" A collection of classes for parsing DYNAMO/PALES/TALOS MR files.
 """
 import sys
 import os
@@ -13,9 +13,9 @@ from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMo
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.mr.PalesMRLexer import PalesMRLexer
-    from wwpdb.utils.nmr.mr.PalesMRParser import PalesMRParser
-    from wwpdb.utils.nmr.mr.PalesMRParserListener import PalesMRParserListener
+    from wwpdb.utils.nmr.mr.DynamoMRLexer import DynamoMRLexer
+    from wwpdb.utils.nmr.mr.DynamoMRParser import DynamoMRParser
+    from wwpdb.utils.nmr.mr.DynamoMRParserListener import DynamoMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
@@ -26,9 +26,9 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.mr.PalesMRLexer import PalesMRLexer
-    from nmr.mr.PalesMRParser import PalesMRParser
-    from nmr.mr.PalesMRParserListener import PalesMRParserListener
+    from nmr.mr.DynamoMRLexer import DynamoMRLexer
+    from nmr.mr.DynamoMRParser import DynamoMRParser
+    from nmr.mr.DynamoMRParserListener import DynamoMRParserListener
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
@@ -38,8 +38,8 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
-class PalesMRReader:
-    """ Accessor methods for parsing PALES MR files.
+class DynamoMRReader:
+    """ Accessor methods for parsing DYNAMO/PALES/TALOS MR files.
     """
 
     def __init__(self, verbose=True, log=sys.stdout,
@@ -83,8 +83,8 @@ class PalesMRReader:
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, mrFilePath, cifFilePath=None, isFilePath=True):
-        """ Parse PALES MR file.
-            @return: PalesMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+        """ Parse DYNAMO/PALES/TALOS MR file.
+            @return: DynamoMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifp = None
@@ -96,7 +96,7 @@ class PalesMRReader:
 
                 if not os.access(mrFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"PalesMRReader.parse() {mrFilePath} is not accessible.\n")
+                        self.__lfh.write(f"DynamoMRReader.parse() {mrFilePath} is not accessible.\n")
                     return None, None, None
 
                 ifp = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
@@ -107,7 +107,7 @@ class PalesMRReader:
 
                 if mrString is None or len(mrString) == 0:
                     if self.__verbose:
-                        self.__lfh.write("PalesMRReader.parse() Empty string.\n")
+                        self.__lfh.write("DynamoMRReader.parse() Empty string.\n")
                     return None, None, None
 
                 input = InputStream(mrString)
@@ -115,7 +115,7 @@ class PalesMRReader:
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"PalesMRReader.parse() {cifFilePath} is not accessible.\n")
+                        self.__lfh.write(f"DynamoMRReader.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
@@ -123,7 +123,7 @@ class PalesMRReader:
                     if not self.__cR.parse(cifFilePath):
                         return None, None, None
 
-            lexer = PalesMRLexer(input)
+            lexer = DynamoMRLexer(input)
             lexer.removeErrorListeners()
 
             lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
@@ -139,20 +139,20 @@ class PalesMRReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = PalesMRParser(stream)
+            parser = DynamoMRParser(stream)
             # try with simpler/faster SLL prediction mode
             parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.pales_mr()
+            tree = parser.dynamo_mr()
 
             walker = ParseTreeWalker()
-            listener = PalesMRParserListener(self.__verbose, self.__lfh,
-                                             self.__representativeModelId,
-                                             self.__cR, self.__cC,
-                                             self.__ccU, self.__csStat, self.__nefT,
-                                             self.__reasons)
+            listener = DynamoMRParserListener(self.__verbose, self.__lfh,
+                                              self.__representativeModelId,
+                                              self.__cR, self.__cC,
+                                              self.__ccU, self.__csStat, self.__nefT,
+                                              self.__reasons)
             listener.setDebugMode(self.__debug)
             walker.walk(listener, tree)
 
@@ -175,12 +175,12 @@ class PalesMRReader:
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+PalesMRReader.parse() ++ Error - {str(e)}\n")
+                self.__lfh.write(f"+DynamoMRReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
 
         except Exception as e:
             if self.__verbose and isFilePath:
-                self.__lfh.write(f"+PalesMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
+                self.__lfh.write(f"+DynamoMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
 
         finally:
@@ -189,12 +189,12 @@ class PalesMRReader:
 
 
 if __name__ == "__main__":
-    reader = PalesMRReader(True)
+    reader = DynamoMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5kqj/ANT2_FINALTAB.tab',
                  '../../tests-nmr/mock-data-remediation/5kqj/5kqj.cif')
 
-    reader = PalesMRReader(True)
+    reader = DynamoMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7kn0/dObsA_ngel2.tab',
                  '../../tests-nmr/mock-data-remediation/7kn0/7kn0.cif')

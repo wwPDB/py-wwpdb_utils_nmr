@@ -1,4 +1,4 @@
-# Generated from PalesMRParser.g4 by ANTLR 4.10.1
+# Generated from DynamoMRParser.g4 by ANTLR 4.10.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -293,9 +293,9 @@ def serializedATN():
         290,356,426,474,515,558,617,692,771,826
     ]
 
-class PalesMRParser ( Parser ):
+class DynamoMRParser ( Parser ):
 
-    grammarFileName = "PalesMRParser.g4"
+    grammarFileName = "DynamoMRParser.g4"
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -336,7 +336,7 @@ class PalesMRParser ( Parser ):
                       "LINE_COMMENT_V", "Format_code", "SPACE_F", "RETURN_F", 
                       "SECTION_COMMENT_F", "LINE_COMMENT_F" ]
 
-    RULE_pales_mr = 0
+    RULE_dynamo_mr = 0
     RULE_sequence = 1
     RULE_distance_restraints = 2
     RULE_distance_restraint = 3
@@ -366,7 +366,7 @@ class PalesMRParser ( Parser ):
     RULE_talos_restraint = 27
     RULE_number = 28
 
-    ruleNames =  [ "pales_mr", "sequence", "distance_restraints", "distance_restraint", 
+    ruleNames =  [ "dynamo_mr", "sequence", "distance_restraints", "distance_restraint", 
                    "distance_restraints_sw_segid", "distance_restraint_sw_segid", 
                    "distance_restraints_ew_segid", "distance_restraint_ew_segid", 
                    "torsion_angle_restraints", "torsion_angle_restraint", 
@@ -463,7 +463,7 @@ class PalesMRParser ( Parser ):
 
 
 
-    class Pales_mrContext(ParserRuleContext):
+    class Dynamo_mrContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -471,131 +471,131 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def EOF(self):
-            return self.getToken(PalesMRParser.EOF, 0)
+            return self.getToken(DynamoMRParser.EOF, 0)
 
         def sequence(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.SequenceContext)
+                return self.getTypedRuleContexts(DynamoMRParser.SequenceContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.SequenceContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.SequenceContext,i)
 
 
         def distance_restraints(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Distance_restraintsContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Distance_restraintsContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Distance_restraintsContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Distance_restraintsContext,i)
 
 
         def distance_restraints_sw_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Distance_restraints_sw_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Distance_restraints_sw_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Distance_restraints_sw_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Distance_restraints_sw_segidContext,i)
 
 
         def distance_restraints_ew_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Distance_restraints_ew_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Distance_restraints_ew_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Distance_restraints_ew_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Distance_restraints_ew_segidContext,i)
 
 
         def torsion_angle_restraints(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Torsion_angle_restraintsContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Torsion_angle_restraintsContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Torsion_angle_restraintsContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Torsion_angle_restraintsContext,i)
 
 
         def torsion_angle_restraints_sw_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Torsion_angle_restraints_sw_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Torsion_angle_restraints_sw_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Torsion_angle_restraints_sw_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Torsion_angle_restraints_sw_segidContext,i)
 
 
         def torsion_angle_restraints_ew_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Torsion_angle_restraints_ew_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Torsion_angle_restraints_ew_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Torsion_angle_restraints_ew_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Torsion_angle_restraints_ew_segidContext,i)
 
 
         def rdc_restraints(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Rdc_restraintsContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Rdc_restraintsContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Rdc_restraintsContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Rdc_restraintsContext,i)
 
 
         def rdc_restraints_sw_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Rdc_restraints_sw_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Rdc_restraints_sw_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Rdc_restraints_sw_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Rdc_restraints_sw_segidContext,i)
 
 
         def rdc_restraints_ew_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Rdc_restraints_ew_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Rdc_restraints_ew_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Rdc_restraints_ew_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Rdc_restraints_ew_segidContext,i)
 
 
         def coupling_restraints(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Coupling_restraintsContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Coupling_restraintsContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Coupling_restraintsContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Coupling_restraintsContext,i)
 
 
         def coupling_restraints_sw_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Coupling_restraints_sw_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Coupling_restraints_sw_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Coupling_restraints_sw_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Coupling_restraints_sw_segidContext,i)
 
 
         def coupling_restraints_ew_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Coupling_restraints_ew_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Coupling_restraints_ew_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Coupling_restraints_ew_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Coupling_restraints_ew_segidContext,i)
 
 
         def talos_restraints(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Talos_restraintsContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Talos_restraintsContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Talos_restraintsContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Talos_restraintsContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_pales_mr
+            return DynamoMRParser.RULE_dynamo_mr
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterPales_mr" ):
-                listener.enterPales_mr(self)
+            if hasattr( listener, "enterDynamo_mr" ):
+                listener.enterDynamo_mr(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitPales_mr" ):
-                listener.exitPales_mr(self)
+            if hasattr( listener, "exitDynamo_mr" ):
+                listener.exitDynamo_mr(self)
 
 
 
 
-    def pales_mr(self):
+    def dynamo_mr(self):
 
-        localctx = PalesMRParser.Pales_mrContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 0, self.RULE_pales_mr)
+        localctx = DynamoMRParser.Dynamo_mrContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 0, self.RULE_dynamo_mr)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 74
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==PalesMRParser.Data or _la==PalesMRParser.Vars:
+            while _la==DynamoMRParser.Data or _la==DynamoMRParser.Vars:
                 self.state = 72
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -675,7 +675,7 @@ class PalesMRParser ( Parser ):
                 _la = self._input.LA(1)
 
             self.state = 77
-            self.match(PalesMRParser.EOF)
+            self.match(DynamoMRParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -693,28 +693,28 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Data(self):
-            return self.getToken(PalesMRParser.Data, 0)
+            return self.getToken(DynamoMRParser.Data, 0)
 
         def RETURN_D(self):
-            return self.getToken(PalesMRParser.RETURN_D, 0)
+            return self.getToken(DynamoMRParser.RETURN_D, 0)
 
         def First_resid(self):
-            return self.getToken(PalesMRParser.First_resid, 0)
+            return self.getToken(DynamoMRParser.First_resid, 0)
 
         def Integer_D(self):
-            return self.getToken(PalesMRParser.Integer_D, 0)
+            return self.getToken(DynamoMRParser.Integer_D, 0)
 
         def Sequence(self):
-            return self.getToken(PalesMRParser.Sequence, 0)
+            return self.getToken(DynamoMRParser.Sequence, 0)
 
         def One_letter_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.One_letter_code)
+                return self.getTokens(DynamoMRParser.One_letter_code)
             else:
-                return self.getToken(PalesMRParser.One_letter_code, i)
+                return self.getToken(DynamoMRParser.One_letter_code, i)
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_sequence
+            return DynamoMRParser.RULE_sequence
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterSequence" ):
@@ -729,35 +729,35 @@ class PalesMRParser ( Parser ):
 
     def sequence(self):
 
-        localctx = PalesMRParser.SequenceContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.SequenceContext(self, self._ctx, self.state)
         self.enterRule(localctx, 2, self.RULE_sequence)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 79
-            self.match(PalesMRParser.Data)
+            self.match(DynamoMRParser.Data)
             self.state = 88
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [PalesMRParser.First_resid]:
+            if token in [DynamoMRParser.First_resid]:
                 self.state = 80
-                self.match(PalesMRParser.First_resid)
+                self.match(DynamoMRParser.First_resid)
                 self.state = 81
-                self.match(PalesMRParser.Integer_D)
+                self.match(DynamoMRParser.Integer_D)
                 pass
-            elif token in [PalesMRParser.Sequence]:
+            elif token in [DynamoMRParser.Sequence]:
                 self.state = 82
-                self.match(PalesMRParser.Sequence)
+                self.match(DynamoMRParser.Sequence)
                 self.state = 84 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
                     self.state = 83
-                    self.match(PalesMRParser.One_letter_code)
+                    self.match(DynamoMRParser.One_letter_code)
                     self.state = 86 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if not (_la==PalesMRParser.One_letter_code):
+                    if not (_la==DynamoMRParser.One_letter_code):
                         break
 
                 pass
@@ -765,7 +765,7 @@ class PalesMRParser ( Parser ):
                 raise NoViableAltException(self)
 
             self.state = 90
-            self.match(PalesMRParser.RETURN_D)
+            self.match(DynamoMRParser.RETURN_D)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -783,71 +783,71 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Index(self):
-            return self.getToken(PalesMRParser.Index, 0)
+            return self.getToken(DynamoMRParser.Index, 0)
 
         def Group(self):
-            return self.getToken(PalesMRParser.Group, 0)
+            return self.getToken(DynamoMRParser.Group, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def D_Lo(self):
-            return self.getToken(PalesMRParser.D_Lo, 0)
+            return self.getToken(DynamoMRParser.D_Lo, 0)
 
         def D_Hi(self):
-            return self.getToken(PalesMRParser.D_Hi, 0)
+            return self.getToken(DynamoMRParser.D_Hi, 0)
 
         def FC(self):
-            return self.getToken(PalesMRParser.FC, 0)
+            return self.getToken(DynamoMRParser.FC, 0)
 
         def W(self):
-            return self.getToken(PalesMRParser.W, 0)
+            return self.getToken(DynamoMRParser.W, 0)
 
         def S(self):
-            return self.getToken(PalesMRParser.S, 0)
+            return self.getToken(DynamoMRParser.S, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def distance_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Distance_restraintContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Distance_restraintContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Distance_restraintContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Distance_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_distance_restraints
+            return DynamoMRParser.RULE_distance_restraints
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_restraints" ):
@@ -862,71 +862,71 @@ class PalesMRParser ( Parser ):
 
     def distance_restraints(self):
 
-        localctx = PalesMRParser.Distance_restraintsContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Distance_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_distance_restraints)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 92
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 93
-            self.match(PalesMRParser.Index)
+            self.match(DynamoMRParser.Index)
             self.state = 94
-            self.match(PalesMRParser.Group)
+            self.match(DynamoMRParser.Group)
             self.state = 95
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 96
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 97
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 98
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 99
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 100
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 101
-            self.match(PalesMRParser.D_Lo)
+            self.match(DynamoMRParser.D_Lo)
             self.state = 102
-            self.match(PalesMRParser.D_Hi)
+            self.match(DynamoMRParser.D_Hi)
             self.state = 103
-            self.match(PalesMRParser.FC)
+            self.match(DynamoMRParser.FC)
             self.state = 104
-            self.match(PalesMRParser.W)
+            self.match(DynamoMRParser.W)
             self.state = 105
-            self.match(PalesMRParser.S)
+            self.match(DynamoMRParser.S)
             self.state = 106
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 107
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 108
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 109
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 110
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 111
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 112
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 113
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 114
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 115
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 116
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 117
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 118
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 119
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 120
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 121
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 123 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -936,7 +936,7 @@ class PalesMRParser ( Parser ):
                 self.state = 125 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -957,25 +957,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_distance_restraint
+            return DynamoMRParser.RULE_distance_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_restraint" ):
@@ -990,26 +990,26 @@ class PalesMRParser ( Parser ):
 
     def distance_restraint(self):
 
-        localctx = PalesMRParser.Distance_restraintContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Distance_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 127
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 128
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 129
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 130
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 131
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 132
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 133
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 134
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 135
             self.number()
             self.state = 136
@@ -1037,77 +1037,77 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Index(self):
-            return self.getToken(PalesMRParser.Index, 0)
+            return self.getToken(DynamoMRParser.Index, 0)
 
         def Group(self):
-            return self.getToken(PalesMRParser.Group, 0)
+            return self.getToken(DynamoMRParser.Group, 0)
 
         def Segname_I(self):
-            return self.getToken(PalesMRParser.Segname_I, 0)
+            return self.getToken(DynamoMRParser.Segname_I, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Segname_J(self):
-            return self.getToken(PalesMRParser.Segname_J, 0)
+            return self.getToken(DynamoMRParser.Segname_J, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def D_Lo(self):
-            return self.getToken(PalesMRParser.D_Lo, 0)
+            return self.getToken(DynamoMRParser.D_Lo, 0)
 
         def D_Hi(self):
-            return self.getToken(PalesMRParser.D_Hi, 0)
+            return self.getToken(DynamoMRParser.D_Hi, 0)
 
         def FC(self):
-            return self.getToken(PalesMRParser.FC, 0)
+            return self.getToken(DynamoMRParser.FC, 0)
 
         def W(self):
-            return self.getToken(PalesMRParser.W, 0)
+            return self.getToken(DynamoMRParser.W, 0)
 
         def S(self):
-            return self.getToken(PalesMRParser.S, 0)
+            return self.getToken(DynamoMRParser.S, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def distance_restraint_sw_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Distance_restraint_sw_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Distance_restraint_sw_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Distance_restraint_sw_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Distance_restraint_sw_segidContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_distance_restraints_sw_segid
+            return DynamoMRParser.RULE_distance_restraints_sw_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_restraints_sw_segid" ):
@@ -1122,79 +1122,79 @@ class PalesMRParser ( Parser ):
 
     def distance_restraints_sw_segid(self):
 
-        localctx = PalesMRParser.Distance_restraints_sw_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Distance_restraints_sw_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_distance_restraints_sw_segid)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 141
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 142
-            self.match(PalesMRParser.Index)
+            self.match(DynamoMRParser.Index)
             self.state = 143
-            self.match(PalesMRParser.Group)
+            self.match(DynamoMRParser.Group)
             self.state = 144
-            self.match(PalesMRParser.Segname_I)
+            self.match(DynamoMRParser.Segname_I)
             self.state = 145
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 146
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 147
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 148
-            self.match(PalesMRParser.Segname_J)
+            self.match(DynamoMRParser.Segname_J)
             self.state = 149
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 150
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 151
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 152
-            self.match(PalesMRParser.D_Lo)
+            self.match(DynamoMRParser.D_Lo)
             self.state = 153
-            self.match(PalesMRParser.D_Hi)
+            self.match(DynamoMRParser.D_Hi)
             self.state = 154
-            self.match(PalesMRParser.FC)
+            self.match(DynamoMRParser.FC)
             self.state = 155
-            self.match(PalesMRParser.W)
+            self.match(DynamoMRParser.W)
             self.state = 156
-            self.match(PalesMRParser.S)
+            self.match(DynamoMRParser.S)
             self.state = 157
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 158
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 159
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 160
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 161
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 162
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 163
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 164
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 165
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 166
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 167
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 168
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 169
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 170
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 171
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 172
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 173
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 174
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 176 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -1204,7 +1204,7 @@ class PalesMRParser ( Parser ):
                 self.state = 178 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -1225,25 +1225,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_distance_restraint_sw_segid
+            return DynamoMRParser.RULE_distance_restraint_sw_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_restraint_sw_segid" ):
@@ -1258,30 +1258,30 @@ class PalesMRParser ( Parser ):
 
     def distance_restraint_sw_segid(self):
 
-        localctx = PalesMRParser.Distance_restraint_sw_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Distance_restraint_sw_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_distance_restraint_sw_segid)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 180
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 181
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 182
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 183
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 184
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 185
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 186
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 187
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 188
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 189
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 190
             self.number()
             self.state = 191
@@ -1309,77 +1309,77 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Index(self):
-            return self.getToken(PalesMRParser.Index, 0)
+            return self.getToken(DynamoMRParser.Index, 0)
 
         def Group(self):
-            return self.getToken(PalesMRParser.Group, 0)
+            return self.getToken(DynamoMRParser.Group, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Segname_I(self):
-            return self.getToken(PalesMRParser.Segname_I, 0)
+            return self.getToken(DynamoMRParser.Segname_I, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def Segname_J(self):
-            return self.getToken(PalesMRParser.Segname_J, 0)
+            return self.getToken(DynamoMRParser.Segname_J, 0)
 
         def D_Lo(self):
-            return self.getToken(PalesMRParser.D_Lo, 0)
+            return self.getToken(DynamoMRParser.D_Lo, 0)
 
         def D_Hi(self):
-            return self.getToken(PalesMRParser.D_Hi, 0)
+            return self.getToken(DynamoMRParser.D_Hi, 0)
 
         def FC(self):
-            return self.getToken(PalesMRParser.FC, 0)
+            return self.getToken(DynamoMRParser.FC, 0)
 
         def W(self):
-            return self.getToken(PalesMRParser.W, 0)
+            return self.getToken(DynamoMRParser.W, 0)
 
         def S(self):
-            return self.getToken(PalesMRParser.S, 0)
+            return self.getToken(DynamoMRParser.S, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def distance_restraint_ew_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Distance_restraint_ew_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Distance_restraint_ew_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Distance_restraint_ew_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Distance_restraint_ew_segidContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_distance_restraints_ew_segid
+            return DynamoMRParser.RULE_distance_restraints_ew_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_restraints_ew_segid" ):
@@ -1394,79 +1394,79 @@ class PalesMRParser ( Parser ):
 
     def distance_restraints_ew_segid(self):
 
-        localctx = PalesMRParser.Distance_restraints_ew_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Distance_restraints_ew_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 12, self.RULE_distance_restraints_ew_segid)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 196
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 197
-            self.match(PalesMRParser.Index)
+            self.match(DynamoMRParser.Index)
             self.state = 198
-            self.match(PalesMRParser.Group)
+            self.match(DynamoMRParser.Group)
             self.state = 199
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 200
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 201
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 202
-            self.match(PalesMRParser.Segname_I)
+            self.match(DynamoMRParser.Segname_I)
             self.state = 203
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 204
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 205
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 206
-            self.match(PalesMRParser.Segname_J)
+            self.match(DynamoMRParser.Segname_J)
             self.state = 207
-            self.match(PalesMRParser.D_Lo)
+            self.match(DynamoMRParser.D_Lo)
             self.state = 208
-            self.match(PalesMRParser.D_Hi)
+            self.match(DynamoMRParser.D_Hi)
             self.state = 209
-            self.match(PalesMRParser.FC)
+            self.match(DynamoMRParser.FC)
             self.state = 210
-            self.match(PalesMRParser.W)
+            self.match(DynamoMRParser.W)
             self.state = 211
-            self.match(PalesMRParser.S)
+            self.match(DynamoMRParser.S)
             self.state = 212
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 213
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 214
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 215
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 216
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 217
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 218
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 219
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 220
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 221
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 222
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 223
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 224
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 225
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 226
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 227
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 228
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 229
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 231 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -1476,7 +1476,7 @@ class PalesMRParser ( Parser ):
                 self.state = 233 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -1497,25 +1497,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_distance_restraint_ew_segid
+            return DynamoMRParser.RULE_distance_restraint_ew_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterDistance_restraint_ew_segid" ):
@@ -1530,30 +1530,30 @@ class PalesMRParser ( Parser ):
 
     def distance_restraint_ew_segid(self):
 
-        localctx = PalesMRParser.Distance_restraint_ew_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Distance_restraint_ew_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 14, self.RULE_distance_restraint_ew_segid)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 235
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 236
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 237
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 238
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 239
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 240
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 241
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 242
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 243
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 244
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 245
             self.number()
             self.state = 246
@@ -1581,80 +1581,80 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Index(self):
-            return self.getToken(PalesMRParser.Index, 0)
+            return self.getToken(DynamoMRParser.Index, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def Resid_K(self):
-            return self.getToken(PalesMRParser.Resid_K, 0)
+            return self.getToken(DynamoMRParser.Resid_K, 0)
 
         def Resname_K(self):
-            return self.getToken(PalesMRParser.Resname_K, 0)
+            return self.getToken(DynamoMRParser.Resname_K, 0)
 
         def Atomname_K(self):
-            return self.getToken(PalesMRParser.Atomname_K, 0)
+            return self.getToken(DynamoMRParser.Atomname_K, 0)
 
         def Resid_L(self):
-            return self.getToken(PalesMRParser.Resid_L, 0)
+            return self.getToken(DynamoMRParser.Resid_L, 0)
 
         def Resname_L(self):
-            return self.getToken(PalesMRParser.Resname_L, 0)
+            return self.getToken(DynamoMRParser.Resname_L, 0)
 
         def Atomname_L(self):
-            return self.getToken(PalesMRParser.Atomname_L, 0)
+            return self.getToken(DynamoMRParser.Atomname_L, 0)
 
         def Angle_Lo(self):
-            return self.getToken(PalesMRParser.Angle_Lo, 0)
+            return self.getToken(DynamoMRParser.Angle_Lo, 0)
 
         def Angle_Hi(self):
-            return self.getToken(PalesMRParser.Angle_Hi, 0)
+            return self.getToken(DynamoMRParser.Angle_Hi, 0)
 
         def FC(self):
-            return self.getToken(PalesMRParser.FC, 0)
+            return self.getToken(DynamoMRParser.FC, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def torsion_angle_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Torsion_angle_restraintContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Torsion_angle_restraintContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Torsion_angle_restraintContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Torsion_angle_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_torsion_angle_restraints
+            return DynamoMRParser.RULE_torsion_angle_restraints
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTorsion_angle_restraints" ):
@@ -1669,83 +1669,83 @@ class PalesMRParser ( Parser ):
 
     def torsion_angle_restraints(self):
 
-        localctx = PalesMRParser.Torsion_angle_restraintsContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Torsion_angle_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 16, self.RULE_torsion_angle_restraints)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 251
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 252
-            self.match(PalesMRParser.Index)
+            self.match(DynamoMRParser.Index)
             self.state = 253
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 254
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 255
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 256
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 257
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 258
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 259
-            self.match(PalesMRParser.Resid_K)
+            self.match(DynamoMRParser.Resid_K)
             self.state = 260
-            self.match(PalesMRParser.Resname_K)
+            self.match(DynamoMRParser.Resname_K)
             self.state = 261
-            self.match(PalesMRParser.Atomname_K)
+            self.match(DynamoMRParser.Atomname_K)
             self.state = 262
-            self.match(PalesMRParser.Resid_L)
+            self.match(DynamoMRParser.Resid_L)
             self.state = 263
-            self.match(PalesMRParser.Resname_L)
+            self.match(DynamoMRParser.Resname_L)
             self.state = 264
-            self.match(PalesMRParser.Atomname_L)
+            self.match(DynamoMRParser.Atomname_L)
             self.state = 265
-            self.match(PalesMRParser.Angle_Lo)
+            self.match(DynamoMRParser.Angle_Lo)
             self.state = 266
-            self.match(PalesMRParser.Angle_Hi)
+            self.match(DynamoMRParser.Angle_Hi)
             self.state = 267
-            self.match(PalesMRParser.FC)
+            self.match(DynamoMRParser.FC)
             self.state = 268
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 269
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 270
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 271
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 272
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 273
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 274
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 275
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 276
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 277
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 278
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 279
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 280
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 281
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 282
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 283
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 284
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 285
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 286
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 288 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -1755,7 +1755,7 @@ class PalesMRParser ( Parser ):
                 self.state = 290 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -1776,25 +1776,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_torsion_angle_restraint
+            return DynamoMRParser.RULE_torsion_angle_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTorsion_angle_restraint" ):
@@ -1809,36 +1809,36 @@ class PalesMRParser ( Parser ):
 
     def torsion_angle_restraint(self):
 
-        localctx = PalesMRParser.Torsion_angle_restraintContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Torsion_angle_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_torsion_angle_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 292
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 293
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 294
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 295
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 296
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 297
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 298
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 299
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 300
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 301
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 302
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 303
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 304
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 305
             self.number()
             self.state = 306
@@ -1862,92 +1862,92 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Index(self):
-            return self.getToken(PalesMRParser.Index, 0)
+            return self.getToken(DynamoMRParser.Index, 0)
 
         def Segname_I(self):
-            return self.getToken(PalesMRParser.Segname_I, 0)
+            return self.getToken(DynamoMRParser.Segname_I, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Segname_J(self):
-            return self.getToken(PalesMRParser.Segname_J, 0)
+            return self.getToken(DynamoMRParser.Segname_J, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def Segname_K(self):
-            return self.getToken(PalesMRParser.Segname_K, 0)
+            return self.getToken(DynamoMRParser.Segname_K, 0)
 
         def Resid_K(self):
-            return self.getToken(PalesMRParser.Resid_K, 0)
+            return self.getToken(DynamoMRParser.Resid_K, 0)
 
         def Resname_K(self):
-            return self.getToken(PalesMRParser.Resname_K, 0)
+            return self.getToken(DynamoMRParser.Resname_K, 0)
 
         def Atomname_K(self):
-            return self.getToken(PalesMRParser.Atomname_K, 0)
+            return self.getToken(DynamoMRParser.Atomname_K, 0)
 
         def Segname_L(self):
-            return self.getToken(PalesMRParser.Segname_L, 0)
+            return self.getToken(DynamoMRParser.Segname_L, 0)
 
         def Resid_L(self):
-            return self.getToken(PalesMRParser.Resid_L, 0)
+            return self.getToken(DynamoMRParser.Resid_L, 0)
 
         def Resname_L(self):
-            return self.getToken(PalesMRParser.Resname_L, 0)
+            return self.getToken(DynamoMRParser.Resname_L, 0)
 
         def Atomname_L(self):
-            return self.getToken(PalesMRParser.Atomname_L, 0)
+            return self.getToken(DynamoMRParser.Atomname_L, 0)
 
         def Angle_Lo(self):
-            return self.getToken(PalesMRParser.Angle_Lo, 0)
+            return self.getToken(DynamoMRParser.Angle_Lo, 0)
 
         def Angle_Hi(self):
-            return self.getToken(PalesMRParser.Angle_Hi, 0)
+            return self.getToken(DynamoMRParser.Angle_Hi, 0)
 
         def FC(self):
-            return self.getToken(PalesMRParser.FC, 0)
+            return self.getToken(DynamoMRParser.FC, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def torsion_angle_restraint_sw_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Torsion_angle_restraint_sw_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Torsion_angle_restraint_sw_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Torsion_angle_restraint_sw_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Torsion_angle_restraint_sw_segidContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_torsion_angle_restraints_sw_segid
+            return DynamoMRParser.RULE_torsion_angle_restraints_sw_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTorsion_angle_restraints_sw_segid" ):
@@ -1962,99 +1962,99 @@ class PalesMRParser ( Parser ):
 
     def torsion_angle_restraints_sw_segid(self):
 
-        localctx = PalesMRParser.Torsion_angle_restraints_sw_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Torsion_angle_restraints_sw_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 20, self.RULE_torsion_angle_restraints_sw_segid)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 309
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 310
-            self.match(PalesMRParser.Index)
+            self.match(DynamoMRParser.Index)
             self.state = 311
-            self.match(PalesMRParser.Segname_I)
+            self.match(DynamoMRParser.Segname_I)
             self.state = 312
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 313
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 314
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 315
-            self.match(PalesMRParser.Segname_J)
+            self.match(DynamoMRParser.Segname_J)
             self.state = 316
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 317
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 318
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 319
-            self.match(PalesMRParser.Segname_K)
+            self.match(DynamoMRParser.Segname_K)
             self.state = 320
-            self.match(PalesMRParser.Resid_K)
+            self.match(DynamoMRParser.Resid_K)
             self.state = 321
-            self.match(PalesMRParser.Resname_K)
+            self.match(DynamoMRParser.Resname_K)
             self.state = 322
-            self.match(PalesMRParser.Atomname_K)
+            self.match(DynamoMRParser.Atomname_K)
             self.state = 323
-            self.match(PalesMRParser.Segname_L)
+            self.match(DynamoMRParser.Segname_L)
             self.state = 324
-            self.match(PalesMRParser.Resid_L)
+            self.match(DynamoMRParser.Resid_L)
             self.state = 325
-            self.match(PalesMRParser.Resname_L)
+            self.match(DynamoMRParser.Resname_L)
             self.state = 326
-            self.match(PalesMRParser.Atomname_L)
+            self.match(DynamoMRParser.Atomname_L)
             self.state = 327
-            self.match(PalesMRParser.Angle_Lo)
+            self.match(DynamoMRParser.Angle_Lo)
             self.state = 328
-            self.match(PalesMRParser.Angle_Hi)
+            self.match(DynamoMRParser.Angle_Hi)
             self.state = 329
-            self.match(PalesMRParser.FC)
+            self.match(DynamoMRParser.FC)
             self.state = 330
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 331
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 332
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 333
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 334
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 335
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 336
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 337
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 338
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 339
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 340
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 341
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 342
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 343
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 344
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 345
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 346
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 347
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 348
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 349
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 350
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 351
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 352
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 354 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -2064,7 +2064,7 @@ class PalesMRParser ( Parser ):
                 self.state = 356 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -2085,25 +2085,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_torsion_angle_restraint_sw_segid
+            return DynamoMRParser.RULE_torsion_angle_restraint_sw_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTorsion_angle_restraint_sw_segid" ):
@@ -2118,44 +2118,44 @@ class PalesMRParser ( Parser ):
 
     def torsion_angle_restraint_sw_segid(self):
 
-        localctx = PalesMRParser.Torsion_angle_restraint_sw_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Torsion_angle_restraint_sw_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 22, self.RULE_torsion_angle_restraint_sw_segid)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 358
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 359
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 360
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 361
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 362
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 363
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 364
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 365
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 366
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 367
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 368
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 369
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 370
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 371
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 372
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 373
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 374
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 375
             self.number()
             self.state = 376
@@ -2179,92 +2179,92 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Index(self):
-            return self.getToken(PalesMRParser.Index, 0)
+            return self.getToken(DynamoMRParser.Index, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Segname_I(self):
-            return self.getToken(PalesMRParser.Segname_I, 0)
+            return self.getToken(DynamoMRParser.Segname_I, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def Segname_J(self):
-            return self.getToken(PalesMRParser.Segname_J, 0)
+            return self.getToken(DynamoMRParser.Segname_J, 0)
 
         def Resid_K(self):
-            return self.getToken(PalesMRParser.Resid_K, 0)
+            return self.getToken(DynamoMRParser.Resid_K, 0)
 
         def Resname_K(self):
-            return self.getToken(PalesMRParser.Resname_K, 0)
+            return self.getToken(DynamoMRParser.Resname_K, 0)
 
         def Atomname_K(self):
-            return self.getToken(PalesMRParser.Atomname_K, 0)
+            return self.getToken(DynamoMRParser.Atomname_K, 0)
 
         def Segname_K(self):
-            return self.getToken(PalesMRParser.Segname_K, 0)
+            return self.getToken(DynamoMRParser.Segname_K, 0)
 
         def Resid_L(self):
-            return self.getToken(PalesMRParser.Resid_L, 0)
+            return self.getToken(DynamoMRParser.Resid_L, 0)
 
         def Resname_L(self):
-            return self.getToken(PalesMRParser.Resname_L, 0)
+            return self.getToken(DynamoMRParser.Resname_L, 0)
 
         def Atomname_L(self):
-            return self.getToken(PalesMRParser.Atomname_L, 0)
+            return self.getToken(DynamoMRParser.Atomname_L, 0)
 
         def Segname_L(self):
-            return self.getToken(PalesMRParser.Segname_L, 0)
+            return self.getToken(DynamoMRParser.Segname_L, 0)
 
         def Angle_Lo(self):
-            return self.getToken(PalesMRParser.Angle_Lo, 0)
+            return self.getToken(DynamoMRParser.Angle_Lo, 0)
 
         def Angle_Hi(self):
-            return self.getToken(PalesMRParser.Angle_Hi, 0)
+            return self.getToken(DynamoMRParser.Angle_Hi, 0)
 
         def FC(self):
-            return self.getToken(PalesMRParser.FC, 0)
+            return self.getToken(DynamoMRParser.FC, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def torsion_angle_restraint_ew_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Torsion_angle_restraint_ew_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Torsion_angle_restraint_ew_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Torsion_angle_restraint_ew_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Torsion_angle_restraint_ew_segidContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_torsion_angle_restraints_ew_segid
+            return DynamoMRParser.RULE_torsion_angle_restraints_ew_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTorsion_angle_restraints_ew_segid" ):
@@ -2279,99 +2279,99 @@ class PalesMRParser ( Parser ):
 
     def torsion_angle_restraints_ew_segid(self):
 
-        localctx = PalesMRParser.Torsion_angle_restraints_ew_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Torsion_angle_restraints_ew_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 24, self.RULE_torsion_angle_restraints_ew_segid)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 379
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 380
-            self.match(PalesMRParser.Index)
+            self.match(DynamoMRParser.Index)
             self.state = 381
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 382
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 383
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 384
-            self.match(PalesMRParser.Segname_I)
+            self.match(DynamoMRParser.Segname_I)
             self.state = 385
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 386
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 387
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 388
-            self.match(PalesMRParser.Segname_J)
+            self.match(DynamoMRParser.Segname_J)
             self.state = 389
-            self.match(PalesMRParser.Resid_K)
+            self.match(DynamoMRParser.Resid_K)
             self.state = 390
-            self.match(PalesMRParser.Resname_K)
+            self.match(DynamoMRParser.Resname_K)
             self.state = 391
-            self.match(PalesMRParser.Atomname_K)
+            self.match(DynamoMRParser.Atomname_K)
             self.state = 392
-            self.match(PalesMRParser.Segname_K)
+            self.match(DynamoMRParser.Segname_K)
             self.state = 393
-            self.match(PalesMRParser.Resid_L)
+            self.match(DynamoMRParser.Resid_L)
             self.state = 394
-            self.match(PalesMRParser.Resname_L)
+            self.match(DynamoMRParser.Resname_L)
             self.state = 395
-            self.match(PalesMRParser.Atomname_L)
+            self.match(DynamoMRParser.Atomname_L)
             self.state = 396
-            self.match(PalesMRParser.Segname_L)
+            self.match(DynamoMRParser.Segname_L)
             self.state = 397
-            self.match(PalesMRParser.Angle_Lo)
+            self.match(DynamoMRParser.Angle_Lo)
             self.state = 398
-            self.match(PalesMRParser.Angle_Hi)
+            self.match(DynamoMRParser.Angle_Hi)
             self.state = 399
-            self.match(PalesMRParser.FC)
+            self.match(DynamoMRParser.FC)
             self.state = 400
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 401
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 402
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 403
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 404
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 405
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 406
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 407
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 408
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 409
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 410
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 411
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 412
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 413
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 414
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 415
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 416
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 417
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 418
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 419
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 420
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 421
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 422
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 424 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -2381,7 +2381,7 @@ class PalesMRParser ( Parser ):
                 self.state = 426 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -2402,25 +2402,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_torsion_angle_restraint_ew_segid
+            return DynamoMRParser.RULE_torsion_angle_restraint_ew_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTorsion_angle_restraint_ew_segid" ):
@@ -2435,44 +2435,44 @@ class PalesMRParser ( Parser ):
 
     def torsion_angle_restraint_ew_segid(self):
 
-        localctx = PalesMRParser.Torsion_angle_restraint_ew_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Torsion_angle_restraint_ew_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 26, self.RULE_torsion_angle_restraint_ew_segid)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 428
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 429
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 430
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 431
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 432
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 433
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 434
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 435
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 436
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 437
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 438
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 439
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 440
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 441
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 442
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 443
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 444
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 445
             self.number()
             self.state = 446
@@ -2496,59 +2496,59 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def D(self):
-            return self.getToken(PalesMRParser.D, 0)
+            return self.getToken(DynamoMRParser.D, 0)
 
         def DD(self):
-            return self.getToken(PalesMRParser.DD, 0)
+            return self.getToken(DynamoMRParser.DD, 0)
 
         def W(self):
-            return self.getToken(PalesMRParser.W, 0)
+            return self.getToken(DynamoMRParser.W, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def rdc_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Rdc_restraintContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Rdc_restraintContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Rdc_restraintContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Rdc_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_rdc_restraints
+            return DynamoMRParser.RULE_rdc_restraints
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_restraints" ):
@@ -2563,55 +2563,55 @@ class PalesMRParser ( Parser ):
 
     def rdc_restraints(self):
 
-        localctx = PalesMRParser.Rdc_restraintsContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Rdc_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 28, self.RULE_rdc_restraints)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 449
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 450
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 451
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 452
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 453
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 454
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 455
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 456
-            self.match(PalesMRParser.D)
+            self.match(DynamoMRParser.D)
             self.state = 457
-            self.match(PalesMRParser.DD)
+            self.match(DynamoMRParser.DD)
             self.state = 458
-            self.match(PalesMRParser.W)
+            self.match(DynamoMRParser.W)
             self.state = 459
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 460
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 461
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 462
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 463
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 464
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 465
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 466
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 467
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 468
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 469
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 470
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 472 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -2621,7 +2621,7 @@ class PalesMRParser ( Parser ):
                 self.state = 474 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -2642,25 +2642,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_rdc_restraint
+            return DynamoMRParser.RULE_rdc_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_restraint" ):
@@ -2675,22 +2675,22 @@ class PalesMRParser ( Parser ):
 
     def rdc_restraint(self):
 
-        localctx = PalesMRParser.Rdc_restraintContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Rdc_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 30, self.RULE_rdc_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 476
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 477
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 478
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 479
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 480
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 481
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 482
             self.number()
             self.state = 483
@@ -2714,65 +2714,65 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Segname_I(self):
-            return self.getToken(PalesMRParser.Segname_I, 0)
+            return self.getToken(DynamoMRParser.Segname_I, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Segname_J(self):
-            return self.getToken(PalesMRParser.Segname_J, 0)
+            return self.getToken(DynamoMRParser.Segname_J, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def D(self):
-            return self.getToken(PalesMRParser.D, 0)
+            return self.getToken(DynamoMRParser.D, 0)
 
         def DD(self):
-            return self.getToken(PalesMRParser.DD, 0)
+            return self.getToken(DynamoMRParser.DD, 0)
 
         def W(self):
-            return self.getToken(PalesMRParser.W, 0)
+            return self.getToken(DynamoMRParser.W, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def rdc_restraint_sw_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Rdc_restraint_sw_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Rdc_restraint_sw_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Rdc_restraint_sw_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Rdc_restraint_sw_segidContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_rdc_restraints_sw_segid
+            return DynamoMRParser.RULE_rdc_restraints_sw_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_restraints_sw_segid" ):
@@ -2787,63 +2787,63 @@ class PalesMRParser ( Parser ):
 
     def rdc_restraints_sw_segid(self):
 
-        localctx = PalesMRParser.Rdc_restraints_sw_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Rdc_restraints_sw_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 32, self.RULE_rdc_restraints_sw_segid)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 486
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 487
-            self.match(PalesMRParser.Segname_I)
+            self.match(DynamoMRParser.Segname_I)
             self.state = 488
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 489
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 490
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 491
-            self.match(PalesMRParser.Segname_J)
+            self.match(DynamoMRParser.Segname_J)
             self.state = 492
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 493
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 494
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 495
-            self.match(PalesMRParser.D)
+            self.match(DynamoMRParser.D)
             self.state = 496
-            self.match(PalesMRParser.DD)
+            self.match(DynamoMRParser.DD)
             self.state = 497
-            self.match(PalesMRParser.W)
+            self.match(DynamoMRParser.W)
             self.state = 498
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 499
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 500
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 501
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 502
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 503
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 504
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 505
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 506
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 507
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 508
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 509
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 510
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 511
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 513 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -2853,7 +2853,7 @@ class PalesMRParser ( Parser ):
                 self.state = 515 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Simple_name):
+                if not (_la==DynamoMRParser.Simple_name):
                     break
 
         except RecognitionException as re:
@@ -2874,25 +2874,25 @@ class PalesMRParser ( Parser ):
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_rdc_restraint_sw_segid
+            return DynamoMRParser.RULE_rdc_restraint_sw_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_restraint_sw_segid" ):
@@ -2907,26 +2907,26 @@ class PalesMRParser ( Parser ):
 
     def rdc_restraint_sw_segid(self):
 
-        localctx = PalesMRParser.Rdc_restraint_sw_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Rdc_restraint_sw_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 34, self.RULE_rdc_restraint_sw_segid)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 517
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 518
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 519
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 520
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 521
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 522
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 523
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 524
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 525
             self.number()
             self.state = 526
@@ -2950,65 +2950,65 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Segname_I(self):
-            return self.getToken(PalesMRParser.Segname_I, 0)
+            return self.getToken(DynamoMRParser.Segname_I, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def Segname_J(self):
-            return self.getToken(PalesMRParser.Segname_J, 0)
+            return self.getToken(DynamoMRParser.Segname_J, 0)
 
         def D(self):
-            return self.getToken(PalesMRParser.D, 0)
+            return self.getToken(DynamoMRParser.D, 0)
 
         def DD(self):
-            return self.getToken(PalesMRParser.DD, 0)
+            return self.getToken(DynamoMRParser.DD, 0)
 
         def W(self):
-            return self.getToken(PalesMRParser.W, 0)
+            return self.getToken(DynamoMRParser.W, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def rdc_restraint_ew_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Rdc_restraint_ew_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Rdc_restraint_ew_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Rdc_restraint_ew_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Rdc_restraint_ew_segidContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_rdc_restraints_ew_segid
+            return DynamoMRParser.RULE_rdc_restraints_ew_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_restraints_ew_segid" ):
@@ -3023,63 +3023,63 @@ class PalesMRParser ( Parser ):
 
     def rdc_restraints_ew_segid(self):
 
-        localctx = PalesMRParser.Rdc_restraints_ew_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Rdc_restraints_ew_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 36, self.RULE_rdc_restraints_ew_segid)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 529
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 530
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 531
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 532
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 533
-            self.match(PalesMRParser.Segname_I)
+            self.match(DynamoMRParser.Segname_I)
             self.state = 534
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 535
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 536
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 537
-            self.match(PalesMRParser.Segname_J)
+            self.match(DynamoMRParser.Segname_J)
             self.state = 538
-            self.match(PalesMRParser.D)
+            self.match(DynamoMRParser.D)
             self.state = 539
-            self.match(PalesMRParser.DD)
+            self.match(DynamoMRParser.DD)
             self.state = 540
-            self.match(PalesMRParser.W)
+            self.match(DynamoMRParser.W)
             self.state = 541
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 542
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 543
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 544
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 545
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 546
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 547
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 548
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 549
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 550
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 551
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 552
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 553
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 554
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 556 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -3089,7 +3089,7 @@ class PalesMRParser ( Parser ):
                 self.state = 558 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -3110,25 +3110,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_rdc_restraint_ew_segid
+            return DynamoMRParser.RULE_rdc_restraint_ew_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterRdc_restraint_ew_segid" ):
@@ -3143,26 +3143,26 @@ class PalesMRParser ( Parser ):
 
     def rdc_restraint_ew_segid(self):
 
-        localctx = PalesMRParser.Rdc_restraint_ew_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Rdc_restraint_ew_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 38, self.RULE_rdc_restraint_ew_segid)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 560
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 561
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 562
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 563
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 564
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 565
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 566
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 567
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 568
             self.number()
             self.state = 569
@@ -3186,89 +3186,89 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Index(self):
-            return self.getToken(PalesMRParser.Index, 0)
+            return self.getToken(DynamoMRParser.Index, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def Resid_K(self):
-            return self.getToken(PalesMRParser.Resid_K, 0)
+            return self.getToken(DynamoMRParser.Resid_K, 0)
 
         def Resname_K(self):
-            return self.getToken(PalesMRParser.Resname_K, 0)
+            return self.getToken(DynamoMRParser.Resname_K, 0)
 
         def Atomname_K(self):
-            return self.getToken(PalesMRParser.Atomname_K, 0)
+            return self.getToken(DynamoMRParser.Atomname_K, 0)
 
         def Resid_L(self):
-            return self.getToken(PalesMRParser.Resid_L, 0)
+            return self.getToken(DynamoMRParser.Resid_L, 0)
 
         def Resname_L(self):
-            return self.getToken(PalesMRParser.Resname_L, 0)
+            return self.getToken(DynamoMRParser.Resname_L, 0)
 
         def Atomname_L(self):
-            return self.getToken(PalesMRParser.Atomname_L, 0)
+            return self.getToken(DynamoMRParser.Atomname_L, 0)
 
         def A(self):
-            return self.getToken(PalesMRParser.A, 0)
+            return self.getToken(DynamoMRParser.A, 0)
 
         def B(self):
-            return self.getToken(PalesMRParser.B, 0)
+            return self.getToken(DynamoMRParser.B, 0)
 
         def C(self):
-            return self.getToken(PalesMRParser.C, 0)
+            return self.getToken(DynamoMRParser.C, 0)
 
         def Phase(self):
-            return self.getToken(PalesMRParser.Phase, 0)
+            return self.getToken(DynamoMRParser.Phase, 0)
 
         def ObsJ(self):
-            return self.getToken(PalesMRParser.ObsJ, 0)
+            return self.getToken(DynamoMRParser.ObsJ, 0)
 
         def FC(self):
-            return self.getToken(PalesMRParser.FC, 0)
+            return self.getToken(DynamoMRParser.FC, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def coupling_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Coupling_restraintContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Coupling_restraintContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Coupling_restraintContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Coupling_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_coupling_restraints
+            return DynamoMRParser.RULE_coupling_restraints
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoupling_restraints" ):
@@ -3283,95 +3283,95 @@ class PalesMRParser ( Parser ):
 
     def coupling_restraints(self):
 
-        localctx = PalesMRParser.Coupling_restraintsContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Coupling_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 40, self.RULE_coupling_restraints)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 572
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 573
-            self.match(PalesMRParser.Index)
+            self.match(DynamoMRParser.Index)
             self.state = 574
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 575
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 576
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 577
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 578
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 579
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 580
-            self.match(PalesMRParser.Resid_K)
+            self.match(DynamoMRParser.Resid_K)
             self.state = 581
-            self.match(PalesMRParser.Resname_K)
+            self.match(DynamoMRParser.Resname_K)
             self.state = 582
-            self.match(PalesMRParser.Atomname_K)
+            self.match(DynamoMRParser.Atomname_K)
             self.state = 583
-            self.match(PalesMRParser.Resid_L)
+            self.match(DynamoMRParser.Resid_L)
             self.state = 584
-            self.match(PalesMRParser.Resname_L)
+            self.match(DynamoMRParser.Resname_L)
             self.state = 585
-            self.match(PalesMRParser.Atomname_L)
+            self.match(DynamoMRParser.Atomname_L)
             self.state = 586
-            self.match(PalesMRParser.A)
+            self.match(DynamoMRParser.A)
             self.state = 587
-            self.match(PalesMRParser.B)
+            self.match(DynamoMRParser.B)
             self.state = 588
-            self.match(PalesMRParser.C)
+            self.match(DynamoMRParser.C)
             self.state = 589
-            self.match(PalesMRParser.Phase)
+            self.match(DynamoMRParser.Phase)
             self.state = 590
-            self.match(PalesMRParser.ObsJ)
+            self.match(DynamoMRParser.ObsJ)
             self.state = 591
-            self.match(PalesMRParser.FC)
+            self.match(DynamoMRParser.FC)
             self.state = 592
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 593
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 594
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 595
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 596
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 597
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 598
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 599
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 600
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 601
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 602
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 603
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 604
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 605
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 606
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 607
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 608
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 609
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 610
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 611
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 612
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 613
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 615 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -3381,7 +3381,7 @@ class PalesMRParser ( Parser ):
                 self.state = 617 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -3402,25 +3402,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_coupling_restraint
+            return DynamoMRParser.RULE_coupling_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoupling_restraint" ):
@@ -3435,36 +3435,36 @@ class PalesMRParser ( Parser ):
 
     def coupling_restraint(self):
 
-        localctx = PalesMRParser.Coupling_restraintContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Coupling_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 42, self.RULE_coupling_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 619
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 620
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 621
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 622
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 623
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 624
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 625
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 626
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 627
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 628
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 629
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 630
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 631
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 632
             self.number()
             self.state = 633
@@ -3494,101 +3494,101 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Index(self):
-            return self.getToken(PalesMRParser.Index, 0)
+            return self.getToken(DynamoMRParser.Index, 0)
 
         def Segname_I(self):
-            return self.getToken(PalesMRParser.Segname_I, 0)
+            return self.getToken(DynamoMRParser.Segname_I, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Segname_J(self):
-            return self.getToken(PalesMRParser.Segname_J, 0)
+            return self.getToken(DynamoMRParser.Segname_J, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def Segname_K(self):
-            return self.getToken(PalesMRParser.Segname_K, 0)
+            return self.getToken(DynamoMRParser.Segname_K, 0)
 
         def Resid_K(self):
-            return self.getToken(PalesMRParser.Resid_K, 0)
+            return self.getToken(DynamoMRParser.Resid_K, 0)
 
         def Resname_K(self):
-            return self.getToken(PalesMRParser.Resname_K, 0)
+            return self.getToken(DynamoMRParser.Resname_K, 0)
 
         def Atomname_K(self):
-            return self.getToken(PalesMRParser.Atomname_K, 0)
+            return self.getToken(DynamoMRParser.Atomname_K, 0)
 
         def Segname_L(self):
-            return self.getToken(PalesMRParser.Segname_L, 0)
+            return self.getToken(DynamoMRParser.Segname_L, 0)
 
         def Resid_L(self):
-            return self.getToken(PalesMRParser.Resid_L, 0)
+            return self.getToken(DynamoMRParser.Resid_L, 0)
 
         def Resname_L(self):
-            return self.getToken(PalesMRParser.Resname_L, 0)
+            return self.getToken(DynamoMRParser.Resname_L, 0)
 
         def Atomname_L(self):
-            return self.getToken(PalesMRParser.Atomname_L, 0)
+            return self.getToken(DynamoMRParser.Atomname_L, 0)
 
         def A(self):
-            return self.getToken(PalesMRParser.A, 0)
+            return self.getToken(DynamoMRParser.A, 0)
 
         def B(self):
-            return self.getToken(PalesMRParser.B, 0)
+            return self.getToken(DynamoMRParser.B, 0)
 
         def C(self):
-            return self.getToken(PalesMRParser.C, 0)
+            return self.getToken(DynamoMRParser.C, 0)
 
         def Phase(self):
-            return self.getToken(PalesMRParser.Phase, 0)
+            return self.getToken(DynamoMRParser.Phase, 0)
 
         def ObsJ(self):
-            return self.getToken(PalesMRParser.ObsJ, 0)
+            return self.getToken(DynamoMRParser.ObsJ, 0)
 
         def FC(self):
-            return self.getToken(PalesMRParser.FC, 0)
+            return self.getToken(DynamoMRParser.FC, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def coupling_restraint_sw_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Coupling_restraint_sw_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Coupling_restraint_sw_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Coupling_restraint_sw_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Coupling_restraint_sw_segidContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_coupling_restraints_sw_segid
+            return DynamoMRParser.RULE_coupling_restraints_sw_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoupling_restraints_sw_segid" ):
@@ -3603,111 +3603,111 @@ class PalesMRParser ( Parser ):
 
     def coupling_restraints_sw_segid(self):
 
-        localctx = PalesMRParser.Coupling_restraints_sw_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Coupling_restraints_sw_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 44, self.RULE_coupling_restraints_sw_segid)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 639
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 640
-            self.match(PalesMRParser.Index)
+            self.match(DynamoMRParser.Index)
             self.state = 641
-            self.match(PalesMRParser.Segname_I)
+            self.match(DynamoMRParser.Segname_I)
             self.state = 642
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 643
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 644
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 645
-            self.match(PalesMRParser.Segname_J)
+            self.match(DynamoMRParser.Segname_J)
             self.state = 646
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 647
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 648
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 649
-            self.match(PalesMRParser.Segname_K)
+            self.match(DynamoMRParser.Segname_K)
             self.state = 650
-            self.match(PalesMRParser.Resid_K)
+            self.match(DynamoMRParser.Resid_K)
             self.state = 651
-            self.match(PalesMRParser.Resname_K)
+            self.match(DynamoMRParser.Resname_K)
             self.state = 652
-            self.match(PalesMRParser.Atomname_K)
+            self.match(DynamoMRParser.Atomname_K)
             self.state = 653
-            self.match(PalesMRParser.Segname_L)
+            self.match(DynamoMRParser.Segname_L)
             self.state = 654
-            self.match(PalesMRParser.Resid_L)
+            self.match(DynamoMRParser.Resid_L)
             self.state = 655
-            self.match(PalesMRParser.Resname_L)
+            self.match(DynamoMRParser.Resname_L)
             self.state = 656
-            self.match(PalesMRParser.Atomname_L)
+            self.match(DynamoMRParser.Atomname_L)
             self.state = 657
-            self.match(PalesMRParser.A)
+            self.match(DynamoMRParser.A)
             self.state = 658
-            self.match(PalesMRParser.B)
+            self.match(DynamoMRParser.B)
             self.state = 659
-            self.match(PalesMRParser.C)
+            self.match(DynamoMRParser.C)
             self.state = 660
-            self.match(PalesMRParser.Phase)
+            self.match(DynamoMRParser.Phase)
             self.state = 661
-            self.match(PalesMRParser.ObsJ)
+            self.match(DynamoMRParser.ObsJ)
             self.state = 662
-            self.match(PalesMRParser.FC)
+            self.match(DynamoMRParser.FC)
             self.state = 663
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 664
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 665
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 666
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 667
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 668
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 669
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 670
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 671
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 672
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 673
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 674
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 675
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 676
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 677
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 678
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 679
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 680
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 681
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 682
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 683
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 684
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 685
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 686
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 687
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 688
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 690 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -3717,7 +3717,7 @@ class PalesMRParser ( Parser ):
                 self.state = 692 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -3738,25 +3738,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_coupling_restraint_sw_segid
+            return DynamoMRParser.RULE_coupling_restraint_sw_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoupling_restraint_sw_segid" ):
@@ -3771,44 +3771,44 @@ class PalesMRParser ( Parser ):
 
     def coupling_restraint_sw_segid(self):
 
-        localctx = PalesMRParser.Coupling_restraint_sw_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Coupling_restraint_sw_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 46, self.RULE_coupling_restraint_sw_segid)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 694
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 695
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 696
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 697
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 698
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 699
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 700
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 701
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 702
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 703
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 704
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 705
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 706
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 707
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 708
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 709
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 710
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 711
             self.number()
             self.state = 712
@@ -3838,101 +3838,101 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Index(self):
-            return self.getToken(PalesMRParser.Index, 0)
+            return self.getToken(DynamoMRParser.Index, 0)
 
         def Resid_I(self):
-            return self.getToken(PalesMRParser.Resid_I, 0)
+            return self.getToken(DynamoMRParser.Resid_I, 0)
 
         def Resname_I(self):
-            return self.getToken(PalesMRParser.Resname_I, 0)
+            return self.getToken(DynamoMRParser.Resname_I, 0)
 
         def Atomname_I(self):
-            return self.getToken(PalesMRParser.Atomname_I, 0)
+            return self.getToken(DynamoMRParser.Atomname_I, 0)
 
         def Segname_I(self):
-            return self.getToken(PalesMRParser.Segname_I, 0)
+            return self.getToken(DynamoMRParser.Segname_I, 0)
 
         def Resid_J(self):
-            return self.getToken(PalesMRParser.Resid_J, 0)
+            return self.getToken(DynamoMRParser.Resid_J, 0)
 
         def Resname_J(self):
-            return self.getToken(PalesMRParser.Resname_J, 0)
+            return self.getToken(DynamoMRParser.Resname_J, 0)
 
         def Atomname_J(self):
-            return self.getToken(PalesMRParser.Atomname_J, 0)
+            return self.getToken(DynamoMRParser.Atomname_J, 0)
 
         def Segname_J(self):
-            return self.getToken(PalesMRParser.Segname_J, 0)
+            return self.getToken(DynamoMRParser.Segname_J, 0)
 
         def Resid_K(self):
-            return self.getToken(PalesMRParser.Resid_K, 0)
+            return self.getToken(DynamoMRParser.Resid_K, 0)
 
         def Resname_K(self):
-            return self.getToken(PalesMRParser.Resname_K, 0)
+            return self.getToken(DynamoMRParser.Resname_K, 0)
 
         def Atomname_K(self):
-            return self.getToken(PalesMRParser.Atomname_K, 0)
+            return self.getToken(DynamoMRParser.Atomname_K, 0)
 
         def Segname_K(self):
-            return self.getToken(PalesMRParser.Segname_K, 0)
+            return self.getToken(DynamoMRParser.Segname_K, 0)
 
         def Resid_L(self):
-            return self.getToken(PalesMRParser.Resid_L, 0)
+            return self.getToken(DynamoMRParser.Resid_L, 0)
 
         def Resname_L(self):
-            return self.getToken(PalesMRParser.Resname_L, 0)
+            return self.getToken(DynamoMRParser.Resname_L, 0)
 
         def Atomname_L(self):
-            return self.getToken(PalesMRParser.Atomname_L, 0)
+            return self.getToken(DynamoMRParser.Atomname_L, 0)
 
         def Segname_L(self):
-            return self.getToken(PalesMRParser.Segname_L, 0)
+            return self.getToken(DynamoMRParser.Segname_L, 0)
 
         def A(self):
-            return self.getToken(PalesMRParser.A, 0)
+            return self.getToken(DynamoMRParser.A, 0)
 
         def B(self):
-            return self.getToken(PalesMRParser.B, 0)
+            return self.getToken(DynamoMRParser.B, 0)
 
         def C(self):
-            return self.getToken(PalesMRParser.C, 0)
+            return self.getToken(DynamoMRParser.C, 0)
 
         def Phase(self):
-            return self.getToken(PalesMRParser.Phase, 0)
+            return self.getToken(DynamoMRParser.Phase, 0)
 
         def ObsJ(self):
-            return self.getToken(PalesMRParser.ObsJ, 0)
+            return self.getToken(DynamoMRParser.ObsJ, 0)
 
         def FC(self):
-            return self.getToken(PalesMRParser.FC, 0)
+            return self.getToken(DynamoMRParser.FC, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def coupling_restraint_ew_segid(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Coupling_restraint_ew_segidContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Coupling_restraint_ew_segidContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Coupling_restraint_ew_segidContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Coupling_restraint_ew_segidContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_coupling_restraints_ew_segid
+            return DynamoMRParser.RULE_coupling_restraints_ew_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoupling_restraints_ew_segid" ):
@@ -3947,111 +3947,111 @@ class PalesMRParser ( Parser ):
 
     def coupling_restraints_ew_segid(self):
 
-        localctx = PalesMRParser.Coupling_restraints_ew_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Coupling_restraints_ew_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 48, self.RULE_coupling_restraints_ew_segid)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 718
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 719
-            self.match(PalesMRParser.Index)
+            self.match(DynamoMRParser.Index)
             self.state = 720
-            self.match(PalesMRParser.Resid_I)
+            self.match(DynamoMRParser.Resid_I)
             self.state = 721
-            self.match(PalesMRParser.Resname_I)
+            self.match(DynamoMRParser.Resname_I)
             self.state = 722
-            self.match(PalesMRParser.Atomname_I)
+            self.match(DynamoMRParser.Atomname_I)
             self.state = 723
-            self.match(PalesMRParser.Segname_I)
+            self.match(DynamoMRParser.Segname_I)
             self.state = 724
-            self.match(PalesMRParser.Resid_J)
+            self.match(DynamoMRParser.Resid_J)
             self.state = 725
-            self.match(PalesMRParser.Resname_J)
+            self.match(DynamoMRParser.Resname_J)
             self.state = 726
-            self.match(PalesMRParser.Atomname_J)
+            self.match(DynamoMRParser.Atomname_J)
             self.state = 727
-            self.match(PalesMRParser.Segname_J)
+            self.match(DynamoMRParser.Segname_J)
             self.state = 728
-            self.match(PalesMRParser.Resid_K)
+            self.match(DynamoMRParser.Resid_K)
             self.state = 729
-            self.match(PalesMRParser.Resname_K)
+            self.match(DynamoMRParser.Resname_K)
             self.state = 730
-            self.match(PalesMRParser.Atomname_K)
+            self.match(DynamoMRParser.Atomname_K)
             self.state = 731
-            self.match(PalesMRParser.Segname_K)
+            self.match(DynamoMRParser.Segname_K)
             self.state = 732
-            self.match(PalesMRParser.Resid_L)
+            self.match(DynamoMRParser.Resid_L)
             self.state = 733
-            self.match(PalesMRParser.Resname_L)
+            self.match(DynamoMRParser.Resname_L)
             self.state = 734
-            self.match(PalesMRParser.Atomname_L)
+            self.match(DynamoMRParser.Atomname_L)
             self.state = 735
-            self.match(PalesMRParser.Segname_L)
+            self.match(DynamoMRParser.Segname_L)
             self.state = 736
-            self.match(PalesMRParser.A)
+            self.match(DynamoMRParser.A)
             self.state = 737
-            self.match(PalesMRParser.B)
+            self.match(DynamoMRParser.B)
             self.state = 738
-            self.match(PalesMRParser.C)
+            self.match(DynamoMRParser.C)
             self.state = 739
-            self.match(PalesMRParser.Phase)
+            self.match(DynamoMRParser.Phase)
             self.state = 740
-            self.match(PalesMRParser.ObsJ)
+            self.match(DynamoMRParser.ObsJ)
             self.state = 741
-            self.match(PalesMRParser.FC)
+            self.match(DynamoMRParser.FC)
             self.state = 742
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 743
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 744
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 745
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 746
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 747
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 748
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 749
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 750
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 751
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 752
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 753
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 754
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 755
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 756
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 757
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 758
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 759
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 760
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 761
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 762
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 763
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 764
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 765
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 766
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 767
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 769 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -4061,7 +4061,7 @@ class PalesMRParser ( Parser ):
                 self.state = 771 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -4082,25 +4082,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_coupling_restraint_ew_segid
+            return DynamoMRParser.RULE_coupling_restraint_ew_segid
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterCoupling_restraint_ew_segid" ):
@@ -4115,44 +4115,44 @@ class PalesMRParser ( Parser ):
 
     def coupling_restraint_ew_segid(self):
 
-        localctx = PalesMRParser.Coupling_restraint_ew_segidContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Coupling_restraint_ew_segidContext(self, self._ctx, self.state)
         self.enterRule(localctx, 50, self.RULE_coupling_restraint_ew_segid)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 773
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 774
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 775
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 776
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 777
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 778
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 779
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 780
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 781
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 782
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 783
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 784
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 785
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 786
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 787
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 788
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 789
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 790
             self.number()
             self.state = 791
@@ -4182,65 +4182,65 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Vars(self):
-            return self.getToken(PalesMRParser.Vars, 0)
+            return self.getToken(DynamoMRParser.Vars, 0)
 
         def Resid(self):
-            return self.getToken(PalesMRParser.Resid, 0)
+            return self.getToken(DynamoMRParser.Resid, 0)
 
         def Resname(self):
-            return self.getToken(PalesMRParser.Resname, 0)
+            return self.getToken(DynamoMRParser.Resname, 0)
 
         def Phi(self):
-            return self.getToken(PalesMRParser.Phi, 0)
+            return self.getToken(DynamoMRParser.Phi, 0)
 
         def Psi(self):
-            return self.getToken(PalesMRParser.Psi, 0)
+            return self.getToken(DynamoMRParser.Psi, 0)
 
         def Dphi(self):
-            return self.getToken(PalesMRParser.Dphi, 0)
+            return self.getToken(DynamoMRParser.Dphi, 0)
 
         def Dpsi(self):
-            return self.getToken(PalesMRParser.Dpsi, 0)
+            return self.getToken(DynamoMRParser.Dpsi, 0)
 
         def Dist(self):
-            return self.getToken(PalesMRParser.Dist, 0)
+            return self.getToken(DynamoMRParser.Dist, 0)
 
         def S2(self):
-            return self.getToken(PalesMRParser.S2, 0)
+            return self.getToken(DynamoMRParser.S2, 0)
 
         def Count(self):
-            return self.getToken(PalesMRParser.Count, 0)
+            return self.getToken(DynamoMRParser.Count, 0)
 
         def Cs_count(self):
-            return self.getToken(PalesMRParser.Cs_count, 0)
+            return self.getToken(DynamoMRParser.Cs_count, 0)
 
         def Class(self):
-            return self.getToken(PalesMRParser.Class, 0)
+            return self.getToken(DynamoMRParser.Class, 0)
 
         def RETURN_V(self):
-            return self.getToken(PalesMRParser.RETURN_V, 0)
+            return self.getToken(DynamoMRParser.RETURN_V, 0)
 
         def Format(self):
-            return self.getToken(PalesMRParser.Format, 0)
+            return self.getToken(DynamoMRParser.Format, 0)
 
         def Format_code(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Format_code)
+                return self.getTokens(DynamoMRParser.Format_code)
             else:
-                return self.getToken(PalesMRParser.Format_code, i)
+                return self.getToken(DynamoMRParser.Format_code, i)
 
         def RETURN_F(self):
-            return self.getToken(PalesMRParser.RETURN_F, 0)
+            return self.getToken(DynamoMRParser.RETURN_F, 0)
 
         def talos_restraint(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.Talos_restraintContext)
+                return self.getTypedRuleContexts(DynamoMRParser.Talos_restraintContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.Talos_restraintContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.Talos_restraintContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_talos_restraints
+            return DynamoMRParser.RULE_talos_restraints
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTalos_restraints" ):
@@ -4255,63 +4255,63 @@ class PalesMRParser ( Parser ):
 
     def talos_restraints(self):
 
-        localctx = PalesMRParser.Talos_restraintsContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Talos_restraintsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 52, self.RULE_talos_restraints)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 797
-            self.match(PalesMRParser.Vars)
+            self.match(DynamoMRParser.Vars)
             self.state = 798
-            self.match(PalesMRParser.Resid)
+            self.match(DynamoMRParser.Resid)
             self.state = 799
-            self.match(PalesMRParser.Resname)
+            self.match(DynamoMRParser.Resname)
             self.state = 800
-            self.match(PalesMRParser.Phi)
+            self.match(DynamoMRParser.Phi)
             self.state = 801
-            self.match(PalesMRParser.Psi)
+            self.match(DynamoMRParser.Psi)
             self.state = 802
-            self.match(PalesMRParser.Dphi)
+            self.match(DynamoMRParser.Dphi)
             self.state = 803
-            self.match(PalesMRParser.Dpsi)
+            self.match(DynamoMRParser.Dpsi)
             self.state = 804
-            self.match(PalesMRParser.Dist)
+            self.match(DynamoMRParser.Dist)
             self.state = 805
-            self.match(PalesMRParser.S2)
+            self.match(DynamoMRParser.S2)
             self.state = 806
-            self.match(PalesMRParser.Count)
+            self.match(DynamoMRParser.Count)
             self.state = 807
-            self.match(PalesMRParser.Cs_count)
+            self.match(DynamoMRParser.Cs_count)
             self.state = 808
-            self.match(PalesMRParser.Class)
+            self.match(DynamoMRParser.Class)
             self.state = 809
-            self.match(PalesMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_V)
             self.state = 810
-            self.match(PalesMRParser.Format)
+            self.match(DynamoMRParser.Format)
             self.state = 811
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 812
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 813
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 814
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 815
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 816
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 817
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 818
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 819
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 820
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 821
-            self.match(PalesMRParser.Format_code)
+            self.match(DynamoMRParser.Format_code)
             self.state = 822
-            self.match(PalesMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_F)
             self.state = 824 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -4321,7 +4321,7 @@ class PalesMRParser ( Parser ):
                 self.state = 826 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==PalesMRParser.Integer):
+                if not (_la==DynamoMRParser.Integer):
                     break
 
         except RecognitionException as re:
@@ -4342,25 +4342,25 @@ class PalesMRParser ( Parser ):
 
         def Integer(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Integer)
+                return self.getTokens(DynamoMRParser.Integer)
             else:
-                return self.getToken(PalesMRParser.Integer, i)
+                return self.getToken(DynamoMRParser.Integer, i)
 
         def Simple_name(self, i:int=None):
             if i is None:
-                return self.getTokens(PalesMRParser.Simple_name)
+                return self.getTokens(DynamoMRParser.Simple_name)
             else:
-                return self.getToken(PalesMRParser.Simple_name, i)
+                return self.getToken(DynamoMRParser.Simple_name, i)
 
         def number(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(PalesMRParser.NumberContext)
+                return self.getTypedRuleContexts(DynamoMRParser.NumberContext)
             else:
-                return self.getTypedRuleContext(PalesMRParser.NumberContext,i)
+                return self.getTypedRuleContext(DynamoMRParser.NumberContext,i)
 
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_talos_restraint
+            return DynamoMRParser.RULE_talos_restraint
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTalos_restraint" ):
@@ -4375,14 +4375,14 @@ class PalesMRParser ( Parser ):
 
     def talos_restraint(self):
 
-        localctx = PalesMRParser.Talos_restraintContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.Talos_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 54, self.RULE_talos_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 828
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 829
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
             self.state = 830
             self.number()
             self.state = 831
@@ -4396,11 +4396,11 @@ class PalesMRParser ( Parser ):
             self.state = 835
             self.number()
             self.state = 836
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 837
-            self.match(PalesMRParser.Integer)
+            self.match(DynamoMRParser.Integer)
             self.state = 838
-            self.match(PalesMRParser.Simple_name)
+            self.match(DynamoMRParser.Simple_name)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -4418,13 +4418,13 @@ class PalesMRParser ( Parser ):
             self.parser = parser
 
         def Float(self):
-            return self.getToken(PalesMRParser.Float, 0)
+            return self.getToken(DynamoMRParser.Float, 0)
 
         def Integer(self):
-            return self.getToken(PalesMRParser.Integer, 0)
+            return self.getToken(DynamoMRParser.Integer, 0)
 
         def getRuleIndex(self):
-            return PalesMRParser.RULE_number
+            return DynamoMRParser.RULE_number
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNumber" ):
@@ -4439,14 +4439,14 @@ class PalesMRParser ( Parser ):
 
     def number(self):
 
-        localctx = PalesMRParser.NumberContext(self, self._ctx, self.state)
+        localctx = DynamoMRParser.NumberContext(self, self._ctx, self.state)
         self.enterRule(localctx, 56, self.RULE_number)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 840
             _la = self._input.LA(1)
-            if not(_la==PalesMRParser.Integer or _la==PalesMRParser.Float):
+            if not(_la==DynamoMRParser.Integer or _la==DynamoMRParser.Float):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

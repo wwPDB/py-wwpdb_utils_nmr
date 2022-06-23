@@ -155,7 +155,7 @@
 # 02-May-2022  M. Yokochi - implement recursive MR splitter guided by MR parsers (NMR restraint remediation)
 # 17-May-2022  M. Yokochi - add support for BIOSYM MR format (DAOTHER-7825, NMR restraint remediation)
 # 01-Jun-2022  M. Yokochi - add support for GROMACS PT/MR format (DAOTHER-7769, NMR restraint remediation)
-# 17-Jun-2022  M. Yokochi - add support for PALES MR format (DAOTHER-7872, NMR restraint remediation)
+# 17-Jun-2022  M. Yokochi - add support for DYNAMO/PALES/TALOS MR format (DAOTHER-7872, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -236,7 +236,7 @@ try:
     from wwpdb.utils.nmr.mr.XplorMRReader import XplorMRReader
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.GromacsPTReader import GromacsPTReader
-    from wwpdb.utils.nmr.mr.PalesMRReader import PalesMRReader
+    from wwpdb.utils.nmr.mr.DynamoMRReader import DynamoMRReader
 
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -295,7 +295,7 @@ except ImportError:
     from nmr.mr.XplorMRReader import XplorMRReader
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.GromacsPTReader import GromacsPTReader
-    from nmr.mr.PalesMRReader import PalesMRReader
+    from nmr.mr.DynamoMRReader import DynamoMRReader
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -6599,8 +6599,8 @@ class NmrDpUtility:
             elif file_type in ('nm-res-gro', 'nm-aux-gro'):
                 mr_format_name = 'GROMACS'
                 a_mr_format_name = 'a ' + mr_format_name
-            elif file_type == 'nm-res-pal':
-                mr_format_name = 'PALES/DYNAMO'
+            elif file_type == 'nm-res-dyn':
+                mr_format_name = 'DYNAMO/PALES/TALOS'
                 a_mr_format_name = 'a ' + mr_format_name
             elif file_type == 'nm-res-mr':
                 mr_format_name = 'MR'
@@ -6608,7 +6608,7 @@ class NmrDpUtility:
                 mr_format_name = 'other'
 
             atom_like_names =\
-                self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-pal', 'nm-res-oth') or is_aux_amb or is_aux_gro else 1))
+                self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-oth') or is_aux_amb or is_aux_gro else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
@@ -7024,7 +7024,7 @@ class NmrDpUtility:
                                     in_igr1 = False
                                     in_igr2 = False
 
-            elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-pal', 'nm-res-oth') or is_aux_amb or is_aux_gro:
+            elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-oth') or is_aux_amb or is_aux_gro:
 
                 if is_aux_amb:
 
@@ -7414,7 +7414,7 @@ class NmrDpUtility:
                        system_names > 0 and molecule_names > 0 and atom_names > 0:
                         has_topology = True
 
-            if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-pal', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
+            if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='utf-8') as ifp:
 
@@ -7478,12 +7478,12 @@ class NmrDpUtility:
             try:
 
                 if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
-                                 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-pal'):
+                                 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn'):
                     reader = self.__getSimpleMRPTFileReader(file_type, self.__verbose)
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                    if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-pal'):
+                    if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn'):
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
@@ -8034,10 +8034,10 @@ class NmrDpUtility:
         if file_type == 'nm-aux-gro':
             return GromacsPTReader(verbose, self.__lfh, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT)
-        if file_type == 'nm-res-pal':
-            return PalesMRReader(verbose, self.__lfh, None, None, None,
-                                 self.__ccU, self.__csStat, self.__nefT,
-                                 reasons)
+        if file_type == 'nm-res-dyn':
+            return DynamoMRReader(verbose, self.__lfh, None, None, None,
+                                  self.__ccU, self.__csStat, self.__nefT,
+                                  reasons)
 
         return None
 
@@ -8094,8 +8094,8 @@ class NmrDpUtility:
         elif file_type in ('nm-res-gro', 'nm-aux-gro'):
             # mr_format_name = 'GROMACS'
             pass
-        elif file_type == 'nm-res-pal':
-            # mr_format_name = 'PALES/DYNAMO'
+        elif file_type == 'nm-res-dyn':
+            # mr_format_name = 'DYNAMO/PALES/TALOS'
             pass
         else:
             return False
@@ -8149,7 +8149,7 @@ class NmrDpUtility:
 
         concat_gromacs_tag = not gromacs_file_type and bool(gromacs_tag_pattern.search(err_input))
 
-        concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-pal')
+        concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn')
                           and err_message.startswith(no_viable_alt_err_msg)
                           and bool(comment_pattern.search(err_input)))
 
@@ -8985,7 +8985,7 @@ class NmrDpUtility:
                 return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset) | corrected
 
             for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
-                                   'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-pal']:
+                                   'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn']:
 
                 if test_file_type == file_type:
                     continue
@@ -9203,8 +9203,8 @@ class NmrDpUtility:
         elif file_type in ('nm-res-gro', 'nm-aux-gro'):
             # mr_format_name = 'GROMACS'
             pass
-        elif file_type == 'nm-res-pal':
-            # mr_format_name = 'PALES/DYNAMO'
+        elif file_type == 'nm-res-dyn':
+            # mr_format_name = 'DYNAMO/PALES/TALOS'
             pass
         else:
             return False
@@ -9260,7 +9260,7 @@ class NmrDpUtility:
                             and bool(amber_rst_pattern.search(err_input))
                             and not bool(amber_rst_pattern.match(err_input)))
 
-        concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-pal')
+        concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn')
                           and err_message.startswith(no_viable_alt_err_msg)
                           and bool(comment_pattern.search(err_input)))
 
@@ -9727,7 +9727,7 @@ class NmrDpUtility:
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
             if listener is not None:
-                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-pal'):
+                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn'):
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -9869,9 +9869,9 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if (not is_valid or multiple_check) and file_type != 'nm-res-pal':
+        if (not is_valid or multiple_check) and file_type != 'nm-res-dyn':
             _is_valid, _err, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-pal')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-dyn')
 
             is_valid |= is_valid
             err += _err
@@ -9901,8 +9901,8 @@ class NmrDpUtility:
             mr_format_name = 'BIOSYM'
         elif file_type in ('nm-res-gro', 'nm-aux-gro'):
             mr_format_name = 'GROMACS'
-        elif file_type == 'nm-res-pal':
-            mr_format_name = 'PALES/DYNAMO'
+        elif file_type == 'nm-res-dyn':
+            mr_format_name = 'DYNAMO/PALES/TALOS'
         elif file_type == 'nm-res-mr':
             mr_format_name = 'MR'
         else:
@@ -9935,8 +9935,8 @@ class NmrDpUtility:
         elif _file_type == 'nm-aux-gro':
             _mr_format_name = 'GROMACS'
             _a_mr_format_name = 'a ' + _mr_format_name + ' parameter/topology'
-        elif _file_type == 'nm-res-pal':
-            _mr_format_name = 'PALES'
+        elif _file_type == 'nm-res-dyn':
+            _mr_format_name = 'DYNAMO/PALES/TALOS'
             _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
 
         is_valid = False
@@ -10585,9 +10585,9 @@ class NmrDpUtility:
                             _ar['file_type'] = 'nm-res-bio'
                             split_file_list.append(_ar)
 
-                        elif len_valid_types == 2 and 'nm-res-pal' in valid_types and 'nm-res-cya' in valid_types:
+                        elif len_valid_types == 2 and 'nm-res-dyn' in valid_types and 'nm-res-cya' in valid_types:
                             _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-pal'
+                            _ar['file_type'] = 'nm-res-dyn'
                             split_file_list.append(_ar)
 
                         else:
@@ -10766,9 +10766,9 @@ class NmrDpUtility:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
 
-                            elif len_valid_types == 2 and 'nm-res-pal' in valid_types and 'nm-res-cya' in valid_types:
+                            elif len_valid_types == 2 and 'nm-res-dyn' in valid_types and 'nm-res-cya' in valid_types:
                                 _ar['file_name'] = _dst_file
-                                _ar['file_type'] = 'nm-res-pal'
+                                _ar['file_type'] = 'nm-res-dyn'
                                 if distict:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
@@ -21605,11 +21605,11 @@ class NmrDpUtility:
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
 
-            elif file_type == 'nm-res-pal':
-                reader = PalesMRReader(self.__verbose, self.__lfh,
-                                       self.__representative_model_id,
-                                       self.__cR, cC,
-                                       self.__ccU, self.__csStat, self.__nefT)
+            elif file_type == 'nm-res-dyn':
+                reader = DynamoMRReader(self.__verbose, self.__lfh,
+                                        self.__representative_model_id,
+                                        self.__cR, cC,
+                                        self.__ccU, self.__csStat, self.__nefT)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -21617,11 +21617,11 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        reader = PalesMRReader(self.__verbose, self.__lfh,
-                                               self.__representative_model_id,
-                                               self.__cR, cC,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               reasons)
+                        reader = DynamoMRReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__cR, cC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                reasons)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath)
 

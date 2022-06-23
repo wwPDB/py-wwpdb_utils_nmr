@@ -76,8 +76,8 @@ restraint_factor:
 	(NSTEP1 | NSTEP2 | IFVARI | NINC | IXPK | NXPK | ICONSTR) Equ_op_IP Integer Comma? |
 	(R1 | R2 | R3 | R4 | RK2 | RK3 | R1A | R2A | R3A | R4A | RK2A | RK3A | R0 | K0 | R0A | K0A) Equ_op_RP Real Comma? |
 	FXYZ Equ_op_BA BoolInts (Comma_BA | End_BA) |
-	(IAT | IGR1 | IGR2 | IGR3 | IGR4 | IGR5 | IGR6 | IGR7 | IGR8) L_paren_IA Decimal R_paren_A Equ_op_IA (Integers | MultiplicativeInt) (Comma_IA | End_IA) |
-	RSTWT L_paren_RP Decimal R_paren_A Equ_op_RP Real Comma?;
+	(IAT | IGR1 | IGR2 | IGR3 | IGR4 | IGR5 | IGR6 | IGR7 | IGR8) L_paren_IA Decimal R_paren_A Equ_op_IA Integers (Comma_IA | End_IA) |
+	RSTWT L_paren_RA Decimal R_paren_A Equ_op_RA Reals (Comma_RA | End_RA);
 
 /* Amber: NMR restraints - 29.2. NOESY volume restraints - Syntax
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)

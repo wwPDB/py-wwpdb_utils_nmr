@@ -932,22 +932,24 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
 
         testDataType = ['PHI', 'PSI', 'OMEGA']
 
-        found = True
+        for dataType in testDataType:
 
-        for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_CARBO_ATOM_NAMES[dataType]):
+            found = True
 
-            if isinstance(angAtomId, str):
-                if atomId != angAtomId:
-                    found = False
-                    break
+            for atomId, angAtomId in zip(atomIds, KNOWN_ANGLE_CARBO_ATOM_NAMES[dataType]):
 
-            else:
-                if not angAtomId.match(atomId):
-                    found = False
-                    break
+                if isinstance(angAtomId, str):
+                    if atomId != angAtomId:
+                        found = False
+                        break
 
-        if found:
-            return None
+                else:
+                    if not angAtomId.match(atomId):
+                        found = False
+                        break
+
+            if found:
+                return None
 
     return '.' if lenCommonSeqId == 1 else None
 

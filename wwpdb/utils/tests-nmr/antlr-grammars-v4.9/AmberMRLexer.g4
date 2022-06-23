@@ -191,21 +191,21 @@ ICONSTR:		I C O N S T R
 NOEEXP:			'&' N O E E X P;
 
 NPEAK:			N P E A K
-			-> pushMode(INT_ARRAY_MODE);		// = IntArray
+			-> pushMode(INT_PARAM_MODE);		// = IntArray
 EMIX:			E M I X
-			-> pushMode(REAL_ARRAY_MODE);		// = Real [ , Real ]*
+			-> pushMode(REAL_PARAM_MODE);		// = Real [ , Real ]*
 
 IHP:			I H P
-			-> pushMode(INT_ARRAY_MODE);		// ihp(Integer, Integer) = IntArray
+			-> pushMode(INT_PARAM_MODE);		// ihp(Integer, Integer) = IntArray
 JHP:			J H P
-			-> pushMode(INT_ARRAY_MODE);		// jhp(Integer, Integer) = IntArray
+			-> pushMode(INT_PARAM_MODE);		// jhp(Integer, Integer) = IntArray
 
 AEXP:			A E X P
-			-> pushMode(REAL_ARRAY_MODE);		// aexp(Integer, Integer) = RealArray
+			-> pushMode(REAL_PARAM_MODE);		// aexp(Integer, Integer) = RealArray
 ARANGE:			A R A N G E
-			-> pushMode(REAL_ARRAY_MODE);		// arange(Integer, Integer) = RealArray
+			-> pushMode(REAL_PARAM_MODE);		// arange(Integer, Integer) = RealArray
 AWT:			A W T
-			-> pushMode(REAL_ARRAY_MODE);		// awt(Integer, Integer) = RealArray
+			-> pushMode(REAL_PARAM_MODE);		// awt(Integer, Integer) = RealArray
 
 INVWT1:			I N V W T '1'
 			-> pushMode(REAL_PARAM_MODE);		// = Real
@@ -231,7 +231,7 @@ SHF:			'&' S H F;
 NRING:			N R I N G
 			-> pushMode(INT_PARAM_MODE);		// = Integer
 NATR:			N A T R
-			-> pushMode(INT_ARRAY_MODE);		// natr(Integer) = Integer [ , Integer ]*
+			-> pushMode(INT_PARAM_MODE);		// natr(Integer) = Integer [ , Integer ]*
 IATR:			I A T R
 			-> pushMode(INT_PARAM_MODE);		// iatr(Integer) = Integer
 NAMR:			N A M R
@@ -239,7 +239,7 @@ NAMR:			N A M R
 STR:			S T R
 			-> pushMode(REAL_ARRAY_MODE);		// str(Integer) = Real [ , Real ]*
 IPROT:			I P R O T
-			-> pushMode(INT_ARRAY_MODE);		// iprot(Integer) = Integer [ , Integer ]*
+			-> pushMode(INT_PARAM_MODE);		// iprot(Integer) = Integer [ , Integer ]*
 OBS:			O B S
 			-> pushMode(REAL_PARAM_MODE);		// obs(Integer) = Real [ , Real ]*
 SHRANG:			S H R A N G
@@ -268,15 +268,15 @@ NMPMC:			N M P M C
 			-> pushMode(QSTR_PARAM_MODE);		// = Quoted_atom_name
 
 OPTPHI:			O P T P H I
-			-> pushMode(REAL_ARRAY_MODE);		// optphi(Integer) = Real [ , Real ]*
+			-> pushMode(REAL_PARAM_MODE);		// optphi(Integer) = Real [ , Real ]*
 OPTTET:			O P T T E T
-			-> pushMode(REAL_ARRAY_MODE);		// opttet(Integer) = Real [ , Real ]*
+			-> pushMode(REAL_PARAM_MODE);		// opttet(Integer) = Real [ , Real ]*
 OPTOMG:			O P T O M G
-			-> pushMode(REAL_ARRAY_MODE);		// optomg(Integer) = Real [ , Real ]*
+			-> pushMode(REAL_PARAM_MODE);		// optomg(Integer) = Real [ , Real ]*
 OPTA1:			O P T A '1'
-			-> pushMode(REAL_ARRAY_MODE);		// opta1(Integer) = Real [ , Real ]*
+			-> pushMode(REAL_PARAM_MODE);		// opta1(Integer) = Real [ , Real ]*
 OPTA2:			O P T A '2'
-			-> pushMode(REAL_ARRAY_MODE);		// opta2(Integer) = Real [ , Real ]*
+			-> pushMode(REAL_PARAM_MODE);		// opta2(Integer) = Real [ , Real ]*
 OPTKON:			O P T K O N
 			-> pushMode(REAL_PARAM_MODE);		// = Real
 
@@ -287,7 +287,7 @@ OPTKON:			O P T K O N
 TOLPRO:			T O L P R O
 			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 MLTPRO:			M L T P R O
-			-> pushMode(INT_ARRAY_MODE);		// mltpro(Integer) = IntArray
+			-> pushMode(INT_PARAM_MODE);		// mltpro(Integer) = IntArray
 
 /* Amber: NMR restraints - 29.5. Direct dipolar coupling restraints - Syntax
  See also https://ambermd.org/Manuals.php (Amber 2021 Reference Manual)

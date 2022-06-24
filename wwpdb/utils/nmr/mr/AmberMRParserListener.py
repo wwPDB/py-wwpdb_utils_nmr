@@ -5431,7 +5431,7 @@ class AmberMRParserListener(ParseTreeListener):
                           'dihed_restraint': self.dihedRestraints,
                           'rdc_restraint': self.rdcRestraints,
                           'plane_restraint': self.planeRestraints,
-                          'noepk_resraint': self.noepkRestraints,
+                          'noepk_restraint': self.noepkRestraints,
                           'procs_restraint': self.procsRestraints,
                           'pcs_restraint': self.pcsRestraints,
                           'csa_restraint': self.csaRestraints

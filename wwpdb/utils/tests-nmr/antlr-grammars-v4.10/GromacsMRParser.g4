@@ -25,7 +25,8 @@ gromacs_mr:
 	orientation_restraints |
 	angle_restraints |
 	angle_restraints_z |
-	position_restraints
+	position_restraints |
+	L_brkt Intermolecular_interactions R_brkt
 	)*
 	EOF;
 

@@ -52,6 +52,9 @@ Angle_restraints_z:	'angle_restraints_z';		// ai aj funct=1 theta0 kc mult
 Position_restraints:	'position_restraints';		// ai funct=1 kx ky kz
 							// ai funct=2 g r k
 
+Intermolecular_interactions:
+			'inter' '-'? 'molecular' ('_' | '-') 'interactions';
+
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);

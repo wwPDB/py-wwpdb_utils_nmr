@@ -45,7 +45,8 @@ gromacs_pt:
 	virtual_sitesn_statement |
 	system_statement |
 	molecules_statement |
-	position_restraints
+	position_restraints |
+	L_brkt Intermolecular_interactions R_brkt
 	)*
 	EOF;
 

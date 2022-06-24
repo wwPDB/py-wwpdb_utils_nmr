@@ -56,6 +56,10 @@ Molecules:		'molecules';			// name number
 Position_restraints:	'position_restraints';		// ai funct=1 kx ky kz
 							// ai funct=2 g r k
 
+Intermolecular_interactions:
+			'inter' '-'? 'molecular' ('_' | '-') 'interactions';
+
+
 Integer:		('+' | '-')? DECIMAL;
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (('E' | 'e') ('+' | '-')? DECIMAL)?;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);

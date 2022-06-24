@@ -6573,7 +6573,8 @@ class NmrDpUtility:
 
             original_file_name = None
             if 'original_file_name' in input_source_dic:
-                original_file_name = input_source_dic['original_file_name']
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
@@ -10069,7 +10070,8 @@ class NmrDpUtility:
 
             original_file_name = None
             if 'original_file_name' in input_source_dic:
-                original_file_name = input_source_dic['original_file_name']
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
@@ -20697,7 +20699,8 @@ class NmrDpUtility:
 
                     original_file_name = None
                     if 'original_file_name' in input_source_dic:
-                        original_file_name = input_source_dic['original_file_name']
+                        if input_source_dic['original_file_name'] is not None:
+                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
@@ -20728,7 +20731,7 @@ class NmrDpUtility:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                                 elif warn.startswith('[Sequence mismatch]'):
-                                    self.report.warning.appendDescription('conflicted_mr_data',
+                                    self.report.warning.appendDescription('sequence_mismatch',
                                                                           {'file_name': file_name, 'description': warn})
                                     self.report.setWarning()
 
@@ -20768,7 +20771,8 @@ class NmrDpUtility:
 
                     original_file_name = None
                     if 'original_file_name' in input_source_dic:
-                        original_file_name = input_source_dic['original_file_name']
+                        if input_source_dic['original_file_name'] is not None:
+                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
@@ -20799,7 +20803,7 @@ class NmrDpUtility:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                                 elif warn.startswith('[Sequence mismatch]'):
-                                    self.report.warning.appendDescription('conflicted_mr_data',
+                                    self.report.warning.appendDescription('sequence_mismatch',
                                                                           {'file_name': file_name, 'description': warn})
                                     self.report.setWarning()
 
@@ -20854,9 +20858,18 @@ class NmrDpUtility:
             if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr'):
                 continue
 
+            file_name = input_source_dic['file_name']
+
+            original_file_name = None
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                if file_name != original_file_name and original_file_name is not None:
+                    file_name = f"{original_file_name} ({file_name})"
+
             if file_type == 'nm-res-gro' and not has_nm_aux_gro_file:
 
-                err = f"GROMACS parameter/topology file must be uploaded to validate GROMACS restraint file {file_name!r}."
+                err = f"GROMACS parameter/topology file must be uploaded to verify GROMACS restraint file {file_name!r}."
 
                 self.report.error.appendDescription('missing_mandatory_content',
                                                     {'file_name': file_name, 'description': err})
@@ -20872,14 +20885,6 @@ class NmrDpUtility:
 
             if 'is_valid' not in ar or not ar['is_valid']:
                 continue
-
-            file_name = input_source_dic['file_name']
-
-            original_file_name = None
-            if 'original_file_name' in input_source_dic:
-                original_file_name = input_source_dic['original_file_name']
-                if file_name != original_file_name and original_file_name is not None:
-                    file_name = f"{original_file_name} ({file_name})"
 
             self.__cur_original_ar_file_name = original_file_name
 
@@ -27949,19 +27954,37 @@ class NmrDpUtility:
 
             # DAOTHER-7665
             self.__coord_unobs_res = []
-            unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'}
-                                                         ],
-                                                        [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
-                                                         ])
 
-            if len(unobs_res) > 0:
-                for chain_id in chain_ids:
-                    seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
-                    for seq_id in seq_ids:
-                        seq_key = (chain_id, seq_id)
-                        self.__coord_unobs_res.append(seq_key)
+            if self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_asym_id') and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_seq_id'):
+                unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'}
+                                                             ],
+                                                            [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
+                                                             ])
+
+                if len(unobs_res) > 0:
+                    for chain_id in chain_ids:
+                        seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
+                        for seq_id in seq_ids:
+                            seq_key = (chain_id, seq_id)
+                            self.__coord_unobs_res.append(seq_key)
+
+            elif self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_asym_id') and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_seq_id'):
+                unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'}
+                                                             ],
+                                                            [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
+                                                             ])
+
+                if len(unobs_res) > 0:
+                    for chain_id in chain_ids:
+                        seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
+                        for seq_id in seq_ids:
+                            seq_key = (chain_id, seq_id)
+                            if seq_key in self.__auth_to_label_seq:
+                                self.__coord_unobs_res.append(self.__auth_to_label_seq[seq_key])
 
             return True
 

@@ -384,6 +384,8 @@ expecting_l_paren = "expecting L_paren"  # NOTICE: depends on ANTLR v4 and (Xplo
 
 possible_typo_for_comment_out_pattern = re.compile(r'\s*([13])$')
 
+comment_code_mixed_set = {'#', '!'}
+
 
 def detect_bom(fPath, default='utf-8'):
     """ Detect BOM of input file.
@@ -8292,8 +8294,11 @@ class NmrDpUtility:
                     if i == err_line_number - 1:
                         prev_input = line
                     _k = len(interval) - 1
+                    _c = interval[-1]['line'][0]
                     for _interval in reversed(interval):
-                        if _interval['ws_or_comment']:
+                        c = _interval['line'][0]
+                        if _interval['ws_or_comment'] and {c, _c} != comment_code_mixed_set:
+                            _c = c
                             _k -= 1
                             continue
                         break
@@ -9047,8 +9052,11 @@ class NmrDpUtility:
                     if i < err_line_number - 1:
                         continue
                     _k = len(interval) - 1
+                    _c = interval[-1]['line'][0]
                     for _interval in reversed(interval):
-                        if _interval['ws_or_comment']:
+                        c = _interval['line'][0]
+                        if _interval['ws_or_comment'] and {c, _c} != comment_code_mixed_set:
+                            _c = c
                             _k -= 1
                             continue
                         break

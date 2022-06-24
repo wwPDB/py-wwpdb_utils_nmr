@@ -9825,7 +9825,7 @@ class NmrDpUtility:
             err += _err
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
-        """ Disabled until V5.13
+
         if (not is_valid or multiple_check) and file_type != 'nm-res-gro':
             _is_valid, _err, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-gro')
@@ -9843,7 +9843,7 @@ class NmrDpUtility:
             err += _err
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
-        """
+
         _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
         _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
 

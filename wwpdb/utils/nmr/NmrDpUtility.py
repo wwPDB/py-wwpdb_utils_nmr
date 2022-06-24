@@ -2944,7 +2944,7 @@ class NmrDpUtility:
                                   'nmr-star': {'entry_info': [],
                                                'poly_seq': ['_Bond', '_Entity_deleted_atom'],
                                                'entity': ['_Entity_poly_seq'],
-                                               'chem_shift': [],
+                                               'chem_shift': ['_Ambiguous_atom_chem_shift'],
                                                'chem_shift_ref': [],
                                                'dist_restraint': [],
                                                'dihed_restraint': [],
@@ -3165,7 +3165,12 @@ class NmrDpUtility:
                                                                         ]
                                            },
                                            'entity': None,
-                                           'chem_shift': None,
+                                           'chem_shift': {
+                                               '_Ambiguous_atom_chem_shift': [{'name': 'Ambiguous_shift_set_ID', 'type': 'index-int', 'mandatory': True, 'default-from': 'self'},
+                                                                              {'name': 'Atom_chem_shift_ID', 'type': 'positive-int', 'mandatory': True},
+                                                                              {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
+                                                   ]
+                                            },
                                            'chem_shift_ref': None,
                                            'dist_restraint': None,
                                            'dihed_restraint': None,

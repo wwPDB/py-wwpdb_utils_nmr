@@ -808,19 +808,19 @@ class AmberMRParserListener(ParseTreeListener):
                             if iat in self.__atomNumberDict:
                                 atomSelection.append(self.__atomNumberDict[iat])
                             else:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                     f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
                         elif iat < 0:
                             varNum = col + 1
                             if self.igr is None:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                     f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
                             elif varNum in self.igr:
                                 for igr in self.igr[varNum]:
                                     if igr in self.__atomNumberDict:
                                         atomSelection.append(self.__atomNumberDict[igr])
                                     else:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                             f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file.\n"
 
                     else:
@@ -842,7 +842,7 @@ class AmberMRParserListener(ParseTreeListener):
                         elif iat < 0:
                             varNum = col + 1
                             if self.igr is None:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                     f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
                             elif varNum in self.igr:
                                 if varNum not in self.grnam:
@@ -1074,7 +1074,7 @@ class AmberMRParserListener(ParseTreeListener):
                         elif iat < 0:
                             varNum = col + 1
                             if self.igr is None:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                     f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
                             elif varNum in self.igr:
                                 igr = self.igr[varNum]
@@ -1288,7 +1288,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if iat in self.__atomNumberDict:
                                     atomSelection.append(self.__atomNumberDict[iat])
                                 else:
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                         f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
                             else:  # ambmask format
                                 factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
@@ -1317,7 +1317,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if iat in self.__atomNumberDict:
                                 atomSelection.append(self.__atomNumberDict[iat])
                             else:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                     f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
                         else:  # ambmask format
                             factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
@@ -1330,7 +1330,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if igr in self.__atomNumberDict:
                                     atomSelection.append(self.__atomNumberDict[igr])
                                 else:
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                         f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
                             else:  # ambmask format
                                 factor = self.getAtomNumberDictFromAmbmaskInfo(_funcExpr['seq_id'], _funcExpr['atom_id'])
@@ -1373,7 +1373,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     if iat in self.__atomNumberDict:
                                         atomSelection.append(self.__atomNumberDict[iat])
                                     else:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                             f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
                                 else:  # ambmask format
                                     factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
@@ -1386,7 +1386,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if igr in self.__atomNumberDict:
                                             atomSelection.append(self.__atomNumberDict[igr])
                                         else:
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                                 f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
                                     else:  # ambmask format
                                         factor = self.getAtomNumberDictFromAmbmaskInfo(_funcExpr['seq_id'], _funcExpr['atom_id'])
@@ -1566,7 +1566,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     if iat in self.__atomNumberDict:
                                         atomSelection.append(self.__atomNumberDict[iat])
                                     else:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                             f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
                                 else:  # ambmask format
                                     factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
@@ -3247,7 +3247,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if _iprot in self.__atomNumberDict:
                         atomSelection.append(self.__atomNumberDict[_iprot])
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
                             f"'ihp({imix},{ipeak})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
                         continue
 
@@ -3268,7 +3268,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if _jprot in self.__atomNumberDict:
                         atomSelection.append(self.__atomNumberDict[_jprot])
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
                             f"'jhp({imix},{ipeak})={_jprot}' is not defined in the AMBER parameter/topology file.\n"
                         continue
 
@@ -3505,7 +3505,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if _iprot in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_iprot])
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
                         f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
                     continue
 
@@ -3565,7 +3565,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if _iat in self.__atomNumberDict:
                         atomSelection.append(self.__atomNumberDict[_iat])
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                             f"The ring atom 'iatr({n},{r})={_iat}' is not defined in the AMBER parameter/topology file.\n"
                         continue
 
@@ -3963,7 +3963,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if _iprot in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_iprot])
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
                         f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
                     continue
 
@@ -4306,7 +4306,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if _id in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_id])
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
                         f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.\n"
                     continue
 
@@ -4322,7 +4322,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if _jd in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_jd])
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
                         f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.\n"
                     continue
 
@@ -4829,7 +4829,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if _icsa in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_icsa])
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
                         f"'icsa({n})={_icsa}' is not defined in the AMBER parameter/topology file.\n"
                     continue
 
@@ -4845,7 +4845,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if _jcsa in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_jcsa])
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
                         f"'jcsa({n})={_jcsa}' is not defined in the AMBER parameter/topology file.\n"
                     continue
 
@@ -4861,7 +4861,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if _kcsa in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_kcsa])
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
                         f"'kcsa({n})={_kcsa}' is not defined in the AMBER parameter/topology file.\n"
                     continue
 

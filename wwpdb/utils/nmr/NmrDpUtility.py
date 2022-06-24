@@ -3166,11 +3166,13 @@ class NmrDpUtility:
                                            },
                                            'entity': None,
                                            'chem_shift': {
-                                               '_Ambiguous_atom_chem_shift': [{'name': 'Ambiguous_shift_set_ID', 'type': 'index-int', 'mandatory': True, 'default-from': 'self'},
+                                               '_Ambiguous_atom_chem_shift': [{'name': 'Ambiguous_shift_set_ID', 'type': 'index-int', 'mandatory': True,
+                                                                               'default-from': 'self'},
                                                                               {'name': 'Atom_chem_shift_ID', 'type': 'positive-int', 'mandatory': True},
-                                                                              {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
-                                                   ]
-                                            },
+                                                                              {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                                               'default': '1', 'default-from': 'parent'}
+                                                                              ]
+                                           },
                                            'chem_shift_ref': None,
                                            'dist_restraint': None,
                                            'dihed_restraint': None,

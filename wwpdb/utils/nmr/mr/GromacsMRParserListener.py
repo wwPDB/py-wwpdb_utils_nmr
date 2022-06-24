@@ -299,7 +299,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index)}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=index)}"\
                     f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
 
             atomSelection.clear()
@@ -308,7 +308,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[aj])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index)}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=index)}"\
                     f"'aj={aj}' is not defined in the GROMACS parameter/topology file.\n"
 
             if len(self.atomSelectionSet) < 2:
@@ -468,7 +468,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
 
             atomSelection.clear()
@@ -477,7 +477,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[aj])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'aj={aj}' is not defined in the GROMACS parameter/topology file.\n"
 
             atomSelection.clear()
@@ -486,7 +486,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ak])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'ak={ak}' is not defined in the GROMACS parameter/topology file.\n"
 
             atomSelection.clear()
@@ -495,7 +495,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[al])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'al={al}' is not defined in the GROMACS parameter/topology file.\n"
 
             if len(self.atomSelectionSet) < 4:
@@ -665,7 +665,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
                     f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
 
             atomSelection.clear()
@@ -674,7 +674,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[aj])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
                     f"'aj={aj}' is not defined in the GROMACS parameter/topology file.\n"
 
             if len(self.atomSelectionSet) < 2:
@@ -899,7 +899,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
 
             atomSelection.clear()
@@ -908,7 +908,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[aj])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'aj={aj}' is not defined in the GROMACS parameter/topology file.\n"
 
             atomSelection.clear()
@@ -917,7 +917,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ak])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'ak={ak}' is not defined in the GROMACS parameter/topology file.\n"
 
             atomSelection.clear()
@@ -926,7 +926,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[al])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'al={al}' is not defined in the GROMACS parameter/topology file.\n"
 
             if len(self.atomSelectionSet) < 4:
@@ -1039,7 +1039,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
 
             atomSelection.clear()
@@ -1048,7 +1048,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[aj])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'aj={aj}' is not defined in the GROMACS parameter/topology file.\n"
 
             if len(self.atomSelectionSet) < 2:
@@ -1116,7 +1116,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
 
             if len(self.atomSelectionSet) < 1:

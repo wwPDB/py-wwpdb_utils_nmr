@@ -23646,10 +23646,12 @@ class NmrDpUtility:
                                 result['chain_id'] = chain_id
                                 result['comp_id'] = [res[0] for res in rci_residues]
                                 struct_conf = self.__extractCoordStructConf(chain_id, s['seq_id'])
+                                len_struct_conf = len(struct_conf)
                                 result['struct_conf'] = []
                                 for seq_id in result['seq_id']:
                                     pos = s['seq_id'].index(seq_id)
-                                    result['struct_conf'].append(struct_conf[pos])
+                                    if pos < len_struct_conf:
+                                        result['struct_conf'].append(struct_conf[pos])
 
                                 cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(chain_id)
 

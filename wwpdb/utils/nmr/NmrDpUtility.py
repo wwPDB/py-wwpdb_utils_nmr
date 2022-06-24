@@ -15932,7 +15932,7 @@ class NmrDpUtility:
                                 else:
 
                                     other = {}
-                                    other['c:ain_id_1'] = chain_id_1
+                                    other['chain_id_1'] = chain_id_1
                                     other['seq_id_1'] = seq_id_1
                                     other['comp_id_1'] = comp_id_1
                                     other['atom_id_1'] = atom_id_1

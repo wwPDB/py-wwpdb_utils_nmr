@@ -358,6 +358,7 @@ amber_rst_pattern = re.compile(r'\s*&[Rr][Ss][Tt].*')
 amber_end_pattern = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
 amber_missing_end_err_msg = "missing END at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 amber_extra_end_err_msg_pattern = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")  # NOTICE: depends on ANTLR v4
+amber_expecting_comma_pattern = re.compile("expecting \\{.*Comma.*\\}")  # NOTICE: depends on ANTLR v4 and AmberMRLexer.g4
 
 xplor_any_assi_pattern = re.compile(r'[Aa][Ss][Ss][Ii][Gg]?[Nn]?')
 xplor_any_rest_pattern = re.compile(r'[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[Ss]?')
@@ -372,7 +373,7 @@ xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' e
 xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 xplor_extra_ssi_err_msg_pattern = re.compile(r"extraneous input '[Aa]?[Ss][Ss][Ii]\S*' .*")  # NOTICE: depends on ANTLR v4
 xplor_extra_l_paren_err_msg_pattern = re.compile(r"extraneous input '\(' expecting .*")  # NOTICE: depends on ANTLR v4
-xplor_expecting_symbol_pattern = re.compile("expecting \{.*Symbol_name.*}") # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+xplor_expecting_symbol_pattern = re.compile("expecting \\{.*Symbol_name.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
 cyana_ambig_pattern = re.compile(r'0\s+AMB\s.*')
 
@@ -7547,7 +7548,7 @@ class NmrDpUtility:
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
                                     corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
+                                    div_test = file_type != 'nm-res-amb'  # remediate missing comma issue in AMBER MR
 
                     if has_parser_error:
                         messageList = parser_err_listener.getMessageList()
@@ -8325,10 +8326,14 @@ class NmrDpUtility:
                                     and not bool(xplor_expecting_symbol_pattern.search(err_message))  # exclude syntax errors in a factor
                                     and prev_input is not None and bool(xplor_assi_pattern.search(prev_input)))
 
+        amber_missing_comma_before = (amber_file_type and err_message.startswith(mismatched_input_err_msg)
+                                      and bool(amber_expecting_comma_pattern.search(err_message)))
+
         if (xplor_missing_end or xplor_ends_wo_statement
                 or xplor_l_paren_wo_assi or xplor_00_origin
                 or xplor_missing_end_before
                 or amber_missing_end or amber_ends_wo_statement
+                or amber_missing_comma_before
                 or cyana_ambig_restraint
                 or concat_xplor_assi or concat_xplor_rest or concat_xplor_set
                 or concat_amber_rst
@@ -8676,6 +8681,31 @@ class NmrDpUtility:
 
                     corrected = True
 
+            if err_line_number - 1 in (i, j + j_offset) and amber_missing_comma_before:
+
+                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+
+                if cor_src_path is not None:
+
+                    k = 1
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if k == err_line_number:
+                                ofp.write(',' + line)
+                            else:
+                                ofp.write(line)
+                            k += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    if self.__mr_debug:
+                        print('DIV-MR-EXIT #3-11')
+
+                    corrected = True
+
             if i == err_line_number - 1 and amber_missing_end:
 
                 cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
@@ -8692,7 +8722,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-11')
+                        print('DIV-MR-EXIT #3-12')
 
                     corrected = True
 
@@ -8728,7 +8758,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-12')
+                            print('DIV-MR-EXIT #3-13')
 
                         corrected = True
 
@@ -9329,10 +9359,14 @@ class NmrDpUtility:
                                     and not bool(xplor_expecting_symbol_pattern.search(err_message))  # exclude syntax errors in a factor
                                     and prev_input is not None and bool(xplor_assi_pattern.search(prev_input)))
 
+        amber_missing_comma_before = (amber_file_type and err_message.startswith(mismatched_input_err_msg)
+                                      and bool(amber_expecting_comma_pattern.search(err_message)))
+
         if (xplor_missing_end or xplor_ends_wo_statement
                 or xplor_l_paren_wo_assi or xplor_00_origin
                 or xplor_missing_end_before
                 or amber_missing_end or amber_ends_wo_statement
+                or amber_missing_comma_before
                 or cyana_ambig_restraint
                 or concat_xplor_assi or concat_xplor_rest or concat_xplor_set
                 or concat_amber_rst
@@ -9602,6 +9636,31 @@ class NmrDpUtility:
 
                     corrected = True
 
+            if err_line_number - 1 in (i, j) and amber_missing_comma_before:
+
+                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+
+                if cor_src_path is not None:
+
+                    k = 1
+
+                    with open(src_path, 'r') as ifp,\
+                            open(cor_src_path, 'w') as ofp:
+                        for line in ifp:
+                            if k == err_line_number:
+                                ofp.write(',' + line)
+                            else:
+                                ofp.write(line)
+                            k += 1
+
+                    if cor_test:
+                        os.rename(cor_src_path, src_path)
+
+                    if self.__mr_debug:
+                        print('DIV-MR-EXIT #2-8')
+
+                    corrected = True
+
             if i == err_line_number - 1 and amber_missing_end:
 
                 cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
@@ -9618,7 +9677,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-8')
+                        print('DO-DIV-MR-EXIT #2-9')
 
                     corrected = True
 
@@ -9654,7 +9713,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-9')
+                            print('DO-DIV-MR-EXIT #2-10')
 
                         corrected = True
 
@@ -9780,7 +9839,7 @@ class NmrDpUtility:
                             pass
                         elif not div_test and has_content:
                             self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
-                            div_test = True
+                            div_test = file_type != 'nm-res-amb'  # remediate missing comma issue in AMBER MR
 
             if has_parser_error:
                 messageList = parser_err_listener.getMessageList()

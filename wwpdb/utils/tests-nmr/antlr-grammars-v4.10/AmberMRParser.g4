@@ -86,12 +86,14 @@ noeexp_statement:
 	noeexp_factor*;
 
 noeexp_factor:
-	NPEAK L_paren_IP Decimal R_paren_A Equ_op_IP Integer Comma? |
-	EMIX L_paren_RP Decimal R_paren_A Equ_op_RP Real Comma? |
+	NPEAK Equ_op_IA (Integers | MultiplicativeInt) (Comma_IA | End_IA) |
+	EMIX Equ_op_RA (Reals | MultiplicativeReal) (Comma_RA | End_RA) |
 	(IHP | JHP) L_paren_IP Decimal Comma_A Decimal R_paren_A Equ_op_IP Integer Comma? |
 	(AEXP | ARANGE | AWT) L_paren_RP Decimal Comma_A Decimal R_paren_A Equ_op_RP Real Comma? |
 	(INVWT1 | INVWT2 | OMEGA | TAUROT | TAUMET | OSCALE) Equ_op_RP Real Comma? |
 	ID2O Equ_op_BP BoolInt Comma? |
+	NPEAK L_paren_IA Decimal R_paren_A Equ_op_IA Integers (Comma_IA | End_IA) |
+	EMIX L_paren_RA Decimal R_paren_A Equ_op_RA Reals (Comma_RA | End_RA) |
 	comment;
 
 /* Amber: NMR restraints - 29.3. Chemical shift restraints - Syntax

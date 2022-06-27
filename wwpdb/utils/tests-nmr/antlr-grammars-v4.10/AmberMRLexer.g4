@@ -163,9 +163,9 @@ ICONSTR:		'ICONSTR'
 NOEEXP:			'&NOEEXP';
 
 NPEAK:			'NPEAK'
-			-> pushMode(INT_PARAM_MODE);		// = IntArray
+			-> pushMode(INT_ARRAY_MODE);		// = IntArray
 EMIX:			'EMIX'
-			-> pushMode(REAL_PARAM_MODE);		// = Real [ , Real ]*
+			-> pushMode(REAL_ARRAY_MODE);		// = Real [ , Real ]*
 
 IHP:			'IHP'
 			-> pushMode(INT_PARAM_MODE);		// ihp(Integer, Integer) = IntArray

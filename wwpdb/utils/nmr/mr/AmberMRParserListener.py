@@ -3199,17 +3199,17 @@ class AmberMRParserListener(ParseTreeListener):
 
             for ipeak in range(1, self.npeak[imix] + 1):
 
-                if ipeak not in self.ihp:
+                if ipeak not in self.ihp[imix]:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
                         f"The atom number involved in the NOESY peak ihp({imix},{ipeak}) was not set.\n"
                     continue
 
-                if ipeak not in self.jhp:
+                if ipeak not in self.jhp[imix]:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
                         f"The atom number involved in the NOESY peak jhp({imix},{ipeak}) was not set.\n"
                     continue
 
-                if ipeak not in self.aexp:
+                if ipeak not in self.aexp[imix]:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
                         f"The NOESY peak volume aexp({imix},{ipeak}) was not set.\n"
                     continue
@@ -3293,6 +3293,11 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} dataset={imix} mixing_time={mix} peak={ipeak} "
                                   f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+                else:
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                        "Failed to recognize AMBER atom numbers in the NOESY volume restraint file "\
+                        "because AMBER parameter/topology file is not available.\n"
 
     def validateNoexpRange(self, imix, ipeak, awt, arange):
         """ Validate NOESY peak volume range.
@@ -3400,24 +3405,77 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.NPEAK():
             varName = 'npeak'
 
-            if ctx.Decimal(0):
+            if ctx.Decimal():
                 decimal = int(str(ctx.Decimal(0)))
-                self.npeak[decimal] = int(str(ctx.Integer()))
-                if self.npeak[decimal] <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The number of peaks '{varName}({decimal})={self.npeak[decimal]}' must be a positive integer.\n"
-                    return
+                rawIntArray = str(ctx.Integers()).split(',')
+                val = int(rawIntArray[0])
+                if len(rawIntArray) > 1:
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "\
+                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                if val > 0:
+                    self.npeak[decimal] = val
+
+            else:
+                if ctx.Integers():
+                    rawIntArray = str(ctx.Integers()).split(',')
+                    for col, rawInt in enumerate(rawIntArray, start=1):
+                        val = int(rawInt)
+                        if val <= 0:
+                            break
+                        self.npeak[col] = val
+                elif ctx.MultiplicativeInt():
+                    offset = 1
+                    for multiplicativeInt in str(ctx.MultiplicativeInt()).split(','):
+                        rawMultInt = multiplicativeInt.split('*')
+                        numNpeakCol = int(rawMultInt[0])
+                        val = int(rawMultInt[1])
+                        for col in range(0, numNpeakCol):
+                            if val <= 0:
+                                break
+                            self.npeak[offset + col] = val
+                        offset += numNpeakCol
 
         elif ctx.EMIX():
             varName = 'emix'
 
-            if ctx.Decimal(0):
+            if ctx.Decimal():
                 decimal = int(str(ctx.Decimal(0)))
-                self.emix[decimal] = float(str(ctx.Real()))
-                if self.emix[decimal] <= 0.0:
+                rawRealArray = str(ctx.Reals()).split(',')
+                val = float(rawRealArray[0])
+                if len(rawRealArray) > 1:
+                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                        f"The '{varName}({decimal})={str(ctx.Reals())}' can not be an array of reals, "\
+                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                if val <= 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The mixing time '{varName}({decimal})={self.emix[decimal]}' must be a positive value.\n"
+                        f"The mixing time '{varName}({decimal})={val}' must be a positive value.\n"
                     return
+                self.emix[decimal] = val
+
+            else:
+                if ctx.Reals():
+                    rawRealArray = str(ctx.Reals()).split(',')
+                    for col, rawReal in enumerate(rawRealArray, start=1):
+                        val = float(rawReal)
+                        if val <= 0.0:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"The mixing time '{varName}({col})={val}' must be a positive value.\n"
+                            break
+                        self.emix[col] = val
+                elif ctx.MultiplicativeReal():
+                    offset = 1
+                    for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):
+                        rawMultReal = multiplicativeReal.split('*')
+                        numEmixCol = int(rawMultReal[0])
+                        val = float(rawMultReal[1])
+                        for col in range(0, numEmixCol):
+                            if val <= 0.0:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"The mixing time '{varName}({col})={val}' must be a positive value.\n"
+                                break
+                            self.emix[offset + col] = val
+                            offset += numEmixCol
 
         elif ctx.INVWT1():
             self.invwt1 = float(str(ctx.Real()))
@@ -3531,6 +3589,11 @@ class AmberMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} n={n} "
                               f"atom={atom} {dstFunc}")
 
+            else:
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
+                    "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
+                    "because AMBER parameter/topology file is not available.\n"
+
         if self.nring <= 0:
             return
 
@@ -3582,6 +3645,11 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} iatr({n},{r}) "
                                   f"ring_atom={atom}")
+
+                else:
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                        "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
+                        "because AMBER parameter/topology file is not available.\n"
 
     def validateShfRange(self, n, wt, shrang):
         """ Validate chemical shift value range.
@@ -3668,13 +3736,13 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
+                    for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val < 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The uncertainty of observed shift '{varName}({col+1})={val}' must not be a negative.\n"
+                                f"The uncertainty of observed shift '{varName}({col})={val}' must not be a negative.\n"
                             return
-                        self.shrang[col + 1] = val
+                        self.shrang[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
                     for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):
@@ -3721,13 +3789,13 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
+                    for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val <= 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col+1})={val}' must be a positive value.\n"
+                                f"The relative weight value '{varName}({col})={val}' must be a positive value.\n"
                             return
-                        self.wt[col + 1] = val
+                        self.wt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
                     for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):
@@ -3817,13 +3885,13 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'nring={self.nring}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
+                    for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val <= 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative strength value '{varName}({col+1})={val}' must be a positive value.\n"
+                                f"The relative strength value '{varName}({col})={val}' must be a positive value.\n"
                             return
-                        self._str[col + 1] = val
+                        self._str[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
                     for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):
@@ -3991,6 +4059,11 @@ class AmberMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} dataset={self.nmpmc} n={n} "
                               f"atom={atom} {dstFunc}")
 
+            else:
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
+                    "Failed to recognize AMBER atom numbers in the Psuedocontact shift restraint file "\
+                    "because AMBER parameter/topology file is not available.\n"
+
     # Enter a parse tree produced by AmberMRParser#pcshf_factor.
     def enterPcshf_factor(self, ctx: AmberMRParser.Pcshf_factorContext):  # pylint: disable=unused-argument
         pass
@@ -4046,13 +4119,13 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
+                    for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val <= 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col+1})={val}' must be a positive value.\n"
+                                f"The relative weight value '{varName}({col})={val}' must be a positive value.\n"
                             return
-                        self.wt[col + 1] = val
+                        self.wt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
                     for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):
@@ -4099,13 +4172,13 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
+                    for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val <= 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative tolerance value '{varName}({col+1})={val}' must be a positive value.\n"
+                                f"The relative tolerance value '{varName}({col})={val}' must be a positive value.\n"
                             return
-                        self.tolpro[col + 1] = val
+                        self.tolpro[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
                     for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):
@@ -4405,6 +4478,11 @@ class AmberMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} dataset={self.dataset} n={n} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+            else:
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
+                    "Failed to recognize AMBER atom numbers in the Direct dipolar coupling restraint file "\
+                    "because AMBER parameter/topology file is not available.\n"
+
         # Enter a parse tree produced by AmberMRParser#align_factor.
     def enterAlign_factor(self, ctx: AmberMRParser.Align_factorContext):  # pylint: disable=unused-argument
         pass
@@ -4484,13 +4562,13 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
+                    for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val <= 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col+1})={val}' must be a positive value.\n"
+                                f"The relative weight value '{varName}({col})={val}' must be a positive value.\n"
                             return
-                        self.dwt[col + 1] = val
+                        self.dwt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
                     for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):
@@ -4532,8 +4610,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
-                        self.gigj[col + 1] = float(rawReal)
+                    for col, rawReal in enumerate(rawRealArray, start=1):
+                        self.gigj[col] = float(rawReal)
                 elif ctx.MultiplicativeReal():
                     offset = 0
                     for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):
@@ -4570,8 +4648,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
-                        self.dij[col + 1] = float(rawReal)
+                    for col, rawReal in enumerate(rawRealArray, start=1):
+                        self.dij[col] = float(rawReal)
                 elif ctx.MultiplicativeReal():
                     offset = 0
                     for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):
@@ -4648,8 +4726,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
-                        self.s11[col + 1] = float(rawReal)
+                    for col, rawReal in enumerate(rawRealArray, start=1):
+                        self.s11[col] = float(rawReal)
 
         elif ctx.S12():
             varName = 's12'
@@ -4671,8 +4749,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
-                        self.s12[col + 1] = float(rawReal)
+                    for col, rawReal in enumerate(rawRealArray, start=1):
+                        self.s12[col] = float(rawReal)
 
         elif ctx.S13():
             varName = 's13'
@@ -4694,8 +4772,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
-                        self.s13[col + 1] = float(rawReal)
+                    for col, rawReal in enumerate(rawRealArray, start=1):
+                        self.s13[col] = float(rawReal)
 
         elif ctx.S22():
             varName = 's22'
@@ -4717,8 +4795,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
-                        self.s22[col + 1] = float(rawReal)
+                    for col, rawReal in enumerate(rawRealArray, start=1):
+                        self.s22[col] = float(rawReal)
 
         elif ctx.S23():
             varName = 's23'
@@ -4740,8 +4818,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
-                        self.s23[col + 1] = float(rawReal)
+                    for col, rawReal in enumerate(rawRealArray, start=1):
+                        self.s23[col] = float(rawReal)
 
     # Enter a parse tree produced by AmberMRParser#csa_statement.
     def enterCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
@@ -4996,6 +5074,11 @@ class AmberMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} dataset={self.datasetc} n={n} "
                               f"atom1={atom1} atom2(CSA central)={atom2} atom3={atom3} {dstFunc}")
 
+            else:
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
+                    "Failed to recognize AMBER atom numbers in the Residual CSA or psuedo-CSA restraint file "\
+                    "because AMBER parameter/topology file is not available.\n"
+
     # Enter a parse tree produced by AmberMRParser#csa_factor.
     def enterCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):  # pylint: disable=unused-argument
         pass
@@ -5087,13 +5170,13 @@ class AmberMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"The length of '{varName}={ctx.Reals()}' must not exceed 'ncsa={self.ncsa}'.\n"
                         return
-                    for col, rawReal in enumerate(rawRealArray):
+                    for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val <= 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col+1})={val}' must be a positive value.\n"
+                                f"The relative weight value '{varName}({col})={val}' must be a positive value.\n"
                             return
-                        self.cwt[col + 1] = val
+                        self.cwt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
                     for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):

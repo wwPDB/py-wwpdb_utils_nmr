@@ -374,6 +374,7 @@ xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][I
 xplor_extra_ssi_err_msg_pattern = re.compile(r"extraneous input '[Aa]?[Ss][Ss][Ii]\S*' .*")  # NOTICE: depends on ANTLR v4
 xplor_extra_l_paren_err_msg_pattern = re.compile(r"extraneous input '\(' expecting .*")  # NOTICE: depends on ANTLR v4
 xplor_expecting_symbol_pattern = re.compile("expecting \\{.*Symbol_name.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+xplor_expecting_equ_op_pattern = re.compile("expecting \\{.*Equ_op.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
 cyana_ambig_pattern = re.compile(r'0\s+AMB\s.*')
 
@@ -8654,36 +8655,38 @@ class NmrDpUtility:
 
             if err_line_number - 1 in (i, j + j_offset) and (xplor_missing_end or xplor_missing_end_before):
 
-                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                if not xplor_missing_end_before or not bool(xplor_expecting_equ_op_pattern.search(err_message)):  # exclude syntax errors in noe annotation
 
-                if cor_src_path is not None:
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    middle = (i != err_line_number - 1)
-                    is_done = False
+                    if cor_src_path is not None:
 
-                    k = 0 if xplor_missing_end else 1
+                        middle = (i != err_line_number - 1)
+                        is_done = False
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if middle:
-                                if k == err_line_number - 2 and comment_pattern.match(line):
-                                    ofp.write('end\n')
-                                    is_done = True
-                                elif k == err_line_number - 1 and not is_done:
-                                    ofp.write('end\n')
-                            ofp.write(line)
-                            k += 1
-                        if not middle:
-                            ofp.write('end\n')
+                        k = 0 if xplor_missing_end else 1
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if middle:
+                                    if k == err_line_number - 2 and comment_pattern.match(line):
+                                        ofp.write('end\n')
+                                        is_done = True
+                                    elif k == err_line_number - 1 and not is_done:
+                                        ofp.write('end\n')
+                                ofp.write(line)
+                                k += 1
+                            if not middle:
+                                ofp.write('end\n')
 
-                    if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-10')
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    corrected = True
+                        if self.__mr_debug:
+                            print('DIV-MR-EXIT #3-10')
+
+                        corrected = True
 
             if err_line_number - 1 in (i, j + j_offset) and amber_missing_comma_before:
 
@@ -8731,7 +8734,9 @@ class NmrDpUtility:
                     corrected = True
 
             if not (corrected or concat_xplor_assi or concat_xplor_rest or concat_xplor_set or concat_amber_rst)\
-               and (j + j_offset) in (0, err_line_number - 1):
+               and (j + j_offset) in (0, err_line_number - 1)\
+               and (not xplor_missing_end_before or not bool(xplor_expecting_equ_op_pattern.search(err_message))):  # exclude syntax errors in noe annotation
+
                 test_line = err_input
 
                 if reader is None:
@@ -9609,36 +9614,38 @@ class NmrDpUtility:
 
             if err_line_number - 1 in (i, j) and (xplor_missing_end or xplor_missing_end_before):
 
-                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                if not xplor_missing_end_before or not bool(xplor_expecting_equ_op_pattern.search(err_message)):  # exclude syntax errors in noe annotation
 
-                if cor_src_path is not None:
+                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
 
-                    middle = (i != err_line_number - 1)
-                    is_done = False
+                    if cor_src_path is not None:
 
-                    k = 0 if xplor_missing_end else 1
+                        middle = (i != err_line_number - 1)
+                        is_done = False
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            if middle:
-                                if k == err_line_number - 2 and comment_pattern.match(line):
-                                    ofp.write('end\n')
-                                    is_done = True
-                                elif k == err_line_number - 1 and not is_done:
-                                    ofp.write('end\n')
-                            ofp.write(line)
-                            k += 1
-                        if not middle:
-                            ofp.write('end\n')
+                        k = 0 if xplor_missing_end else 1
 
-                    if cor_test:
-                        os.rename(cor_src_path, src_path)
+                        with open(src_path, 'r') as ifp,\
+                                open(cor_src_path, 'w') as ofp:
+                            for line in ifp:
+                                if middle:
+                                    if k == err_line_number - 2 and comment_pattern.match(line):
+                                        ofp.write('end\n')
+                                        is_done = True
+                                    elif k == err_line_number - 1 and not is_done:
+                                        ofp.write('end\n')
+                                ofp.write(line)
+                                k += 1
+                            if not middle:
+                                ofp.write('end\n')
 
-                    if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-7')
+                        if cor_test:
+                            os.rename(cor_src_path, src_path)
 
-                    corrected = True
+                        if self.__mr_debug:
+                            print('DO-DIV-MR-EXIT #2-7')
+
+                        corrected = True
 
             if err_line_number - 1 in (i, j) and amber_missing_comma_before:
 
@@ -9686,7 +9693,8 @@ class NmrDpUtility:
                     corrected = True
 
             if not (corrected or concat_xplor_assi or concat_xplor_rest or concat_xplor_set or concat_amber_rst)\
-               and j in (0, err_line_number - 1):
+               and j in (0, err_line_number - 1)\
+               and (not xplor_missing_end_before or not bool(xplor_expecting_equ_op_pattern.search(err_message))):  # exclude syntax errors in noe annotation:
                 test_line = err_input
 
                 if reader is None:

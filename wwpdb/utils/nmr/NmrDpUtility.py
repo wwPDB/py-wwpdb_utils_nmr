@@ -5188,6 +5188,9 @@ class NmrDpUtility:
 
                         lp_category = str(pynmrstar_lp_obj_pattern.search(lp_obj).groups()[0])
 
+                        if lp_category == 'None':
+                            continue
+
                         target = {'lp_category': lp_category}
 
                         pass_loop = False
@@ -5223,37 +5226,38 @@ class NmrDpUtility:
                 except AttributeError:
                     pass
 
-            target_loop_locations = [target['loop_location'] for target in targets]
-            target_stop_locations = [target['stop_location'] for target in targets]
-            ignored_loop_locations = []
-            for target in targets:
-                if 'sf_category' not in target:
-                    ignored_loop_locations.extend(list(range(target['loop_location'], target['stop_location'] + 1)))
+            if len(targets) > 0:
+                target_loop_locations = [target['loop_location'] for target in targets]
+                target_stop_locations = [target['stop_location'] for target in targets]
+                ignored_loop_locations = []
+                for target in targets:
+                    if 'sf_category' not in target:
+                        ignored_loop_locations.extend(list(range(target['loop_location'], target['stop_location'] + 1)))
 
-            i = 1
+                i = 1
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
-                for line in ifp:
-                    if i in target_loop_locations:
-                        target = next(target for target in targets if target['loop_location'] == i)
-                        if 'sf_category' in target:
-                            ofp.write('save_' + target['sf_framecode'] + '\n')
-                            ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
-                            ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
-                            ofp.write('#\n')
-                    if i not in ignored_loop_locations:
-                        ofp.write(line)
-                    if i in target_stop_locations:
-                        target = next(target for target in targets if target['stop_location'] == i)
-                        if 'sf_category' in target:
-                            ofp.write('save_\n')
+                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
+                    ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
+                    for line in ifp:
+                        if i in target_loop_locations:
+                            target = next(target for target in targets if target['loop_location'] == i)
+                            if 'sf_category' in target:
+                                ofp.write('save_' + target['sf_framecode'] + '\n')
+                                ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
+                                ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                                ofp.write('#\n')
+                        if i not in ignored_loop_locations:
+                            ofp.write(line)
+                        if i in target_stop_locations:
+                            target = next(target for target in targets if target['stop_location'] == i)
+                            if 'sf_category' in target:
+                                ofp.write('save_\n')
 
-                    i += 1
+                        i += 1
 
-                _srcPath = ofp.name
-                tmpPaths.append(_srcPath)
+                    _srcPath = ofp.name
+                    tmpPaths.append(_srcPath)
 
         except StopIteration:
             pass

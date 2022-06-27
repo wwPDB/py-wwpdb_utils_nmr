@@ -375,7 +375,7 @@ xplor_extra_ssi_err_msg_pattern = re.compile(r"extraneous input '[Aa]?[Ss][Ss][I
 xplor_extra_l_paren_err_msg_pattern = re.compile(r"extraneous input '\(' expecting .*")  # NOTICE: depends on ANTLR v4
 xplor_expecting_symbol_pattern = re.compile("expecting \\{.*Symbol_name.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 xplor_expecting_equ_op_pattern = re.compile("expecting \\{.*Equ_op.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
-xplor_expecting_seg_id_pattern = re.compile("expecting \\{.*SegIdentifier*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+xplor_expecting_seg_id_pattern = re.compile("expecting \\{.*SegIdentifier.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
 cyana_ambig_pattern = re.compile(r'0\s+AMB\s.*')
 
@@ -8332,10 +8332,9 @@ class NmrDpUtility:
                                     and not bool(xplor_expecting_symbol_pattern.search(err_message))  # exclude syntax errors in a factor
                                     and prev_input is not None and bool(xplor_assi_pattern.search(prev_input)))
 
-        xplor_no_syntax_err_in_fac_or_ann = True
-        if xplor_missing_end_err_msg:
-            xplor_no_syntax_err_in_fac_or_ann = not bool(xplor_expecting_equ_op_pattern.search(err_message))\
-                and not bool(xplor_expecting_seg_id_pattern.search(err_message))
+        xplor_no_syntax_err_in_fac_or_ann = not bool(xplor_expecting_equ_op_pattern.search(err_message))\
+            and not bool(xplor_expecting_seg_id_pattern.search(err_message))\
+            and not err_message.startswith(no_viable_alt_err_msg)
 
         amber_missing_comma_before = (amber_file_type and err_message.startswith(mismatched_input_err_msg)
                                       and bool(amber_expecting_comma_pattern.search(err_message)))
@@ -9386,10 +9385,9 @@ class NmrDpUtility:
                                     and not bool(xplor_expecting_symbol_pattern.search(err_message))  # exclude syntax errors in a factor
                                     and prev_input is not None and bool(xplor_assi_pattern.search(prev_input)))
 
-        xplor_no_syntax_err_in_fac_or_ann = True
-        if xplor_missing_end_err_msg:
-            xplor_no_syntax_err_in_fac_or_ann = not bool(xplor_expecting_equ_op_pattern.search(err_message))\
-                and not bool(xplor_expecting_seg_id_pattern.search(err_message))
+        xplor_no_syntax_err_in_fac_or_ann = not bool(xplor_expecting_equ_op_pattern.search(err_message))\
+            and not bool(xplor_expecting_seg_id_pattern.search(err_message))\
+            and not err_message.startswith(no_viable_alt_err_msg)
 
         amber_missing_comma_before = (amber_file_type and err_message.startswith(mismatched_input_err_msg)
                                       and bool(amber_expecting_comma_pattern.search(err_message)))

@@ -2038,6 +2038,9 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#vean_assign.
     def enterVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
+        self.__cur_subtype_altered = self.__cur_subtype != 'rdc'
+        if self.__cur_subtype_altered:
+            self.rdcStatements += 1
         self.__cur_subtype = 'rdc'
 
         self.atomSelectionSet.clear()
@@ -2793,6 +2796,23 @@ class XplorMRParserListener(ParseTreeListener):
             target_value = target
             lower_limit = None
             upper_limit = None
+
+            if len(self.atomSelectionSet) == 4 and self.__hasPolySeq:
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
+                atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
+
+                if atom_id_1 == atom_id_3 and atom_id_2 == atom_id_4:
+                    self.jcoupRestraints -= 1
+                    self.rdcRestraints += 1
+                    if self.__cur_subtype_altered:
+                        self.jcoupStatements -= 1
+                        if self.rdcStatements == 0:
+                            self.rdcStatements += 1
+                    self.__cur_subtype = 'rdc'
+                    self.exitVean_assign(ctx)
+                    return
 
             if self.potential != 'harmonic':
                 lower_limit = target - delta

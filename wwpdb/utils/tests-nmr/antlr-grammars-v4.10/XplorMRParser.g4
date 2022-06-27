@@ -66,7 +66,7 @@ xplor_nih_mr:
 	harmonic_assign |		// allowing individual assign clauses for Harmonic coordinate restraints
 	hbond_assign |			// allowing bare assign clauses for Hydrogen bond geometry restraints
 	hbond_db_assign |		// allowing bare assign clauses for Hydrogen bond database restraints
-	coup_assign |			// allowing bare assign clauses for Scaler J-coupling restraints
+	coup_assign |			// allowing bare assign clauses for Scaler J-coupling or RDC (VEAN) restraints
 	xadc_assign |			// allowing bare assign clauses for Antidistance restraints
 	coll_assign |			// allowing bare assign clauses for Radius of gyration restraints
 	csa_assign |			// allowing bare assign clauses for CSA restraints

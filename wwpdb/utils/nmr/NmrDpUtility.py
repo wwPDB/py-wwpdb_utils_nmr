@@ -10241,6 +10241,8 @@ class NmrDpUtility:
                         if header:
                             if line.startswith('*'):
                                 continue
+                            if startsWithPdbRecord(line):
+                                continue
                             header = False
 
                         if mr_file_header_pattern.match(line):

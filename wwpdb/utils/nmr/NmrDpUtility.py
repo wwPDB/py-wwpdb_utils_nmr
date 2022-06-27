@@ -9155,7 +9155,7 @@ class NmrDpUtility:
 
                 return False | corrected
 
-            else:
+            if os.path.getsize(div_src_file) == 0:
                 if os.path.exists(div_src_file):  # remove empty file
                     os.remove(div_src_file)
 

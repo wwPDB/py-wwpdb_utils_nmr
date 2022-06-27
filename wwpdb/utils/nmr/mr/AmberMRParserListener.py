@@ -3298,6 +3298,7 @@ class AmberMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
                         "Failed to recognize AMBER atom numbers in the NOESY volume restraint file "\
                         "because AMBER parameter/topology file is not available.\n"
+                    return
 
     def validateNoexpRange(self, imix, ipeak, awt, arange):
         """ Validate NOESY peak volume range.
@@ -3593,6 +3594,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
                     "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
                     "because AMBER parameter/topology file is not available.\n"
+                return
 
         if self.nring <= 0:
             return
@@ -3650,6 +3652,7 @@ class AmberMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                         "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
                         "because AMBER parameter/topology file is not available.\n"
+                    return
 
     def validateShfRange(self, n, wt, shrang):
         """ Validate chemical shift value range.
@@ -4063,6 +4066,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
                     "Failed to recognize AMBER atom numbers in the Psuedocontact shift restraint file "\
                     "because AMBER parameter/topology file is not available.\n"
+                return
 
     # Enter a parse tree produced by AmberMRParser#pcshf_factor.
     def enterPcshf_factor(self, ctx: AmberMRParser.Pcshf_factorContext):  # pylint: disable=unused-argument
@@ -4482,6 +4486,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
                     "Failed to recognize AMBER atom numbers in the Direct dipolar coupling restraint file "\
                     "because AMBER parameter/topology file is not available.\n"
+                return
 
         # Enter a parse tree produced by AmberMRParser#align_factor.
     def enterAlign_factor(self, ctx: AmberMRParser.Align_factorContext):  # pylint: disable=unused-argument
@@ -5078,6 +5083,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
                     "Failed to recognize AMBER atom numbers in the Residual CSA or psuedo-CSA restraint file "\
                     "because AMBER parameter/topology file is not available.\n"
+                return
 
     # Enter a parse tree produced by AmberMRParser#csa_factor.
     def enterCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):  # pylint: disable=unused-argument

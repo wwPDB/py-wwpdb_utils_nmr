@@ -372,6 +372,7 @@ xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' e
 xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 xplor_extra_ssi_err_msg_pattern = re.compile(r"extraneous input '[Aa]?[Ss][Ss][Ii]\S*' .*")  # NOTICE: depends on ANTLR v4
 xplor_extra_l_paren_err_msg_pattern = re.compile(r"extraneous input '\(' expecting .*")  # NOTICE: depends on ANTLR v4
+xplor_expecting_symbol_pattern = re.compile("expecting \{.*Symbol_name.*}") # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
 cyana_ambig_pattern = re.compile(r'0\s+AMB\s.*')
 
@@ -8321,6 +8322,7 @@ class NmrDpUtility:
         offset += err_line_number - 1
 
         xplor_missing_end_before = (xplor_file_type and err_message.startswith(mismatched_input_err_msg)
+                                    and not bool(xplor_expecting_symbol_pattern.search(err_message))  # exclude syntax errors in a factor
                                     and prev_input is not None and bool(xplor_assi_pattern.search(prev_input)))
 
         if (xplor_missing_end or xplor_ends_wo_statement
@@ -9324,6 +9326,7 @@ class NmrDpUtility:
         offset += err_line_number - 1
 
         xplor_missing_end_before = (xplor_file_type and err_message.startswith(mismatched_input_err_msg)
+                                    and not bool(xplor_expecting_symbol_pattern.search(err_message))  # exclude syntax errors in a factor
                                     and prev_input is not None and bool(xplor_assi_pattern.search(prev_input)))
 
         if (xplor_missing_end or xplor_ends_wo_statement
@@ -10856,7 +10859,7 @@ class NmrDpUtility:
                 input_source.setItemValue('file_type', _ar['file_type'])
                 input_source.setItemValue('content_type', 'nmr-restraints')
                 if 'original_file_name' in _ar:
-                    input_source.setItemValue('original_file_name', _ar['original_file_name'])
+                    input_source.setItemValue('original_file_name', os.path.basename(_ar['original_file_name']))
 
         return not self.report.isError()
 

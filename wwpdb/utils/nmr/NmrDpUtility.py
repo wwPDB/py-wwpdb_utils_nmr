@@ -10289,148 +10289,151 @@ class NmrDpUtility:
                 # split STAR and others
                 if has_str_format:
 
-                    mrPath = os.path.splitext(src_file)[0] + '-trimmed.str'
+                    mrPath = os.path.splitext(src_file)[0] + '-ignored.str'
 
-                    header = True
-                    pdb_record = False
+                    if not os.path.exists(mrPath):
+                        mrPath = os.path.splitext(src_file)[0] + '-trimmed.str'
 
-                    i = 0
+                        header = True
+                        pdb_record = False
 
-                    with open(src_file, 'r') as ifp,\
-                            open(dst_file, 'w') as ofp,\
-                            open(mrPath, 'w') as ofp2:
-                        for line in ifp:
-                            i += 1
+                        i = 0
 
-                            # skip MR header
-                            if header:
-                                if line.startswith('*'):
-                                    continue
-                                header = False
+                        with open(src_file, 'r') as ifp,\
+                                open(dst_file, 'w') as ofp,\
+                                open(mrPath, 'w') as ofp2:
+                            for line in ifp:
+                                i += 1
 
-                            # skip legacy PDB
-                            if has_pdb_format:
-                                if startsWithPdbRecord(line):
-                                    pdb_record = True
-                                    continue
-                                if pdb_record:
-                                    pdb_record = False
-                                    if line.startswith('END'):
+                                # skip MR header
+                                if header:
+                                    if line.startswith('*'):
                                         continue
+                                    header = False
 
-                            if first_str_line_num <= i <= last_str_line_num:
-                                ofp2.write(line)
-                                continue
+                                # skip legacy PDB
+                                if has_pdb_format:
+                                    if startsWithPdbRecord(line):
+                                        pdb_record = True
+                                        continue
+                                    if pdb_record:
+                                        pdb_record = False
+                                        if line.startswith('END'):
+                                            continue
 
-                            # skip MR footer
-                            if 'Submitted Coord H atom name' in line:
-                                break
+                                if first_str_line_num <= i <= last_str_line_num:
+                                    ofp2.write(line)
+                                    continue
 
-                            ofp.write(line)
+                                # skip MR footer
+                                if 'Submitted Coord H atom name' in line:
+                                    break
 
-                    mr_file_path_list = 'restraint_file_path_list'
+                                ofp.write(line)
 
-                    if mr_file_path_list not in self.__inputParamDict:
-                        self.__inputParamDict[mr_file_path_list] = [mrPath]
-                    else:
-                        self.__inputParamDict[mr_file_path_list].append(mrPath)
+                        mr_file_path_list = 'restraint_file_path_list'
 
-                    insert_index = self.__file_path_list_len
-
-                    self.report.insertInputSource(insert_index)
-
-                    self.__file_path_list_len += 1
-
-                    input_source = self.report.input_sources[insert_index]
-
-                    file_type = 'nmr-star'
-                    file_name = os.path.basename(mrPath)
-
-                    input_source.setItemValue('file_name', file_name)
-                    input_source.setItemValue('file_type', file_type)
-                    input_source.setItemValue('content_type', 'nmr-restraints')
-
-                    codec = detect_bom(mrPath, 'utf-8')
-
-                    mrPath_ = None
-
-                    if codec != 'utf-8':
-                        mrPath_ = mrPath + '~'
-                        convert_codec(mrPath, mrPath_, codec, 'utf-8')
-                        mrPath = mrPath_
-
-                    file_subtype = 'O'
-
-                    is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
-
-                    if not is_valid:
-                        _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
-                        if _is_valid:
-                            has_cs_str = True
-
-                    self.__original_error_message.append(message)
-
-                    _file_type = message['file_type']  # nef/nmr-star/unknown
-
-                    if is_valid:
-
-                        if _file_type != file_type:
-
-                            err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                f"but recognized as {self.readable_file_type[_file_type]} file."
-
-                            if _file_type == 'nef':  # DAOTHER-5673
-                                err += " Please re-upload the NEF file as an NMR combined data file."
-                            else:
-                                err += " Please re-upload the file."
-
-                            if len(message['error']) > 0:
-                                for err_message in message['error']:
-                                    if 'No such file or directory' not in err_message:
-                                        err += ' ' + re.sub('not in list', 'unknown item.', err_message)
-
-                            self.report.error.appendDescription('content_mismatch',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
-
+                        if mr_file_path_list not in self.__inputParamDict:
+                            self.__inputParamDict[mr_file_path_list] = [mrPath]
                         else:
+                            self.__inputParamDict[mr_file_path_list].append(mrPath)
 
-                            # NEFTranslator.validate_file() generates this object internally, but not re-used.
-                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                        insert_index = self.__file_path_list_len
 
-                            self.__has_legacy_sf_issue = False
+                        self.report.insertInputSource(insert_index)
 
-                            if star_data_type == 'Saveframe':
-                                self.__has_legacy_sf_issue = True
-                                self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message)
+                        self.__file_path_list_len += 1
+
+                        input_source = self.report.input_sources[insert_index]
+
+                        file_type = 'nmr-star'
+                        file_name = os.path.basename(mrPath)
+
+                        input_source.setItemValue('file_name', file_name)
+                        input_source.setItemValue('file_type', file_type)
+                        input_source.setItemValue('content_type', 'nmr-restraints')
+
+                        codec = detect_bom(mrPath, 'utf-8')
+
+                        mrPath_ = None
+
+                        if codec != 'utf-8':
+                            mrPath_ = mrPath + '~'
+                            convert_codec(mrPath, mrPath_, codec, 'utf-8')
+                            mrPath = mrPath_
+
+                        file_subtype = 'O'
+
+                        is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
+
+                        if not is_valid:
+                            _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
+                            if _is_valid:
+                                has_cs_str = True
+
+                        self.__original_error_message.append(message)
+
+                        _file_type = message['file_type']  # nef/nmr-star/unknown
+
+                        if is_valid:
+
+                            if _file_type != file_type:
+
+                                err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                                    f"but recognized as {self.readable_file_type[_file_type]} file."
+
+                                if _file_type == 'nef':  # DAOTHER-5673
+                                    err += " Please re-upload the NEF file as an NMR combined data file."
+                                else:
+                                    err += " Please re-upload the file."
+
+                                if len(message['error']) > 0:
+                                    for err_message in message['error']:
+                                        if 'No such file or directory' not in err_message:
+                                            err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                                self.report.error.appendDescription('content_mismatch',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+                            else:
+
+                                # NEFTranslator.validate_file() generates this object internally, but not re-used.
                                 _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
 
-                            if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+                                self.__has_legacy_sf_issue = False
 
-                                if len(self.__star_data_type) == self.__file_path_list_len:
-                                    del self.__star_data_type[-1]
-                                    del self.__star_data[-1]
+                                if star_data_type == 'Saveframe':
+                                    self.__has_legacy_sf_issue = True
+                                    self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message)
+                                    _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
 
-                                self.__star_data_type.append(star_data_type)
-                                self.__star_data.append(star_data)
+                                if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
-                                self.__rescueFormerNef(insert_index)
-                                self.__rescueImmatureStr(insert_index)
+                                    if len(self.__star_data_type) == self.__file_path_list_len:
+                                        del self.__star_data_type[-1]
+                                        del self.__star_data[-1]
 
-                            if _is_done:
-                                self.__detectContentSubType()
+                                    self.__star_data_type.append(star_data_type)
+                                    self.__star_data.append(star_data)
 
-                    elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
-                        pass
+                                    self.__rescueFormerNef(insert_index)
+                                    self.__rescueImmatureStr(insert_index)
 
-                    if mrPath_ is not None:
-                        try:
-                            os.remove(mrPath_)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                                if _is_done:
+                                    self.__detectContentSubType()
+
+                        elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                             pass
+
+                        if mrPath_ is not None:
+                            try:
+                                os.remove(mrPath_)
+                            except:  # noqa: E722 pylint: disable=bare-except
+                                pass
 
                 elif has_cif_format:
 

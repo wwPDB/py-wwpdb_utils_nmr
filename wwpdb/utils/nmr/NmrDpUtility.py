@@ -9149,10 +9149,22 @@ class NmrDpUtility:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
-            if self.__mr_debug:
-                print('PEEL-MR-EXIT #4')
+            if j3 > 0:
+                if self.__mr_debug:
+                    print('PEEL-MR-EXIT #4')
 
-            return False | corrected
+                return False | corrected
+
+            else:
+                if os.path.exists(div_src_file):  # remove empty file
+                    os.remove(div_src_file)
+
+                os.rename(div_ext_file, div_ext_file.replace('dst-div_ext.mr', '_ext.mr'))  # shrink div_ext file name
+
+                if self.__mr_debug:
+                    print('PEEL-MR-EXIT #5')
+
+                return True
 
         if not os.path.exists(div_try_file):
             return False
@@ -9182,7 +9194,7 @@ class NmrDpUtility:
                     os.remove(div_try_file)
 
                     if self.__mr_debug:
-                        print('PEEL-MR-EXIT #5')
+                        print('PEEL-MR-EXIT #6')
 
                     return False | corrected  # not split MR file because of the lexer errors to be handled by manual
 
@@ -9195,7 +9207,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('PEEL-MR-EXIT #6')
+                print('PEEL-MR-EXIT #7')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -9205,7 +9217,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('PEEL-MR-EXIT #7')
+                print('PEEL-MR-EXIT #8')
 
             return False | corrected
 

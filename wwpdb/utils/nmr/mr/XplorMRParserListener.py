@@ -2799,8 +2799,6 @@ class XplorMRParserListener(ParseTreeListener):
     def enterCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
         self.jcoupRestraints += 1
         self.__cur_subtype_altered = self.__cur_subtype != 'jcoup'
-        if self.__cur_subtype_altered:
-            self.jcoupStatements += 1
         self.__cur_subtype = 'jcoup' if self.__cur_subtype != 'rdc' else 'rdc'  # set 'rdc' for error message
 
         self.atomSelectionSet.clear()
@@ -2851,6 +2849,9 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
             self.__cur_subtype = 'jcoup'  # to get consistent number of statement
+
+            if self.__cur_subtype_altered:
+                self.jcoupStatements += 1
 
             if not self.__hasPolySeq:  # can't decide whether VEAN or COUP wo the coordinates
                 return
@@ -4885,8 +4886,6 @@ class XplorMRParserListener(ParseTreeListener):
     def enterPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):  # pylint: disable=unused-argument
         self.pcsRestraints += 1
         self.__cur_subtype_altered = self.__cur_subtype != 'pcs'
-        if self.__cur_subtype_altered:
-            self.pcsStatements += 1
         self.__cur_subtype = 'pcs' if self.__cur_subtype != 'hvycs' else 'hvycs'  # set 'hvycs' for error message
 
         self.atomSelectionSet.clear()
@@ -4942,6 +4941,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__cur_subtype = 'hvycs'
                 self.exitCarbon_shift_assign(ctx)
                 return
+
+            if self.__cur_subtype_altered:
+                self.pcsStatements += 1
 
             self.__cur_subtype = 'pcs'  # to get consistent number of statement
 
@@ -6231,7 +6233,7 @@ class XplorMRParserListener(ParseTreeListener):
                             if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                 continue
                         if cur_sybtype_w_para:
-                            if (atomId in PARAMAGNETIC_ELEMENTS or atomId in FERROMAGNETIC_ELEMENTS):
+                            if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS):
                                 continue
 
                         if cur_subtype_w_axis or cur_sybtype_w_para:
@@ -6408,7 +6410,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                     continue
                             if cur_sybtype_w_para:
-                                if (atomId in PARAMAGNETIC_ELEMENTS or atomId in FERROMAGNETIC_ELEMENTS):
+                                if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS):
                                     continue
 
                             if cur_subtype_w_axis or cur_sybtype_w_para:
@@ -6572,7 +6574,8 @@ class XplorMRParserListener(ParseTreeListener):
         if len(_factor['atom_selection']) == 0:
             if cur_subtype_w_axis and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
-            if cur_sybtype_w_para and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+            if cur_sybtype_w_para and ((_factor['atom_id'][0] == _factor['comp_id'][0] and _factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
+                                       or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
                 return _factor
             __factor = copy.copy(_factor)
             del __factor['atom_selection']

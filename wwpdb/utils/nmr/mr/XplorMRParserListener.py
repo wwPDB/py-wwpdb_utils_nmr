@@ -2850,6 +2850,8 @@ class XplorMRParserListener(ParseTreeListener):
                     self.exitVean_assign(ctx)
                     return
 
+            self.__cur_subtype = 'jcoup'  # to get consistent number of statement
+
             if not self.__hasPolySeq:  # can't decide whether VEAN or COUP wo the coordinates
                 return
 
@@ -4940,6 +4942,8 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__cur_subtype = 'hvycs'
                 self.exitCarbon_shift_assign(ctx)
                 return
+
+            self.__cur_subtype = 'pcs'  # to get consistent number of statement
 
             target_value = target
             lower_limit = target - delta

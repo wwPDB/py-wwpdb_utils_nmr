@@ -3316,7 +3316,7 @@ class CnsMRParserListener(ParseTreeListener):
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
             if self.__cur_subtype != 'plane':
-                if cifCheck:
+                if self.__hasCoord:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for factor {__factor}.\n"
             else:

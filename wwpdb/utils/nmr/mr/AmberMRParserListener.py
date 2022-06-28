@@ -701,732 +701,334 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#restraint_statement.
     def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
-        self.detectRestraintType(self.likeDist)
 
-        if len(self.__cur_subtype) == 0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Couldn't specify NMR restraint type because the number of columns in the 'iat' clause did not match.\n"
-            return
+        try:
 
-        # conventional restraint
-        if not self.hasFuncExprs:
+            self.detectRestraintType(self.likeDist)
 
-            if self.setIatCol is not None and len(self.setIatCol) > 0:
-                setIatCol = sorted(self.setIatCol)
-                self.numIatCol = max(setIatCol)
-                if list(range(1, self.numIatCol + 1)) != setIatCol:
-                    misIatCol = ','.join([str(col) for col in set(range(1, self.numIatCol + 1)) - set(setIatCol)])
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Couldn't specify NMR restraint type because of missing 'iat({misIatCol})' clause(s).\n"
-                    return
+            if len(self.__cur_subtype) == 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Couldn't specify NMR restraint type because the number of columns in the 'iat' clause did not match.\n"
+                return
 
-            # cross-check between IAT and IGRn variables
-            for col in range(0, self.numIatCol):
-                iat = self.iat[col]
+            # conventional restraint
+            if not self.hasFuncExprs:
 
-                varNum = col + 1
-                varName = 'igr' + str(varNum)
-
-                if iat > 0 and self.igr is not None and varNum in self.igr:
-                    if len(self.igr[varNum]) > 0:
-                        nonpCols = [col_ for col_, val in enumerate(self.igr[varNum]) if val <= 0]
-                        maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
-                        valArray = ','.join([str(val) for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol])
-                        if len(valArray) > 0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"'{varName}={valArray}' has no effect because 'iat({varNum})={iat}'.\n"
-                    del self.igr[varNum]
-
-                elif iat < 0:
-                    if self.igr is None or varNum not in self.igr or len(self.igr[varNum]) == 0:
-                        hint = ''
-                        if self.ixpk != -1:
-                            hint += f"ixpk={self.ixpk},"
-                        if self.nxpk != -1:
-                            hint += f"nxpk={self.nxpk},"
-                        for _col in range(0, self.numIatCol):
-                            if _col == col:
-                                continue
-                            _varNum = _col + 1
-                            if self.iat[_col] > 0:
-                                hint += f"iat({_col+1})={self.iat[_col]},"
-                            elif self.igr is not None and _varNum in self.igr:
-                                nonpCols = [col_ for col_, val in enumerate(self.igr[_varNum]) if val <= 0]
-                                maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
-                                valArray = ','.join([str(val) for col_, val in enumerate(self.igr[_varNum]) if val > 0 and col_ < maxCol])
-                                hint += f"igr({_col+1})={valArray},"
-                        if len(hint) > 0:
-                            hint = f" The peripheral atom selections are: {hint[:-1]}."
+                if self.setIatCol is not None and len(self.setIatCol) > 0:
+                    setIatCol = sorted(self.setIatCol)
+                    self.numIatCol = max(setIatCol)
+                    if list(range(1, self.numIatCol + 1)) != setIatCol:
+                        misIatCol = ','.join([str(col) for col in set(range(1, self.numIatCol + 1)) - set(setIatCol)])
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"'{varName}' is missing despite being set 'iat({varNum})={iat}'.{hint}\n"
-                    else:
-                        nonpCols = [col_ for col_, val in enumerate(self.igr[varNum]) if val <= 0]
-                        maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
-                        valArray = ','.join([str(val) for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol])
-                        if len(valArray) == 0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"'{varName}' includes non-positive integers.\n"
-                            del self.igr[varNum]
-                        else:
-                            nonp = [val for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol]
-                            if self.iresid == 0:
-                                if len(nonp) != len(set(nonp)):
-                                    if self.__hasPolySeq:
-                                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                                            f"'{varName}={valArray}' includes redundant integers.\n"
-                                elif len(nonp) < 2:
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                        f"Surprisingly '{varName}={valArray}' consists of a single integer.\n"
-                            else:
-                                mask = [str(val) + '@' + grnam
-                                        for col_, (val, grnam) in enumerate(zip(self.igr[varNum], self.grnam[varNum]))
-                                        if val > 0 and col_ < maxCol]
-                                varName2 = 'grnam' + str(varNum)
-                                valArray2 = ','.join([val for col_, val in enumerate(self.grnam[varNum]) if len(val) > 0 and col_ < maxCol])
-                                if len(mask) != len(set(mask)):
-                                    if self.__hasPolySeq:
-                                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                                            f"'{varName}={valArray}' and '{varName2}={valArray2}' include redundant atoms.\n"
-                                elif len(nonp) < 2 or len(mask) < 2:
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                        f"Surprisingly '{varName}={valArray}' consists of a single integer "\
-                                        f"or '{varName2}={valArray2}' consists of a single string.\n"
-                            self.igr[varNum] = list(set(nonp))  # trimming non-positive/redundant integer
+                            f"Couldn't specify NMR restraint type because of missing 'iat({misIatCol})' clause(s).\n"
+                        return
 
-            self.iat = self.iat[0:self.numIatCol]  # trimming default zero integer
+                # cross-check between IAT and IGRn variables
+                for col in range(0, self.numIatCol):
+                    iat = self.iat[col]
 
-            # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-            if self.__atomNumberDict is not None:
+                    varNum = col + 1
+                    varName = 'igr' + str(varNum)
 
-                for col, iat in enumerate(self.iat):
-
-                    atomSelection = []
-
-                    if self.iresid == 0:
-
-                        if iat > 0:
-                            if iat in self.__atomNumberDict:
-                                atomSelection.append(self.__atomNumberDict[iat])
-                            else:
-                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                    f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
-                        elif iat < 0:
-                            varNum = col + 1
-                            if self.igr is None:
-                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                    f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
-                            elif varNum in self.igr:
-                                for igr in self.igr[varNum]:
-                                    if igr in self.__atomNumberDict:
-                                        atomSelection.append(self.__atomNumberDict[igr])
-                                    else:
-                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                            f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file.\n"
-
-                    else:
-
-                        if iat > 0:
-                            if col >= len(self.atnam):
+                    if iat > 0 and self.igr is not None and varNum in self.igr:
+                        if len(self.igr[varNum]) > 0:
+                            nonpCols = [col_ for col_, val in enumerate(self.igr[varNum]) if val <= 0]
+                            maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
+                            valArray = ','.join([str(val) for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol])
+                            if len(valArray) > 0:
                                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"'atnam({col+1})' is missing despite being set iresid=1, iat({col+1})={iat}.\n"
-                            else:
-                                atnam = self.atnam[col]
-                                if len(atnam) == 0:
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                        f"'atnam({col+1})={atnam}' is empty despite being set iresid=1, iat({col+1})={iat}.\n"
-                                else:
-                                    factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col])
-                                    if factor is not None:
-                                        atomSelection.append(factor)
+                                    f"'{varName}={valArray}' has no effect because 'iat({varNum})={iat}'.\n"
+                        del self.igr[varNum]
 
-                        elif iat < 0:
-                            varNum = col + 1
-                            if self.igr is None:
-                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                    f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
-                            elif varNum in self.igr:
-                                if varNum not in self.grnam:
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                        f"'grnam({varNum})' is missing despite being set iresid=1, igr({varNum})={self.igr[varNum]}.\n"
-                                else:
-                                    for igr, grnam in zip(self.igr[varNum], self.grnam[varNum]):
-                                        if len(grnam) == 0:
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"'grnam({varNum})={self.grnam[varNum]}' is empty "\
-                                                f"despite being set iresid=1, igr({varNum})={self.igr[varNum]}.\n"
-                                        else:
-                                            factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam)
-                                            if factor is not None:
-                                                atomSelection.append(factor)
-
-                    self.atomSelectionSet.append(atomSelection)
-
-                if self.lastComment is not None:
-                    if self.__debug:
-                        print('# ' + self.lastComment)
-
-                updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
-
-                if self.__cur_subtype == 'dist':
-
-                    dstFunc = self.validateDistanceRange(1.0)
-
-                    if dstFunc is None:
-                        return
-
-                    lenIat = len(self.iat)
-
-                    # simple distance
-                    if lenIat == COL_DIST:
-                        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                                              self.atomSelectionSet[1]):
-                            if self.__debug:
-                                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                      f"atom1={atom1} atom2={atom2} {dstFunc}")
-
-                    # generalized distance
-                    else:
-
-                        # generalized distance 2
-                        if lenIat == COL_DIST_COORD2:
-                            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                                                self.atomSelectionSet[1],
-                                                                                self.atomSelectionSet[2],
-                                                                                self.atomSelectionSet[3]):
-                                if self.__debug:
-                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                          f"weight=[{self.rstwt[0]}, {self.rstwt[1]}] "
-                                          f"|atom1={atom1} atom2={atom2}| "
-                                          f"|atom3={atom3} atom4={atom4}| "
-                                          f"{dstFunc}")
-
-                        # generalized distance 3
-                        elif lenIat == COL_DIST_COORD3:
-                            for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
-                                                                                              self.atomSelectionSet[1],
-                                                                                              self.atomSelectionSet[2],
-                                                                                              self.atomSelectionSet[3],
-                                                                                              self.atomSelectionSet[4],
-                                                                                              self.atomSelectionSet[5]):
-                                if self.__debug:
-                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                          f"weight=[{self.rstwt[0]}, {self.rstwt[1]}, {self.rstwt[2]}] "
-                                          f"|atom1={atom1} atom2={atom2}| "
-                                          f"|atom3={atom3} atom4={atom4}| "
-                                          f"|atom5={atom5} atom6={atom6}| "
-                                          f"{dstFunc}")
-
-                        # generalized distance 4
+                    elif iat < 0:
+                        if self.igr is None or varNum not in self.igr or len(self.igr[varNum]) == 0:
+                            hint = ''
+                            if self.ixpk != -1:
+                                hint += f"ixpk={self.ixpk},"
+                            if self.nxpk != -1:
+                                hint += f"nxpk={self.nxpk},"
+                            for _col in range(0, self.numIatCol):
+                                if _col == col:
+                                    continue
+                                _varNum = _col + 1
+                                if self.iat[_col] > 0:
+                                    hint += f"iat({_col+1})={self.iat[_col]},"
+                                elif self.igr is not None and _varNum in self.igr:
+                                    nonpCols = [col_ for col_, val in enumerate(self.igr[_varNum]) if val <= 0]
+                                    maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
+                                    valArray = ','.join([str(val) for col_, val in enumerate(self.igr[_varNum]) if val > 0 and col_ < maxCol])
+                                    hint += f"igr({_col+1})={valArray},"
+                            if len(hint) > 0:
+                                hint = f" The peripheral atom selections are: {hint[:-1]}."
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                f"'{varName}' is missing despite being set 'iat({varNum})={iat}'.{hint}\n"
                         else:
-                            for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
-                                                                                                            self.atomSelectionSet[1],
-                                                                                                            self.atomSelectionSet[2],
-                                                                                                            self.atomSelectionSet[3],
-                                                                                                            self.atomSelectionSet[4],
-                                                                                                            self.atomSelectionSet[5],
-                                                                                                            self.atomSelectionSet[6],
-                                                                                                            self.atomSelectionSet[7]):
-                                if self.__debug:
-                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                          f"weight={self.rstwt} "
-                                          f"|atom1={atom1} atom2={atom2}| "
-                                          f"|atom3={atom3} atom4={atom4}| "
-                                          f"|atom5={atom5} atom6={atom6}| "
-                                          f"|atom7={atom7} atom8={atom8}| "
-                                          f"{dstFunc}")
-
-                        self.rstwt = [0.0, 0.0, 0.0, 0.0]
-
-                # angle
-                elif self.__cur_subtype == 'ang':
-                    valid = True
-                    for col, iat in enumerate(self.iat):
-                        if iat < 0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a angle restraint.\n"
-                            valid = False
-                    if not valid:
-                        return
-
-                    dstFunc = self.validateAngleRange(1.0)
-
-                    if dstFunc is None:
-                        return
-
-                    for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
-                                                                 self.atomSelectionSet[1],
-                                                                 self.atomSelectionSet[2]):
-                        if isLongRangeRestraint([atom1, atom2, atom3]):
-                            continue
-                        if self.__debug:
-                            print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
-                                  f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
-
-                # torsional angle
-                elif self.__cur_subtype == 'dihed':
-                    valid = True
-                    for col, iat in enumerate(self.iat):
-                        if iat < 0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a torsional angle restraint.\n"
-                            valid = False
-                    if not valid:
-                        return
-
-                    dstFunc = self.validateAngleRange(1.0)
-
-                    if dstFunc is None:
-                        return
-
-                    if len(self.atomSelectionSet[0]) == 0:
-                        return
-
-                    compId = self.atomSelectionSet[0][0]['comp_id']
-                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
-
-                    for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                                        self.atomSelectionSet[1],
-                                                                        self.atomSelectionSet[2],
-                                                                        self.atomSelectionSet[3]):
-                        angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                               [atom1, atom2, atom3, atom4])
-                        if angleName is None:
-                            continue
-                        if self.__debug:
-                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
-
-                # plane-(point/plane) angle
-                else:
-                    valid = True
-                    for col, iat in enumerate(self.iat):
-                        if iat < 0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a plane-(point/plane) angle restraint.\n"
-                            valid = False
-                    if not valid:
-                        return
-
-                    dstFunc = self.validateAngleRange(1.0)
-
-                    if dstFunc is None:
-                        return
-
-                    # plane-point angle
-                    if lenIat == COL_PLANE_POINT:
-                        for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
-                                                                                   self.atomSelectionSet[1],
-                                                                                   self.atomSelectionSet[2],
-                                                                                   self.atomSelectionSet[3],
-                                                                                   self.atomSelectionSet[4]):
-                            if self.__debug:
-                                print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
-                                      f"plane: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
-                                      f"point: atom={atom5}"
-                                      f"{dstFunc}")
-
-                    # plane-plane angle
-                    else:
-                        for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
-                                                                                                        self.atomSelectionSet[1],
-                                                                                                        self.atomSelectionSet[2],
-                                                                                                        self.atomSelectionSet[3],
-                                                                                                        self.atomSelectionSet[4],
-                                                                                                        self.atomSelectionSet[5],
-                                                                                                        self.atomSelectionSet[6],
-                                                                                                        self.atomSelectionSet[7]):
-                            if self.__debug:
-                                print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
-                                      f"plane_1: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
-                                      f"plane_2: |atom_1={atom5} atom_2={atom6} atom_3={atom7} atom_4={atom8}| "
-                                      f"{dstFunc}")
-
-            # try to update AMBER atom number dictionary based on Sander comments
-            elif self.__hasPolySeq and self.iresid == 0:
-
-                if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
-                    subtype_name = 'distance restraint'
-
-                    g = None\
-                        if self.lastComment is None or not self.dist_sander_pat.match(self.lastComment)\
-                        else self.dist_sander_pat.search(self.lastComment).groups()
-
-                    for col, iat in enumerate(self.iat):
-                        offset = col * 3
-
-                        if iat > 0:
-                            if iat in self.__sanderAtomNumberDict:
-                                pass
+                            nonpCols = [col_ for col_, val in enumerate(self.igr[varNum]) if val <= 0]
+                            maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
+                            valArray = ','.join([str(val) for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol])
+                            if len(valArray) == 0:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"'{varName}' includes non-positive integers.\n"
+                                del self.igr[varNum]
                             else:
-                                if g is None:
-                                    self.reportSanderCommentIssue(subtype_name)
-                                    return
-                                factor = {'auth_seq_id': int(g[offset + 0]),
-                                          'auth_comp_id': g[offset + 1],
-                                          'auth_atom_id': g[offset + 2],
-                                          'iat': iat
-                                          }
-                                if not self.updateSanderAtomNumberDict(factor):
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                        f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                        f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
-
-                        elif iat < 0:
-                            varNum = col + 1
-                            if self.igr is None:
-                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                    f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
-                            elif varNum in self.igr:
-                                igr = self.igr[varNum]
-                                if igr[0] not in self.__sanderAtomNumberDict:
-                                    if g is None:
-                                        self.reportSanderCommentIssue(subtype_name)
-                                        return
-                                    factor = {'auth_seq_id': int(g[offset + 0]),
-                                              'auth_comp_id': g[offset + 1],
-                                              'auth_atom_id': g[offset + 2],
-                                              'igr': igr
-                                              }
-                                    if not self.updateSanderAtomNumberDict(factor):
+                                nonp = [val for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol]
+                                if self.iresid == 0:
+                                    if len(nonp) != len(set(nonp)):
+                                        if self.__hasPolySeq:
+                                            self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                                                f"'{varName}={valArray}' includes redundant integers.\n"
+                                    elif len(nonp) < 2:
                                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "\
-                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
-
-                if self.__cur_subtype == 'ang':
-                    subtype_name = 'angle restraint'
-
-                    g = None\
-                        if self.lastComment is None or not self.ang_sander_pat.match(self.lastComment)\
-                        else self.ang_sander_pat.search(self.lastComment).groups()
-
-                    gn = None\
-                        if self.lastComment is None or not self.ang_nang_sander_pat.match(self.lastComment)\
-                        else self.ang_nang_sander_pat.search(self.lastComment).groups()
-
-                    _gn = None\
-                        if self.lastComment is not None or gn is not None or self.prevComment is None\
-                        or not self.ang_nang_sander_pat.match(self.prevComment)\
-                        else self.ang_nang_sander_pat.search(self.prevComment).groups()
-
-                    if _gn is not None:
-                        for col, iat in enumerate(self.iat):
-
-                            if iat > 0:
-                                if iat in self.__sanderAtomNumberDict:
-                                    pass
+                                            f"Surprisingly '{varName}={valArray}' consists of a single integer.\n"
                                 else:
-                                    seqId = int(_gn[0])
-                                    atomId = self.ang_nang_atoms[1][col]
-                                    _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
-                                    if _factor is None:
+                                    mask = [str(val) + '@' + grnam
+                                            for col_, (val, grnam) in enumerate(zip(self.igr[varNum], self.grnam[varNum]))
+                                            if val > 0 and col_ < maxCol]
+                                    varName2 = 'grnam' + str(varNum)
+                                    valArray2 = ','.join([val for col_, val in enumerate(self.grnam[varNum]) if len(val) > 0 and col_ < maxCol])
+                                    if len(mask) != len(set(mask)):
+                                        if self.__hasPolySeq:
+                                            self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
+                                                f"'{varName}={valArray}' and '{varName2}={valArray2}' include redundant atoms.\n"
+                                    elif len(nonp) < 2 or len(mask) < 2:
                                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                            f"based on Sander comment {self.prevComment!r}.\n"
-                                        continue
-                                    factor = {'auth_seq_id': seqId,
-                                              'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
-                                              'auth_atom_id': atomId,
-                                              'iat': iat
-                                              }
-                                    if not self.updateSanderAtomNumberDict(factor):
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                            f"based on Sander comment {self.prevComment!r}.\n"
+                                            f"Surprisingly '{varName}={valArray}' consists of a single integer "\
+                                            f"or '{varName2}={valArray2}' consists of a single string.\n"
+                                self.igr[varNum] = list(set(nonp))  # trimming non-positive/redundant integer
 
-                        self.prevComment = None
+                self.iat = self.iat[0:self.numIatCol]  # trimming default zero integer
 
-                    elif gn is not None:
-                        for col, iat in enumerate(self.iat):
+                # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+                if self.__atomNumberDict is not None:
 
-                            if iat > 0:
-                                if iat in self.__sanderAtomNumberDict:
-                                    pass
-                                else:
-                                    seqId = int(gn[0])
-                                    atomId = self.ang_nang_atoms[0][col]
-                                    _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
-                                    if _factor is None:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                            f"based on Sander comment {self.lastComment!r}.\n"
-                                        continue
-                                    factor = {'auth_seq_id': seqId,
-                                              'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
-                                              'auth_atom_id': atomId,
-                                              'iat': iat
-                                              }
-                                    if not self.updateSanderAtomNumberDict(factor):
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                            f"based on Sander comment {self.lastComment!r}.\n"
-
-                    else:
-                        for col, iat in enumerate(self.iat):
-                            offset = col * 3 + 3
-
-                            if iat > 0:
-                                if iat in self.__sanderAtomNumberDict:
-                                    pass
-                                else:
-                                    if g is None:
-                                        self.reportSanderCommentIssue(subtype_name)
-                                        return
-                                    factor = {'auth_seq_id': int(g[offset + 0]),
-                                              'auth_comp_id': g[offset + 1],
-                                              'auth_atom_id': g[offset + 2],
-                                              'iat': iat
-                                              }
-                                    if not self.updateSanderAtomNumberDict(factor):
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
-
-                if self.__cur_subtype == 'dihed':
-                    subtype_name = 'torsional angle restraint'
-
-                    g = None\
-                        if self.lastComment is None or not self.dihed_sander_pat.match(self.lastComment)\
-                        else self.dihed_sander_pat.search(self.lastComment).groups()
-
-                    gc = None\
-                        if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
-                        else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
-
-                    go = None\
-                        if self.lastComment is None or not self.dihed_omega_sander_pat.match(self.lastComment)\
-                        else self.dihed_omega_sander_pat.search(self.lastComment).groups()
-
-                    if go is not None:
-                        for col, iat in enumerate(self.iat):
-
-                            if iat > 0:
-                                if iat in self.__sanderAtomNumberDict:
-                                    pass
-                                else:
-                                    seqId = int(go[0])
-                                    if col >= 2:
-                                        seqId -= 1
-                                    atomId = self.dihed_omega_atoms[col]
-                                    _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
-                                    if _factor is None:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                            f"based on Sander comment {self.lastComment!r}.\n"
-                                        continue
-                                    factor = {'auth_seq_id': seqId,
-                                              'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
-                                              'auth_atom_id': atomId,
-                                              'iat': iat
-                                              }
-                                    if not self.updateSanderAtomNumberDict(factor):
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                            f"based on Sander comment {self.lastComment!r}.\n"
-
-                    elif gc is not None:
-                        for col, iat in enumerate(self.iat):
-
-                            if iat > 0:
-                                if iat in self.__sanderAtomNumberDict:
-                                    pass
-                                else:
-                                    seqId = int(gc[0])
-                                    atomId = gc[col + 1]
-                                    _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
-                                    if _factor is None:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                            f"based on Sander comment {self.lastComment!r}.\n"
-                                        continue
-                                    factor = {'auth_seq_id': seqId,
-                                              'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
-                                              'auth_atom_id': atomId,
-                                              'iat': iat
-                                              }
-                                    if not self.updateSanderAtomNumberDict(factor):
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                            f"based on Sander comment {self.lastComment!r}.\n"
-
-                    else:
-                        for col, iat in enumerate(self.iat):
-                            offset = col * 3 + 3
-
-                            if iat > 0:
-                                if iat in self.__sanderAtomNumberDict:
-                                    pass
-                                else:
-                                    if g is None:
-                                        self.reportSanderCommentIssue(subtype_name)
-                                        return
-                                    factor = {'auth_seq_id': int(g[offset + 0]),
-                                              'auth_comp_id': g[offset + 1],
-                                              'auth_atom_id': g[offset + 2],
-                                              'iat': iat
-                                              }
-                                    if not self.updateSanderAtomNumberDict(factor):
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
-
-        # Amber 10: ambmask
-        else:
-
-            # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-            if self.__atomNumberDict is not None:
-
-                # 1st plane should be processed at first due to plane-point angle restraint
-                if self.__cur_subtype == 'plane':
-
-                    for col, funcExpr in enumerate(self.inPlane_funcExprs):
+                    for col, iat in enumerate(self.iat):
 
                         atomSelection = []
 
-                        if isinstance(funcExpr, dict):
-                            if 'iat' in funcExpr:
-                                iat = funcExpr['iat']
+                        if self.iresid == 0:
+
+                            if iat > 0:
                                 if iat in self.__atomNumberDict:
                                     atomSelection.append(self.__atomNumberDict[iat])
                                 else:
                                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                                         f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
-                            else:  # ambmask format
-                                factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
-                                if factor is not None:
-                                    atomSelection.append(factor)
-                        else:  # list
-                            rawExprs = []
-                            for _funcExpr in funcExpr:
-                                if 'igr' in _funcExpr:
-                                    rawExprs.append(str(_funcExpr['igr']))
-                                else:  # ambmask format
-                                    rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-(point/plane) angle restraint.\n"
-                            return
-
-                        self.atomSelectionSet.append(atomSelection)
-
-                for col, funcExpr in enumerate(self.funcExprs):
-
-                    atomSelection = []
-
-                    if isinstance(funcExpr, dict):
-                        if 'iat' in funcExpr:
-                            iat = funcExpr['iat']
-                            if iat in self.__atomNumberDict:
-                                atomSelection.append(self.__atomNumberDict[iat])
-                            else:
-                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                    f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
-                        else:  # ambmask format
-                            factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
-                            if factor is not None:
-                                atomSelection.append(factor)
-                    else:  # list
-                        for _funcExpr in funcExpr:
-                            if 'igr' in _funcExpr:
-                                igr = _funcExpr['igr']
-                                if igr in self.__atomNumberDict:
-                                    atomSelection.append(self.__atomNumberDict[igr])
-                                else:
+                            elif iat < 0:
+                                varNum = col + 1
+                                if self.igr is None:
                                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                        f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
-                            else:  # ambmask format
-                                factor = self.getAtomNumberDictFromAmbmaskInfo(_funcExpr['seq_id'], _funcExpr['atom_id'])
-                                if factor is not None:
-                                    atomSelection.append(factor)
-
-                    self.atomSelectionSet.append(atomSelection)
-
-                if self.lastComment is not None:
-                    if self.__debug:
-                        print('# ' + self.lastComment)
-
-                updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
-
-                if self.__cur_subtype == 'dist':
-
-                    dstFunc = self.validateDistanceRange(1.0)
-
-                    if dstFunc is None:
-                        return
-
-                    # simple distance
-                    if not self.inGenDist:
-                        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                                              self.atomSelectionSet[1]):
-                            if self.__debug:
-                                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                      f"atom1={atom1} atom2={atom2} {dstFunc}")
-
-                    # generalized distance
-                    else:
-
-                        for col, funcExpr in enumerate(self.inGenDist_funcExprs):
-
-                            atomSelection = []
-
-                            if isinstance(funcExpr, dict):
-                                if 'iat' in funcExpr:
-                                    iat = funcExpr['iat']
-                                    if iat in self.__atomNumberDict:
-                                        atomSelection.append(self.__atomNumberDict[iat])
-                                    else:
-                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
-                                else:  # ambmask format
-                                    factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
-                                    if factor is not None:
-                                        atomSelection.append(factor)
-                            else:  # list
-                                for _funcExpr in funcExpr:
-                                    if 'igr' in _funcExpr:
-                                        igr = _funcExpr['igr']
+                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
+                                elif varNum in self.igr:
+                                    for igr in self.igr[varNum]:
                                         if igr in self.__atomNumberDict:
                                             atomSelection.append(self.__atomNumberDict[igr])
                                         else:
                                             self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                                f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
-                                    else:  # ambmask format
-                                        factor = self.getAtomNumberDictFromAmbmaskInfo(_funcExpr['seq_id'], _funcExpr['atom_id'])
+                                                f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file.\n"
+
+                        else:
+
+                            if iat > 0:
+                                if col >= len(self.atnam):
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"'atnam({col+1})' is missing despite being set iresid=1, iat({col+1})={iat}.\n"
+                                else:
+                                    atnam = self.atnam[col]
+                                    if len(atnam) == 0:
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"'atnam({col+1})={atnam}' is empty despite being set iresid=1, iat({col+1})={iat}.\n"
+                                    else:
+                                        factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col])
                                         if factor is not None:
                                             atomSelection.append(factor)
 
-                            self.atomSelectionSet.append(atomSelection)
+                            elif iat < 0:
+                                varNum = col + 1
+                                if self.igr is None:
+                                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
+                                elif varNum in self.igr:
+                                    if varNum not in self.grnam:
+                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                            f"'grnam({varNum})' is missing despite being set iresid=1, igr({varNum})={self.igr[varNum]}.\n"
+                                    else:
+                                        for igr, grnam in zip(self.igr[varNum], self.grnam[varNum]):
+                                            if len(grnam) == 0:
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"'grnam({varNum})={self.grnam[varNum]}' is empty "\
+                                                    f"despite being set iresid=1, igr({varNum})={self.igr[varNum]}.\n"
+                                            else:
+                                                factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam)
+                                                if factor is not None:
+                                                    atomSelection.append(factor)
 
-                        lenWeight = len(self.inGenDist_weight)
+                        self.atomSelectionSet.append(atomSelection)
 
-                        # generalized distance 2
-                        if lenWeight == 2:
-                            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                                                self.atomSelectionSet[1],
-                                                                                self.atomSelectionSet[2],
-                                                                                self.atomSelectionSet[3]):
+                    if self.lastComment is not None:
+                        if self.__debug:
+                            print('# ' + self.lastComment)
+
+                    updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+
+                    if self.__cur_subtype == 'dist':
+
+                        dstFunc = self.validateDistanceRange(1.0)
+
+                        if dstFunc is None:
+                            return
+
+                        lenIat = len(self.iat)
+
+                        # simple distance
+                        if lenIat == COL_DIST:
+                            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                                  self.atomSelectionSet[1]):
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                          f"weight={self.inGenDist_weight} "
-                                          f"|atom1={atom1} atom2={atom2}| "
-                                          f"|atom3={atom3} atom4={atom4}| "
-                                          f"{dstFunc}")
+                                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-                        # generalized distance 3
-                        elif lenWeight == 3:
-                            for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
-                                                                                              self.atomSelectionSet[1],
-                                                                                              self.atomSelectionSet[2],
-                                                                                              self.atomSelectionSet[3],
-                                                                                              self.atomSelectionSet[4],
-                                                                                              self.atomSelectionSet[5]):
+                        # generalized distance
+                        else:
+
+                            # generalized distance 2
+                            if lenIat == COL_DIST_COORD2:
+                                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                                    self.atomSelectionSet[1],
+                                                                                    self.atomSelectionSet[2],
+                                                                                    self.atomSelectionSet[3]):
+                                    if self.__debug:
+                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                              f"weight=[{self.rstwt[0]}, {self.rstwt[1]}] "
+                                              f"|atom1={atom1} atom2={atom2}| "
+                                              f"|atom3={atom3} atom4={atom4}| "
+                                              f"{dstFunc}")
+
+                            # generalized distance 3
+                            elif lenIat == COL_DIST_COORD3:
+                                for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
+                                                                                                  self.atomSelectionSet[1],
+                                                                                                  self.atomSelectionSet[2],
+                                                                                                  self.atomSelectionSet[3],
+                                                                                                  self.atomSelectionSet[4],
+                                                                                                  self.atomSelectionSet[5]):
+                                    if self.__debug:
+                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                              f"weight=[{self.rstwt[0]}, {self.rstwt[1]}, {self.rstwt[2]}] "
+                                              f"|atom1={atom1} atom2={atom2}| "
+                                              f"|atom3={atom3} atom4={atom4}| "
+                                              f"|atom5={atom5} atom6={atom6}| "
+                                              f"{dstFunc}")
+
+                            # generalized distance 4
+                            else:
+                                for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
+                                                                                                                self.atomSelectionSet[1],
+                                                                                                                self.atomSelectionSet[2],
+                                                                                                                self.atomSelectionSet[3],
+                                                                                                                self.atomSelectionSet[4],
+                                                                                                                self.atomSelectionSet[5],
+                                                                                                                self.atomSelectionSet[6],
+                                                                                                                self.atomSelectionSet[7]):
+                                    if self.__debug:
+                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                              f"weight={self.rstwt} "
+                                              f"|atom1={atom1} atom2={atom2}| "
+                                              f"|atom3={atom3} atom4={atom4}| "
+                                              f"|atom5={atom5} atom6={atom6}| "
+                                              f"|atom7={atom7} atom8={atom8}| "
+                                              f"{dstFunc}")
+
+                            self.rstwt = [0.0, 0.0, 0.0, 0.0]
+
+                    # angle
+                    elif self.__cur_subtype == 'ang':
+                        valid = True
+                        for col, iat in enumerate(self.iat):
+                            if iat < 0:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a angle restraint.\n"
+                                valid = False
+                        if not valid:
+                            return
+
+                        dstFunc = self.validateAngleRange(1.0)
+
+                        if dstFunc is None:
+                            return
+
+                        for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                                     self.atomSelectionSet[1],
+                                                                     self.atomSelectionSet[2]):
+                            if isLongRangeRestraint([atom1, atom2, atom3]):
+                                continue
+                            if self.__debug:
+                                print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
+                                      f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+
+                    # torsional angle
+                    elif self.__cur_subtype == 'dihed':
+                        valid = True
+                        for col, iat in enumerate(self.iat):
+                            if iat < 0:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a torsional angle restraint.\n"
+                                valid = False
+                        if not valid:
+                            return
+
+                        dstFunc = self.validateAngleRange(1.0)
+
+                        if dstFunc is None:
+                            return
+
+                        if len(self.atomSelectionSet[0]) == 0:
+                            return
+
+                        compId = self.atomSelectionSet[0][0]['comp_id']
+                        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+                        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                            self.atomSelectionSet[1],
+                                                                            self.atomSelectionSet[2],
+                                                                            self.atomSelectionSet[3]):
+                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                   [atom1, atom2, atom3, atom4])
+                            if angleName is None:
+                                continue
+                            if self.__debug:
+                                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+                    # plane-(point/plane) angle
+                    else:
+                        valid = True
+                        for col, iat in enumerate(self.iat):
+                            if iat < 0:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a plane-(point/plane) angle restraint.\n"
+                                valid = False
+                        if not valid:
+                            return
+
+                        dstFunc = self.validateAngleRange(1.0)
+
+                        if dstFunc is None:
+                            return
+
+                        # plane-point angle
+                        if lenIat == COL_PLANE_POINT:
+                            for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
+                                                                                       self.atomSelectionSet[1],
+                                                                                       self.atomSelectionSet[2],
+                                                                                       self.atomSelectionSet[3],
+                                                                                       self.atomSelectionSet[4]):
                                 if self.__debug:
-                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                          f"weight={self.inGenDist_weight} "
-                                          f"|atom1={atom1} atom2={atom2}| "
-                                          f"|atom3={atom3} atom4={atom4}| "
-                                          f"|atom5={atom5} atom6={atom6}| "
+                                    print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
+                                          f"plane: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
+                                          f"point: atom={atom5}"
                                           f"{dstFunc}")
 
-                        # generalized distance 4
+                        # plane-plane angle
                         else:
                             for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                             self.atomSelectionSet[1],
@@ -1437,184 +1039,25 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                             self.atomSelectionSet[6],
                                                                                                             self.atomSelectionSet[7]):
                                 if self.__debug:
-                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                                          f"weight={self.inGenDist_weight} "
-                                          f"|atom1={atom1} atom2={atom2}| "
-                                          f"|atom3={atom3} atom4={atom4}| "
-                                          f"|atom5={atom5} atom6={atom6}| "
-                                          f"|atom7={atom7} atom8={atom8}| "
+                                    print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
+                                          f"plane_1: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
+                                          f"plane_2: |atom_1={atom5} atom_2={atom6} atom_3={atom7} atom_4={atom8}| "
                                           f"{dstFunc}")
 
-                        self.rstwt = [0.0, 0.0, 0.0, 0.0]
+                # try to update AMBER atom number dictionary based on Sander comments
+                elif self.__hasPolySeq and self.iresid == 0:
 
-                # angle
-                elif self.__cur_subtype == 'ang':
-                    valid = True
-                    for col, funcExpr in enumerate(self.funcExprs):
-                        if isinstance(funcExpr, list):
-                            rawExprs = []
-                            for _funcExpr in funcExpr:
-                                if 'igr' in _funcExpr:
-                                    rawExprs.append(str(_funcExpr['igr']))
-                                else:  # ambmask format
-                                    rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as an angle restraint.\n"
-                            valid = False
-                    if not valid:
-                        return
+                    if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
+                        subtype_name = 'distance restraint'
 
-                    dstFunc = self.validateAngleRange(1.0)
+                        g = None\
+                            if self.lastComment is None or not self.dist_sander_pat.match(self.lastComment)\
+                            else self.dist_sander_pat.search(self.lastComment).groups()
 
-                    if dstFunc is None:
-                        return
+                        for col, iat in enumerate(self.iat):
+                            offset = col * 3
 
-                    for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
-                                                                 self.atomSelectionSet[1],
-                                                                 self.atomSelectionSet[2]):
-                        if isLongRangeRestraint([atom1, atom2, atom3]):
-                            continue
-                        if self.__debug:
-                            print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
-                                  f"atom1={atom1} atom2={atom2} atom_3={atom3} {dstFunc}")
-
-                # torsional angle
-                elif self.__cur_subtype == 'dihed':
-                    valid = True
-                    for col, funcExpr in enumerate(self.funcExprs):
-                        if isinstance(funcExpr, list):
-                            rawExprs = []
-                            for _funcExpr in funcExpr:
-                                if 'igr' in _funcExpr:
-                                    rawExprs.append(str(_funcExpr['igr']))
-                                else:  # ambmask format
-                                    rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a torsional angle restraint.\n"
-                            valid = False
-                    if not valid:
-                        return
-
-                    dstFunc = self.validateAngleRange(1.0)
-
-                    if dstFunc is None:
-                        return
-
-                    if len(self.atomSelectionSet[0]) == 0:
-                        return
-
-                    compId = self.atomSelectionSet[0][0]['comp_id']
-                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
-
-                    for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                                        self.atomSelectionSet[1],
-                                                                        self.atomSelectionSet[2],
-                                                                        self.atomSelectionSet[3]):
-                        angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                               [atom1, atom2, atom3, atom4])
-                        if angleName is None:
-                            continue
-                        if self.__debug:
-                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
-
-                # plane-(point/plane) angle
-                else:
-
-                    dstFunc = self.validateAngleRange(1.0)
-
-                    if dstFunc is None:
-                        return
-
-                    # plane-point angle
-                    if self.inPlane_columnSel == 0:
-
-                        for col, funcExpr in enumerate(self.funcExprs, 4):
-                            if isinstance(funcExpr, list):
-                                rawExprs = []
-                                for _funcExpr in funcExpr:
-                                    if 'igr' in _funcExpr:
-                                        rawExprs.append(str(_funcExpr['igr']))
-                                    else:  # ambmask format
-                                        rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-point angle restraint.\n"
-                                return
-
-                        for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
-                                                                                   self.atomSelectionSet[1],
-                                                                                   self.atomSelectionSet[2],
-                                                                                   self.atomSelectionSet[3],
-                                                                                   self.atomSelectionSet[4]):
-                            if self.__debug:
-                                print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
-                                      f"plane: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
-                                      f"point: atom={atom5}"
-                                      f"{dstFunc}")
-
-                    # plane-plane angle
-                    else:
-
-                        # 2nd plane
-                        for col, funcExpr in enumerate(self.inPlane_funcExprs2, 4):
-
-                            atomSelection = []
-
-                            if isinstance(funcExpr, dict):
-                                if 'iat' in funcExpr:
-                                    iat = funcExpr['iat']
-                                    if iat in self.__atomNumberDict:
-                                        atomSelection.append(self.__atomNumberDict[iat])
-                                    else:
-                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
-                                else:  # ambmask format
-                                    factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
-                                    if factor is not None:
-                                        atomSelection.append(factor)
-                            else:  # list
-                                rawExprs = []
-                                for _funcExpr in funcExpr:
-                                    if 'igr' in _funcExpr:
-                                        rawExprs.append(str(_funcExpr['igr']))
-                                    else:  # ambmask format
-                                        rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-plane angle restraint.\n"
-                                return
-
-                            self.atomSelectionSet.append(atomSelection)
-
-                        for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
-                                                                                                        self.atomSelectionSet[1],
-                                                                                                        self.atomSelectionSet[2],
-                                                                                                        self.atomSelectionSet[3],
-                                                                                                        self.atomSelectionSet[4],
-                                                                                                        self.atomSelectionSet[5],
-                                                                                                        self.atomSelectionSet[6],
-                                                                                                        self.atomSelectionSet[7]):
-                            if self.__debug:
-                                print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
-                                      f"plane_1: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
-                                      f"plane_2: |atom_1={atom5} atom_2={atom6} atom_3={atom7} atom_4={atom8}| "
-                                      f"{dstFunc}")
-
-            # try to update AMBER atom number dictionary based on Sander comments
-            elif self.__hasPolySeq:
-
-                if self.__cur_subtype == 'dist' and not self.inGenDist:
-                    subtype_name = 'distance restraint'
-
-                    g = None\
-                        if self.lastComment is None or not self.dist_sander_pat.match(self.lastComment)\
-                        else self.dist_sander_pat.search(self.lastComment).groups()
-
-                    for col, funcExpr in enumerate(self.funcExprs):
-                        offset = col * 3
-
-                        if isinstance(funcExpr, dict):
-                            if 'iat' in funcExpr:
-                                iat = funcExpr['iat']
+                            if iat > 0:
                                 if iat in self.__sanderAtomNumberDict:
                                     pass
                                 else:
@@ -1631,46 +1074,47 @@ class AmberMRParserListener(ParseTreeListener):
                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
                                             f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
 
-                        else:  # list
-                            igr = [_funcExpr['igr'] for _funcExpr in funcExpr if 'igr' in _funcExpr]
-                            mask = [_funcExpr['atom_id'] for _funcExpr in funcExpr if 'atom_id' in _funcExpr]
-                            if len(igr) > 0 and len(mask) == 0:  # support igr solely
-                                if igr[0] not in self.__sanderAtomNumberDict:
-                                    if g is None:
-                                        self.reportSanderCommentIssue(subtype_name)
-                                        return
-                                    factor = {'auth_seq_id': int(g[offset + 0]),
-                                              'auth_comp_id': g[offset + 1],
-                                              'auth_atom_id': g[offset + 2],
-                                              'igr': igr
-                                              }
-                                    if not self.updateSanderAtomNumberDict(factor):
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Couldn't specify 'igr({col+1})={igr}' in the coordinates "\
-                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                            elif iat < 0:
+                                varNum = col + 1
+                                if self.igr is None:
+                                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
+                                elif varNum in self.igr:
+                                    igr = self.igr[varNum]
+                                    if igr[0] not in self.__sanderAtomNumberDict:
+                                        if g is None:
+                                            self.reportSanderCommentIssue(subtype_name)
+                                            return
+                                        factor = {'auth_seq_id': int(g[offset + 0]),
+                                                  'auth_comp_id': g[offset + 1],
+                                                  'auth_atom_id': g[offset + 2],
+                                                  'igr': igr
+                                                  }
+                                        if not self.updateSanderAtomNumberDict(factor):
+                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "\
+                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
 
-                elif self.__cur_subtype == 'ang':
-                    subtype_name = 'angle restraint'
+                    if self.__cur_subtype == 'ang':
+                        subtype_name = 'angle restraint'
 
-                    g = None\
-                        if self.lastComment is None or not self.ang_sander_pat.match(self.lastComment)\
-                        else self.ang_sander_pat.search(self.lastComment).groups()
+                        g = None\
+                            if self.lastComment is None or not self.ang_sander_pat.match(self.lastComment)\
+                            else self.ang_sander_pat.search(self.lastComment).groups()
 
-                    gn = None\
-                        if self.lastComment is None or not self.ang_nang_sander_pat.match(self.lastComment)\
-                        else self.ang_nang_sander_pat.search(self.lastComment).groups()
+                        gn = None\
+                            if self.lastComment is None or not self.ang_nang_sander_pat.match(self.lastComment)\
+                            else self.ang_nang_sander_pat.search(self.lastComment).groups()
 
-                    _gn = None\
-                        if self.lastComment is not None or gn is not None or self.prevComment is None\
-                        or not self.ang_nang_sander_pat.match(self.prevComment)\
-                        else self.ang_nang_sander_pat.search(self.prevComment).groups()
+                        _gn = None\
+                            if self.lastComment is not None or gn is not None or self.prevComment is None\
+                            or not self.ang_nang_sander_pat.match(self.prevComment)\
+                            else self.ang_nang_sander_pat.search(self.prevComment).groups()
 
-                    if _gn is not None:
-                        for col, funcExpr in enumerate(self.funcExprs):
+                        if _gn is not None:
+                            for col, iat in enumerate(self.iat):
 
-                            if isinstance(funcExpr, dict):
-                                if 'iat' in funcExpr:
-                                    iat = funcExpr['iat']
+                                if iat > 0:
                                     if iat in self.__sanderAtomNumberDict:
                                         pass
                                     else:
@@ -1692,18 +1136,16 @@ class AmberMRParserListener(ParseTreeListener):
                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
                                                 f"based on Sander comment {self.prevComment!r}.\n"
 
-                        self.prevComment = None
+                            self.prevComment = None
 
-                    elif gn is not None:
-                        for col, funcExpr in enumerate(self.funcExprs):
+                        elif gn is not None:
+                            for col, iat in enumerate(self.iat):
 
-                            if isinstance(funcExpr, dict):
-                                if 'iat' in funcExpr:
-                                    iat = funcExpr['iat']
+                                if iat > 0:
                                     if iat in self.__sanderAtomNumberDict:
                                         pass
                                     else:
-                                        seqId = int(_gn[0])
+                                        seqId = int(gn[0])
                                         atomId = self.ang_nang_atoms[0][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
                                         if _factor is None:
@@ -1721,13 +1163,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
                                                 f"based on Sander comment {self.lastComment!r}.\n"
 
-                    else:
-                        for col, funcExpr in enumerate(self.funcExprs):
-                            offset = col * 3 + 3
+                        else:
+                            for col, iat in enumerate(self.iat):
+                                offset = col * 3 + 3
 
-                            if isinstance(funcExpr, dict):
-                                if 'iat' in funcExpr:
-                                    iat = funcExpr['iat']
+                                if iat > 0:
                                     if iat in self.__sanderAtomNumberDict:
                                         pass
                                     else:
@@ -1744,27 +1184,25 @@ class AmberMRParserListener(ParseTreeListener):
                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
                                                 f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
 
-                elif self.__cur_subtype == 'dihed':
-                    subtype_name = 'torsional angle restraint'
+                    if self.__cur_subtype == 'dihed':
+                        subtype_name = 'torsional angle restraint'
 
-                    g = None\
-                        if self.lastComment is None or not self.dihed_sander_pat.match(self.lastComment)\
-                        else self.dihed_sander_pat.search(self.lastComment).groups()
+                        g = None\
+                            if self.lastComment is None or not self.dihed_sander_pat.match(self.lastComment)\
+                            else self.dihed_sander_pat.search(self.lastComment).groups()
 
-                    gc = None\
-                        if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
-                        else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
+                        gc = None\
+                            if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
+                            else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
 
-                    go = None\
-                        if self.lastComment is None or not self.dihed_omega_sander_pat.match(self.lastComment)\
-                        else self.dihed_omega_sander_pat.search(self.lastComment).groups()
+                        go = None\
+                            if self.lastComment is None or not self.dihed_omega_sander_pat.match(self.lastComment)\
+                            else self.dihed_omega_sander_pat.search(self.lastComment).groups()
 
-                    if go is not None:
-                        for col, funcExpr in enumerate(self.funcExprs):
+                        if go is not None:
+                            for col, iat in enumerate(self.iat):
 
-                            if isinstance(funcExpr, dict):
-                                if 'iat' in funcExpr:
-                                    iat = funcExpr['iat']
+                                if iat > 0:
                                     if iat in self.__sanderAtomNumberDict:
                                         pass
                                     else:
@@ -1788,12 +1226,10 @@ class AmberMRParserListener(ParseTreeListener):
                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
                                                 f"based on Sander comment {self.lastComment!r}.\n"
 
-                    elif gc is not None:
-                        for col, funcExpr in enumerate(self.funcExprs):
+                        elif gc is not None:
+                            for col, iat in enumerate(self.iat):
 
-                            if isinstance(funcExpr, dict):
-                                if 'iat' in funcExpr:
-                                    iat = funcExpr['iat']
+                                if iat > 0:
                                     if iat in self.__sanderAtomNumberDict:
                                         pass
                                     else:
@@ -1815,9 +1251,369 @@ class AmberMRParserListener(ParseTreeListener):
                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
                                                 f"based on Sander comment {self.lastComment!r}.\n"
 
-                    else:
+                        else:
+                            for col, iat in enumerate(self.iat):
+                                offset = col * 3 + 3
+
+                                if iat > 0:
+                                    if iat in self.__sanderAtomNumberDict:
+                                        pass
+                                    else:
+                                        if g is None:
+                                            self.reportSanderCommentIssue(subtype_name)
+                                            return
+                                        factor = {'auth_seq_id': int(g[offset + 0]),
+                                                  'auth_comp_id': g[offset + 1],
+                                                  'auth_atom_id': g[offset + 2],
+                                                  'iat': iat
+                                                  }
+                                        if not self.updateSanderAtomNumberDict(factor):
+                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+
+            # Amber 10: ambmask
+            else:
+
+                # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+                if self.__atomNumberDict is not None:
+
+                    # 1st plane should be processed at first due to plane-point angle restraint
+                    if self.__cur_subtype == 'plane':
+
+                        for col, funcExpr in enumerate(self.inPlane_funcExprs):
+
+                            atomSelection = []
+
+                            if isinstance(funcExpr, dict):
+                                if 'iat' in funcExpr:
+                                    iat = funcExpr['iat']
+                                    if iat in self.__atomNumberDict:
+                                        atomSelection.append(self.__atomNumberDict[iat])
+                                    else:
+                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                else:  # ambmask format
+                                    factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
+                                    if factor is not None:
+                                        atomSelection.append(factor)
+                            else:  # list
+                                rawExprs = []
+                                for _funcExpr in funcExpr:
+                                    if 'igr' in _funcExpr:
+                                        rawExprs.append(str(_funcExpr['igr']))
+                                    else:  # ambmask format
+                                        rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-(point/plane) angle restraint.\n"
+                                return
+
+                            self.atomSelectionSet.append(atomSelection)
+
+                    for col, funcExpr in enumerate(self.funcExprs):
+
+                        atomSelection = []
+
+                        if isinstance(funcExpr, dict):
+                            if 'iat' in funcExpr:
+                                iat = funcExpr['iat']
+                                if iat in self.__atomNumberDict:
+                                    atomSelection.append(self.__atomNumberDict[iat])
+                                else:
+                                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                                        f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                            else:  # ambmask format
+                                factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
+                                if factor is not None:
+                                    atomSelection.append(factor)
+                        else:  # list
+                            for _funcExpr in funcExpr:
+                                if 'igr' in _funcExpr:
+                                    igr = _funcExpr['igr']
+                                    if igr in self.__atomNumberDict:
+                                        atomSelection.append(self.__atomNumberDict[igr])
+                                    else:
+                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                                            f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
+                                else:  # ambmask format
+                                    factor = self.getAtomNumberDictFromAmbmaskInfo(_funcExpr['seq_id'], _funcExpr['atom_id'])
+                                    if factor is not None:
+                                        atomSelection.append(factor)
+
+                        self.atomSelectionSet.append(atomSelection)
+
+                    if self.lastComment is not None:
+                        if self.__debug:
+                            print('# ' + self.lastComment)
+
+                    updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+
+                    if self.__cur_subtype == 'dist':
+
+                        dstFunc = self.validateDistanceRange(1.0)
+
+                        if dstFunc is None:
+                            return
+
+                        # simple distance
+                        if not self.inGenDist:
+                            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                                  self.atomSelectionSet[1]):
+                                if self.__debug:
+                                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+                        # generalized distance
+                        else:
+
+                            for col, funcExpr in enumerate(self.inGenDist_funcExprs):
+
+                                atomSelection = []
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__atomNumberDict:
+                                            atomSelection.append(self.__atomNumberDict[iat])
+                                        else:
+                                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                                                f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                    else:  # ambmask format
+                                        factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
+                                        if factor is not None:
+                                            atomSelection.append(factor)
+                                else:  # list
+                                    for _funcExpr in funcExpr:
+                                        if 'igr' in _funcExpr:
+                                            igr = _funcExpr['igr']
+                                            if igr in self.__atomNumberDict:
+                                                atomSelection.append(self.__atomNumberDict[igr])
+                                            else:
+                                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                                                    f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
+                                        else:  # ambmask format
+                                            factor = self.getAtomNumberDictFromAmbmaskInfo(_funcExpr['seq_id'], _funcExpr['atom_id'])
+                                            if factor is not None:
+                                                atomSelection.append(factor)
+
+                                self.atomSelectionSet.append(atomSelection)
+
+                            lenWeight = len(self.inGenDist_weight)
+
+                            # generalized distance 2
+                            if lenWeight == 2:
+                                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                                    self.atomSelectionSet[1],
+                                                                                    self.atomSelectionSet[2],
+                                                                                    self.atomSelectionSet[3]):
+                                    if self.__debug:
+                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                              f"weight={self.inGenDist_weight} "
+                                              f"|atom1={atom1} atom2={atom2}| "
+                                              f"|atom3={atom3} atom4={atom4}| "
+                                              f"{dstFunc}")
+
+                            # generalized distance 3
+                            elif lenWeight == 3:
+                                for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
+                                                                                                  self.atomSelectionSet[1],
+                                                                                                  self.atomSelectionSet[2],
+                                                                                                  self.atomSelectionSet[3],
+                                                                                                  self.atomSelectionSet[4],
+                                                                                                  self.atomSelectionSet[5]):
+                                    if self.__debug:
+                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                              f"weight={self.inGenDist_weight} "
+                                              f"|atom1={atom1} atom2={atom2}| "
+                                              f"|atom3={atom3} atom4={atom4}| "
+                                              f"|atom5={atom5} atom6={atom6}| "
+                                              f"{dstFunc}")
+
+                            # generalized distance 4
+                            else:
+                                for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
+                                                                                                                self.atomSelectionSet[1],
+                                                                                                                self.atomSelectionSet[2],
+                                                                                                                self.atomSelectionSet[3],
+                                                                                                                self.atomSelectionSet[4],
+                                                                                                                self.atomSelectionSet[5],
+                                                                                                                self.atomSelectionSet[6],
+                                                                                                                self.atomSelectionSet[7]):
+                                    if self.__debug:
+                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                              f"weight={self.inGenDist_weight} "
+                                              f"|atom1={atom1} atom2={atom2}| "
+                                              f"|atom3={atom3} atom4={atom4}| "
+                                              f"|atom5={atom5} atom6={atom6}| "
+                                              f"|atom7={atom7} atom8={atom8}| "
+                                              f"{dstFunc}")
+
+                            self.rstwt = [0.0, 0.0, 0.0, 0.0]
+
+                    # angle
+                    elif self.__cur_subtype == 'ang':
+                        valid = True
                         for col, funcExpr in enumerate(self.funcExprs):
-                            offset = col * 3 + 3
+                            if isinstance(funcExpr, list):
+                                rawExprs = []
+                                for _funcExpr in funcExpr:
+                                    if 'igr' in _funcExpr:
+                                        rawExprs.append(str(_funcExpr['igr']))
+                                    else:  # ambmask format
+                                        rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as an angle restraint.\n"
+                                valid = False
+                        if not valid:
+                            return
+
+                        dstFunc = self.validateAngleRange(1.0)
+
+                        if dstFunc is None:
+                            return
+
+                        for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                                     self.atomSelectionSet[1],
+                                                                     self.atomSelectionSet[2]):
+                            if isLongRangeRestraint([atom1, atom2, atom3]):
+                                continue
+                            if self.__debug:
+                                print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
+                                      f"atom1={atom1} atom2={atom2} atom_3={atom3} {dstFunc}")
+
+                    # torsional angle
+                    elif self.__cur_subtype == 'dihed':
+                        valid = True
+                        for col, funcExpr in enumerate(self.funcExprs):
+                            if isinstance(funcExpr, list):
+                                rawExprs = []
+                                for _funcExpr in funcExpr:
+                                    if 'igr' in _funcExpr:
+                                        rawExprs.append(str(_funcExpr['igr']))
+                                    else:  # ambmask format
+                                        rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a torsional angle restraint.\n"
+                                valid = False
+                        if not valid:
+                            return
+
+                        dstFunc = self.validateAngleRange(1.0)
+
+                        if dstFunc is None:
+                            return
+
+                        if len(self.atomSelectionSet[0]) == 0:
+                            return
+
+                        compId = self.atomSelectionSet[0][0]['comp_id']
+                        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+                        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                            self.atomSelectionSet[1],
+                                                                            self.atomSelectionSet[2],
+                                                                            self.atomSelectionSet[3]):
+                            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                   [atom1, atom2, atom3, atom4])
+                            if angleName is None:
+                                continue
+                            if self.__debug:
+                                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+                    # plane-(point/plane) angle
+                    else:
+
+                        dstFunc = self.validateAngleRange(1.0)
+
+                        if dstFunc is None:
+                            return
+
+                        # plane-point angle
+                        if self.inPlane_columnSel == 0:
+
+                            for col, funcExpr in enumerate(self.funcExprs, 4):
+                                if isinstance(funcExpr, list):
+                                    rawExprs = []
+                                    for _funcExpr in funcExpr:
+                                        if 'igr' in _funcExpr:
+                                            rawExprs.append(str(_funcExpr['igr']))
+                                        else:  # ambmask format
+                                            rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-point angle restraint.\n"
+                                    return
+
+                            for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
+                                                                                       self.atomSelectionSet[1],
+                                                                                       self.atomSelectionSet[2],
+                                                                                       self.atomSelectionSet[3],
+                                                                                       self.atomSelectionSet[4]):
+                                if self.__debug:
+                                    print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
+                                          f"plane: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
+                                          f"point: atom={atom5}"
+                                          f"{dstFunc}")
+
+                        # plane-plane angle
+                        else:
+
+                            # 2nd plane
+                            for col, funcExpr in enumerate(self.inPlane_funcExprs2, 4):
+
+                                atomSelection = []
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__atomNumberDict:
+                                            atomSelection.append(self.__atomNumberDict[iat])
+                                        else:
+                                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                                                f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                    else:  # ambmask format
+                                        factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
+                                        if factor is not None:
+                                            atomSelection.append(factor)
+                                else:  # list
+                                    rawExprs = []
+                                    for _funcExpr in funcExpr:
+                                        if 'igr' in _funcExpr:
+                                            rawExprs.append(str(_funcExpr['igr']))
+                                        else:  # ambmask format
+                                            rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                        f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-plane angle restraint.\n"
+                                    return
+
+                                self.atomSelectionSet.append(atomSelection)
+
+                            for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
+                                                                                                            self.atomSelectionSet[1],
+                                                                                                            self.atomSelectionSet[2],
+                                                                                                            self.atomSelectionSet[3],
+                                                                                                            self.atomSelectionSet[4],
+                                                                                                            self.atomSelectionSet[5],
+                                                                                                            self.atomSelectionSet[6],
+                                                                                                            self.atomSelectionSet[7]):
+                                if self.__debug:
+                                    print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
+                                          f"plane_1: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
+                                          f"plane_2: |atom_1={atom5} atom_2={atom6} atom_3={atom7} atom_4={atom8}| "
+                                          f"{dstFunc}")
+
+                # try to update AMBER atom number dictionary based on Sander comments
+                elif self.__hasPolySeq:
+
+                    if self.__cur_subtype == 'dist' and not self.inGenDist:
+                        subtype_name = 'distance restraint'
+
+                        g = None\
+                            if self.lastComment is None or not self.dist_sander_pat.match(self.lastComment)\
+                            else self.dist_sander_pat.search(self.lastComment).groups()
+
+                        for col, funcExpr in enumerate(self.funcExprs):
+                            offset = col * 3
 
                             if isinstance(funcExpr, dict):
                                 if 'iat' in funcExpr:
@@ -1838,10 +1634,219 @@ class AmberMRParserListener(ParseTreeListener):
                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
                                                 f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
 
-        if self.lastComment is not None:
-            self.prevComment = self.lastComment
+                            else:  # list
+                                igr = [_funcExpr['igr'] for _funcExpr in funcExpr if 'igr' in _funcExpr]
+                                mask = [_funcExpr['atom_id'] for _funcExpr in funcExpr if 'atom_id' in _funcExpr]
+                                if len(igr) > 0 and len(mask) == 0:  # support igr solely
+                                    if igr[0] not in self.__sanderAtomNumberDict:
+                                        if g is None:
+                                            self.reportSanderCommentIssue(subtype_name)
+                                            return
+                                        factor = {'auth_seq_id': int(g[offset + 0]),
+                                                  'auth_comp_id': g[offset + 1],
+                                                  'auth_atom_id': g[offset + 2],
+                                                  'igr': igr
+                                                  }
+                                        if not self.updateSanderAtomNumberDict(factor):
+                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                f"Couldn't specify 'igr({col+1})={igr}' in the coordinates "\
+                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
 
-        self.lastComment = None
+                    elif self.__cur_subtype == 'ang':
+                        subtype_name = 'angle restraint'
+
+                        g = None\
+                            if self.lastComment is None or not self.ang_sander_pat.match(self.lastComment)\
+                            else self.ang_sander_pat.search(self.lastComment).groups()
+
+                        gn = None\
+                            if self.lastComment is None or not self.ang_nang_sander_pat.match(self.lastComment)\
+                            else self.ang_nang_sander_pat.search(self.lastComment).groups()
+
+                        _gn = None\
+                            if self.lastComment is not None or gn is not None or self.prevComment is None\
+                            or not self.ang_nang_sander_pat.match(self.prevComment)\
+                            else self.ang_nang_sander_pat.search(self.prevComment).groups()
+
+                        if _gn is not None:
+                            for col, funcExpr in enumerate(self.funcExprs):
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__sanderAtomNumberDict:
+                                            pass
+                                        else:
+                                            seqId = int(_gn[0])
+                                            atomId = self.ang_nang_atoms[1][col]
+                                            _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
+                                            if _factor is None:
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {self.prevComment!r}.\n"
+                                                continue
+                                            factor = {'auth_seq_id': seqId,
+                                                      'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                      'auth_atom_id': atomId,
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor):
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {self.prevComment!r}.\n"
+
+                            self.prevComment = None
+
+                        elif gn is not None:
+                            for col, funcExpr in enumerate(self.funcExprs):
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__sanderAtomNumberDict:
+                                            pass
+                                        else:
+                                            seqId = int(_gn[0])
+                                            atomId = self.ang_nang_atoms[0][col]
+                                            _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
+                                            if _factor is None:
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {self.lastComment!r}.\n"
+                                                continue
+                                            factor = {'auth_seq_id': seqId,
+                                                      'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                      'auth_atom_id': atomId,
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor):
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {self.lastComment!r}.\n"
+
+                        else:
+                            for col, funcExpr in enumerate(self.funcExprs):
+                                offset = col * 3 + 3
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__sanderAtomNumberDict:
+                                            pass
+                                        else:
+                                            if g is None:
+                                                self.reportSanderCommentIssue(subtype_name)
+                                                return
+                                            factor = {'auth_seq_id': int(g[offset + 0]),
+                                                      'auth_comp_id': g[offset + 1],
+                                                      'auth_atom_id': g[offset + 2],
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor):
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+
+                    elif self.__cur_subtype == 'dihed':
+                        subtype_name = 'torsional angle restraint'
+
+                        g = None\
+                            if self.lastComment is None or not self.dihed_sander_pat.match(self.lastComment)\
+                            else self.dihed_sander_pat.search(self.lastComment).groups()
+
+                        gc = None\
+                            if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
+                            else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
+
+                        go = None\
+                            if self.lastComment is None or not self.dihed_omega_sander_pat.match(self.lastComment)\
+                            else self.dihed_omega_sander_pat.search(self.lastComment).groups()
+
+                        if go is not None:
+                            for col, funcExpr in enumerate(self.funcExprs):
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__sanderAtomNumberDict:
+                                            pass
+                                        else:
+                                            seqId = int(go[0])
+                                            if col >= 2:
+                                                seqId -= 1
+                                            atomId = self.dihed_omega_atoms[col]
+                                            _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
+                                            if _factor is None:
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {self.lastComment!r}.\n"
+                                                continue
+                                            factor = {'auth_seq_id': seqId,
+                                                      'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                      'auth_atom_id': atomId,
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor):
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {self.lastComment!r}.\n"
+
+                        elif gc is not None:
+                            for col, funcExpr in enumerate(self.funcExprs):
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__sanderAtomNumberDict:
+                                            pass
+                                        else:
+                                            seqId = int(gc[0])
+                                            atomId = gc[col + 1]
+                                            _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
+                                            if _factor is None:
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {self.lastComment!r}.\n"
+                                                continue
+                                            factor = {'auth_seq_id': seqId,
+                                                      'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                      'auth_atom_id': atomId,
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor):
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {self.lastComment!r}.\n"
+
+                        else:
+                            for col, funcExpr in enumerate(self.funcExprs):
+                                offset = col * 3 + 3
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__sanderAtomNumberDict:
+                                            pass
+                                        else:
+                                            if g is None:
+                                                self.reportSanderCommentIssue(subtype_name)
+                                                return
+                                            factor = {'auth_seq_id': int(g[offset + 0]),
+                                                      'auth_comp_id': g[offset + 1],
+                                                      'auth_atom_id': g[offset + 2],
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor):
+                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                    f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+
+        finally:
+
+            if self.lastComment is not None:
+                self.prevComment = self.lastComment
+
+            self.lastComment = None
 
     def validateDistanceRange(self, wt):
         """ Validate distance value range.
@@ -3294,8 +3299,8 @@ class AmberMRParserListener(ParseTreeListener):
                             print(f"subtype={self.__cur_subtype} dataset={imix} mixing_time={mix} peak={ipeak} "
                                   f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-                else:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                elif self.__hasPolySeq:
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                         "Failed to recognize AMBER atom numbers in the NOESY volume restraint file "\
                         "because AMBER parameter/topology file is not available.\n"
                     return
@@ -3590,8 +3595,8 @@ class AmberMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} n={n} "
                               f"atom={atom} {dstFunc}")
 
-            else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
+            elif self.__hasPolySeq:
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
                     "because AMBER parameter/topology file is not available.\n"
                 return
@@ -3648,7 +3653,7 @@ class AmberMRParserListener(ParseTreeListener):
                             print(f"subtype={self.__cur_subtype} iatr({n},{r}) "
                                   f"ring_atom={atom}")
 
-                else:
+                elif self.__hasPolySeq:
                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                         "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
                         "because AMBER parameter/topology file is not available.\n"
@@ -4062,8 +4067,8 @@ class AmberMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} dataset={self.nmpmc} n={n} "
                               f"atom={atom} {dstFunc}")
 
-            else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
+            elif self.__hasPolySeq:
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     "Failed to recognize AMBER atom numbers in the Psuedocontact shift restraint file "\
                     "because AMBER parameter/topology file is not available.\n"
                 return
@@ -4482,8 +4487,8 @@ class AmberMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} dataset={self.dataset} n={n} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
 
-            else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
+            elif self.__hasPolySeq:
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     "Failed to recognize AMBER atom numbers in the Direct dipolar coupling restraint file "\
                     "because AMBER parameter/topology file is not available.\n"
                 return
@@ -5079,8 +5084,8 @@ class AmberMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} dataset={self.datasetc} n={n} "
                               f"atom1={atom1} atom2(CSA central)={atom2} atom3={atom3} {dstFunc}")
 
-            else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
+            elif self.__hasPolySeq:
+                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                     "Failed to recognize AMBER atom numbers in the Residual CSA or psuedo-CSA restraint file "\
                     "because AMBER parameter/topology file is not available.\n"
                 return

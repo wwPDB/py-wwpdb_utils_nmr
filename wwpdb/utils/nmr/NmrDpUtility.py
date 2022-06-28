@@ -21107,6 +21107,9 @@ class NmrDpUtility:
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
 
+                    # support content subtype change during MR validation with the coordinates for XPLOR-NIH only
+                    input_source.setItemValue('content_subtype', listener.getContentSubtype())
+
             elif file_type == 'nm-res-cns':
                 reader = CnsMRReader(self.__verbose, self.__lfh,
                                      self.__representative_model_id,

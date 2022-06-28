@@ -1931,14 +1931,14 @@ class XplorMRParserListener(ParseTreeListener):
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                f"The lower limit value(1)='{lower_limit_1:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if RDC_ERROR_MIN < upper_limit_1 <= RDC_ERROR_MAX:
             dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                f"The upper limit value(1)='{upper_limit_1:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if RDC_ERROR_MIN < target_value_2 < RDC_ERROR_MAX:
             dstFunc['target_value_2'] = f"{target_value_2:.3f}"
@@ -1952,34 +1952,34 @@ class XplorMRParserListener(ParseTreeListener):
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                f"The lower limit value(2)='{lower_limit_2:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if RDC_ERROR_MIN < upper_limit_2 <= RDC_ERROR_MAX:
             dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                f"The upper limit value(2)='{upper_limit_2:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if lower_limit_1 > target_value_1:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1}' must be less than the target value(1) '{target_value_1}'.\n"
+                f"The lower limit value(1)='{lower_limit_1:.3f}' must be less than the target value(1) '{target_value_1}'.\n"
 
         if upper_limit_1 < target_value_1:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1}' must be grater than the target value(1) '{target_value_1}'.\n"
+                f"The upper limit value(1)='{upper_limit_1:.3f}' must be grater than the target value(1) '{target_value_1}'.\n"
 
         if lower_limit_2 > target_value_2:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2}' must be less than the target value(2) '{target_value_2}'.\n"
+                f"The lower limit value(2)='{lower_limit_2:.3f}' must be less than the target value(2) '{target_value_2}'.\n"
 
         if upper_limit_2 < target_value_2:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2}' must be grater than the target value(2) '{target_value_2}'.\n"
+                f"The upper limit value(2)='{upper_limit_2:.3f}' must be grater than the target value(2) '{target_value_2}'.\n"
 
         if not validRange:
             return None
@@ -1994,13 +1994,13 @@ class XplorMRParserListener(ParseTreeListener):
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                f"The lower limit value(1)='{lower_limit_1:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if RDC_RANGE_MIN <= upper_limit_1 <= RDC_RANGE_MAX:
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                f"The upper limit value(1)='{upper_limit_1:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if RDC_RANGE_MIN <= target_value_2 <= RDC_RANGE_MAX:
             pass
@@ -2012,13 +2012,13 @@ class XplorMRParserListener(ParseTreeListener):
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                f"The lower limit value(2)='{lower_limit_2:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if RDC_RANGE_MIN <= upper_limit_2 <= RDC_RANGE_MAX:
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                f"The upper limit value(2)='{upper_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -2037,10 +2037,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#vean_assign.
     def enterVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
-        self.rdcRestraints += 1
-        self.__cur_subtype_altered = self.__cur_subtype != 'rdc'
-        if self.__cur_subtype_altered:
-            self.rdcStatements += 1
+        self.rdcStatements += 1
         self.__cur_subtype = 'rdc'
 
         self.atomSelectionSet.clear()
@@ -2151,7 +2148,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                if isLongRangeRestraint([atom1, atom2]) or isLongRangeRestraint([atom3, atom4]):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (VEAN) id={self.rdcRestraints} "
@@ -2181,14 +2178,14 @@ class XplorMRParserListener(ParseTreeListener):
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                f"The lower limit value(1)='{lower_limit_1:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
 
         if ANGLE_ERROR_MIN < upper_limit_1 <= ANGLE_ERROR_MAX:
             dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                f"The upper limit value(1)='{upper_limit_1:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
 
         if ANGLE_ERROR_MIN < target_value_2 < ANGLE_ERROR_MAX:
             dstFunc['target_value_2'] = f"{target_value_2}"
@@ -2198,38 +2195,38 @@ class XplorMRParserListener(ParseTreeListener):
                 f"The target value(2)='{target_value_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
 
         if ANGLE_ERROR_MIN <= lower_limit_2 < ANGLE_ERROR_MAX:
-            dstFunc['lower_limit_2'] = f"{lower_limit_2}"
+            dstFunc['lower_limit_2'] = f"{lower_limit_2:.3f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                f"The lower limit value(2)='{lower_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
 
         if ANGLE_ERROR_MIN < upper_limit_2 <= ANGLE_ERROR_MAX:
             dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                f"The upper limit value(2)='{upper_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
         """
         if lower_limit_1 > target_value_1:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1}' must be less than the target value(1) '{target_value_1}'.\n"
+                f"The lower limit value(1)='{lower_limit_1:.3f}' must be less than the target value(1) '{target_value_1}'.\n"
 
         if upper_limit_1 < target_value_1:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1}' must be grater than the target value(1) '{target_value_1}'.\n"
+                f"The upper limit value(1)='{upper_limit_1:.3f}' must be grater than the target value(1) '{target_value_1}'.\n"
 
         if lower_limit_2 > target_value_2:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2}' must be less than the target value(2) '{target_value_2}'.\n"
+                f"The lower limit value(2)='{lower_limit_2:.3f}' must be less than the target value(2) '{target_value_2}'.\n"
 
         if upper_limit_2 < target_value_2:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2}' must be grater than the target value(2) '{target_value_2}'.\n"
+                f"The upper limit value(2)='{upper_limit_2:.3f}' must be grater than the target value(2) '{target_value_2}'.\n"
         """
         if not validRange:
             return None
@@ -2244,13 +2241,13 @@ class XplorMRParserListener(ParseTreeListener):
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                f"The lower limit value(1)='{lower_limit_1:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if ANGLE_RANGE_MIN <= upper_limit_1 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                f"The upper limit value(1)='{upper_limit_1:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if ANGLE_RANGE_MIN <= target_value_2 <= ANGLE_RANGE_MAX:
             pass
@@ -2262,13 +2259,13 @@ class XplorMRParserListener(ParseTreeListener):
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                f"The lower limit value(2)='{lower_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         if ANGLE_RANGE_MIN <= upper_limit_2 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                f"The upper limit value(2)='{upper_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -2776,9 +2773,10 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#coup_assign.
     def enterCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
         self.jcoupRestraints += 1
-        if self.__cur_subtype != 'jcoup':
+        self.__cur_subtype_altered = self.__cur_subtype != 'jcoup'
+        if self.__cur_subtype_altered:
             self.jcoupStatements += 1
-        self.__cur_subtype = 'jcoup'
+        self.__cur_subtype = 'jcoup' if self.__cur_subtype != 'rdc' else 'rdc'  # set 'rdc' for error message
 
         self.atomSelectionSet.clear()
 
@@ -2816,7 +2814,18 @@ class XplorMRParserListener(ParseTreeListener):
                         self.exitVean_assign(ctx)
                         return
                 except IndexError:
-                    pass
+                    self.jcoupRestraints -= 1
+                    self.rdcRestraints += 1
+                    if self.__cur_subtype_altered:
+                        self.jcoupStatements -= 1
+                        if self.rdcStatements == 0:
+                            self.rdcStatements += 1
+                    self.__cur_subtype = 'rdc'
+                    self.exitVean_assign(ctx)
+                    return
+
+            if not self.__hasPolySeq:  # can't decide whether VEAN or COUP wo the coordinates
+                return
 
             if self.potential != 'harmonic':
                 lower_limit = target - delta
@@ -2847,9 +2856,6 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if dstFunc2 is None:
                     return
-
-            if not self.__hasPolySeq:
-                return
 
             if not self.areUniqueCoordAtoms('a J-coupling (COUP)'):
                 return
@@ -4820,7 +4826,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype_altered = self.__cur_subtype != 'pcs'
         if self.__cur_subtype_altered:
             self.pcsStatements += 1
-        self.__cur_subtype = 'pcs'
+        self.__cur_subtype = 'pcs' if self.__cur_subtype != 'hvycs' else 'hvycs'  # set 'hvycs' for error message
 
         self.atomSelectionSet.clear()
 
@@ -6309,7 +6315,7 @@ class XplorMRParserListener(ParseTreeListener):
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
             if self.__cur_subtype != 'plane':
-                if cifCheck:
+                if self.__hasCoord:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for factor {__factor}.\n"
             else:

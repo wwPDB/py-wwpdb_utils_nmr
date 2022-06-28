@@ -6161,7 +6161,7 @@ class XplorMRParserListener(ParseTreeListener):
                             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
 
                         if details is not None:
-                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                            _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
                             if _atomId != atomId:
                                 atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
 
@@ -6317,10 +6317,10 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__cur_subtype != 'plane':
                 if self.__hasCoord:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The {clauseName} has no effect for factor {__factor}.\n"
+                        f"The {clauseName} has no effect for a factor {__factor}.\n"
             else:
                 self.warningMessage += f"[Atom nomenclature mismatch] {self.__getCurrentRestraint()}"\
-                    f"The {clauseName} has no effect for factor {__factor}.\n"
+                    f"The {clauseName} has no effect for a factor {__factor}.\n"
 
         if 'chain_id' in _factor:
             del _factor['chain_id']

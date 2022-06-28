@@ -390,8 +390,8 @@ mode COMMENT_MODE;
 
 Any_name:		~[ \t\r\n]+;
 
-SPACE_C:		[ \t]+ -> skip;
-RETURN_C:		[\r\n]+ -> mode(DEFAULT_MODE);
+SPACE_CM:		[ \t]+ -> skip;
+RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
 
 mode INT_PARAM_MODE;
 
@@ -436,18 +436,18 @@ fragment SPACE_QP:	[ \t\r\n]*;
 
 mode AQSTR_PARAM_MODE;
 
-Decimal_AQP:		DECIMAL;
+Decimal_AP:		DECIMAL;
 
-R_paren_AQP:		')';
-Equ_op_AQP:		'=' -> pushMode(AQSTR_PARAM_MODE_);
+R_paren_AP:		')';
+Equ_op_AP:		'=' -> pushMode(AQSTR_PARAM_MODE_);
 
-SPACE_AQP:		[ \t\r\n]+ -> skip;
+SPACE_AP:		[ \t\r\n]+ -> skip;
 
 mode AQSTR_PARAM_MODE_;
 
-Qstring_AQP:		(SPACE_AQP_ QSTRING SPACE_AQP_) -> mode(DEFAULT_MODE);
+Qstring_AP:		(SPACE_AP_ QSTRING SPACE_AP_) -> mode(DEFAULT_MODE);
 
-fragment SPACE_AQP_:	[ \t\r\n]*;
+fragment SPACE_AP_:	[ \t\r\n]*;
 
 mode INT_ARRAY_MODE;
 
@@ -507,12 +507,12 @@ COMMENT_QA:		('#' | '!') -> popMode;
 
 mode ARGUMENT_MODE;
 
-Comma_A:		',';
-R_paren_A:		')' -> popMode;
+Comma_AR:		',';
+R_paren_AR:		')' -> popMode;
 
 Decimal:		DECIMAL;
 
-SPACE_A:		[ \t\r\n]+ -> skip;
+SPACE_AR:		[ \t\r\n]+ -> skip;
 
 mode FUNC_CALL_MODE; // function call
 

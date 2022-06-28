@@ -159,7 +159,7 @@ noe_statement:
 	noe_assign |
 	noe_assign_loop |
 	Asymptote Simple_name number_s |
-	Average Simple_name_A Averaging_methods |
+	Average Simple_name_AM Averaging_methods |
 	Bhig Simple_name number_s |
 	Ceiling Equ_op? number_s |
 	Classification Equ_op? Simple_name |
@@ -168,7 +168,7 @@ noe_statement:
 	Monomers Simple_name Integer |
 	Ncount Simple_name Integer |
 	Nrestraints Equ_op? Integer |
-	Potential Simple_name_P Potential_types |
+	Potential Simple_name_PT Potential_types |
 	Predict predict_statement End |
 	Print Threshold Equ_op? number_s |
 	Reset |
@@ -584,7 +584,7 @@ pre_statement:
 	Classification Equ_op? Simple_name |
 	ForceConstant Equ_op? Simple_name number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Equ_op_P? Simple_name_P Potential_types |
+	Potential Equ_op_PT? Simple_name_PT Potential_types |
 	Kconst Equ_op? Simple_name number_s |
 	Omega Equ_op? Simple_name number_s |
 	Tauc Equ_op? Simple_name number_s number_s |
@@ -781,7 +781,7 @@ number_a:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html
 */
 flag_statement:
-	Flags (Exclude (Class_name* | Any_class))? Include Class_name* End_F;
+	Flags (Exclude (Class_name* | Any_class))? Include Class_name* End_FL;
 
 /* Vector statement - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node42.html

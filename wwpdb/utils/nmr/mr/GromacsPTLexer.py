@@ -374,12 +374,12 @@ class GromacsPTLexer(Lexer):
     COMMENT = 37
     SECTION_COMMENT = 38
     LINE_COMMENT = 39
-    R_brkt_A = 40
-    SECTION_COMMENT_A = 41
-    LINE_COMMENT_A = 42
-    Simple_name_A = 43
-    SPACE_A = 44
-    RETURN_A = 45
+    R_brkt_AA = 40
+    SECTION_COMMENT_AA = 41
+    LINE_COMMENT_AA = 42
+    Simple_name_AA = 43
+    SPACE_AA = 44
+    RETURN_AA = 45
 
     channelNames = [ u"DEFAULT_TOKEN_CHANNEL", u"HIDDEN" ]
 
@@ -403,8 +403,8 @@ class GromacsPTLexer(Lexer):
             "System", "Molecules", "Position_restraints", "Intermolecular_interactions", 
             "Integer", "Real", "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
             "Simple_name", "SPACE", "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
-            "R_brkt_A", "SECTION_COMMENT_A", "LINE_COMMENT_A", "Simple_name_A", 
-            "SPACE_A", "RETURN_A" ]
+            "R_brkt_AA", "SECTION_COMMENT_AA", "LINE_COMMENT_AA", "Simple_name_AA", 
+            "SPACE_AA", "RETURN_AA" ]
 
     ruleNames = [ "L_brkt", "R_brkt", "Default", "Moleculetype", "Atomtypes", 
                   "Pairtypes", "Bondtypes", "Angletypes", "Dihedraltypes", 
@@ -417,8 +417,8 @@ class GromacsPTLexer(Lexer):
                   "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", 
                   "ALPHA", "ALPHA_NUM", "START_CHAR", "NAME_CHAR", "ATM_NAME_CHAR", 
                   "ATM_TYPE_CHAR", "SIMPLE_NAME", "SPACE", "COMMENT", "SECTION_COMMENT", 
-                  "LINE_COMMENT", "R_brkt_A", "SECTION_COMMENT_A", "LINE_COMMENT_A", 
-                  "Simple_name_A", "SPACE_A", "RETURN_A" ]
+                  "LINE_COMMENT", "R_brkt_AA", "SECTION_COMMENT_AA", "LINE_COMMENT_AA", 
+                  "Simple_name_AA", "SPACE_AA", "RETURN_AA" ]
 
     grammarFileName = "GromacsPTLexer.g4"
 

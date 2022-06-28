@@ -430,43 +430,43 @@ Abs:			'ABS';
 Attr_properties:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RMSD' | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'? | 'STORE1' | 'STORE2' | 'STORE3' | 'STORE4' | 'STORE5' | 'STORE6' | 'STORE7' | 'STORE8' | 'STORE9' | 'SCATTER_A1' | 'SCATTER_A2' | 'SCATTER_A3' | 'SCATTER_A4' | 'SCATTER_B1' | 'SCATTER_B2' | 'SCATTER_B3' | 'SCATTER_B4' | 'SCATTER_C' | 'SCATTER_FP' | 'SCATTER_FDP');
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op) -> popMode;
 
-SPACE_ATTR:		[ \t\r\n]+ -> skip;
+SPACE_AP:		[ \t\r\n]+ -> skip;
 
 mode AVER_MODE; // Inside of Averaging tag
 
 Averaging_methods:	('R-6' | 'R-3' | 'SUM' | 'CENT' 'E'? 'R'?) -> popMode;
 
-Simple_name_A:		SIMPLE_NAME;
+Simple_name_AM:		SIMPLE_NAME;
 
-SPACE_AVER:		[ \t\r\n]+ -> skip;
+SPACE_AM:		[ \t\r\n]+ -> skip;
 
 mode POTE_MODE; // Inside of Potential tag
 
-Equ_op_P:		'=';
+Equ_op_PT:		'=';
 
 Potential_types:	('BIHA' 'R'? 'M'? 'O'? 'N'? 'I'? 'C'? | 'LOGN' 'O'? 'R'? 'M'? 'A'? 'L'? | 'SQUA' 'R'? 'E'? '-'? 'W'? 'E'? 'L'? 'L'? | 'SOFT' '-'? 'S'? 'Q'? 'U'? 'A'? 'R'? 'E'? | 'SYMM' 'E'? 'T'? 'R'? 'Y'? | 'HIGH' | '3DPO' | 'HARM' 'O'? 'N'? 'I'? 'C'? | 'MULT' 'I'? 'P'? 'L'? 'E'?) -> popMode;
 
-Simple_name_P:		SIMPLE_NAME;
+Simple_name_PT:		SIMPLE_NAME;
 
-SPACE_POTE:		[ \t\r\n]+ -> skip;
+SPACE_PT:		[ \t\r\n]+ -> skip;
 
 mode ANAL_MODE; // Inside of Noe/Analysis tag
 
 Noe_analysis:		('CURR' 'E'? 'N'? 'T'? | 'TAVE' 'R'? 'A'? 'G'? 'E'? | 'RAVE' 'R'? 'A'? 'G'? 'E'?) -> popMode;
 
-SPACE_ANAL:		[ \t\r\n]+ -> skip;
+SPACE_NA:		[ \t\r\n]+ -> skip;
 
 mode FLAG_MODE; // Inside of flag statement
 
 Exclude:		'EXCL' 'U'? 'D'? 'E'?;			// Class_name* | Any_class
 Include:		'INCL' 'U'? 'D'? 'E'?;			// Class_name*
 
-End_F:			'END' -> popMode;
+End_FL:			'END' -> popMode;
 
 Class_name:		SIMPLE_NAME;
 Any_class:		'*';
 
-SPACE_FLAG:		[ \t\r\n]+ -> skip;
+SPACE_FL:		[ \t\r\n]+ -> skip;
 
 mode VECTOR_EXPR_MODE; // vector expression
 

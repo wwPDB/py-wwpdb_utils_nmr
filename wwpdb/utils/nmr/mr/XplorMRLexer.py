@@ -2151,26 +2151,26 @@ class XplorMRLexer(Lexer):
     Abs = 207
     Attr_properties = 208
     Comparison_ops = 209
-    SPACE_ATTR = 210
+    SPACE_AP = 210
     Averaging_methods = 211
-    Simple_name_A = 212
-    SPACE_AVER = 213
-    Equ_op_P = 214
+    Simple_name_AM = 212
+    SPACE_AM = 213
+    Equ_op_PT = 214
     Potential_types = 215
-    Simple_name_P = 216
-    SPACE_POTE = 217
+    Simple_name_PT = 216
+    SPACE_PT = 217
     Rdc_dist_fix_types = 218
     Rdc_or_Diff_anis_types = 219
     Csa_types = 220
-    SPACE_TYPE = 221
+    SPACE_TY = 221
     Gauss_or_Quart = 222
-    SPACE_SHAP = 223
+    SPACE_SH = 223
     Exclude = 224
     Include = 225
-    End_F = 226
+    End_FL = 226
     Class_name = 227
     Any_class = 228
-    SPACE_FLAG = 229
+    SPACE_FL = 229
     R_paren_VE = 230
     Equ_op_VE = 231
     Add_op_VE = 232
@@ -2294,11 +2294,11 @@ class XplorMRLexer(Lexer):
             "Hbda", "Hbdb", "L_paren", "R_paren", "Colon", "Equ_op", "Lt_op", 
             "Gt_op", "Leq_op", "Geq_op", "Neq_op", "Symbol_name", "SPACE", 
             "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
-            "Abs", "Attr_properties", "Comparison_ops", "SPACE_ATTR", "Averaging_methods", 
-            "Simple_name_A", "SPACE_AVER", "Equ_op_P", "Potential_types", 
-            "Simple_name_P", "SPACE_POTE", "Rdc_dist_fix_types", "Rdc_or_Diff_anis_types", 
-            "Csa_types", "SPACE_TYPE", "Gauss_or_Quart", "SPACE_SHAP", "Exclude", 
-            "Include", "End_F", "Class_name", "Any_class", "SPACE_FLAG", 
+            "Abs", "Attr_properties", "Comparison_ops", "SPACE_AP", "Averaging_methods", 
+            "Simple_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
+            "Simple_name_PT", "SPACE_PT", "Rdc_dist_fix_types", "Rdc_or_Diff_anis_types", 
+            "Csa_types", "SPACE_TY", "Gauss_or_Quart", "SPACE_SH", "Exclude", 
+            "Include", "End_FL", "Class_name", "Any_class", "SPACE_FL", 
             "R_paren_VE", "Equ_op_VE", "Add_op_VE", "Sub_op_VE", "Mul_op_VE", 
             "Div_op_VE", "Exp_op_VE", "Comma_VE", "Integer_VE", "Real_VE", 
             "Atom_properties_VE", "Abs_VE", "Acos_VE", "Asin_VE", "Cos_VE", 
@@ -2352,19 +2352,19 @@ class XplorMRLexer(Lexer):
                   "L_paren", "R_paren", "Colon", "Equ_op", "Lt_op", "Gt_op", 
                   "Leq_op", "Geq_op", "Neq_op", "Symbol_name", "SPACE", 
                   "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
-                  "Abs", "Attr_properties", "Comparison_ops", "SPACE_ATTR", 
-                  "Averaging_methods", "Simple_name_A", "SPACE_AVER", "Equ_op_P", 
-                  "Potential_types", "Simple_name_P", "SPACE_POTE", "Rdc_dist_fix_types", 
-                  "Rdc_or_Diff_anis_types", "Csa_types", "SPACE_TYPE", "Gauss_or_Quart", 
-                  "SPACE_SHAP", "Exclude", "Include", "End_F", "Class_name", 
-                  "Any_class", "SPACE_FLAG", "R_paren_VE", "Equ_op_VE", 
-                  "Add_op_VE", "Sub_op_VE", "Mul_op_VE", "Div_op_VE", "Exp_op_VE", 
-                  "Comma_VE", "Integer_VE", "Real_VE", "Atom_properties_VE", 
-                  "Abs_VE", "Acos_VE", "Asin_VE", "Cos_VE", "Decode_VE", 
-                  "Encode_VE", "Exp_VE", "Gauss_VE", "Heavy_VE", "Int_VE", 
-                  "Log10_VE", "Log_VE", "Max_VE", "Maxw_VE", "Min_VE", "Mod_VE", 
-                  "Norm_VE", "Random_VE", "Sign_VE", "Sin_VE", "Sqrt_VE", 
-                  "Tan_VE", "Symbol_name_VE", "Simple_name_VE", "Double_quote_string_VE", 
+                  "Abs", "Attr_properties", "Comparison_ops", "SPACE_AP", 
+                  "Averaging_methods", "Simple_name_AM", "SPACE_AM", "Equ_op_PT", 
+                  "Potential_types", "Simple_name_PT", "SPACE_PT", "Rdc_dist_fix_types", 
+                  "Rdc_or_Diff_anis_types", "Csa_types", "SPACE_TY", "Gauss_or_Quart", 
+                  "SPACE_SH", "Exclude", "Include", "End_FL", "Class_name", 
+                  "Any_class", "SPACE_FL", "R_paren_VE", "Equ_op_VE", "Add_op_VE", 
+                  "Sub_op_VE", "Mul_op_VE", "Div_op_VE", "Exp_op_VE", "Comma_VE", 
+                  "Integer_VE", "Real_VE", "Atom_properties_VE", "Abs_VE", 
+                  "Acos_VE", "Asin_VE", "Cos_VE", "Decode_VE", "Encode_VE", 
+                  "Exp_VE", "Gauss_VE", "Heavy_VE", "Int_VE", "Log10_VE", 
+                  "Log_VE", "Max_VE", "Maxw_VE", "Min_VE", "Mod_VE", "Norm_VE", 
+                  "Random_VE", "Sign_VE", "Sin_VE", "Sqrt_VE", "Tan_VE", 
+                  "Symbol_name_VE", "Simple_name_VE", "Double_quote_string_VE", 
                   "SPACE_VE", "L_paren_VF", "SPACE_VF", "L_paren_VS", "R_paren_VS", 
                   "Average_VS", "Element_VS", "Max_VS", "Min_VS", "Norm_VS", 
                   "Rms_VS", "Sum_VS", "Atom_properties_VS", "SPACE_VS", 

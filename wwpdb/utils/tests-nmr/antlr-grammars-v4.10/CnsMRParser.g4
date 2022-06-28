@@ -96,7 +96,7 @@ noe_statement:
 	noe_assign |
 	noe_assign_loop |
 	Asymptote Simple_name number_s |
-	Average Simple_name_A Averaging_methods |
+	Average Simple_name_AM Averaging_methods |
 	Bhig Simple_name number_s |
 	Ceiling Equ_op? number_s |
 	Classification Equ_op? Simple_name |
@@ -111,7 +111,7 @@ noe_statement:
 	Nrestraints Equ_op? Integer |
 	Outd |
 	Partition Equ_op? Integer |
-	Potential Simple_name_P Potential_types |
+	Potential Simple_name_PT Potential_types |
 	Predict predict_statement End |
 	Print Threshold Equ_op? number_s |
 	Raverage Simple_name *? End |
@@ -193,7 +193,7 @@ sani_statement:
 	Coefficients number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Equ_op_P? Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -212,7 +212,7 @@ coupling_statement:
 	ForceConstant number_s number_s? |
 	Nrestraints Equ_op? Integer |
 	Partition Equ_op? Integer |
-	Potential Equ_op_P? Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset;
 
@@ -231,7 +231,7 @@ carbon_shift_statement:
 	Nrestraints Equ_op? Integer |
 	PhiStep Equ_op? number_s |
 	PsiStep Equ_op? number_s |
-	Potential Equ_op_P? Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	carbon_shift_rcoil |
 	Reset |
@@ -302,7 +302,7 @@ conformation_statement:
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
 	Phase Integer Integer Integer (Integer Integer Integer)? (Integer Integer Integer)? (Integer Integer Integer)? |
-	Potential Equ_op_P? Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset |
 	Size Dimensions Integer Integer? Integer? Integer? |
@@ -320,7 +320,7 @@ diffusion_statement:
 	Coefficients number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Equ_op_P? Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -336,7 +336,7 @@ one_bond_coupling_statement:
 	Coefficients number_s number_s number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Equ_op_P? Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -354,7 +354,7 @@ angle_db_statement:
 	Error Equ_op? number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Equ_op_P? Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
 	Reset |
 	Size Angle_or_Dihedral Integer Integer |
@@ -431,7 +431,7 @@ number_a:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html (compatible with XPLOR-NIH)
 */
 flag_statement:
-	Flags (Exclude (Class_name* | Any_class))? Include Class_name* End_F;
+	Flags (Exclude (Class_name* | Any_class))? Include Class_name* End_FL;
 
 /* Vector statement - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node42.html (compatible with XPLOR-NIH)

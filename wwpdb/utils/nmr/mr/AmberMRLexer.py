@@ -1009,8 +1009,8 @@ class AmberMRLexer(Lexer):
     SPACE = 150
     SECTION_COMMENT = 151
     Any_name = 152
-    SPACE_C = 153
-    RETURN_C = 154
+    SPACE_CM = 153
+    RETURN_CM = 154
     Equ_op_IP = 155
     L_paren_IP = 156
     Integer = 157
@@ -1025,11 +1025,11 @@ class AmberMRLexer(Lexer):
     L_paren_QP = 166
     Equ_op_QP = 167
     Qstring = 168
-    Decimal_AQP = 169
-    R_paren_AQP = 170
-    Equ_op_AQP = 171
-    SPACE_AQP = 172
-    Qstring_AQP = 173
+    Decimal_AP = 169
+    R_paren_AP = 170
+    Equ_op_AP = 171
+    SPACE_AP = 172
+    Qstring_AP = 173
     L_paren_IA = 174
     Equ_op_IA = 175
     Comma_IA = 176
@@ -1057,10 +1057,10 @@ class AmberMRLexer(Lexer):
     End_QA = 198
     Qstrings = 199
     COMMENT_QA = 200
-    Comma_A = 201
-    R_paren_A = 202
+    Comma_AR = 201
+    R_paren_AR = 202
     Decimal = 203
-    SPACE_A = 204
+    SPACE_AR = 204
     DISTANCE_F = 205
     ANGLE_F = 206
     TORSION_F = 207
@@ -1132,17 +1132,17 @@ class AmberMRLexer(Lexer):
             "SIGMA12", "SIGMA13", "SIGMA22", "SIGMA23", "CCUT", "Comma", 
             "SMCLN_COMMENT", "COMMENT", "Logical", "L_paren", "R_paren", 
             "L_brace", "R_brace", "L_brakt", "R_brakt", "Equ_op", "L_QUOT", 
-            "SPACE", "SECTION_COMMENT", "Any_name", "SPACE_C", "RETURN_C", 
+            "SPACE", "SECTION_COMMENT", "Any_name", "SPACE_CM", "RETURN_CM", 
             "Equ_op_IP", "L_paren_IP", "Integer", "SPACE_IP", "Equ_op_RP", 
             "L_paren_RP", "Real", "SPACE_RP", "Equ_op_BP", "BoolInt", "SPACE_BP", 
-            "L_paren_QP", "Equ_op_QP", "Qstring", "Decimal_AQP", "R_paren_AQP", 
-            "Equ_op_AQP", "SPACE_AQP", "Qstring_AQP", "L_paren_IA", "Equ_op_IA", 
+            "L_paren_QP", "Equ_op_QP", "Qstring", "Decimal_AP", "R_paren_AP", 
+            "Equ_op_AP", "SPACE_AP", "Qstring_AP", "L_paren_IA", "Equ_op_IA", 
             "Comma_IA", "End_IA", "Asterisk_IA", "Integers", "MultiplicativeInt", 
             "COMMENT_IA", "L_paren_RA", "Equ_op_RA", "Comma_RA", "End_RA", 
             "Asterisk_RA", "Reals", "MultiplicativeReal", "COMMENT_RA", 
             "Equ_op_BA", "Comma_BA", "End_BA", "BoolInts", "COMMENT_BA", 
             "L_paren_QA", "Equ_op_QA", "Comma_QA", "End_QA", "Qstrings", 
-            "COMMENT_QA", "Comma_A", "R_paren_A", "Decimal", "SPACE_A", 
+            "COMMENT_QA", "Comma_AR", "R_paren_AR", "Decimal", "SPACE_AR", 
             "DISTANCE_F", "ANGLE_F", "TORSION_F", "COORDINATE_F", "PLANE_F", 
             "COM_F", "Integer_F", "Real_F", "Ambmask_F", "Comma_F", "L_paren_F", 
             "R_paren_F", "L_brace_F", "R_brace_F", "L_brakt_F", "R_brakt_F", 
@@ -1174,23 +1174,23 @@ class AmberMRLexer(Lexer):
                   "ONE_OR_ZERO", "ALPHA", "ALPHA_NUM", "START_CHAR", "NAME_CHAR", 
                   "QEXT_CHAR", "SIMPLE_NAME", "QSTRING", "L_paren", "R_paren", 
                   "L_brace", "R_brace", "L_brakt", "R_brakt", "Equ_op", 
-                  "L_QUOT", "SPACE", "SECTION_COMMENT", "Any_name", "SPACE_C", 
-                  "RETURN_C", "Equ_op_IP", "L_paren_IP", "Integer", "SPACE_IP", 
+                  "L_QUOT", "SPACE", "SECTION_COMMENT", "Any_name", "SPACE_CM", 
+                  "RETURN_CM", "Equ_op_IP", "L_paren_IP", "Integer", "SPACE_IP", 
                   "Equ_op_RP", "L_paren_RP", "Real", "SPACE_RP", "Equ_op_BP", 
                   "BoolInt", "SPACE_BP", "L_paren_QP", "Equ_op_QP", "Qstring", 
-                  "SPACE_QP", "Decimal_AQP", "R_paren_AQP", "Equ_op_AQP", 
-                  "SPACE_AQP", "Qstring_AQP", "SPACE_AQP_", "L_paren_IA", 
-                  "Equ_op_IA", "Comma_IA", "End_IA", "Asterisk_IA", "Integers", 
-                  "MultiplicativeInt", "SPACE_IA", "COMMENT_IA", "L_paren_RA", 
-                  "Equ_op_RA", "Comma_RA", "End_RA", "Asterisk_RA", "Reals", 
-                  "MultiplicativeReal", "RETURN_RA", "SPACE_RA", "COMMENT_RA", 
-                  "Equ_op_BA", "Comma_BA", "End_BA", "BoolInts", "SPACE_BA", 
-                  "COMMENT_BA", "L_paren_QA", "Equ_op_QA", "Comma_QA", "End_QA", 
-                  "Qstrings", "SPACE_QA", "COMMENT_QA", "Comma_A", "R_paren_A", 
-                  "Decimal", "SPACE_A", "DISTANCE_F", "ANGLE_F", "TORSION_F", 
-                  "COORDINATE_F", "PLANE_F", "COM_F", "Integer_F", "Real_F", 
-                  "Ambmask_F", "Comma_F", "L_paren_F", "R_paren_F", "L_brace_F", 
-                  "R_brace_F", "L_brakt_F", "R_brakt_F", "R_QUOT", "SPACE_F" ]
+                  "SPACE_QP", "Decimal_AP", "R_paren_AP", "Equ_op_AP", "SPACE_AP", 
+                  "Qstring_AP", "SPACE_AP_", "L_paren_IA", "Equ_op_IA", 
+                  "Comma_IA", "End_IA", "Asterisk_IA", "Integers", "MultiplicativeInt", 
+                  "SPACE_IA", "COMMENT_IA", "L_paren_RA", "Equ_op_RA", "Comma_RA", 
+                  "End_RA", "Asterisk_RA", "Reals", "MultiplicativeReal", 
+                  "RETURN_RA", "SPACE_RA", "COMMENT_RA", "Equ_op_BA", "Comma_BA", 
+                  "End_BA", "BoolInts", "SPACE_BA", "COMMENT_BA", "L_paren_QA", 
+                  "Equ_op_QA", "Comma_QA", "End_QA", "Qstrings", "SPACE_QA", 
+                  "COMMENT_QA", "Comma_AR", "R_paren_AR", "Decimal", "SPACE_AR", 
+                  "DISTANCE_F", "ANGLE_F", "TORSION_F", "COORDINATE_F", 
+                  "PLANE_F", "COM_F", "Integer_F", "Real_F", "Ambmask_F", 
+                  "Comma_F", "L_paren_F", "R_paren_F", "L_brace_F", "R_brace_F", 
+                  "L_brakt_F", "R_brakt_F", "R_QUOT", "SPACE_F" ]
 
     grammarFileName = "AmberMRLexer.g4"
 

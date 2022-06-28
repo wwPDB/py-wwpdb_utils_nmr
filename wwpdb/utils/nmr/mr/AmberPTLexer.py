@@ -562,20 +562,20 @@ class AmberPTLexer(Lexer):
     Equ_op = 58
     Version = 59
     Date_time = 60
-    SPACE_V = 61
-    FLAG_V = 62
+    SPACE_VS = 61
+    FLAG_VS = 62
     Fortran_format_A = 63
     Fortran_format_I = 64
     Fortran_format_E = 65
     Simple_name = 66
-    SPACE_A = 67
-    FLAG_A = 68
+    SPACE_AA = 67
+    FLAG_AA = 68
     Integer = 69
-    SPACE_I = 70
-    FLAG_I = 71
+    SPACE_IA = 70
+    FLAG_IA = 71
     Real = 72
-    SPACE_E = 73
-    FLAG_E = 74
+    SPACE_EA = 73
+    FLAG_EA = 74
 
     channelNames = [ u"DEFAULT_TOKEN_CHANNEL", u"HIDDEN" ]
 
@@ -614,10 +614,10 @@ class AmberPTLexer(Lexer):
             "SCNB_SCALE_FACTOR", "SCREEN", "SOLTY", "SOLVENT_POINTERS", 
             "TITLE", "TREE_CHAIN_CLASSIFICATION", "SHARP_COMMENT", "EXCLM_COMMENT", 
             "SMCLN_COMMENT", "FORMAT", "SPACE", "LINE_COMMENT", "VERSION_STAMP", 
-            "DATE", "Equ_op", "Version", "Date_time", "SPACE_V", "FLAG_V", 
+            "DATE", "Equ_op", "Version", "Date_time", "SPACE_VS", "FLAG_VS", 
             "Fortran_format_A", "Fortran_format_I", "Fortran_format_E", 
-            "Simple_name", "SPACE_A", "FLAG_A", "Integer", "SPACE_I", "FLAG_I", 
-            "Real", "SPACE_E", "FLAG_E" ]
+            "Simple_name", "SPACE_AA", "FLAG_AA", "Integer", "SPACE_IA", 
+            "FLAG_IA", "Real", "SPACE_EA", "FLAG_EA" ]
 
     ruleNames = [ "VERSION", "FLAG", "AMBER_ATOM_TYPE", "ANGLE_EQUIL_VALUE", 
                   "ANGLE_FORCE_CONSTANT", "ANGLES_INC_HYDROGEN", "ANGLES_WITHOUT_HYDROGEN", 
@@ -639,10 +639,10 @@ class AmberPTLexer(Lexer):
                   "DEC_DIGIT2", "YEAR", "DATE_TIME_SEP", "JAN", "FEB", "MAR", 
                   "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", 
                   "DEC", "MONTH", "VERSION_STAMP", "DATE", "Equ_op", "Version", 
-                  "Date_time", "SPACE_V", "FLAG_V", "Fortran_format_A", 
+                  "Date_time", "SPACE_VS", "FLAG_VS", "Fortran_format_A", 
                   "Fortran_format_I", "Fortran_format_E", "Simple_name", 
-                  "SPACE_A", "FLAG_A", "Integer", "SPACE_I", "FLAG_I", "Real", 
-                  "SPACE_E", "FLAG_E" ]
+                  "SPACE_AA", "FLAG_AA", "Integer", "SPACE_IA", "FLAG_IA", 
+                  "Real", "SPACE_EA", "FLAG_EA" ]
 
     grammarFileName = "AmberPTLexer.g4"
 

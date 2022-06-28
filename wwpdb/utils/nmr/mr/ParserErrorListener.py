@@ -6,6 +6,8 @@
 """ Inheritance of ANTLR ErrorListener for Parser.
     @author: Masashi Yokochi
 """
+import re
+
 from antlr4.error.ErrorListener import ErrorListener
 
 try:
@@ -14,6 +16,10 @@ try:
 except ImportError:
     from nmr.mr.ParserListenerUtil import (MAX_ERROR_REPORT,
                                            MAX_ERR_LINENUM_REPORT)
+
+
+expecting_pattern = re.compile(r"(.*) expecting \\{(.*)}")
+substitution_pattern = re.compile(r"_(A[APR]|[BIQR][AP]|CM|[DE]A|FO?|V[AS]|Lp)$")
 
 
 class ParserErrorListener(ErrorListener):
@@ -58,6 +64,13 @@ class ParserErrorListener(ErrorListener):
 
         _msg = msg.split("'")
         length = 1 if 'alternative' in msg or len(_msg) < 2 else len(_msg[1])
+
+        if 'expecting' in msg:
+            g = expecting_pattern.search(msg).groups()
+            terms = g[1].split(', ')
+            for t in terms:
+                t = substitution_pattern.sub('', t)
+            msg = g[0] + 'expecting {' + ', '.join(terms) + '}'
 
         _dict = {'file_path': self.__filePath,
                  'line_number': line,

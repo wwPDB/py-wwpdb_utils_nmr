@@ -724,25 +724,25 @@ Abs:			A B S;
 Attr_properties:	(B | B C O M P? | C H A R G? E? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R M S D | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P? | S T O R E '1' | S T O R E '2' | S T O R E '3' | S T O R E '4' | S T O R E '5' | S T O R E '6' | S T O R E '7' | S T O R E '8' | S T O R E '9');
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op) -> popMode;
 
-SPACE_ATTR:		[ \t\r\n]+ -> skip;
+SPACE_AP:		[ \t\r\n]+ -> skip;
 
 mode AVER_MODE; // Inside of Average tag
 
 Averaging_methods:	(R '-6' | R '-3' | S U M | C E N T E? R? | S U M D I? F? | A V E R A? G? E?) -> popMode;
 
-Simple_name_A:		SIMPLE_NAME;
+Simple_name_AM:		SIMPLE_NAME;
 
-SPACE_AVER:		[ \t\r\n]+ -> skip;
+SPACE_AM:		[ \t\r\n]+ -> skip;
 
 mode POTE_MODE; // Inside of Potential tag
 
-Equ_op_P:		'=';
+Equ_op_PT:		'=';
 
 Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? '-'? W? E? L? L? | S O F T '-'? S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C?) -> popMode;
 
-Simple_name_P:		SIMPLE_NAME;
+Simple_name_PT:		SIMPLE_NAME;
 
-SPACE_POTE:		[ \t\r\n]+ -> skip;
+SPACE_PT:		[ \t\r\n]+ -> skip;
 
 mode TYPE_MODE; // Inside of Type tag
 
@@ -755,25 +755,25 @@ Rdc_or_Diff_anis_types:	(R E L A X | D I F F | M I S C) -> popMode;
 // Chemical shift anisotropy types
 Csa_types:		(P H O S | C A R B | N I T R) -> popMode;
 
-SPACE_TYPE:		[ \t\r\n]+ -> skip;
+SPACE_TY:		[ \t\r\n]+ -> skip;
 
 mode SHAP_MODE; // Inside of Shape tag
 
 Gauss_or_Quart:		(G A U S S | Q U A R T) -> popMode;
 
-SPACE_SHAP:		[ \t\r\n]+ -> skip;
+SPACE_SH:		[ \t\r\n]+ -> skip;
 
 mode FLAG_MODE; // Inside of flag statement
 
 Exclude:		E X C L U? D? E?;			// Class_name* | Any_class
 Include:		I N C L U? D? E?;			// Class_name*
 
-End_F:			E N D -> popMode;
+End_FL:			E N D -> popMode;
 
 Class_name:		SIMPLE_NAME;
 Any_class:		'*';
 
-SPACE_FLAG:		[ \t\r\n]+ -> skip;
+SPACE_FL:		[ \t\r\n]+ -> skip;
 
 mode VECTOR_EXPR_MODE; // vector expression
 

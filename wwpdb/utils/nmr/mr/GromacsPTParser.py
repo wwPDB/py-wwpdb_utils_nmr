@@ -272,8 +272,8 @@ class GromacsPTParser ( Parser ):
                       "Intermolecular_interactions", "Integer", "Real", 
                       "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
                       "Simple_name", "SPACE", "COMMENT", "SECTION_COMMENT", 
-                      "LINE_COMMENT", "R_brkt_A", "SECTION_COMMENT_A", "LINE_COMMENT_A", 
-                      "Simple_name_A", "SPACE_A", "RETURN_A" ]
+                      "LINE_COMMENT", "R_brkt_AA", "SECTION_COMMENT_AA", 
+                      "LINE_COMMENT_AA", "Simple_name_AA", "SPACE_AA", "RETURN_AA" ]
 
     RULE_gromacs_pt = 0
     RULE_default_statement = 1
@@ -384,12 +384,12 @@ class GromacsPTParser ( Parser ):
     COMMENT=37
     SECTION_COMMENT=38
     LINE_COMMENT=39
-    R_brkt_A=40
-    SECTION_COMMENT_A=41
-    LINE_COMMENT_A=42
-    Simple_name_A=43
-    SPACE_A=44
-    RETURN_A=45
+    R_brkt_AA=40
+    SECTION_COMMENT_AA=41
+    LINE_COMMENT_AA=42
+    Simple_name_AA=43
+    SPACE_AA=44
+    RETURN_AA=45
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -4101,17 +4101,17 @@ class GromacsPTParser ( Parser ):
         def System(self):
             return self.getToken(GromacsPTParser.System, 0)
 
-        def R_brkt_A(self):
-            return self.getToken(GromacsPTParser.R_brkt_A, 0)
+        def R_brkt_AA(self):
+            return self.getToken(GromacsPTParser.R_brkt_AA, 0)
 
-        def RETURN_A(self):
-            return self.getToken(GromacsPTParser.RETURN_A, 0)
+        def RETURN_AA(self):
+            return self.getToken(GromacsPTParser.RETURN_AA, 0)
 
-        def Simple_name_A(self, i:int=None):
+        def Simple_name_AA(self, i:int=None):
             if i is None:
-                return self.getTokens(GromacsPTParser.Simple_name_A)
+                return self.getTokens(GromacsPTParser.Simple_name_AA)
             else:
-                return self.getToken(GromacsPTParser.Simple_name_A, i)
+                return self.getToken(GromacsPTParser.Simple_name_AA, i)
 
         def getRuleIndex(self):
             return GromacsPTParser.RULE_system_statement
@@ -4139,19 +4139,19 @@ class GromacsPTParser ( Parser ):
             self.state = 596
             self.match(GromacsPTParser.System)
             self.state = 597
-            self.match(GromacsPTParser.R_brkt_A)
+            self.match(GromacsPTParser.R_brkt_AA)
             self.state = 601
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Simple_name_A:
+            while _la==GromacsPTParser.Simple_name_AA:
                 self.state = 598
-                self.match(GromacsPTParser.Simple_name_A)
+                self.match(GromacsPTParser.Simple_name_AA)
                 self.state = 603
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
             self.state = 604
-            self.match(GromacsPTParser.RETURN_A)
+            self.match(GromacsPTParser.RETURN_AA)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)

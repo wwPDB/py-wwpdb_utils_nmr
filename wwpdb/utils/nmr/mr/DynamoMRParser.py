@@ -323,18 +323,18 @@ class DynamoMRParser ( Parser ):
                       "Float", "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
                       "Simple_name", "SPACE", "COMMENT", "SECTION_COMMENT", 
                       "LINE_COMMENT", "First_resid", "Sequence", "One_letter_code", 
-                      "Integer_D", "SPACE_D", "RETURN_D", "SECTION_COMMENT_D", 
-                      "LINE_COMMENT_D", "Index", "Group", "Segname_I", "Resid_I", 
-                      "Resname_I", "Atomname_I", "Segname_J", "Resid_J", 
-                      "Resname_J", "Atomname_J", "Segname_K", "Resid_K", 
-                      "Resname_K", "Atomname_K", "Segname_L", "Resid_L", 
-                      "Resname_L", "Atomname_L", "Resid", "Resname", "A", 
-                      "B", "C", "D", "DD", "FC", "S", "W", "D_Lo", "D_Hi", 
-                      "Angle_Lo", "Angle_Hi", "Phase", "ObsJ", "Phi", "Psi", 
-                      "Dphi", "Dpsi", "Dist", "S2", "Count", "Cs_count", 
-                      "Class", "SPACE_V", "RETURN_V", "SECTION_COMMENT_V", 
-                      "LINE_COMMENT_V", "Format_code", "SPACE_F", "RETURN_F", 
-                      "SECTION_COMMENT_F", "LINE_COMMENT_F" ]
+                      "Integer_DA", "SPACE_DA", "RETURN_DA", "SECTION_COMMENT_DA", 
+                      "LINE_COMMENT_DA", "Index", "Group", "Segname_I", 
+                      "Resid_I", "Resname_I", "Atomname_I", "Segname_J", 
+                      "Resid_J", "Resname_J", "Atomname_J", "Segname_K", 
+                      "Resid_K", "Resname_K", "Atomname_K", "Segname_L", 
+                      "Resid_L", "Resname_L", "Atomname_L", "Resid", "Resname", 
+                      "A", "B", "C", "D", "DD", "FC", "S", "W", "D_Lo", 
+                      "D_Hi", "Angle_Lo", "Angle_Hi", "Phase", "ObsJ", "Phi", 
+                      "Psi", "Dphi", "Dpsi", "Dist", "S2", "Count", "Cs_count", 
+                      "Class", "SPACE_VA", "RETURN_VA", "SECTION_COMMENT_VA", 
+                      "LINE_COMMENT_VA", "Format_code", "SPACE_FO", "RETURN_FO", 
+                      "SECTION_COMMENT_FO", "LINE_COMMENT_FO" ]
 
     RULE_dynamo_mr = 0
     RULE_sequence = 1
@@ -396,11 +396,11 @@ class DynamoMRParser ( Parser ):
     First_resid=14
     Sequence=15
     One_letter_code=16
-    Integer_D=17
-    SPACE_D=18
-    RETURN_D=19
-    SECTION_COMMENT_D=20
-    LINE_COMMENT_D=21
+    Integer_DA=17
+    SPACE_DA=18
+    RETURN_DA=19
+    SECTION_COMMENT_DA=20
+    LINE_COMMENT_DA=21
     Index=22
     Group=23
     Segname_I=24
@@ -444,15 +444,15 @@ class DynamoMRParser ( Parser ):
     Count=62
     Cs_count=63
     Class=64
-    SPACE_V=65
-    RETURN_V=66
-    SECTION_COMMENT_V=67
-    LINE_COMMENT_V=68
+    SPACE_VA=65
+    RETURN_VA=66
+    SECTION_COMMENT_VA=67
+    LINE_COMMENT_VA=68
     Format_code=69
-    SPACE_F=70
-    RETURN_F=71
-    SECTION_COMMENT_F=72
-    LINE_COMMENT_F=73
+    SPACE_FO=70
+    RETURN_FO=71
+    SECTION_COMMENT_FO=72
+    LINE_COMMENT_FO=73
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -695,14 +695,14 @@ class DynamoMRParser ( Parser ):
         def Data(self):
             return self.getToken(DynamoMRParser.Data, 0)
 
-        def RETURN_D(self):
-            return self.getToken(DynamoMRParser.RETURN_D, 0)
+        def RETURN_DA(self):
+            return self.getToken(DynamoMRParser.RETURN_DA, 0)
 
         def First_resid(self):
             return self.getToken(DynamoMRParser.First_resid, 0)
 
-        def Integer_D(self):
-            return self.getToken(DynamoMRParser.Integer_D, 0)
+        def Integer_DA(self):
+            return self.getToken(DynamoMRParser.Integer_DA, 0)
 
         def Sequence(self):
             return self.getToken(DynamoMRParser.Sequence, 0)
@@ -743,7 +743,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 80
                 self.match(DynamoMRParser.First_resid)
                 self.state = 81
-                self.match(DynamoMRParser.Integer_D)
+                self.match(DynamoMRParser.Integer_DA)
                 pass
             elif token in [DynamoMRParser.Sequence]:
                 self.state = 82
@@ -765,7 +765,7 @@ class DynamoMRParser ( Parser ):
                 raise NoViableAltException(self)
 
             self.state = 90
-            self.match(DynamoMRParser.RETURN_D)
+            self.match(DynamoMRParser.RETURN_DA)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -824,8 +824,8 @@ class DynamoMRParser ( Parser ):
         def S(self):
             return self.getToken(DynamoMRParser.S, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -836,8 +836,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def distance_restraint(self, i:int=None):
             if i is None:
@@ -896,7 +896,7 @@ class DynamoMRParser ( Parser ):
             self.state = 105
             self.match(DynamoMRParser.S)
             self.state = 106
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 107
             self.match(DynamoMRParser.Format)
             self.state = 108
@@ -926,7 +926,7 @@ class DynamoMRParser ( Parser ):
             self.state = 120
             self.match(DynamoMRParser.Format_code)
             self.state = 121
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 123 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -1084,8 +1084,8 @@ class DynamoMRParser ( Parser ):
         def S(self):
             return self.getToken(DynamoMRParser.S, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -1096,8 +1096,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def distance_restraint_sw_segid(self, i:int=None):
             if i is None:
@@ -1160,7 +1160,7 @@ class DynamoMRParser ( Parser ):
             self.state = 156
             self.match(DynamoMRParser.S)
             self.state = 157
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 158
             self.match(DynamoMRParser.Format)
             self.state = 159
@@ -1194,7 +1194,7 @@ class DynamoMRParser ( Parser ):
             self.state = 173
             self.match(DynamoMRParser.Format_code)
             self.state = 174
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 176 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -1356,8 +1356,8 @@ class DynamoMRParser ( Parser ):
         def S(self):
             return self.getToken(DynamoMRParser.S, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -1368,8 +1368,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def distance_restraint_ew_segid(self, i:int=None):
             if i is None:
@@ -1432,7 +1432,7 @@ class DynamoMRParser ( Parser ):
             self.state = 211
             self.match(DynamoMRParser.S)
             self.state = 212
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 213
             self.match(DynamoMRParser.Format)
             self.state = 214
@@ -1466,7 +1466,7 @@ class DynamoMRParser ( Parser ):
             self.state = 228
             self.match(DynamoMRParser.Format_code)
             self.state = 229
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 231 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -1631,8 +1631,8 @@ class DynamoMRParser ( Parser ):
         def FC(self):
             return self.getToken(DynamoMRParser.FC, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -1643,8 +1643,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def torsion_angle_restraint(self, i:int=None):
             if i is None:
@@ -1709,7 +1709,7 @@ class DynamoMRParser ( Parser ):
             self.state = 267
             self.match(DynamoMRParser.FC)
             self.state = 268
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 269
             self.match(DynamoMRParser.Format)
             self.state = 270
@@ -1745,7 +1745,7 @@ class DynamoMRParser ( Parser ):
             self.state = 285
             self.match(DynamoMRParser.Format_code)
             self.state = 286
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 288 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -1924,8 +1924,8 @@ class DynamoMRParser ( Parser ):
         def FC(self):
             return self.getToken(DynamoMRParser.FC, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -1936,8 +1936,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def torsion_angle_restraint_sw_segid(self, i:int=None):
             if i is None:
@@ -2010,7 +2010,7 @@ class DynamoMRParser ( Parser ):
             self.state = 329
             self.match(DynamoMRParser.FC)
             self.state = 330
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 331
             self.match(DynamoMRParser.Format)
             self.state = 332
@@ -2054,7 +2054,7 @@ class DynamoMRParser ( Parser ):
             self.state = 351
             self.match(DynamoMRParser.Format_code)
             self.state = 352
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 354 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -2241,8 +2241,8 @@ class DynamoMRParser ( Parser ):
         def FC(self):
             return self.getToken(DynamoMRParser.FC, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -2253,8 +2253,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def torsion_angle_restraint_ew_segid(self, i:int=None):
             if i is None:
@@ -2327,7 +2327,7 @@ class DynamoMRParser ( Parser ):
             self.state = 399
             self.match(DynamoMRParser.FC)
             self.state = 400
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 401
             self.match(DynamoMRParser.Format)
             self.state = 402
@@ -2371,7 +2371,7 @@ class DynamoMRParser ( Parser ):
             self.state = 421
             self.match(DynamoMRParser.Format_code)
             self.state = 422
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 424 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -2525,8 +2525,8 @@ class DynamoMRParser ( Parser ):
         def W(self):
             return self.getToken(DynamoMRParser.W, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -2537,8 +2537,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def rdc_restraint(self, i:int=None):
             if i is None:
@@ -2589,7 +2589,7 @@ class DynamoMRParser ( Parser ):
             self.state = 458
             self.match(DynamoMRParser.W)
             self.state = 459
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 460
             self.match(DynamoMRParser.Format)
             self.state = 461
@@ -2611,7 +2611,7 @@ class DynamoMRParser ( Parser ):
             self.state = 469
             self.match(DynamoMRParser.Format_code)
             self.state = 470
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 472 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -2749,8 +2749,8 @@ class DynamoMRParser ( Parser ):
         def W(self):
             return self.getToken(DynamoMRParser.W, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -2761,8 +2761,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def rdc_restraint_sw_segid(self, i:int=None):
             if i is None:
@@ -2817,7 +2817,7 @@ class DynamoMRParser ( Parser ):
             self.state = 497
             self.match(DynamoMRParser.W)
             self.state = 498
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 499
             self.match(DynamoMRParser.Format)
             self.state = 500
@@ -2843,7 +2843,7 @@ class DynamoMRParser ( Parser ):
             self.state = 510
             self.match(DynamoMRParser.Format_code)
             self.state = 511
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 513 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -2985,8 +2985,8 @@ class DynamoMRParser ( Parser ):
         def W(self):
             return self.getToken(DynamoMRParser.W, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -2997,8 +2997,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def rdc_restraint_ew_segid(self, i:int=None):
             if i is None:
@@ -3053,7 +3053,7 @@ class DynamoMRParser ( Parser ):
             self.state = 540
             self.match(DynamoMRParser.W)
             self.state = 541
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 542
             self.match(DynamoMRParser.Format)
             self.state = 543
@@ -3079,7 +3079,7 @@ class DynamoMRParser ( Parser ):
             self.state = 553
             self.match(DynamoMRParser.Format_code)
             self.state = 554
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 556 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -3245,8 +3245,8 @@ class DynamoMRParser ( Parser ):
         def FC(self):
             return self.getToken(DynamoMRParser.FC, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -3257,8 +3257,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def coupling_restraint(self, i:int=None):
             if i is None:
@@ -3329,7 +3329,7 @@ class DynamoMRParser ( Parser ):
             self.state = 591
             self.match(DynamoMRParser.FC)
             self.state = 592
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 593
             self.match(DynamoMRParser.Format)
             self.state = 594
@@ -3371,7 +3371,7 @@ class DynamoMRParser ( Parser ):
             self.state = 612
             self.match(DynamoMRParser.Format_code)
             self.state = 613
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 615 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -3565,8 +3565,8 @@ class DynamoMRParser ( Parser ):
         def FC(self):
             return self.getToken(DynamoMRParser.FC, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -3577,8 +3577,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def coupling_restraint_sw_segid(self, i:int=None):
             if i is None:
@@ -3657,7 +3657,7 @@ class DynamoMRParser ( Parser ):
             self.state = 662
             self.match(DynamoMRParser.FC)
             self.state = 663
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 664
             self.match(DynamoMRParser.Format)
             self.state = 665
@@ -3707,7 +3707,7 @@ class DynamoMRParser ( Parser ):
             self.state = 687
             self.match(DynamoMRParser.Format_code)
             self.state = 688
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 690 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -3909,8 +3909,8 @@ class DynamoMRParser ( Parser ):
         def FC(self):
             return self.getToken(DynamoMRParser.FC, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -3921,8 +3921,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def coupling_restraint_ew_segid(self, i:int=None):
             if i is None:
@@ -4001,7 +4001,7 @@ class DynamoMRParser ( Parser ):
             self.state = 741
             self.match(DynamoMRParser.FC)
             self.state = 742
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 743
             self.match(DynamoMRParser.Format)
             self.state = 744
@@ -4051,7 +4051,7 @@ class DynamoMRParser ( Parser ):
             self.state = 766
             self.match(DynamoMRParser.Format_code)
             self.state = 767
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 769 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
@@ -4217,8 +4217,8 @@ class DynamoMRParser ( Parser ):
         def Class(self):
             return self.getToken(DynamoMRParser.Class, 0)
 
-        def RETURN_V(self):
-            return self.getToken(DynamoMRParser.RETURN_V, 0)
+        def RETURN_VA(self):
+            return self.getToken(DynamoMRParser.RETURN_VA, 0)
 
         def Format(self):
             return self.getToken(DynamoMRParser.Format, 0)
@@ -4229,8 +4229,8 @@ class DynamoMRParser ( Parser ):
             else:
                 return self.getToken(DynamoMRParser.Format_code, i)
 
-        def RETURN_F(self):
-            return self.getToken(DynamoMRParser.RETURN_F, 0)
+        def RETURN_FO(self):
+            return self.getToken(DynamoMRParser.RETURN_FO, 0)
 
         def talos_restraint(self, i:int=None):
             if i is None:
@@ -4285,7 +4285,7 @@ class DynamoMRParser ( Parser ):
             self.state = 808
             self.match(DynamoMRParser.Class)
             self.state = 809
-            self.match(DynamoMRParser.RETURN_V)
+            self.match(DynamoMRParser.RETURN_VA)
             self.state = 810
             self.match(DynamoMRParser.Format)
             self.state = 811
@@ -4311,7 +4311,7 @@ class DynamoMRParser ( Parser ):
             self.state = 821
             self.match(DynamoMRParser.Format_code)
             self.state = 822
-            self.match(DynamoMRParser.RETURN_F)
+            self.match(DynamoMRParser.RETURN_FO)
             self.state = 824 
             self._errHandler.sync(self)
             _la = self._input.LA(1)

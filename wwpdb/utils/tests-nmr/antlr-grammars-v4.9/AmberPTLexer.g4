@@ -160,8 +160,8 @@ Equ_op:			'=';
 Version:		V? DECIMAL ('.' DECIMAL);
 Date_time:		MONTH (DATE_TIME_SEP DEC_DIGIT2)? (DATE_TIME_SEP YEAR)?;
 
-SPACE_V:		[ \t\r\n]+ -> skip;
-FLAG_V:			'%FLAG' -> popMode;
+SPACE_VS:		[ \t\r\n]+ -> skip;
+FLAG_VS:		'%FLAG' -> popMode;
 
 mode FORMAT_MODE;
 
@@ -176,20 +176,20 @@ mode STR_ARRAY_MODE;
 
 Simple_name:		SIMPLE_NAME;
 
-SPACE_A:		[ \t\r\n]+ -> skip;
-FLAG_A:			'%FLAG' -> mode(DEFAULT_MODE);
+SPACE_AA:		[ \t\r\n]+ -> skip;
+FLAG_AA:		'%FLAG' -> mode(DEFAULT_MODE);
 
 mode INT_ARRAY_MODE;
 
 Integer:		('+' | '-')? DECIMAL;
 
-SPACE_I:		[ \t\r\n]+ -> skip;
-FLAG_I:			'%FLAG' -> mode(DEFAULT_MODE);
+SPACE_IA:		[ \t\r\n]+ -> skip;
+FLAG_IA:		'%FLAG' -> mode(DEFAULT_MODE);
 
 mode REAL_ARRAY_MODE;
 
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
 
-SPACE_E:		[ \t\r\n]+ -> skip;
-FLAG_E:			'%FLAG' -> mode(DEFAULT_MODE);
+SPACE_EA:		[ \t\r\n]+ -> skip;
+FLAG_EA:		'%FLAG' -> mode(DEFAULT_MODE);
 

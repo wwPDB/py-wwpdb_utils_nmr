@@ -242,8 +242,8 @@ virtual_sitesn:
 	Simple_name?;
 
 system_statement:
-	L_brkt System R_brkt_A
-	Simple_name_A* RETURN_A;
+	L_brkt System R_brkt_AA
+	Simple_name_AA* RETURN_AA;
 
 molecules_statement:
 	L_brkt Molecules R_brkt

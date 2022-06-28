@@ -46,17 +46,17 @@ dynamo_mr:
 */
 
 sequence:
-	Data (First_resid Integer_D | Sequence One_letter_code+) RETURN_D;
+	Data (First_resid Integer_DA | Sequence One_letter_code+) RETURN_DA;
 
 distance_restraints:
 	Vars Index Group
 		Resid_I Resname_I Atomname_I
 		Resid_J Resname_J Atomname_J
-		D_Lo D_Hi FC W S RETURN_V
+		D_Lo D_Hi FC W S RETURN_VA
 	Format Format_code Format_code
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code
-		Format_code Format_code Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code Format_code Format_code RETURN_FO
 	distance_restraint+;
 
 distance_restraint:
@@ -69,11 +69,11 @@ distance_restraints_sw_segid:
 	Vars Index Group
 		Segname_I Resid_I Resname_I Atomname_I
 		Segname_J Resid_J Resname_J Atomname_J
-		D_Lo D_Hi FC W S RETURN_V
+		D_Lo D_Hi FC W S RETURN_VA
 	Format Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
-		Format_code Format_code Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code Format_code Format_code RETURN_FO
 	distance_restraint_sw_segid+;
 
 distance_restraint_sw_segid:
@@ -86,11 +86,11 @@ distance_restraints_ew_segid:
 	Vars Index Group
 		Resid_I Resname_I Atomname_I Segname_I
 		Resid_J Resname_J Atomname_J Segname_J
-		D_Lo D_Hi FC W S RETURN_V
+		D_Lo D_Hi FC W S RETURN_VA
 	Format Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
-		Format_code Format_code Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code Format_code Format_code RETURN_FO
 	distance_restraint_ew_segid+;
 
 distance_restraint_ew_segid:
@@ -105,13 +105,13 @@ torsion_angle_restraints:
 		Resid_J Resname_J Atomname_J
 		Resid_K Resname_K Atomname_K
 		Resid_L Resname_L Atomname_L
-		Angle_Lo Angle_Hi FC RETURN_V
+		Angle_Lo Angle_Hi FC RETURN_VA
 	Format Format_code
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code
-		Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code RETURN_FO
 	torsion_angle_restraint+;
 
 torsion_angle_restraint:
@@ -128,13 +128,13 @@ torsion_angle_restraints_sw_segid:
 		Segname_J Resid_J Resname_J Atomname_J
 		Segname_K Resid_K Resname_K Atomname_K
 		Segname_L Resid_L Resname_L Atomname_L
-		Angle_Lo Angle_Hi FC RETURN_V
+		Angle_Lo Angle_Hi FC RETURN_VA
 	Format Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
-		Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code RETURN_FO
 	torsion_angle_restraint_sw_segid+;
 
 torsion_angle_restraint_sw_segid:
@@ -151,13 +151,13 @@ torsion_angle_restraints_ew_segid:
 		Resid_J Resname_J Atomname_J Segname_J
 		Resid_K Resname_K Atomname_K Segname_K
 		Resid_L Resname_L Atomname_L Segname_L
-		Angle_Lo Angle_Hi FC RETURN_V
+		Angle_Lo Angle_Hi FC RETURN_VA
 	Format Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
-		Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code RETURN_FO
 	torsion_angle_restraint_ew_segid+;
 
 torsion_angle_restraint_ew_segid:
@@ -172,11 +172,11 @@ rdc_restraints:
 	Vars
 		Resid_I Resname_I Atomname_I
 		Resid_J Resname_J Atomname_J
-		D DD W RETURN_V
+		D DD W RETURN_VA
 	Format
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code
-		Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code RETURN_FO
 	rdc_restraint+;
 
 rdc_restraint:
@@ -188,11 +188,11 @@ rdc_restraints_sw_segid:
 	Vars
 		Segname_I Resid_I Resname_I Atomname_I
 		Segname_J Resid_J Resname_J Atomname_J
-		D DD W RETURN_V
+		D DD W RETURN_VA
 	Format
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
-		Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code RETURN_FO
 	rdc_restraint_sw_segid+;
 
 rdc_restraint_sw_segid:
@@ -204,11 +204,11 @@ rdc_restraints_ew_segid:
 	Vars
 		Resid_I Resname_I Atomname_I Segname_I
 		Resid_J Resname_J Atomname_J Segname_J
-		D DD W RETURN_V
+		D DD W RETURN_VA
 	Format
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
-		Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code RETURN_FO
 	rdc_restraint_ew_segid+;
 
 rdc_restraint_ew_segid:
@@ -223,14 +223,14 @@ coupling_restraints:
 		Resid_K Resname_K Atomname_K
 		Resid_L Resname_L Atomname_L
 		A B C
-		Phase ObsJ FC RETURN_V
+		Phase ObsJ FC RETURN_VA
 	Format Format_code
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code
-		Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code RETURN_FO
 	coupling_restraint+;
 
 coupling_restraint:
@@ -249,14 +249,14 @@ coupling_restraints_sw_segid:
 		Segname_K Resid_K Resname_K Atomname_K
 		Segname_L Resid_L Resname_L Atomname_L
 		A B C
-		Phase ObsJ FC RETURN_V
+		Phase ObsJ FC RETURN_VA
 	Format Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code
-		Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code RETURN_FO
 	coupling_restraint_sw_segid+;
 
 coupling_restraint_sw_segid:
@@ -275,14 +275,14 @@ coupling_restraints_ew_segid:
 		Resid_K Resname_K Atomname_K Segname_K
 		Resid_L Resname_L Atomname_L Segname_L
 		A B C
-		Phase ObsJ FC RETURN_V
+		Phase ObsJ FC RETURN_VA
 	Format Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code
-		Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code RETURN_FO
 	coupling_restraint_ew_segid+;
 
 coupling_restraint_ew_segid:
@@ -297,10 +297,10 @@ coupling_restraint_ew_segid:
 talos_restraints:
 	Vars Resid Resname
 		Phi Psi Dphi Dpsi Dist S2
-		Count Cs_count Class RETURN_V
+		Count Cs_count Class RETURN_VA
 	Format Format_code Format_code
 		Format_code Format_code Format_code Format_code Format_code Format_code
-		Format_code Format_code Format_code RETURN_F
+		Format_code Format_code Format_code RETURN_FO
 	talos_restraint+;
 
 talos_restraint:

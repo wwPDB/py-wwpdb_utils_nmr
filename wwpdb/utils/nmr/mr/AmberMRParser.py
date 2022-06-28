@@ -521,18 +521,18 @@ class AmberMRParser ( Parser ):
                       "SMCLN_COMMENT", "COMMENT", "Logical", "L_paren", 
                       "R_paren", "L_brace", "R_brace", "L_brakt", "R_brakt", 
                       "Equ_op", "L_QUOT", "SPACE", "SECTION_COMMENT", "Any_name", 
-                      "SPACE_C", "RETURN_C", "Equ_op_IP", "L_paren_IP", 
+                      "SPACE_CM", "RETURN_CM", "Equ_op_IP", "L_paren_IP", 
                       "Integer", "SPACE_IP", "Equ_op_RP", "L_paren_RP", 
                       "Real", "SPACE_RP", "Equ_op_BP", "BoolInt", "SPACE_BP", 
-                      "L_paren_QP", "Equ_op_QP", "Qstring", "Decimal_AQP", 
-                      "R_paren_AQP", "Equ_op_AQP", "SPACE_AQP", "Qstring_AQP", 
+                      "L_paren_QP", "Equ_op_QP", "Qstring", "Decimal_AP", 
+                      "R_paren_AP", "Equ_op_AP", "SPACE_AP", "Qstring_AP", 
                       "L_paren_IA", "Equ_op_IA", "Comma_IA", "End_IA", "Asterisk_IA", 
                       "Integers", "MultiplicativeInt", "COMMENT_IA", "L_paren_RA", 
                       "Equ_op_RA", "Comma_RA", "End_RA", "Asterisk_RA", 
                       "Reals", "MultiplicativeReal", "COMMENT_RA", "Equ_op_BA", 
                       "Comma_BA", "End_BA", "BoolInts", "COMMENT_BA", "L_paren_QA", 
                       "Equ_op_QA", "Comma_QA", "End_QA", "Qstrings", "COMMENT_QA", 
-                      "Comma_A", "R_paren_A", "Decimal", "SPACE_A", "DISTANCE_F", 
+                      "Comma_AR", "R_paren_AR", "Decimal", "SPACE_AR", "DISTANCE_F", 
                       "ANGLE_F", "TORSION_F", "COORDINATE_F", "PLANE_F", 
                       "COM_F", "Integer_F", "Real_F", "Ambmask_F", "Comma_F", 
                       "L_paren_F", "R_paren_F", "L_brace_F", "R_brace_F", 
@@ -735,8 +735,8 @@ class AmberMRParser ( Parser ):
     SPACE=150
     SECTION_COMMENT=151
     Any_name=152
-    SPACE_C=153
-    RETURN_C=154
+    SPACE_CM=153
+    RETURN_CM=154
     Equ_op_IP=155
     L_paren_IP=156
     Integer=157
@@ -751,11 +751,11 @@ class AmberMRParser ( Parser ):
     L_paren_QP=166
     Equ_op_QP=167
     Qstring=168
-    Decimal_AQP=169
-    R_paren_AQP=170
-    Equ_op_AQP=171
-    SPACE_AQP=172
-    Qstring_AQP=173
+    Decimal_AP=169
+    R_paren_AP=170
+    Equ_op_AP=171
+    SPACE_AP=172
+    Qstring_AP=173
     L_paren_IA=174
     Equ_op_IA=175
     Comma_IA=176
@@ -783,10 +783,10 @@ class AmberMRParser ( Parser ):
     End_QA=198
     Qstrings=199
     COMMENT_QA=200
-    Comma_A=201
-    R_paren_A=202
+    Comma_AR=201
+    R_paren_AR=202
     Decimal=203
-    SPACE_A=204
+    SPACE_AR=204
     DISTANCE_F=205
     ANGLE_F=206
     TORSION_F=207
@@ -958,8 +958,8 @@ class AmberMRParser ( Parser ):
         def COMMENT(self):
             return self.getToken(AmberMRParser.COMMENT, 0)
 
-        def RETURN_C(self):
-            return self.getToken(AmberMRParser.RETURN_C, 0)
+        def RETURN_CM(self):
+            return self.getToken(AmberMRParser.RETURN_CM, 0)
 
         def Any_name(self, i:int=None):
             if i is None:
@@ -1001,7 +1001,7 @@ class AmberMRParser ( Parser ):
                 _la = self._input.LA(1)
 
             self.state = 83
-            self.match(AmberMRParser.RETURN_C)
+            self.match(AmberMRParser.RETURN_CM)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1536,17 +1536,17 @@ class AmberMRParser ( Parser ):
         def Comma(self):
             return self.getToken(AmberMRParser.Comma, 0)
 
-        def Decimal_AQP(self):
-            return self.getToken(AmberMRParser.Decimal_AQP, 0)
+        def Decimal_AP(self):
+            return self.getToken(AmberMRParser.Decimal_AP, 0)
 
-        def R_paren_AQP(self):
-            return self.getToken(AmberMRParser.R_paren_AQP, 0)
+        def R_paren_AP(self):
+            return self.getToken(AmberMRParser.R_paren_AP, 0)
 
-        def Equ_op_AQP(self):
-            return self.getToken(AmberMRParser.Equ_op_AQP, 0)
+        def Equ_op_AP(self):
+            return self.getToken(AmberMRParser.Equ_op_AP, 0)
 
-        def Qstring_AQP(self):
-            return self.getToken(AmberMRParser.Qstring_AQP, 0)
+        def Qstring_AP(self):
+            return self.getToken(AmberMRParser.Qstring_AP, 0)
 
         def ATNAM_Lp(self):
             return self.getToken(AmberMRParser.ATNAM_Lp, 0)
@@ -1743,8 +1743,8 @@ class AmberMRParser ( Parser ):
         def Decimal(self):
             return self.getToken(AmberMRParser.Decimal, 0)
 
-        def R_paren_A(self):
-            return self.getToken(AmberMRParser.R_paren_A, 0)
+        def R_paren_AR(self):
+            return self.getToken(AmberMRParser.R_paren_AR, 0)
 
         def L_paren_RA(self):
             return self.getToken(AmberMRParser.L_paren_RA, 0)
@@ -1900,13 +1900,13 @@ class AmberMRParser ( Parser ):
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 147
-                self.match(AmberMRParser.Decimal_AQP)
+                self.match(AmberMRParser.Decimal_AP)
                 self.state = 148
-                self.match(AmberMRParser.R_paren_AQP)
+                self.match(AmberMRParser.R_paren_AP)
                 self.state = 149
-                self.match(AmberMRParser.Equ_op_AQP)
+                self.match(AmberMRParser.Equ_op_AP)
                 self.state = 150
-                self.match(AmberMRParser.Qstring_AQP)
+                self.match(AmberMRParser.Qstring_AP)
                 self.state = 152
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
@@ -2039,7 +2039,7 @@ class AmberMRParser ( Parser ):
                 self.state = 182
                 self.match(AmberMRParser.Decimal)
                 self.state = 183
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 184
                 self.match(AmberMRParser.Equ_op_IA)
                 self.state = 185
@@ -2062,7 +2062,7 @@ class AmberMRParser ( Parser ):
                 self.state = 189
                 self.match(AmberMRParser.Decimal)
                 self.state = 190
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 191
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 192
@@ -2192,11 +2192,11 @@ class AmberMRParser ( Parser ):
             else:
                 return self.getToken(AmberMRParser.Decimal, i)
 
-        def Comma_A(self):
-            return self.getToken(AmberMRParser.Comma_A, 0)
+        def Comma_AR(self):
+            return self.getToken(AmberMRParser.Comma_AR, 0)
 
-        def R_paren_A(self):
-            return self.getToken(AmberMRParser.R_paren_A, 0)
+        def R_paren_AR(self):
+            return self.getToken(AmberMRParser.R_paren_AR, 0)
 
         def Equ_op_IP(self):
             return self.getToken(AmberMRParser.Equ_op_IP, 0)
@@ -2349,11 +2349,11 @@ class AmberMRParser ( Parser ):
                 self.state = 212
                 self.match(AmberMRParser.Decimal)
                 self.state = 213
-                self.match(AmberMRParser.Comma_A)
+                self.match(AmberMRParser.Comma_AR)
                 self.state = 214
                 self.match(AmberMRParser.Decimal)
                 self.state = 215
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 216
                 self.match(AmberMRParser.Equ_op_IP)
                 self.state = 217
@@ -2382,11 +2382,11 @@ class AmberMRParser ( Parser ):
                 self.state = 223
                 self.match(AmberMRParser.Decimal)
                 self.state = 224
-                self.match(AmberMRParser.Comma_A)
+                self.match(AmberMRParser.Comma_AR)
                 self.state = 225
                 self.match(AmberMRParser.Decimal)
                 self.state = 226
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 227
                 self.match(AmberMRParser.Equ_op_RP)
                 self.state = 228
@@ -2451,7 +2451,7 @@ class AmberMRParser ( Parser ):
                 self.state = 246
                 self.match(AmberMRParser.Decimal)
                 self.state = 247
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 248
                 self.match(AmberMRParser.Equ_op_IA)
                 self.state = 249
@@ -2474,7 +2474,7 @@ class AmberMRParser ( Parser ):
                 self.state = 253
                 self.match(AmberMRParser.Decimal)
                 self.state = 254
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 255
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 256
@@ -2595,8 +2595,8 @@ class AmberMRParser ( Parser ):
             else:
                 return self.getToken(AmberMRParser.Decimal, i)
 
-        def R_paren_A(self):
-            return self.getToken(AmberMRParser.R_paren_A, 0)
+        def R_paren_AR(self):
+            return self.getToken(AmberMRParser.R_paren_AR, 0)
 
         def NATR(self):
             return self.getToken(AmberMRParser.NATR, 0)
@@ -2607,8 +2607,8 @@ class AmberMRParser ( Parser ):
         def IATR(self):
             return self.getToken(AmberMRParser.IATR, 0)
 
-        def Comma_A(self):
-            return self.getToken(AmberMRParser.Comma_A, 0)
+        def Comma_AR(self):
+            return self.getToken(AmberMRParser.Comma_AR, 0)
 
         def OBS(self):
             return self.getToken(AmberMRParser.OBS, 0)
@@ -2727,7 +2727,7 @@ class AmberMRParser ( Parser ):
                 self.state = 275
                 self.match(AmberMRParser.Decimal)
                 self.state = 276
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 277
                 self.match(AmberMRParser.Equ_op_IP)
                 self.state = 278
@@ -2750,11 +2750,11 @@ class AmberMRParser ( Parser ):
                 self.state = 284
                 self.match(AmberMRParser.Decimal)
                 self.state = 285
-                self.match(AmberMRParser.Comma_A)
+                self.match(AmberMRParser.Comma_AR)
                 self.state = 286
                 self.match(AmberMRParser.Decimal)
                 self.state = 287
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 288
                 self.match(AmberMRParser.Equ_op_IP)
                 self.state = 289
@@ -2777,7 +2777,7 @@ class AmberMRParser ( Parser ):
                 self.state = 295
                 self.match(AmberMRParser.Decimal)
                 self.state = 296
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 297
                 self.match(AmberMRParser.Equ_op_RP)
                 self.state = 298
@@ -2805,7 +2805,7 @@ class AmberMRParser ( Parser ):
                 self.state = 304
                 self.match(AmberMRParser.Decimal)
                 self.state = 305
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 306
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 307
@@ -2832,7 +2832,7 @@ class AmberMRParser ( Parser ):
                 self.state = 311
                 self.match(AmberMRParser.Decimal)
                 self.state = 312
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 313
                 self.match(AmberMRParser.Equ_op_QP)
                 self.state = 314
@@ -2971,8 +2971,8 @@ class AmberMRParser ( Parser ):
         def Decimal(self):
             return self.getToken(AmberMRParser.Decimal, 0)
 
-        def R_paren_A(self):
-            return self.getToken(AmberMRParser.R_paren_A, 0)
+        def R_paren_AR(self):
+            return self.getToken(AmberMRParser.R_paren_AR, 0)
 
         def IPROT(self):
             return self.getToken(AmberMRParser.IPROT, 0)
@@ -3114,7 +3114,7 @@ class AmberMRParser ( Parser ):
                 self.state = 347
                 self.match(AmberMRParser.Decimal)
                 self.state = 348
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 349
                 self.match(AmberMRParser.Equ_op_IP)
                 self.state = 350
@@ -3142,7 +3142,7 @@ class AmberMRParser ( Parser ):
                 self.state = 356
                 self.match(AmberMRParser.Decimal)
                 self.state = 357
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 358
                 self.match(AmberMRParser.Equ_op_RP)
                 self.state = 359
@@ -3170,7 +3170,7 @@ class AmberMRParser ( Parser ):
                 self.state = 365
                 self.match(AmberMRParser.Decimal)
                 self.state = 366
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 367
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 368
@@ -3307,8 +3307,8 @@ class AmberMRParser ( Parser ):
         def Decimal(self):
             return self.getToken(AmberMRParser.Decimal, 0)
 
-        def R_paren_A(self):
-            return self.getToken(AmberMRParser.R_paren_A, 0)
+        def R_paren_AR(self):
+            return self.getToken(AmberMRParser.R_paren_AR, 0)
 
         def ID(self):
             return self.getToken(AmberMRParser.ID, 0)
@@ -3449,7 +3449,7 @@ class AmberMRParser ( Parser ):
                 self.state = 393
                 self.match(AmberMRParser.Decimal)
                 self.state = 394
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 395
                 self.match(AmberMRParser.Equ_op_IP)
                 self.state = 396
@@ -3478,7 +3478,7 @@ class AmberMRParser ( Parser ):
                 self.state = 402
                 self.match(AmberMRParser.Decimal)
                 self.state = 403
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 404
                 self.match(AmberMRParser.Equ_op_RP)
                 self.state = 405
@@ -3507,7 +3507,7 @@ class AmberMRParser ( Parser ):
                 self.state = 411
                 self.match(AmberMRParser.Decimal)
                 self.state = 412
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 413
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 414
@@ -3704,8 +3704,8 @@ class AmberMRParser ( Parser ):
         def Decimal(self):
             return self.getToken(AmberMRParser.Decimal, 0)
 
-        def R_paren_A(self):
-            return self.getToken(AmberMRParser.R_paren_A, 0)
+        def R_paren_AR(self):
+            return self.getToken(AmberMRParser.R_paren_AR, 0)
 
         def ICSA(self):
             return self.getToken(AmberMRParser.ICSA, 0)
@@ -3833,7 +3833,7 @@ class AmberMRParser ( Parser ):
                 self.state = 453
                 self.match(AmberMRParser.Decimal)
                 self.state = 454
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 455
                 self.match(AmberMRParser.Equ_op_IP)
                 self.state = 456
@@ -3861,7 +3861,7 @@ class AmberMRParser ( Parser ):
                 self.state = 462
                 self.match(AmberMRParser.Decimal)
                 self.state = 463
-                self.match(AmberMRParser.R_paren_A)
+                self.match(AmberMRParser.R_paren_AR)
                 self.state = 464
                 self.match(AmberMRParser.Equ_op_RP)
                 self.state = 465

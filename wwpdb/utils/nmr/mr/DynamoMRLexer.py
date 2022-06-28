@@ -467,11 +467,11 @@ class DynamoMRLexer(Lexer):
     First_resid = 14
     Sequence = 15
     One_letter_code = 16
-    Integer_D = 17
-    SPACE_D = 18
-    RETURN_D = 19
-    SECTION_COMMENT_D = 20
-    LINE_COMMENT_D = 21
+    Integer_DA = 17
+    SPACE_DA = 18
+    RETURN_DA = 19
+    SECTION_COMMENT_DA = 20
+    LINE_COMMENT_DA = 21
     Index = 22
     Group = 23
     Segname_I = 24
@@ -515,15 +515,15 @@ class DynamoMRLexer(Lexer):
     Count = 62
     Cs_count = 63
     Class = 64
-    SPACE_V = 65
-    RETURN_V = 66
-    SECTION_COMMENT_V = 67
-    LINE_COMMENT_V = 68
+    SPACE_VA = 65
+    RETURN_VA = 66
+    SECTION_COMMENT_VA = 67
+    LINE_COMMENT_VA = 68
     Format_code = 69
-    SPACE_F = 70
-    RETURN_F = 71
-    SECTION_COMMENT_F = 72
-    LINE_COMMENT_F = 73
+    SPACE_FO = 70
+    RETURN_FO = 71
+    SECTION_COMMENT_FO = 72
+    LINE_COMMENT_FO = 73
 
     channelNames = [ u"DEFAULT_TOKEN_CHANNEL", u"HIDDEN" ]
 
@@ -543,16 +543,17 @@ class DynamoMRLexer(Lexer):
             "Data", "Vars", "Format", "Integer", "Float", "SHARP_COMMENT", 
             "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", "SPACE", "COMMENT", 
             "SECTION_COMMENT", "LINE_COMMENT", "First_resid", "Sequence", 
-            "One_letter_code", "Integer_D", "SPACE_D", "RETURN_D", "SECTION_COMMENT_D", 
-            "LINE_COMMENT_D", "Index", "Group", "Segname_I", "Resid_I", 
+            "One_letter_code", "Integer_DA", "SPACE_DA", "RETURN_DA", "SECTION_COMMENT_DA", 
+            "LINE_COMMENT_DA", "Index", "Group", "Segname_I", "Resid_I", 
             "Resname_I", "Atomname_I", "Segname_J", "Resid_J", "Resname_J", 
             "Atomname_J", "Segname_K", "Resid_K", "Resname_K", "Atomname_K", 
             "Segname_L", "Resid_L", "Resname_L", "Atomname_L", "Resid", 
             "Resname", "A", "B", "C", "D", "DD", "FC", "S", "W", "D_Lo", 
             "D_Hi", "Angle_Lo", "Angle_Hi", "Phase", "ObsJ", "Phi", "Psi", 
             "Dphi", "Dpsi", "Dist", "S2", "Count", "Cs_count", "Class", 
-            "SPACE_V", "RETURN_V", "SECTION_COMMENT_V", "LINE_COMMENT_V", 
-            "Format_code", "SPACE_F", "RETURN_F", "SECTION_COMMENT_F", "LINE_COMMENT_F" ]
+            "SPACE_VA", "RETURN_VA", "SECTION_COMMENT_VA", "LINE_COMMENT_VA", 
+            "Format_code", "SPACE_FO", "RETURN_FO", "SECTION_COMMENT_FO", 
+            "LINE_COMMENT_FO" ]
 
     ruleNames = [ "Data", "Vars", "Format", "Integer", "Float", "DEC_DOT_DEC", 
                   "DEC_DIGIT", "DECIMAL", "SHARP_COMMENT", "EXCLM_COMMENT", 
@@ -560,17 +561,17 @@ class DynamoMRLexer(Lexer):
                   "START_CHAR", "NAME_CHAR", "ATM_NAME_CHAR", "ATM_TYPE_CHAR", 
                   "SIMPLE_NAME", "SPACE", "COMMENT", "SECTION_COMMENT", 
                   "LINE_COMMENT", "First_resid", "Sequence", "One_letter_code", 
-                  "Integer_D", "SPACE_D", "RETURN_D", "SECTION_COMMENT_D", 
-                  "LINE_COMMENT_D", "Index", "Group", "Segname_I", "Resid_I", 
+                  "Integer_DA", "SPACE_DA", "RETURN_DA", "SECTION_COMMENT_DA", 
+                  "LINE_COMMENT_DA", "Index", "Group", "Segname_I", "Resid_I", 
                   "Resname_I", "Atomname_I", "Segname_J", "Resid_J", "Resname_J", 
                   "Atomname_J", "Segname_K", "Resid_K", "Resname_K", "Atomname_K", 
                   "Segname_L", "Resid_L", "Resname_L", "Atomname_L", "Resid", 
                   "Resname", "A", "B", "C", "D", "DD", "FC", "S", "W", "D_Lo", 
                   "D_Hi", "Angle_Lo", "Angle_Hi", "Phase", "ObsJ", "Phi", 
                   "Psi", "Dphi", "Dpsi", "Dist", "S2", "Count", "Cs_count", 
-                  "Class", "SPACE_V", "RETURN_V", "SECTION_COMMENT_V", "LINE_COMMENT_V", 
-                  "Format_code", "SPACE_F", "RETURN_F", "SECTION_COMMENT_F", 
-                  "LINE_COMMENT_F" ]
+                  "Class", "SPACE_VA", "RETURN_VA", "SECTION_COMMENT_VA", 
+                  "LINE_COMMENT_VA", "Format_code", "SPACE_FO", "RETURN_FO", 
+                  "SECTION_COMMENT_FO", "LINE_COMMENT_FO" ]
 
     grammarFileName = "DynamoMRLexer.g4"
 

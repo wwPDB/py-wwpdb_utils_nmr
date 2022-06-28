@@ -856,11 +856,11 @@ class CnsMRParser ( Parser ):
                       "R_paren", "Colon", "Equ_op", "Lt_op", "Gt_op", "Leq_op", 
                       "Geq_op", "Neq_op", "Symbol_name", "SPACE", "COMMENT", 
                       "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
-                      "Abs", "Attr_properties", "Comparison_ops", "SPACE_ATTR", 
-                      "Averaging_methods", "Simple_name_A", "SPACE_AVER", 
-                      "Equ_op_P", "Potential_types", "Simple_name_P", "SPACE_POTE", 
-                      "Noe_analysis", "SPACE_ANAL", "Exclude", "Include", 
-                      "End_F", "Class_name", "Any_class", "SPACE_FLAG", 
+                      "Abs", "Attr_properties", "Comparison_ops", "SPACE_AP", 
+                      "Averaging_methods", "Simple_name_AM", "SPACE_AM", 
+                      "Equ_op_PT", "Potential_types", "Simple_name_PT", 
+                      "SPACE_PT", "Noe_analysis", "SPACE_NA", "Exclude", 
+                      "Include", "End_FL", "Class_name", "Any_class", "SPACE_FL", 
                       "R_paren_VE", "Equ_op_VE", "Add_op_VE", "Sub_op_VE", 
                       "Mul_op_VE", "Div_op_VE", "Exp_op_VE", "Comma_VE", 
                       "Integer_VE", "Real_VE", "Atom_properties_VE", "Abs_VE", 
@@ -1141,22 +1141,22 @@ class CnsMRParser ( Parser ):
     Abs=164
     Attr_properties=165
     Comparison_ops=166
-    SPACE_ATTR=167
+    SPACE_AP=167
     Averaging_methods=168
-    Simple_name_A=169
-    SPACE_AVER=170
-    Equ_op_P=171
+    Simple_name_AM=169
+    SPACE_AM=170
+    Equ_op_PT=171
     Potential_types=172
-    Simple_name_P=173
-    SPACE_POTE=174
+    Simple_name_PT=173
+    SPACE_PT=174
     Noe_analysis=175
-    SPACE_ANAL=176
+    SPACE_NA=176
     Exclude=177
     Include=178
-    End_F=179
+    End_FL=179
     Class_name=180
     Any_class=181
-    SPACE_FLAG=182
+    SPACE_FL=182
     R_paren_VE=183
     Equ_op_VE=184
     Add_op_VE=185
@@ -2477,8 +2477,8 @@ class CnsMRParser ( Parser ):
         def Average(self):
             return self.getToken(CnsMRParser.Average, 0)
 
-        def Simple_name_A(self):
-            return self.getToken(CnsMRParser.Simple_name_A, 0)
+        def Simple_name_AM(self):
+            return self.getToken(CnsMRParser.Simple_name_AM, 0)
 
         def Averaging_methods(self):
             return self.getToken(CnsMRParser.Averaging_methods, 0)
@@ -2546,8 +2546,8 @@ class CnsMRParser ( Parser ):
         def Potential(self):
             return self.getToken(CnsMRParser.Potential, 0)
 
-        def Simple_name_P(self):
-            return self.getToken(CnsMRParser.Simple_name_P, 0)
+        def Simple_name_PT(self):
+            return self.getToken(CnsMRParser.Simple_name_PT, 0)
 
         def Potential_types(self):
             return self.getToken(CnsMRParser.Potential_types, 0)
@@ -2661,7 +2661,7 @@ class CnsMRParser ( Parser ):
                 self.state = 307
                 self.match(CnsMRParser.Average)
                 self.state = 308
-                self.match(CnsMRParser.Simple_name_A)
+                self.match(CnsMRParser.Simple_name_AM)
                 self.state = 309
                 self.match(CnsMRParser.Averaging_methods)
                 pass
@@ -2864,7 +2864,7 @@ class CnsMRParser ( Parser ):
                 self.state = 373
                 self.match(CnsMRParser.Potential)
                 self.state = 374
-                self.match(CnsMRParser.Simple_name_P)
+                self.match(CnsMRParser.Simple_name_PT)
                 self.state = 375
                 self.match(CnsMRParser.Potential_types)
                 pass
@@ -4198,8 +4198,8 @@ class CnsMRParser ( Parser ):
         def Potential_types(self):
             return self.getToken(CnsMRParser.Potential_types, 0)
 
-        def Equ_op_P(self):
-            return self.getToken(CnsMRParser.Equ_op_P, 0)
+        def Equ_op_PT(self):
+            return self.getToken(CnsMRParser.Equ_op_PT, 0)
 
         def Print(self):
             return self.getToken(CnsMRParser.Print, 0)
@@ -4306,9 +4306,9 @@ class CnsMRParser ( Parser ):
                 self.state = 651
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_P:
+                if _la==CnsMRParser.Equ_op_PT:
                     self.state = 650
-                    self.match(CnsMRParser.Equ_op_P)
+                    self.match(CnsMRParser.Equ_op_PT)
 
 
                 self.state = 653
@@ -4481,8 +4481,8 @@ class CnsMRParser ( Parser ):
         def Potential_types(self):
             return self.getToken(CnsMRParser.Potential_types, 0)
 
-        def Equ_op_P(self):
-            return self.getToken(CnsMRParser.Equ_op_P, 0)
+        def Equ_op_PT(self):
+            return self.getToken(CnsMRParser.Equ_op_PT, 0)
 
         def Print(self):
             return self.getToken(CnsMRParser.Print, 0)
@@ -4624,9 +4624,9 @@ class CnsMRParser ( Parser ):
                 self.state = 709
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_P:
+                if _la==CnsMRParser.Equ_op_PT:
                     self.state = 708
-                    self.match(CnsMRParser.Equ_op_P)
+                    self.match(CnsMRParser.Equ_op_PT)
 
 
                 self.state = 711
@@ -4832,8 +4832,8 @@ class CnsMRParser ( Parser ):
         def Potential_types(self):
             return self.getToken(CnsMRParser.Potential_types, 0)
 
-        def Equ_op_P(self):
-            return self.getToken(CnsMRParser.Equ_op_P, 0)
+        def Equ_op_PT(self):
+            return self.getToken(CnsMRParser.Equ_op_PT, 0)
 
         def Print(self):
             return self.getToken(CnsMRParser.Print, 0)
@@ -4981,9 +4981,9 @@ class CnsMRParser ( Parser ):
                 self.state = 781
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_P:
+                if _la==CnsMRParser.Equ_op_PT:
                     self.state = 780
-                    self.match(CnsMRParser.Equ_op_P)
+                    self.match(CnsMRParser.Equ_op_PT)
 
 
                 self.state = 783
@@ -5976,8 +5976,8 @@ class CnsMRParser ( Parser ):
         def Potential_types(self):
             return self.getToken(CnsMRParser.Potential_types, 0)
 
-        def Equ_op_P(self):
-            return self.getToken(CnsMRParser.Equ_op_P, 0)
+        def Equ_op_PT(self):
+            return self.getToken(CnsMRParser.Equ_op_PT, 0)
 
         def Print(self):
             return self.getToken(CnsMRParser.Print, 0)
@@ -6180,9 +6180,9 @@ class CnsMRParser ( Parser ):
                 self.state = 951
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_P:
+                if _la==CnsMRParser.Equ_op_PT:
                     self.state = 950
-                    self.match(CnsMRParser.Equ_op_P)
+                    self.match(CnsMRParser.Equ_op_PT)
 
 
                 self.state = 953
@@ -6420,8 +6420,8 @@ class CnsMRParser ( Parser ):
         def Potential_types(self):
             return self.getToken(CnsMRParser.Potential_types, 0)
 
-        def Equ_op_P(self):
-            return self.getToken(CnsMRParser.Equ_op_P, 0)
+        def Equ_op_PT(self):
+            return self.getToken(CnsMRParser.Equ_op_PT, 0)
 
         def Print(self):
             return self.getToken(CnsMRParser.Print, 0)
@@ -6527,9 +6527,9 @@ class CnsMRParser ( Parser ):
                 self.state = 1032
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_P:
+                if _la==CnsMRParser.Equ_op_PT:
                     self.state = 1031
-                    self.match(CnsMRParser.Equ_op_P)
+                    self.match(CnsMRParser.Equ_op_PT)
 
 
                 self.state = 1034
@@ -6684,8 +6684,8 @@ class CnsMRParser ( Parser ):
         def Potential_types(self):
             return self.getToken(CnsMRParser.Potential_types, 0)
 
-        def Equ_op_P(self):
-            return self.getToken(CnsMRParser.Equ_op_P, 0)
+        def Equ_op_PT(self):
+            return self.getToken(CnsMRParser.Equ_op_PT, 0)
 
         def Print(self):
             return self.getToken(CnsMRParser.Print, 0)
@@ -6795,9 +6795,9 @@ class CnsMRParser ( Parser ):
                 self.state = 1079
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_P:
+                if _la==CnsMRParser.Equ_op_PT:
                     self.state = 1078
-                    self.match(CnsMRParser.Equ_op_P)
+                    self.match(CnsMRParser.Equ_op_PT)
 
 
                 self.state = 1081
@@ -6955,8 +6955,8 @@ class CnsMRParser ( Parser ):
         def Potential_types(self):
             return self.getToken(CnsMRParser.Potential_types, 0)
 
-        def Equ_op_P(self):
-            return self.getToken(CnsMRParser.Equ_op_P, 0)
+        def Equ_op_PT(self):
+            return self.getToken(CnsMRParser.Equ_op_PT, 0)
 
         def Print(self):
             return self.getToken(CnsMRParser.Print, 0)
@@ -7100,9 +7100,9 @@ class CnsMRParser ( Parser ):
                 self.state = 1132
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_P:
+                if _la==CnsMRParser.Equ_op_PT:
                     self.state = 1131
-                    self.match(CnsMRParser.Equ_op_P)
+                    self.match(CnsMRParser.Equ_op_PT)
 
 
                 self.state = 1134
@@ -8410,8 +8410,8 @@ class CnsMRParser ( Parser ):
         def Include(self):
             return self.getToken(CnsMRParser.Include, 0)
 
-        def End_F(self):
-            return self.getToken(CnsMRParser.End_F, 0)
+        def End_FL(self):
+            return self.getToken(CnsMRParser.End_FL, 0)
 
         def Exclude(self):
             return self.getToken(CnsMRParser.Exclude, 0)
@@ -8491,7 +8491,7 @@ class CnsMRParser ( Parser ):
                 _la = self._input.LA(1)
 
             self.state = 1384
-            self.match(CnsMRParser.End_F)
+            self.match(CnsMRParser.End_FL)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)

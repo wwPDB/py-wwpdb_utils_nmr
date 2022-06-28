@@ -1955,22 +1955,22 @@ class CnsMRLexer(Lexer):
     Abs = 164
     Attr_properties = 165
     Comparison_ops = 166
-    SPACE_ATTR = 167
+    SPACE_AP = 167
     Averaging_methods = 168
-    Simple_name_A = 169
-    SPACE_AVER = 170
-    Equ_op_P = 171
+    Simple_name_AM = 169
+    SPACE_AM = 170
+    Equ_op_PT = 171
     Potential_types = 172
-    Simple_name_P = 173
-    SPACE_POTE = 174
+    Simple_name_PT = 173
+    SPACE_PT = 174
     Noe_analysis = 175
-    SPACE_ANAL = 176
+    SPACE_NA = 176
     Exclude = 177
     Include = 178
-    End_F = 179
+    End_FL = 179
     Class_name = 180
     Any_class = 181
-    SPACE_FLAG = 182
+    SPACE_FL = 182
     R_paren_VE = 183
     Equ_op_VE = 184
     Add_op_VE = 185
@@ -2082,10 +2082,10 @@ class CnsMRLexer(Lexer):
             "L_paren", "R_paren", "Colon", "Equ_op", "Lt_op", "Gt_op", "Leq_op", 
             "Geq_op", "Neq_op", "Symbol_name", "SPACE", "COMMENT", "SECTION_COMMENT", 
             "LINE_COMMENT", "SET_VARIABLE", "Abs", "Attr_properties", "Comparison_ops", 
-            "SPACE_ATTR", "Averaging_methods", "Simple_name_A", "SPACE_AVER", 
-            "Equ_op_P", "Potential_types", "Simple_name_P", "SPACE_POTE", 
-            "Noe_analysis", "SPACE_ANAL", "Exclude", "Include", "End_F", 
-            "Class_name", "Any_class", "SPACE_FLAG", "R_paren_VE", "Equ_op_VE", 
+            "SPACE_AP", "Averaging_methods", "Simple_name_AM", "SPACE_AM", 
+            "Equ_op_PT", "Potential_types", "Simple_name_PT", "SPACE_PT", 
+            "Noe_analysis", "SPACE_NA", "Exclude", "Include", "End_FL", 
+            "Class_name", "Any_class", "SPACE_FL", "R_paren_VE", "Equ_op_VE", 
             "Add_op_VE", "Sub_op_VE", "Mul_op_VE", "Div_op_VE", "Exp_op_VE", 
             "Comma_VE", "Integer_VE", "Real_VE", "Atom_properties_VE", "Abs_VE", 
             "Acos_VE", "Asin_VE", "Cos_VE", "Decode_VE", "Encode_VE", "Exp_VE", 
@@ -2133,18 +2133,18 @@ class CnsMRLexer(Lexer):
                   "L_paren", "R_paren", "Colon", "Equ_op", "Lt_op", "Gt_op", 
                   "Leq_op", "Geq_op", "Neq_op", "Symbol_name", "SPACE", 
                   "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
-                  "Abs", "Attr_properties", "Comparison_ops", "SPACE_ATTR", 
-                  "Averaging_methods", "Simple_name_A", "SPACE_AVER", "Equ_op_P", 
-                  "Potential_types", "Simple_name_P", "SPACE_POTE", "Noe_analysis", 
-                  "SPACE_ANAL", "Exclude", "Include", "End_F", "Class_name", 
-                  "Any_class", "SPACE_FLAG", "R_paren_VE", "Equ_op_VE", 
-                  "Add_op_VE", "Sub_op_VE", "Mul_op_VE", "Div_op_VE", "Exp_op_VE", 
-                  "Comma_VE", "Integer_VE", "Real_VE", "Atom_properties_VE", 
-                  "Abs_VE", "Acos_VE", "Asin_VE", "Cos_VE", "Decode_VE", 
-                  "Encode_VE", "Exp_VE", "Gauss_VE", "Heavy_VE", "Int_VE", 
-                  "Log10_VE", "Log_VE", "Max_VE", "Maxw_VE", "Min_VE", "Mod_VE", 
-                  "Norm_VE", "Random_VE", "Sign_VE", "Sin_VE", "Sqrt_VE", 
-                  "Tan_VE", "Symbol_name_VE", "Simple_name_VE", "Double_quote_string_VE", 
+                  "Abs", "Attr_properties", "Comparison_ops", "SPACE_AP", 
+                  "Averaging_methods", "Simple_name_AM", "SPACE_AM", "Equ_op_PT", 
+                  "Potential_types", "Simple_name_PT", "SPACE_PT", "Noe_analysis", 
+                  "SPACE_NA", "Exclude", "Include", "End_FL", "Class_name", 
+                  "Any_class", "SPACE_FL", "R_paren_VE", "Equ_op_VE", "Add_op_VE", 
+                  "Sub_op_VE", "Mul_op_VE", "Div_op_VE", "Exp_op_VE", "Comma_VE", 
+                  "Integer_VE", "Real_VE", "Atom_properties_VE", "Abs_VE", 
+                  "Acos_VE", "Asin_VE", "Cos_VE", "Decode_VE", "Encode_VE", 
+                  "Exp_VE", "Gauss_VE", "Heavy_VE", "Int_VE", "Log10_VE", 
+                  "Log_VE", "Max_VE", "Maxw_VE", "Min_VE", "Mod_VE", "Norm_VE", 
+                  "Random_VE", "Sign_VE", "Sin_VE", "Sqrt_VE", "Tan_VE", 
+                  "Symbol_name_VE", "Simple_name_VE", "Double_quote_string_VE", 
                   "SPACE_VE", "L_paren_VF", "SPACE_VF", "L_paren_VS", "R_paren_VS", 
                   "Average_VS", "Element_VS", "Max_VS", "Min_VS", "Norm_VS", 
                   "Rms_VS", "Sum_VS", "Atom_properties_VS", "SPACE_VS", 

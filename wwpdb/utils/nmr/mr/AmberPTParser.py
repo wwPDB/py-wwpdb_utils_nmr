@@ -292,11 +292,11 @@ class AmberPTParser ( Parser ):
                       "SOLTY", "SOLVENT_POINTERS", "TITLE", "TREE_CHAIN_CLASSIFICATION", 
                       "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
                       "FORMAT", "SPACE", "LINE_COMMENT", "VERSION_STAMP", 
-                      "DATE", "Equ_op", "Version", "Date_time", "SPACE_V", 
-                      "FLAG_V", "Fortran_format_A", "Fortran_format_I", 
-                      "Fortran_format_E", "Simple_name", "SPACE_A", "FLAG_A", 
-                      "Integer", "SPACE_I", "FLAG_I", "Real", "SPACE_E", 
-                      "FLAG_E" ]
+                      "DATE", "Equ_op", "Version", "Date_time", "SPACE_VS", 
+                      "FLAG_VS", "Fortran_format_A", "Fortran_format_I", 
+                      "Fortran_format_E", "Simple_name", "SPACE_AA", "FLAG_AA", 
+                      "Integer", "SPACE_IA", "FLAG_IA", "Real", "SPACE_EA", 
+                      "FLAG_EA" ]
 
     RULE_amber_pt = 0
     RULE_version_statement = 1
@@ -432,20 +432,20 @@ class AmberPTParser ( Parser ):
     Equ_op=58
     Version=59
     Date_time=60
-    SPACE_V=61
-    FLAG_V=62
+    SPACE_VS=61
+    FLAG_VS=62
     Fortran_format_A=63
     Fortran_format_I=64
     Fortran_format_E=65
     Simple_name=66
-    SPACE_A=67
-    FLAG_A=68
+    SPACE_AA=67
+    FLAG_AA=68
     Integer=69
-    SPACE_I=70
-    FLAG_I=71
+    SPACE_IA=70
+    FLAG_IA=71
     Real=72
-    SPACE_E=73
-    FLAG_E=74
+    SPACE_EA=73
+    FLAG_EA=74
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -1081,8 +1081,8 @@ class AmberPTParser ( Parser ):
             else:
                 return self.getToken(AmberPTParser.Date_time, i)
 
-        def FLAG_V(self):
-            return self.getToken(AmberPTParser.FLAG_V, 0)
+        def FLAG_VS(self):
+            return self.getToken(AmberPTParser.FLAG_VS, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1132,7 +1132,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 168
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_V):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_VS):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1160,8 +1160,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_A(self):
-            return self.getToken(AmberPTParser.FLAG_A, 0)
+        def FLAG_AA(self):
+            return self.getToken(AmberPTParser.FLAG_AA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1209,7 +1209,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 178
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_A):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1237,8 +1237,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1286,7 +1286,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 188
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1314,8 +1314,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1363,7 +1363,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 198
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1391,8 +1391,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1440,7 +1440,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 208
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1468,8 +1468,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1517,7 +1517,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 218
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1545,8 +1545,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1594,7 +1594,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 228
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1622,8 +1622,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_A(self):
-            return self.getToken(AmberPTParser.FLAG_A, 0)
+        def FLAG_AA(self):
+            return self.getToken(AmberPTParser.FLAG_AA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1671,7 +1671,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 238
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_A):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1699,8 +1699,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1748,7 +1748,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 248
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1776,8 +1776,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1825,7 +1825,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 258
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1853,8 +1853,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1902,7 +1902,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 268
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1930,8 +1930,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -1979,7 +1979,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 278
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2007,8 +2007,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2056,7 +2056,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 288
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2084,8 +2084,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2133,7 +2133,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 298
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2161,8 +2161,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2210,7 +2210,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 308
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2238,8 +2238,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2287,7 +2287,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 318
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2315,8 +2315,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2364,7 +2364,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 328
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2392,8 +2392,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2441,7 +2441,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 338
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2469,8 +2469,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2518,7 +2518,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 348
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2546,8 +2546,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2595,7 +2595,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 358
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2623,8 +2623,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2672,7 +2672,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 368
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2700,8 +2700,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2749,7 +2749,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 378
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2777,8 +2777,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2826,7 +2826,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 388
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2854,8 +2854,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2903,7 +2903,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 398
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2931,8 +2931,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -2980,7 +2980,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 408
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3008,8 +3008,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3057,7 +3057,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 418
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3085,8 +3085,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3134,7 +3134,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 428
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3162,8 +3162,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3211,7 +3211,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 438
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3239,8 +3239,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3288,7 +3288,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 448
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3316,8 +3316,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3365,7 +3365,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 458
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3393,8 +3393,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3442,7 +3442,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 468
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3470,8 +3470,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3519,7 +3519,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 478
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3547,8 +3547,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3596,7 +3596,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 488
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3624,8 +3624,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3673,7 +3673,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 498
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3701,8 +3701,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3750,7 +3750,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 508
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3778,8 +3778,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3827,7 +3827,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 518
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3855,8 +3855,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3904,7 +3904,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 528
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3932,8 +3932,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -3981,7 +3981,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 538
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4009,8 +4009,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_A(self):
-            return self.getToken(AmberPTParser.FLAG_A, 0)
+        def FLAG_AA(self):
+            return self.getToken(AmberPTParser.FLAG_AA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -4058,7 +4058,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 548
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_A):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4086,8 +4086,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_A(self):
-            return self.getToken(AmberPTParser.FLAG_A, 0)
+        def FLAG_AA(self):
+            return self.getToken(AmberPTParser.FLAG_AA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -4135,7 +4135,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 558
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_A):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4163,8 +4163,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -4214,7 +4214,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 567
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4242,8 +4242,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -4291,7 +4291,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 577
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4319,8 +4319,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -4368,7 +4368,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 587
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4396,8 +4396,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -4445,7 +4445,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 597
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4473,8 +4473,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_E(self):
-            return self.getToken(AmberPTParser.FLAG_E, 0)
+        def FLAG_EA(self):
+            return self.getToken(AmberPTParser.FLAG_EA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -4522,7 +4522,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 607
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_E):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4550,8 +4550,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_I(self):
-            return self.getToken(AmberPTParser.FLAG_I, 0)
+        def FLAG_IA(self):
+            return self.getToken(AmberPTParser.FLAG_IA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -4599,7 +4599,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 617
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_I):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4627,8 +4627,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_A(self):
-            return self.getToken(AmberPTParser.FLAG_A, 0)
+        def FLAG_AA(self):
+            return self.getToken(AmberPTParser.FLAG_AA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -4676,7 +4676,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 627
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_A):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4704,8 +4704,8 @@ class AmberPTParser ( Parser ):
             return self.getTypedRuleContext(AmberPTParser.Format_functionContext,0)
 
 
-        def FLAG_A(self):
-            return self.getToken(AmberPTParser.FLAG_A, 0)
+        def FLAG_AA(self):
+            return self.getToken(AmberPTParser.FLAG_AA, 0)
 
         def EOF(self):
             return self.getToken(AmberPTParser.EOF, 0)
@@ -4753,7 +4753,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 637
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_A):
+            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

@@ -91,13 +91,13 @@ LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | 
 
 mode STR_ARRAY_MODE;
 
-R_brkt_A:		']' ' '* [\r\n]+;
+R_brkt_AA:		']' ' '* [\r\n]+;
 
-SECTION_COMMENT_A:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT_A:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* [\r\n]+ -> channel(HIDDEN);
+SECTION_COMMENT_AA:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT_AA:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* [\r\n]+ -> channel(HIDDEN);
 
-Simple_name_A:		SIMPLE_NAME;
+Simple_name_AA:		SIMPLE_NAME;
 
-SPACE_A:		[ \t]+ -> skip;
-RETURN_A:		[\r\n]+ -> popMode;
+SPACE_AA:		[ \t]+ -> skip;
+RETURN_AA:		[\r\n]+ -> popMode;
 

@@ -923,11 +923,11 @@ class GromacsPTParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by GromacsPTParser#system_statement.
     def exitSystem_statement(self, ctx: GromacsPTParser.System_statementContext):
-        if ctx.Simple_name_A(0):
+        if ctx.Simple_name_AA(0):
             title = []
             i = 0
-            while ctx.Simple_name_A(i):
-                title.append(str(ctx.Simple_name_A(i)))
+            while ctx.Simple_name_AA(i):
+                title.append(str(ctx.Simple_name_AA(i)))
                 i += 1
 
             self.__system = ' '.join(title)

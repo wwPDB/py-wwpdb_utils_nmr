@@ -275,6 +275,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
+    __warningInAtomSelection = ''
+
     reasonsForReParsing = None
 
     def __init__(self, verbose=True, log=sys.stdout,
@@ -613,6 +615,8 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'dist'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
+
         self.scale_a = None
 
     # Exit a parse tree produced by CnsMRParser#noe_assign.
@@ -954,6 +958,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'dihed'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx: CnsMRParser.Dihedral_assignContext):
@@ -1002,6 +1007,8 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
+                if len(self.__warningInAtomSelection) > 0:
+                    self.warningMessage += self.__warningInAtomSelection
                 return
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1220,6 +1227,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'plane'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
         if ctx.Weight():
             self.scale = self.getNumber_s(ctx.number_s())
@@ -1300,6 +1308,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'geo'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#harmonic_assign.
     def exitHarmonic_assign(self, ctx: CnsMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
@@ -1363,6 +1372,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'rdc'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#sani_assign.
     def exitSani_assign(self, ctx: CnsMRParser.Sani_assignContext):  # pylint: disable=unused-argument
@@ -1402,6 +1412,8 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
+                if len(self.__warningInAtomSelection) > 0:
+                    self.warningMessage += self.__warningInAtomSelection
                 return
 
             chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
@@ -1676,6 +1688,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'jcoup'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#coup_assign.
     def exitCoup_assign(self, ctx: CnsMRParser.Coup_assignContext):  # pylint: disable=unused-argument
@@ -1726,6 +1739,8 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a J-coupling (COUP)'):
+                if len(self.__warningInAtomSelection) > 0:
+                    self.warningMessage += self.__warningInAtomSelection
                 return
 
             for i in range(0, len(self.atomSelectionSet), 2):
@@ -1879,6 +1894,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'hvycs'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx: CnsMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
@@ -1909,6 +1925,8 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a carbon chemical shift (CARB)'):
+                if len(self.__warningInAtomSelection) > 0:
+                    self.warningMessage += self.__warningInAtomSelection
                 return
 
             dstFunc = {'ca_shift': ca_shift, 'cb_shift': cb_shift, 'weight': 1.0, 'potential': self.potential}
@@ -1960,6 +1978,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#carbon_shift_rcoil.
     def enterCarbon_shift_rcoil(self, ctx: CnsMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#carbon_shift_rcoil.
     def exitCarbon_shift_rcoil(self, ctx: CnsMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
@@ -2036,6 +2055,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'procs'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#observed.
     def exitObserved(self, ctx: CnsMRParser.ObservedContext):  # pylint: disable=unused-argument
@@ -2108,6 +2128,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#proton_shift_rcoil.
     def enterProton_shift_rcoil(self, ctx: CnsMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_rcoil.
     def exitProton_shift_rcoil(self, ctx: CnsMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
@@ -2145,6 +2166,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#proton_shift_anisotropy.
     def enterProton_shift_anisotropy(self, ctx: CnsMRParser.Proton_shift_anisotropyContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_anisotropy.
     def exitProton_shift_anisotropy(self, ctx: CnsMRParser.Proton_shift_anisotropyContext):
@@ -2155,6 +2177,8 @@ class CnsMRParserListener(ParseTreeListener):
         sc_or_bb = str(ctx.Simple_name(1))
 
         if not self.areUniqueCoordAtoms('a proton chemical shift (PROTON/ANIS)'):
+            if len(self.__warningInAtomSelection) > 0:
+                self.warningMessage += self.__warningInAtomSelection
             return
 
         dstFunc = {'co_or_cn': co_or_cn.lower(), 'is_cooh': is_cooh, 'sc_or_bb': sc_or_bb.lower()}
@@ -2193,6 +2217,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#proton_shift_amides.
     def enterProton_shift_amides(self, ctx: CnsMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_amides.
     def exitProton_shift_amides(self, ctx: CnsMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
@@ -2209,6 +2234,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#proton_shift_carbons.
     def enterProton_shift_carbons(self, ctx: CnsMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_carbons.
     def exitProton_shift_carbons(self, ctx: CnsMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
@@ -2225,6 +2251,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#proton_shift_nitrogens.
     def enterProton_shift_nitrogens(self, ctx: CnsMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_nitrogens.
     def exitProton_shift_nitrogens(self, ctx: CnsMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
@@ -2241,6 +2268,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#proton_shift_oxygens.
     def enterProton_shift_oxygens(self, ctx: CnsMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_oxygens.
     def exitProton_shift_oxygens(self, ctx: CnsMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
@@ -2257,6 +2285,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#proton_shift_ring_atoms.
     def enterProton_shift_ring_atoms(self, ctx: CnsMRParser.Proton_shift_ring_atomsContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_ring_atoms.
     def exitProton_shift_ring_atoms(self, ctx: CnsMRParser.Proton_shift_ring_atomsContext):
@@ -2270,6 +2299,8 @@ class CnsMRParserListener(ParseTreeListener):
             return
 
         if not self.areUniqueCoordAtoms('a proton chemical shift (PROTON/RING)'):
+            if len(self.__warningInAtomSelection) > 0:
+                self.warningMessage += self.__warningInAtomSelection
             return
 
         if len(self.atomSelectionSet) == 5:
@@ -2300,6 +2331,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#proton_shift_alphas_and_amides.
     def enterProton_shift_alphas_and_amides(self, ctx: CnsMRParser.Proton_shift_alphas_and_amidesContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_alphas_and_amides.
     def exitProton_shift_alphas_and_amides(self, ctx: CnsMRParser.Proton_shift_alphas_and_amidesContext):  # pylint: disable=unused-argument
@@ -2346,6 +2378,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'rama'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#conf_assign.
     def exitConf_assign(self, ctx: CnsMRParser.Conf_assignContext):  # pylint: disable=unused-argument
@@ -2353,6 +2386,8 @@ class CnsMRParserListener(ParseTreeListener):
             return
 
         if not self.areUniqueCoordAtoms('a conformation database (CONF)'):
+            if len(self.__warningInAtomSelection) > 0:
+                self.warningMessage += self.__warningInAtomSelection
             return
 
         for i in range(0, len(self.atomSelectionSet), 2):
@@ -2470,6 +2505,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'diff'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#dani_assign.
     def exitDani_assign(self, ctx: CnsMRParser.Dani_assignContext):  # pylint: disable=unused-argument
@@ -2504,6 +2540,8 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a diffusion anisotropy (DANI)', XPLOR_ORIGIN_AXIS_COLS):
+                if len(self.__warningInAtomSelection) > 0:
+                    self.warningMessage += self.__warningInAtomSelection
                 return
 
             chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
@@ -3122,6 +3160,9 @@ class CnsMRParserListener(ParseTreeListener):
         cur_subtype_w_axis = self.__cur_subtype in ('rdc', 'diff')
 
         if _factor['atom_id'][0] is not None:
+
+            foundCompId = False
+
             for chainId in _factor['chain_id']:
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 for seqId in _factor['seq_id']:
@@ -3145,6 +3186,8 @@ class CnsMRParserListener(ParseTreeListener):
 
                     if compId is None:
                         continue
+
+                    foundCompId = True
 
                     if not cur_subtype_w_axis:
                         updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
@@ -3292,6 +3335,178 @@ class CnsMRParserListener(ParseTreeListener):
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 
+            if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1:
+
+                for chainId in [ps['auth_chain_id'] for ps in self.__polySeq]:
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                    for seqId in _factor['seq_id']:
+                        seqId = self.getRealSeqId(ps, seqId)
+
+                        if ps is not None and seqId in ps['auth_seq_id']:
+                            compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                        else:
+                            compId = None
+
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                        if compId is None and seqKey in self.__authToLabelSeq:
+                            _, seqId = self.__authToLabelSeq[seqKey]
+                            if ps is not None and seqId in ps['auth_seq_id']:
+                                compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                        if compId is None and coordAtomSite is not None and ps is not None and seqKey[1] in ps['auth_seq_id']:
+                            compId = ps['comp_id'][ps['auth_seq_id'].index(seqKey[1])]
+
+                        if compId is None:
+                            continue
+
+                        if not cur_subtype_w_axis:
+                            updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
+
+                        for atomId in _factor['atom_id']:
+                            if cur_subtype_w_axis:
+                                if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                                    continue
+                                updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
+
+                            origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
+
+                            atomId = atomId.upper()
+
+                            atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if 'alt_atom_id' in _factor and details is not None:
+                                atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+
+                            if details is not None:
+                                _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
+                                if _atomId != atomId:
+                                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
+
+                            # @see: https://bmrb.io/ref_info/atom_nom.tbl
+                            if self.__trust_bmrb_ref_info:
+                                pass
+
+                            # @see: https://bmrb.io/macro/files/xplor_to_iupac.Nov140620
+                            else:
+                                if compId == 'ASN':
+                                    if atomId == 'HD21':
+                                        _atomId = atomId[:-1] + '2'
+                                        if self.__nefT.validate_comp_atom(compId, _atomId):
+                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                                    elif atomId == 'HD22':
+                                        _atomId = atomId[:-1] + '1'
+                                        if self.__nefT.validate_comp_atom(compId, _atomId):
+                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                                elif compId == 'GLN':
+                                    if atomId == 'HE21':
+                                        _atomId = atomId[:-1] + '2'
+                                        if self.__nefT.validate_comp_atom(compId, _atomId):
+                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                                    elif atomId == 'HE22':
+                                        _atomId = atomId[:-1] + '1'
+                                        if self.__nefT.validate_comp_atom(compId, _atomId):
+                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+
+                            for _atomId in atomIds:
+                                ccdCheck = not cifCheck
+
+                                if cifCheck:
+                                    _atom = None
+                                    if coordAtomSite is not None:
+                                        if _atomId in coordAtomSite['atom_id']:
+                                            _atom = {}
+                                            _atom['comp_id'] = coordAtomSite['comp_id']
+                                            _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['atom_id'].index(_atomId)]
+                                        elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
+                                            _atom = {}
+                                            _atom['comp_id'] = coordAtomSite['comp_id']
+                                            _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
+                                            self.__authAtomId = 'auth_atom_id'
+                                        elif self.__preferAuthSeq:
+                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                            if _coordAtomSite is not None:
+                                                if _atomId in _coordAtomSite['atom_id']:
+                                                    _atom = {}
+                                                    _atom['comp_id'] = _coordAtomSite['comp_id']
+                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                    self.__preferAuthSeq = False
+                                                    self.__authSeqId = 'label_seq_id'
+                                                    seqKey = _seqKey
+                                                elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                                    _atom = {}
+                                                    _atom['comp_id'] = _coordAtomSite['comp_id']
+                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                    self.__preferAuthSeq = False
+                                                    self.__authSeqId = 'label_seq_id'
+                                                    self.__authAtomId = 'auth_atom_id'
+                                                    seqKey = _seqKey
+
+                                    elif self.__preferAuthSeq:
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        if _coordAtomSite is not None:
+                                            if _atomId in _coordAtomSite['atom_id']:
+                                                _atom = {}
+                                                _atom['comp_id'] = _coordAtomSite['comp_id']
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                seqKey = _seqKey
+                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                                _atom = {}
+                                                _atom['comp_id'] = _coordAtomSite['comp_id']
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                self.__preferAuthSeq = False
+                                                self.__authSeqId = 'label_seq_id'
+                                                self.__authAtomId = 'auth_atom_id'
+                                                seqKey = _seqKey
+
+                                    if _atom is not None:
+                                        _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                        if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
+                                           and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
+                                    else:
+                                        ccdCheck = True
+
+                                if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                    if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
+                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                        if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                            if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+                                                if self.__cur_subtype != 'plane':
+                                                    checked = False
+                                                    if seqId == 1 and _atomId in ('H', 'HN'):
+                                                        if 'H1' in coordAtomSite['atom_id']:
+                                                            checked = True
+                                                    if _atomId[0] == 'H':
+                                                        ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                                                    if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                                                        if ccb is not None:
+                                                            bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
+                                                            if bondedTo[0] in ('N', 'O', 'S'):
+                                                                checked = True
+                                                    if not checked:
+                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                        elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
+                                            if self.__reasons is None and seqKey in self.__authToLabelSeq:
+                                                _, _seqId = self.__authToLabelSeq[seqKey]
+                                                if ps is not None and _seqId in ps['auth_seq_id']:
+                                                    _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                                                    if self.__ccU.updateChemCompDict(_compId):
+                                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                                        if cca is not None:
+                                                            if self.reasonsForReParsing is None:
+                                                                self.reasonsForReParsing = {}
+                                                            if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                                self.reasonsForReParsing['label_seq_scheme'] = True
+                                            if cifCheck and self.__cur_subtype != 'plane':
+                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+
         if 'atom_ids' in _factor:
             del _factor['atom_ids']
 
@@ -3316,8 +3531,11 @@ class CnsMRParserListener(ParseTreeListener):
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
             if self.__cur_subtype != 'plane':
-                if self.__hasCoord:
+                if cifCheck:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The {clauseName} has no effect for a factor {__factor}.\n"
+                else:
+                    self.__warningInAtomSelection += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}.\n"
             else:
                 self.warningMessage += f"[Atom nomenclature mismatch] {self.__getCurrentRestraint()}"\
@@ -5146,6 +5364,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.stackVflc = []
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#vector_statement.
     def exitVector_statement(self, ctx: CnsMRParser.Vector_statementContext):  # pylint: disable=unused-argument
@@ -5327,6 +5546,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'geo'
 
         self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
 
     # Exit a parse tree produced by CnsMRParser#patch_statement.
     def exitPatch_statement(self, ctx: CnsMRParser.Patch_statementContext):  # pylint: disable=unused-argument

@@ -18,7 +18,7 @@ except ImportError:
                                            MAX_ERR_LINENUM_REPORT)
 
 
-expecting_pattern = re.compile(r"(.*) expecting \\{(.*)}")
+expecting_pattern = re.compile(r"(.*) expecting \{(.*)\}")
 substitution_pattern = re.compile(r"_(A[APR]|[BIQR][AP]|CM|[DE]A|FO?|V[AS]|Lp)$")
 
 
@@ -68,9 +68,15 @@ class ParserErrorListener(ErrorListener):
         if 'expecting' in msg:
             g = expecting_pattern.search(msg).groups()
             terms = g[1].split(', ')
+            _terms = []
             for t in terms:
-                t = substitution_pattern.sub('', t)
-            msg = g[0] + 'expecting {' + ', '.join(terms) + '}'
+                if t.startswith("'"):
+                    _t = "'" + substitution_pattern.sub('', t.strip("'")) + "'"
+                else:
+                    _t = substitution_pattern.sub('', t)
+                _terms.append(_t)
+
+            msg = g[0] + ' expecting {' + ', '.join(_terms) + '}'
 
         _dict = {'file_path': self.__filePath,
                  'line_number': line,

@@ -85,7 +85,7 @@ dihedral_angle_restraint:
 rdc_restraint:
 	Sanisotropy sani_statement* End |
 	(Xdipolar | Dipolar) xdip_statement* End |
-	VectorAngle vean_statement* End |
+	VeAngle vean_statement* End |
 	Tensor tenso_statement* End |
 	Anisotropy anis_statement* End;
 
@@ -750,7 +750,7 @@ factor:
 	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name) |
 	factor Saround number_f |
 	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name) |
-	Store_1 | Store_2 | Store_3 | Store_4 | Store_5 | Store_6 | Store_7 | Store_8 | Store_9 |
+	Store1 | Store2 | Store3 | Store4 | Store5 | Store6 | Store7 | Store8 | Store9 |
 	Tag |
 	Donor | Acceptor;
 

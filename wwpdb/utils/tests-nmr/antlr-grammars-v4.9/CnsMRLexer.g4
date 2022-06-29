@@ -335,15 +335,15 @@ Resname:		R E S N A? M? E?;			// Residue_names | Residue_name [ : Residue_name ]
 Saround:		S A R O U? N? D?;			// Real (factor as subject)
 SegIdentifier:		S E G I D? E? N? T? I? F? I? E? R?;	// Segment_names | Segment_name [ : Segment_name ]
 Sfbox:			S F B O X;				// real real real real real real
-Store_1:		S T O R E '1';
-Store_2:		S T O R E '2';
-Store_3:		S T O R E '3';
-Store_4:		S T O R E '4';
-Store_5:		S T O R E '5';
-Store_6:		S T O R E '6';
-Store_7:		S T O R E '7';
-Store_8:		S T O R E '8';
-Store_9:		S T O R E '9';
+Store1:			S T O R E '1';
+Store2:			S T O R E '2';
+Store3:			S T O R E '3';
+Store4:			S T O R E '4';
+Store5:			S T O R E '5';
+Store6:			S T O R E '6';
+Store7:			S T O R E '7';
+Store8:			S T O R E '8';
+Store9:			S T O R E '9';
 Tag:			T A G;
 
 /* Vector statement - Syntax

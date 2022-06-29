@@ -845,20 +845,19 @@ class CnsMRParser ( Parser ):
                       "ByGroup", "ByRes", "Chemical", "Fbox", "Hydrogen", 
                       "Id", "Known", "Name", "NONE", "Point", "Cut", "Previous", 
                       "Pseudo", "Residue", "Resname", "Saround", "SegIdentifier", 
-                      "Sfbox", "Store_1", "Store_2", "Store_3", "Store_4", 
-                      "Store_5", "Store_6", "Store_7", "Store_8", "Store_9", 
-                      "Tag", "Vector", "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", 
-                      "Patch", "Reference", "Nil", "For", "Loop", "Tail", 
-                      "Head", "Or_op", "And_op", "Not_op", "Comma", "Complex", 
-                      "Integer", "Logical", "Real", "Double_quote_string", 
-                      "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                      "Simple_name", "Simple_names", "Integers", "L_paren", 
-                      "R_paren", "Colon", "Equ_op", "Lt_op", "Gt_op", "Leq_op", 
-                      "Geq_op", "Neq_op", "Symbol_name", "SPACE", "COMMENT", 
-                      "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
-                      "Abs", "Attr_properties", "Comparison_ops", "SPACE_AP", 
-                      "Averaging_methods", "Simple_name_AM", "SPACE_AM", 
-                      "Equ_op_PT", "Potential_types", "Simple_name_PT", 
+                      "Sfbox", "Store1", "Store2", "Store3", "Store4", "Store5", 
+                      "Store6", "Store7", "Store8", "Store9", "Tag", "Vector", 
+                      "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", "Patch", 
+                      "Reference", "Nil", "For", "Loop", "Tail", "Head", 
+                      "Or_op", "And_op", "Not_op", "Comma", "Complex", "Integer", 
+                      "Logical", "Real", "Double_quote_string", "SHARP_COMMENT", 
+                      "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", "Simple_names", 
+                      "Integers", "L_paren", "R_paren", "Colon", "Equ_op", 
+                      "Lt_op", "Gt_op", "Leq_op", "Geq_op", "Neq_op", "Symbol_name", 
+                      "SPACE", "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
+                      "SET_VARIABLE", "Abs", "Attr_properties", "Comparison_ops", 
+                      "SPACE_AP", "Averaging_methods", "Simple_name_AM", 
+                      "SPACE_AM", "Equ_op_PT", "Potential_types", "Simple_name_PT", 
                       "SPACE_PT", "Noe_analysis", "SPACE_NA", "Exclude", 
                       "Include", "End_FL", "Class_name", "Any_class", "SPACE_FL", 
                       "R_paren_VE", "Equ_op_VE", "Add_op_VE", "Sub_op_VE", 
@@ -1086,15 +1085,15 @@ class CnsMRParser ( Parser ):
     Saround=109
     SegIdentifier=110
     Sfbox=111
-    Store_1=112
-    Store_2=113
-    Store_3=114
-    Store_4=115
-    Store_5=116
-    Store_6=117
-    Store_7=118
-    Store_8=119
-    Store_9=120
+    Store1=112
+    Store2=113
+    Store3=114
+    Store4=115
+    Store5=116
+    Store6=117
+    Store7=118
+    Store8=119
+    Store9=120
     Tag=121
     Vector=122
     Do_Lp=123
@@ -7594,32 +7593,32 @@ class CnsMRParser ( Parser ):
         def Sfbox(self):
             return self.getToken(CnsMRParser.Sfbox, 0)
 
-        def Store_1(self):
-            return self.getToken(CnsMRParser.Store_1, 0)
+        def Store1(self):
+            return self.getToken(CnsMRParser.Store1, 0)
 
-        def Store_2(self):
-            return self.getToken(CnsMRParser.Store_2, 0)
+        def Store2(self):
+            return self.getToken(CnsMRParser.Store2, 0)
 
-        def Store_3(self):
-            return self.getToken(CnsMRParser.Store_3, 0)
+        def Store3(self):
+            return self.getToken(CnsMRParser.Store3, 0)
 
-        def Store_4(self):
-            return self.getToken(CnsMRParser.Store_4, 0)
+        def Store4(self):
+            return self.getToken(CnsMRParser.Store4, 0)
 
-        def Store_5(self):
-            return self.getToken(CnsMRParser.Store_5, 0)
+        def Store5(self):
+            return self.getToken(CnsMRParser.Store5, 0)
 
-        def Store_6(self):
-            return self.getToken(CnsMRParser.Store_6, 0)
+        def Store6(self):
+            return self.getToken(CnsMRParser.Store6, 0)
 
-        def Store_7(self):
-            return self.getToken(CnsMRParser.Store_7, 0)
+        def Store7(self):
+            return self.getToken(CnsMRParser.Store7, 0)
 
-        def Store_8(self):
-            return self.getToken(CnsMRParser.Store_8, 0)
+        def Store8(self):
+            return self.getToken(CnsMRParser.Store8, 0)
 
-        def Store_9(self):
-            return self.getToken(CnsMRParser.Store_9, 0)
+        def Store9(self):
+            return self.getToken(CnsMRParser.Store9, 0)
 
         def Tag(self):
             return self.getToken(CnsMRParser.Tag, 0)
@@ -8090,47 +8089,47 @@ class CnsMRParser ( Parser ):
 
             elif la_ == 24:
                 self.state = 1333
-                self.match(CnsMRParser.Store_1)
+                self.match(CnsMRParser.Store1)
                 pass
 
             elif la_ == 25:
                 self.state = 1334
-                self.match(CnsMRParser.Store_2)
+                self.match(CnsMRParser.Store2)
                 pass
 
             elif la_ == 26:
                 self.state = 1335
-                self.match(CnsMRParser.Store_3)
+                self.match(CnsMRParser.Store3)
                 pass
 
             elif la_ == 27:
                 self.state = 1336
-                self.match(CnsMRParser.Store_4)
+                self.match(CnsMRParser.Store4)
                 pass
 
             elif la_ == 28:
                 self.state = 1337
-                self.match(CnsMRParser.Store_5)
+                self.match(CnsMRParser.Store5)
                 pass
 
             elif la_ == 29:
                 self.state = 1338
-                self.match(CnsMRParser.Store_6)
+                self.match(CnsMRParser.Store6)
                 pass
 
             elif la_ == 30:
                 self.state = 1339
-                self.match(CnsMRParser.Store_7)
+                self.match(CnsMRParser.Store7)
                 pass
 
             elif la_ == 31:
                 self.state = 1340
-                self.match(CnsMRParser.Store_8)
+                self.match(CnsMRParser.Store8)
                 pass
 
             elif la_ == 32:
                 self.state = 1341
-                self.match(CnsMRParser.Store_9)
+                self.match(CnsMRParser.Store9)
                 pass
 
             elif la_ == 33:

@@ -1,6 +1,6 @@
 /*
  AMBER MR (Magnetic Restraint) parser grammar for ANTLR v4.
- Copyright 2021 Masashi Yokochi
+ Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -60,7 +60,7 @@ restraint_statement:
 restraint_factor:
 	(IAT | IGR1 | IGR2 | IGR3 | IGR4 | IGR5 | IGR6 | IGR7 | IGR8) Equ_op_IA (Integers | MultiplicativeInt) (Comma_IA | End_IA) |
 	(RSTWT | RJCOEF) Equ_op_RA (Reals | MultiplicativeReal) (Comma_RA | End_RA) |
-	RESTRAINT Equ_op L_QUOT
+	RESTRAINT Equ_op L_quot
 		(distance_rst_func_call |
 		angle_rst_func_call |
 		torsion_rst_func_call |
@@ -69,7 +69,7 @@ restraint_factor:
 		coordinate2_rst_func_call |
 		coordinate3_rst_func_call |
 		coordinate4_rst_func_call)
-	R_QUOT Comma? |
+	R_quot Comma? |
 	(ATNAM_Lp | GRNAM1_Lp | GRNAM2_Lp | GRNAM3_Lp | GRNAM4_Lp | GRNAM5_Lp | GRNAM6_Lp | GRNAM7_Lp | GRNAM8_Lp) Decimal_AP R_paren_AP Equ_op_AP Qstring_AP Comma? |
 	(ATNAM | GRNAM1 | GRNAM2 | GRNAM3 | GRNAM4 | GRNAM5 | GRNAM6 | GRNAM7 | GRNAM8) Equ_op_QA Qstrings (Comma_QA | End_QA) |
 	(IRESID | IRSTYP | IALTD | IMULT | OUTXYZ | IR6 | IFNTYP) Equ_op_BP BoolInt Comma? |

@@ -520,7 +520,7 @@ class AmberMRParser ( Parser ):
                       "SIGMA13", "SIGMA22", "SIGMA23", "CCUT", "Comma", 
                       "SMCLN_COMMENT", "COMMENT", "Logical", "L_paren", 
                       "R_paren", "L_brace", "R_brace", "L_brakt", "R_brakt", 
-                      "Equ_op", "L_QUOT", "SPACE", "SECTION_COMMENT", "Any_name", 
+                      "Equ_op", "L_quot", "SPACE", "SECTION_COMMENT", "Any_name", 
                       "SPACE_CM", "RETURN_CM", "Equ_op_IP", "L_paren_IP", 
                       "Integer", "SPACE_IP", "Equ_op_RP", "L_paren_RP", 
                       "Real", "SPACE_RP", "Equ_op_BP", "BoolInt", "SPACE_BP", 
@@ -536,7 +536,7 @@ class AmberMRParser ( Parser ):
                       "ANGLE_F", "TORSION_F", "COORDINATE_F", "PLANE_F", 
                       "COM_F", "Integer_F", "Real_F", "Ambmask_F", "Comma_F", 
                       "L_paren_F", "R_paren_F", "L_brace_F", "R_brace_F", 
-                      "L_brakt_F", "R_brakt_F", "R_QUOT", "SPACE_F" ]
+                      "L_brakt_F", "R_brakt_F", "R_quot", "SPACE_F" ]
 
     RULE_amber_mr = 0
     RULE_comment = 1
@@ -731,7 +731,7 @@ class AmberMRParser ( Parser ):
     L_brakt=146
     R_brakt=147
     Equ_op=148
-    L_QUOT=149
+    L_quot=149
     SPACE=150
     SECTION_COMMENT=151
     Any_name=152
@@ -803,7 +803,7 @@ class AmberMRParser ( Parser ):
     R_brace_F=218
     L_brakt_F=219
     R_brakt_F=220
-    R_QUOT=221
+    R_quot=221
     SPACE_F=222
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
@@ -1495,11 +1495,11 @@ class AmberMRParser ( Parser ):
         def Equ_op(self):
             return self.getToken(AmberMRParser.Equ_op, 0)
 
-        def L_QUOT(self):
-            return self.getToken(AmberMRParser.L_QUOT, 0)
+        def L_quot(self):
+            return self.getToken(AmberMRParser.L_quot, 0)
 
-        def R_QUOT(self):
-            return self.getToken(AmberMRParser.R_QUOT, 0)
+        def R_quot(self):
+            return self.getToken(AmberMRParser.R_quot, 0)
 
         def distance_rst_func_call(self):
             return self.getTypedRuleContext(AmberMRParser.Distance_rst_func_callContext,0)
@@ -1833,7 +1833,7 @@ class AmberMRParser ( Parser ):
                 self.state = 130
                 self.match(AmberMRParser.Equ_op)
                 self.state = 131
-                self.match(AmberMRParser.L_QUOT)
+                self.match(AmberMRParser.L_quot)
                 self.state = 140
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,10,self._ctx)
@@ -1879,7 +1879,7 @@ class AmberMRParser ( Parser ):
 
 
                 self.state = 142
-                self.match(AmberMRParser.R_QUOT)
+                self.match(AmberMRParser.R_quot)
                 self.state = 144
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)

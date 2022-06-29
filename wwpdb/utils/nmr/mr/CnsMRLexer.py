@@ -1900,15 +1900,15 @@ class CnsMRLexer(Lexer):
     Saround = 109
     SegIdentifier = 110
     Sfbox = 111
-    Store_1 = 112
-    Store_2 = 113
-    Store_3 = 114
-    Store_4 = 115
-    Store_5 = 116
-    Store_6 = 117
-    Store_7 = 118
-    Store_8 = 119
-    Store_9 = 120
+    Store1 = 112
+    Store2 = 113
+    Store3 = 114
+    Store4 = 115
+    Store5 = 116
+    Store6 = 117
+    Store7 = 118
+    Store8 = 119
+    Store9 = 120
     Tag = 121
     Vector = 122
     Do_Lp = 123
@@ -2072,8 +2072,8 @@ class CnsMRLexer(Lexer):
             "Flags", "All", "Around", "Atom", "Attribute", "BondedTo", "ByGroup", 
             "ByRes", "Chemical", "Fbox", "Hydrogen", "Id", "Known", "Name", 
             "NONE", "Point", "Cut", "Previous", "Pseudo", "Residue", "Resname", 
-            "Saround", "SegIdentifier", "Sfbox", "Store_1", "Store_2", "Store_3", 
-            "Store_4", "Store_5", "Store_6", "Store_7", "Store_8", "Store_9", 
+            "Saround", "SegIdentifier", "Sfbox", "Store1", "Store2", "Store3", 
+            "Store4", "Store5", "Store6", "Store7", "Store8", "Store9", 
             "Tag", "Vector", "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", 
             "Patch", "Reference", "Nil", "For", "Loop", "Tail", "Head", 
             "Or_op", "And_op", "Not_op", "Comma", "Complex", "Integer", 
@@ -2120,32 +2120,32 @@ class CnsMRLexer(Lexer):
                   "ByRes", "Chemical", "Fbox", "Hydrogen", "Id", "Known", 
                   "Name", "NONE", "Point", "Cut", "Previous", "Pseudo", 
                   "Residue", "Resname", "Saround", "SegIdentifier", "Sfbox", 
-                  "Store_1", "Store_2", "Store_3", "Store_4", "Store_5", 
-                  "Store_6", "Store_7", "Store_8", "Store_9", "Tag", "Vector", 
-                  "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", "Patch", 
-                  "Reference", "Nil", "For", "Loop", "Tail", "Head", "Or_op", 
-                  "And_op", "Not_op", "Comma", "Complex", "Integer", "Logical", 
-                  "Real", "Double_quote_string", "DEC_DOT_DEC", "DEC_DIGIT", 
-                  "DECIMAL", "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                  "Simple_name", "Simple_names", "Integers", "WILDCARD", 
-                  "ALPHA", "ALPHA_NUM", "START_CHAR", "NAME_CHAR", "ATM_NAME_CHAR", 
-                  "ATM_TYPE_CHAR", "SIMPLE_NAME", "POST_WC_CHAR", "SYMBOL_NAME", 
-                  "L_paren", "R_paren", "Colon", "Equ_op", "Lt_op", "Gt_op", 
-                  "Leq_op", "Geq_op", "Neq_op", "Symbol_name", "SPACE", 
-                  "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
-                  "Abs", "Attr_properties", "Comparison_ops", "SPACE_AP", 
-                  "Averaging_methods", "Simple_name_AM", "SPACE_AM", "Equ_op_PT", 
-                  "Potential_types", "Simple_name_PT", "SPACE_PT", "Noe_analysis", 
-                  "SPACE_NA", "Exclude", "Include", "End_FL", "Class_name", 
-                  "Any_class", "SPACE_FL", "R_paren_VE", "Equ_op_VE", "Add_op_VE", 
-                  "Sub_op_VE", "Mul_op_VE", "Div_op_VE", "Exp_op_VE", "Comma_VE", 
-                  "Integer_VE", "Real_VE", "Atom_properties_VE", "Abs_VE", 
-                  "Acos_VE", "Asin_VE", "Cos_VE", "Decode_VE", "Encode_VE", 
-                  "Exp_VE", "Gauss_VE", "Heavy_VE", "Int_VE", "Log10_VE", 
-                  "Log_VE", "Max_VE", "Maxw_VE", "Min_VE", "Mod_VE", "Norm_VE", 
-                  "Random_VE", "Sign_VE", "Sin_VE", "Sqrt_VE", "Tan_VE", 
-                  "Symbol_name_VE", "Simple_name_VE", "Double_quote_string_VE", 
-                  "SPACE_VE", "L_paren_VF", "SPACE_VF", "L_paren_VS", "R_paren_VS", 
+                  "Store1", "Store2", "Store3", "Store4", "Store5", "Store6", 
+                  "Store7", "Store8", "Store9", "Tag", "Vector", "Do_Lp", 
+                  "Identify_Lp", "Show", "Evaluate_Lp", "Patch", "Reference", 
+                  "Nil", "For", "Loop", "Tail", "Head", "Or_op", "And_op", 
+                  "Not_op", "Comma", "Complex", "Integer", "Logical", "Real", 
+                  "Double_quote_string", "DEC_DOT_DEC", "DEC_DIGIT", "DECIMAL", 
+                  "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", 
+                  "Simple_names", "Integers", "WILDCARD", "ALPHA", "ALPHA_NUM", 
+                  "START_CHAR", "NAME_CHAR", "ATM_NAME_CHAR", "ATM_TYPE_CHAR", 
+                  "SIMPLE_NAME", "POST_WC_CHAR", "SYMBOL_NAME", "L_paren", 
+                  "R_paren", "Colon", "Equ_op", "Lt_op", "Gt_op", "Leq_op", 
+                  "Geq_op", "Neq_op", "Symbol_name", "SPACE", "COMMENT", 
+                  "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", "Abs", 
+                  "Attr_properties", "Comparison_ops", "SPACE_AP", "Averaging_methods", 
+                  "Simple_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
+                  "Simple_name_PT", "SPACE_PT", "Noe_analysis", "SPACE_NA", 
+                  "Exclude", "Include", "End_FL", "Class_name", "Any_class", 
+                  "SPACE_FL", "R_paren_VE", "Equ_op_VE", "Add_op_VE", "Sub_op_VE", 
+                  "Mul_op_VE", "Div_op_VE", "Exp_op_VE", "Comma_VE", "Integer_VE", 
+                  "Real_VE", "Atom_properties_VE", "Abs_VE", "Acos_VE", 
+                  "Asin_VE", "Cos_VE", "Decode_VE", "Encode_VE", "Exp_VE", 
+                  "Gauss_VE", "Heavy_VE", "Int_VE", "Log10_VE", "Log_VE", 
+                  "Max_VE", "Maxw_VE", "Min_VE", "Mod_VE", "Norm_VE", "Random_VE", 
+                  "Sign_VE", "Sin_VE", "Sqrt_VE", "Tan_VE", "Symbol_name_VE", 
+                  "Simple_name_VE", "Double_quote_string_VE", "SPACE_VE", 
+                  "L_paren_VF", "SPACE_VF", "L_paren_VS", "R_paren_VS", 
                   "Average_VS", "Element_VS", "Max_VS", "Min_VS", "Norm_VS", 
                   "Rms_VS", "Sum_VS", "Atom_properties_VS", "SPACE_VS", 
                   "L_paren_CF", "R_paren_CF", "In_CF", "Integer_CF", "Real_CF", 

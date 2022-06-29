@@ -1,6 +1,6 @@
 /*
  AMBER MR (Magnetic Restraint) lexer grammar for ANTLR v4.10 or later
- Copyright 2021 Masashi Yokochi
+ Copyright 2022 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -382,7 +382,7 @@ L_brakt:		'[';
 R_brakt:		']';
 Equ_op:			'=';
 
-L_QUOT:			'"' -> pushMode(FUNC_CALL_MODE);
+L_quot:			'"' -> pushMode(FUNC_CALL_MODE);
 SPACE:			[ \t\r\n]+ -> skip;
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+) ' '* [\r\n]+ -> channel(HIDDEN);
 
@@ -536,7 +536,7 @@ R_brace_F:		'}';
 L_brakt_F:		'[';
 R_brakt_F:		']';
 
-R_QUOT:			'"' -> popMode;
+R_quot:			'"' -> popMode;
 
 SPACE_F:		[ \t\r\n]+ -> skip;
 

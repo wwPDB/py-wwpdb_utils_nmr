@@ -1005,7 +1005,7 @@ class AmberMRLexer(Lexer):
     L_brakt = 146
     R_brakt = 147
     Equ_op = 148
-    L_QUOT = 149
+    L_quot = 149
     SPACE = 150
     SECTION_COMMENT = 151
     Any_name = 152
@@ -1077,7 +1077,7 @@ class AmberMRLexer(Lexer):
     R_brace_F = 218
     L_brakt_F = 219
     R_brakt_F = 220
-    R_QUOT = 221
+    R_quot = 221
     SPACE_F = 222
 
     channelNames = [ u"DEFAULT_TOKEN_CHANNEL", u"HIDDEN" ]
@@ -1131,7 +1131,7 @@ class AmberMRLexer(Lexer):
             "KCSA", "COBSL", "COBSU", "CWT", "DATASETC", "FIELD", "SIGMA11", 
             "SIGMA12", "SIGMA13", "SIGMA22", "SIGMA23", "CCUT", "Comma", 
             "SMCLN_COMMENT", "COMMENT", "Logical", "L_paren", "R_paren", 
-            "L_brace", "R_brace", "L_brakt", "R_brakt", "Equ_op", "L_QUOT", 
+            "L_brace", "R_brace", "L_brakt", "R_brakt", "Equ_op", "L_quot", 
             "SPACE", "SECTION_COMMENT", "Any_name", "SPACE_CM", "RETURN_CM", 
             "Equ_op_IP", "L_paren_IP", "Integer", "SPACE_IP", "Equ_op_RP", 
             "L_paren_RP", "Real", "SPACE_RP", "Equ_op_BP", "BoolInt", "SPACE_BP", 
@@ -1146,7 +1146,7 @@ class AmberMRLexer(Lexer):
             "DISTANCE_F", "ANGLE_F", "TORSION_F", "COORDINATE_F", "PLANE_F", 
             "COM_F", "Integer_F", "Real_F", "Ambmask_F", "Comma_F", "L_paren_F", 
             "R_paren_F", "L_brace_F", "R_brace_F", "L_brakt_F", "R_brakt_F", 
-            "R_QUOT", "SPACE_F" ]
+            "R_quot", "SPACE_F" ]
 
     ruleNames = [ "END", "RST", "IAT", "RSTWT", "RESTRAINT", "ATNAM_", "ATNAM_Lp", 
                   "ATNAM", "IRESID", "NSTEP1", "NSTEP2", "IRSTYP", "IALTD", 
@@ -1174,7 +1174,7 @@ class AmberMRLexer(Lexer):
                   "ONE_OR_ZERO", "ALPHA", "ALPHA_NUM", "START_CHAR", "NAME_CHAR", 
                   "QEXT_CHAR", "SIMPLE_NAME", "QSTRING", "L_paren", "R_paren", 
                   "L_brace", "R_brace", "L_brakt", "R_brakt", "Equ_op", 
-                  "L_QUOT", "SPACE", "SECTION_COMMENT", "Any_name", "SPACE_CM", 
+                  "L_quot", "SPACE", "SECTION_COMMENT", "Any_name", "SPACE_CM", 
                   "RETURN_CM", "Equ_op_IP", "L_paren_IP", "Integer", "SPACE_IP", 
                   "Equ_op_RP", "L_paren_RP", "Real", "SPACE_RP", "Equ_op_BP", 
                   "BoolInt", "SPACE_BP", "L_paren_QP", "Equ_op_QP", "Qstring", 
@@ -1190,7 +1190,7 @@ class AmberMRLexer(Lexer):
                   "DISTANCE_F", "ANGLE_F", "TORSION_F", "COORDINATE_F", 
                   "PLANE_F", "COM_F", "Integer_F", "Real_F", "Ambmask_F", 
                   "Comma_F", "L_paren_F", "R_paren_F", "L_brace_F", "R_brace_F", 
-                  "L_brakt_F", "R_brakt_F", "R_QUOT", "SPACE_F" ]
+                  "L_brakt_F", "R_brakt_F", "R_quot", "SPACE_F" ]
 
     grammarFileName = "AmberMRLexer.g4"
 

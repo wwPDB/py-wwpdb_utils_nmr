@@ -307,15 +307,15 @@ Resname:		'RESN' 'A'? 'M'? 'E'?;			// Residue_names | Residue_name [ : Residue_n
 Saround:		'SARO' 'U'? 'N'? 'D'?;			// Real (factor as subject)
 SegIdentifier:		'SEGI' 'D'? 'E'? 'N'? 'T'? 'I'? 'F'? 'I'? 'E'? 'R'?;		// Segment_names | Segment_name [ : Segment_name ]
 Sfbox:			'SFBOX';				// real real real real real real
-Store_1:		'STORE1';
-Store_2:		'STORE2';
-Store_3:		'STORE3';
-Store_4:		'STORE4';
-Store_5:		'STORE5';
-Store_6:		'STORE6';
-Store_7:		'STORE7';
-Store_8:		'STORE8';
-Store_9:		'STORE9';
+Store1:			'STORE1';
+Store2:			'STORE2';
+Store3:			'STORE3';
+Store4:			'STORE4';
+Store5:			'STORE5';
+Store6:			'STORE6';
+Store7:			'STORE7';
+Store8:			'STORE8';
+Store9:			'STORE9';
 Tag:			'TAG';
 
 /* Vector statement - Syntax

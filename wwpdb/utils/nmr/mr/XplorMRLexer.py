@@ -1987,7 +1987,7 @@ class XplorMRLexer(Lexer):
     Dipolar = 43
     Type = 44
     Sign = 45
-    VectorAngle = 46
+    VeAngle = 46
     Cv = 47
     Partition = 48
     Tensor = 49
@@ -2094,15 +2094,15 @@ class XplorMRLexer(Lexer):
     Resname = 150
     Saround = 151
     SegIdentifier = 152
-    Store_1 = 153
-    Store_2 = 154
-    Store_3 = 155
-    Store_4 = 156
-    Store_5 = 157
-    Store_6 = 158
-    Store_7 = 159
-    Store_8 = 160
-    Store_9 = 161
+    Store1 = 153
+    Store2 = 154
+    Store3 = 155
+    Store4 = 156
+    Store5 = 157
+    Store6 = 158
+    Store7 = 159
+    Store8 = 160
+    Store9 = 161
     Tag = 162
     Vector = 163
     Do_Lp = 164
@@ -2266,34 +2266,33 @@ class XplorMRLexer(Lexer):
             "SqOffset", "Temperature", "Cutoff", "Cuton", "From", "To", 
             "Peak", "Spectrum", "Volume", "Ppm1", "Ppm2", "Restraints", 
             "Dihedral", "Nassign", "Sanisotropy", "Coefficients", "ForceConstant", 
-            "Xdipolar", "Dipolar", "Type", "Sign", "VectorAngle", "Cv", 
-            "Partition", "Tensor", "Anisotropy", "Planar", "Group", "Initialize", 
-            "Selection", "Weight", "Harmonic", "Exponent", "Normal", "Xadc", 
-            "Expectation", "Size", "Zero", "Coupling", "DegEnergy", "Carbon", 
-            "PhiStep", "PsiStep", "Rcoil", "Proton", "Observed", "Amides", 
-            "Nitrogens", "Oxygens", "RingAtoms", "AlphasAndAmides", "Error", 
-            "Ramachandran", "Gaussian", "Phase", "Quartic", "Shape", "Sort", 
-            "Dimensions", "Collapse", "Danisotropy", "Orient", "Height", 
-            "MaxGaussians", "NewGaussian", "Dcsa", "Sigma", "Pcsa", "OneBond", 
-            "AngleDb", "DerivFlag", "Angle_or_Dihedral", "Paramagnetic", 
-            "Kconst", "Omega", "Tauc", "Debug", "Xpcs", "Tolerance", "Save", 
-            "Fmed", "ErrOn", "ErrOff", "Fon", "Foff", "Son", "Soff", "Frun", 
-            "Xrdcoupling", "Xangle", "Xccr", "Weip", "Kdir", "Klin", "Nseg", 
-            "Nmin", "Nmax", "Segm", "Ohcut", "Coh1cut", "Coh2cut", "Ohncut", 
-            "Updfrq", "Prnfrq", "Freemode", "Donor", "Acceptor", "Flags", 
-            "All", "Around", "Atom", "Attribute", "BondedTo", "ByGroup", 
-            "ByRes", "Chemical", "Hydrogen", "Id", "Known", "Name", "Point", 
-            "Cut", "Previous", "Pseudo", "Residue", "Resname", "Saround", 
-            "SegIdentifier", "Store_1", "Store_2", "Store_3", "Store_4", 
-            "Store_5", "Store_6", "Store_7", "Store_8", "Store_9", "Tag", 
-            "Vector", "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", "Patch", 
-            "Reference", "Nil", "For", "Loop", "Tail", "Head", "Or_op", 
-            "And_op", "Not_op", "Comma", "Complex", "Integer", "Logical", 
-            "Real", "Double_quote_string", "SHARP_COMMENT", "EXCLM_COMMENT", 
-            "SMCLN_COMMENT", "Simple_name", "Simple_names", "Integers", 
-            "Hbda", "Hbdb", "L_paren", "R_paren", "Colon", "Equ_op", "Lt_op", 
-            "Gt_op", "Leq_op", "Geq_op", "Neq_op", "Symbol_name", "SPACE", 
-            "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
+            "Xdipolar", "Dipolar", "Type", "Sign", "VeAngle", "Cv", "Partition", 
+            "Tensor", "Anisotropy", "Planar", "Group", "Initialize", "Selection", 
+            "Weight", "Harmonic", "Exponent", "Normal", "Xadc", "Expectation", 
+            "Size", "Zero", "Coupling", "DegEnergy", "Carbon", "PhiStep", 
+            "PsiStep", "Rcoil", "Proton", "Observed", "Amides", "Nitrogens", 
+            "Oxygens", "RingAtoms", "AlphasAndAmides", "Error", "Ramachandran", 
+            "Gaussian", "Phase", "Quartic", "Shape", "Sort", "Dimensions", 
+            "Collapse", "Danisotropy", "Orient", "Height", "MaxGaussians", 
+            "NewGaussian", "Dcsa", "Sigma", "Pcsa", "OneBond", "AngleDb", 
+            "DerivFlag", "Angle_or_Dihedral", "Paramagnetic", "Kconst", 
+            "Omega", "Tauc", "Debug", "Xpcs", "Tolerance", "Save", "Fmed", 
+            "ErrOn", "ErrOff", "Fon", "Foff", "Son", "Soff", "Frun", "Xrdcoupling", 
+            "Xangle", "Xccr", "Weip", "Kdir", "Klin", "Nseg", "Nmin", "Nmax", 
+            "Segm", "Ohcut", "Coh1cut", "Coh2cut", "Ohncut", "Updfrq", "Prnfrq", 
+            "Freemode", "Donor", "Acceptor", "Flags", "All", "Around", "Atom", 
+            "Attribute", "BondedTo", "ByGroup", "ByRes", "Chemical", "Hydrogen", 
+            "Id", "Known", "Name", "Point", "Cut", "Previous", "Pseudo", 
+            "Residue", "Resname", "Saround", "SegIdentifier", "Store1", 
+            "Store2", "Store3", "Store4", "Store5", "Store6", "Store7", 
+            "Store8", "Store9", "Tag", "Vector", "Do_Lp", "Identify_Lp", 
+            "Show", "Evaluate_Lp", "Patch", "Reference", "Nil", "For", "Loop", 
+            "Tail", "Head", "Or_op", "And_op", "Not_op", "Comma", "Complex", 
+            "Integer", "Logical", "Real", "Double_quote_string", "SHARP_COMMENT", 
+            "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", "Simple_names", 
+            "Integers", "Hbda", "Hbdb", "L_paren", "R_paren", "Colon", "Equ_op", 
+            "Lt_op", "Gt_op", "Leq_op", "Geq_op", "Neq_op", "Symbol_name", 
+            "SPACE", "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
             "Abs", "Attr_properties", "Comparison_ops", "SPACE_AP", "Averaging_methods", 
             "Simple_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
             "Simple_name_PT", "SPACE_PT", "Rdc_dist_fix_types", "Rdc_or_Diff_anis_types", 
@@ -2320,7 +2319,7 @@ class XplorMRLexer(Lexer):
                   "Cutoff", "Cuton", "From", "To", "Peak", "Spectrum", "Volume", 
                   "Ppm1", "Ppm2", "Restraints", "Dihedral", "Nassign", "Sanisotropy", 
                   "Coefficients", "ForceConstant", "Xdipolar", "Dipolar", 
-                  "Type", "Sign", "VectorAngle", "Cv", "Partition", "Tensor", 
+                  "Type", "Sign", "VeAngle", "Cv", "Partition", "Tensor", 
                   "Anisotropy", "Planar", "Group", "Initialize", "Selection", 
                   "Weight", "Harmonic", "Exponent", "Normal", "Xadc", "Expectation", 
                   "Size", "Zero", "Coupling", "DegEnergy", "Carbon", "PhiStep", 
@@ -2338,34 +2337,34 @@ class XplorMRLexer(Lexer):
                   "Acceptor", "Flags", "All", "Around", "Atom", "Attribute", 
                   "BondedTo", "ByGroup", "ByRes", "Chemical", "Hydrogen", 
                   "Id", "Known", "Name", "Point", "Cut", "Previous", "Pseudo", 
-                  "Residue", "Resname", "Saround", "SegIdentifier", "Store_1", 
-                  "Store_2", "Store_3", "Store_4", "Store_5", "Store_6", 
-                  "Store_7", "Store_8", "Store_9", "Tag", "Vector", "Do_Lp", 
-                  "Identify_Lp", "Show", "Evaluate_Lp", "Patch", "Reference", 
-                  "Nil", "For", "Loop", "Tail", "Head", "Or_op", "And_op", 
-                  "Not_op", "Comma", "Complex", "Integer", "Logical", "Real", 
-                  "Double_quote_string", "DEC_DOT_DEC", "DEC_DIGIT", "DECIMAL", 
-                  "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", 
-                  "Simple_names", "Integers", "Hbda", "Hbdb", "WILDCARD", 
-                  "ALPHA", "ALPHA_NUM", "START_CHAR", "NAME_CHAR", "ATM_NAME_CHAR", 
-                  "ATM_TYPE_CHAR", "SIMPLE_NAME", "POST_WC_CHAR", "SYMBOL_NAME", 
-                  "L_paren", "R_paren", "Colon", "Equ_op", "Lt_op", "Gt_op", 
-                  "Leq_op", "Geq_op", "Neq_op", "Symbol_name", "SPACE", 
-                  "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
-                  "Abs", "Attr_properties", "Comparison_ops", "SPACE_AP", 
-                  "Averaging_methods", "Simple_name_AM", "SPACE_AM", "Equ_op_PT", 
-                  "Potential_types", "Simple_name_PT", "SPACE_PT", "Rdc_dist_fix_types", 
-                  "Rdc_or_Diff_anis_types", "Csa_types", "SPACE_TY", "Gauss_or_Quart", 
-                  "SPACE_SH", "Exclude", "Include", "End_FL", "Class_name", 
-                  "Any_class", "SPACE_FL", "R_paren_VE", "Equ_op_VE", "Add_op_VE", 
-                  "Sub_op_VE", "Mul_op_VE", "Div_op_VE", "Exp_op_VE", "Comma_VE", 
-                  "Integer_VE", "Real_VE", "Atom_properties_VE", "Abs_VE", 
-                  "Acos_VE", "Asin_VE", "Cos_VE", "Decode_VE", "Encode_VE", 
-                  "Exp_VE", "Gauss_VE", "Heavy_VE", "Int_VE", "Log10_VE", 
-                  "Log_VE", "Max_VE", "Maxw_VE", "Min_VE", "Mod_VE", "Norm_VE", 
-                  "Random_VE", "Sign_VE", "Sin_VE", "Sqrt_VE", "Tan_VE", 
-                  "Symbol_name_VE", "Simple_name_VE", "Double_quote_string_VE", 
-                  "SPACE_VE", "L_paren_VF", "SPACE_VF", "L_paren_VS", "R_paren_VS", 
+                  "Residue", "Resname", "Saround", "SegIdentifier", "Store1", 
+                  "Store2", "Store3", "Store4", "Store5", "Store6", "Store7", 
+                  "Store8", "Store9", "Tag", "Vector", "Do_Lp", "Identify_Lp", 
+                  "Show", "Evaluate_Lp", "Patch", "Reference", "Nil", "For", 
+                  "Loop", "Tail", "Head", "Or_op", "And_op", "Not_op", "Comma", 
+                  "Complex", "Integer", "Logical", "Real", "Double_quote_string", 
+                  "DEC_DOT_DEC", "DEC_DIGIT", "DECIMAL", "SHARP_COMMENT", 
+                  "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", "Simple_names", 
+                  "Integers", "Hbda", "Hbdb", "WILDCARD", "ALPHA", "ALPHA_NUM", 
+                  "START_CHAR", "NAME_CHAR", "ATM_NAME_CHAR", "ATM_TYPE_CHAR", 
+                  "SIMPLE_NAME", "POST_WC_CHAR", "SYMBOL_NAME", "L_paren", 
+                  "R_paren", "Colon", "Equ_op", "Lt_op", "Gt_op", "Leq_op", 
+                  "Geq_op", "Neq_op", "Symbol_name", "SPACE", "COMMENT", 
+                  "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", "Abs", 
+                  "Attr_properties", "Comparison_ops", "SPACE_AP", "Averaging_methods", 
+                  "Simple_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
+                  "Simple_name_PT", "SPACE_PT", "Rdc_dist_fix_types", "Rdc_or_Diff_anis_types", 
+                  "Csa_types", "SPACE_TY", "Gauss_or_Quart", "SPACE_SH", 
+                  "Exclude", "Include", "End_FL", "Class_name", "Any_class", 
+                  "SPACE_FL", "R_paren_VE", "Equ_op_VE", "Add_op_VE", "Sub_op_VE", 
+                  "Mul_op_VE", "Div_op_VE", "Exp_op_VE", "Comma_VE", "Integer_VE", 
+                  "Real_VE", "Atom_properties_VE", "Abs_VE", "Acos_VE", 
+                  "Asin_VE", "Cos_VE", "Decode_VE", "Encode_VE", "Exp_VE", 
+                  "Gauss_VE", "Heavy_VE", "Int_VE", "Log10_VE", "Log_VE", 
+                  "Max_VE", "Maxw_VE", "Min_VE", "Mod_VE", "Norm_VE", "Random_VE", 
+                  "Sign_VE", "Sin_VE", "Sqrt_VE", "Tan_VE", "Symbol_name_VE", 
+                  "Simple_name_VE", "Double_quote_string_VE", "SPACE_VE", 
+                  "L_paren_VF", "SPACE_VF", "L_paren_VS", "R_paren_VS", 
                   "Average_VS", "Element_VS", "Max_VS", "Min_VS", "Norm_VS", 
                   "Rms_VS", "Sum_VS", "Atom_properties_VS", "SPACE_VS", 
                   "L_paren_CF", "R_paren_CF", "In_CF", "Integer_CF", "Real_CF", 

@@ -1380,14 +1380,14 @@ class XplorMRParser ( Parser ):
                       "To", "Peak", "Spectrum", "Volume", "Ppm1", "Ppm2", 
                       "Restraints", "Dihedral", "Nassign", "Sanisotropy", 
                       "Coefficients", "ForceConstant", "Xdipolar", "Dipolar", 
-                      "Type", "Sign", "VectorAngle", "Cv", "Partition", 
-                      "Tensor", "Anisotropy", "Planar", "Group", "Initialize", 
-                      "Selection", "Weight", "Harmonic", "Exponent", "Normal", 
-                      "Xadc", "Expectation", "Size", "Zero", "Coupling", 
-                      "DegEnergy", "Carbon", "PhiStep", "PsiStep", "Rcoil", 
-                      "Proton", "Observed", "Amides", "Nitrogens", "Oxygens", 
-                      "RingAtoms", "AlphasAndAmides", "Error", "Ramachandran", 
-                      "Gaussian", "Phase", "Quartic", "Shape", "Sort", "Dimensions", 
+                      "Type", "Sign", "VeAngle", "Cv", "Partition", "Tensor", 
+                      "Anisotropy", "Planar", "Group", "Initialize", "Selection", 
+                      "Weight", "Harmonic", "Exponent", "Normal", "Xadc", 
+                      "Expectation", "Size", "Zero", "Coupling", "DegEnergy", 
+                      "Carbon", "PhiStep", "PsiStep", "Rcoil", "Proton", 
+                      "Observed", "Amides", "Nitrogens", "Oxygens", "RingAtoms", 
+                      "AlphasAndAmides", "Error", "Ramachandran", "Gaussian", 
+                      "Phase", "Quartic", "Shape", "Sort", "Dimensions", 
                       "Collapse", "Danisotropy", "Orient", "Height", "MaxGaussians", 
                       "NewGaussian", "Dcsa", "Sigma", "Pcsa", "OneBond", 
                       "AngleDb", "DerivFlag", "Angle_or_Dihedral", "Paramagnetic", 
@@ -1401,38 +1401,37 @@ class XplorMRParser ( Parser ):
                       "ByGroup", "ByRes", "Chemical", "Hydrogen", "Id", 
                       "Known", "Name", "Point", "Cut", "Previous", "Pseudo", 
                       "Residue", "Resname", "Saround", "SegIdentifier", 
-                      "Store_1", "Store_2", "Store_3", "Store_4", "Store_5", 
-                      "Store_6", "Store_7", "Store_8", "Store_9", "Tag", 
-                      "Vector", "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", 
-                      "Patch", "Reference", "Nil", "For", "Loop", "Tail", 
-                      "Head", "Or_op", "And_op", "Not_op", "Comma", "Complex", 
-                      "Integer", "Logical", "Real", "Double_quote_string", 
-                      "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                      "Simple_name", "Simple_names", "Integers", "Hbda", 
-                      "Hbdb", "L_paren", "R_paren", "Colon", "Equ_op", "Lt_op", 
-                      "Gt_op", "Leq_op", "Geq_op", "Neq_op", "Symbol_name", 
-                      "SPACE", "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
-                      "SET_VARIABLE", "Abs", "Attr_properties", "Comparison_ops", 
-                      "SPACE_AP", "Averaging_methods", "Simple_name_AM", 
-                      "SPACE_AM", "Equ_op_PT", "Potential_types", "Simple_name_PT", 
-                      "SPACE_PT", "Rdc_dist_fix_types", "Rdc_or_Diff_anis_types", 
-                      "Csa_types", "SPACE_TY", "Gauss_or_Quart", "SPACE_SH", 
-                      "Exclude", "Include", "End_FL", "Class_name", "Any_class", 
-                      "SPACE_FL", "R_paren_VE", "Equ_op_VE", "Add_op_VE", 
-                      "Sub_op_VE", "Mul_op_VE", "Div_op_VE", "Exp_op_VE", 
-                      "Comma_VE", "Integer_VE", "Real_VE", "Atom_properties_VE", 
-                      "Abs_VE", "Acos_VE", "Asin_VE", "Cos_VE", "Decode_VE", 
-                      "Encode_VE", "Exp_VE", "Gauss_VE", "Heavy_VE", "Int_VE", 
-                      "Log10_VE", "Log_VE", "Max_VE", "Maxw_VE", "Min_VE", 
-                      "Mod_VE", "Norm_VE", "Random_VE", "Sign_VE", "Sin_VE", 
-                      "Sqrt_VE", "Tan_VE", "Symbol_name_VE", "Simple_name_VE", 
-                      "Double_quote_string_VE", "SPACE_VE", "L_paren_VF", 
-                      "SPACE_VF", "L_paren_VS", "R_paren_VS", "Average_VS", 
-                      "Element_VS", "Max_VS", "Min_VS", "Norm_VS", "Rms_VS", 
-                      "Sum_VS", "Atom_properties_VS", "SPACE_VS", "L_paren_CF", 
-                      "R_paren_CF", "In_CF", "Integer_CF", "Real_CF", "Symbol_name_CF", 
-                      "Simple_name_CF", "SPACE_CF", "COMMENT_CF", "Simple_name_LL", 
-                      "SPACE_LL" ]
+                      "Store1", "Store2", "Store3", "Store4", "Store5", 
+                      "Store6", "Store7", "Store8", "Store9", "Tag", "Vector", 
+                      "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", "Patch", 
+                      "Reference", "Nil", "For", "Loop", "Tail", "Head", 
+                      "Or_op", "And_op", "Not_op", "Comma", "Complex", "Integer", 
+                      "Logical", "Real", "Double_quote_string", "SHARP_COMMENT", 
+                      "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", "Simple_names", 
+                      "Integers", "Hbda", "Hbdb", "L_paren", "R_paren", 
+                      "Colon", "Equ_op", "Lt_op", "Gt_op", "Leq_op", "Geq_op", 
+                      "Neq_op", "Symbol_name", "SPACE", "COMMENT", "SECTION_COMMENT", 
+                      "LINE_COMMENT", "SET_VARIABLE", "Abs", "Attr_properties", 
+                      "Comparison_ops", "SPACE_AP", "Averaging_methods", 
+                      "Simple_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
+                      "Simple_name_PT", "SPACE_PT", "Rdc_dist_fix_types", 
+                      "Rdc_or_Diff_anis_types", "Csa_types", "SPACE_TY", 
+                      "Gauss_or_Quart", "SPACE_SH", "Exclude", "Include", 
+                      "End_FL", "Class_name", "Any_class", "SPACE_FL", "R_paren_VE", 
+                      "Equ_op_VE", "Add_op_VE", "Sub_op_VE", "Mul_op_VE", 
+                      "Div_op_VE", "Exp_op_VE", "Comma_VE", "Integer_VE", 
+                      "Real_VE", "Atom_properties_VE", "Abs_VE", "Acos_VE", 
+                      "Asin_VE", "Cos_VE", "Decode_VE", "Encode_VE", "Exp_VE", 
+                      "Gauss_VE", "Heavy_VE", "Int_VE", "Log10_VE", "Log_VE", 
+                      "Max_VE", "Maxw_VE", "Min_VE", "Mod_VE", "Norm_VE", 
+                      "Random_VE", "Sign_VE", "Sin_VE", "Sqrt_VE", "Tan_VE", 
+                      "Symbol_name_VE", "Simple_name_VE", "Double_quote_string_VE", 
+                      "SPACE_VE", "L_paren_VF", "SPACE_VF", "L_paren_VS", 
+                      "R_paren_VS", "Average_VS", "Element_VS", "Max_VS", 
+                      "Min_VS", "Norm_VS", "Rms_VS", "Sum_VS", "Atom_properties_VS", 
+                      "SPACE_VS", "L_paren_CF", "R_paren_CF", "In_CF", "Integer_CF", 
+                      "Real_CF", "Symbol_name_CF", "Simple_name_CF", "SPACE_CF", 
+                      "COMMENT_CF", "Simple_name_LL", "SPACE_LL" ]
 
     RULE_xplor_nih_mr = 0
     RULE_distance_restraint = 1
@@ -1641,7 +1640,7 @@ class XplorMRParser ( Parser ):
     Dipolar=43
     Type=44
     Sign=45
-    VectorAngle=46
+    VeAngle=46
     Cv=47
     Partition=48
     Tensor=49
@@ -1748,15 +1747,15 @@ class XplorMRParser ( Parser ):
     Resname=150
     Saround=151
     SegIdentifier=152
-    Store_1=153
-    Store_2=154
-    Store_3=155
-    Store_4=156
-    Store_5=157
-    Store_6=158
-    Store_7=159
-    Store_8=160
-    Store_9=161
+    Store1=153
+    Store2=154
+    Store3=155
+    Store4=156
+    Store5=157
+    Store6=158
+    Store7=159
+    Store8=160
+    Store9=161
     Tag=162
     Vector=163
     Do_Lp=164
@@ -2301,7 +2300,7 @@ class XplorMRParser ( Parser ):
             self.state = 297
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Noe) | (1 << XplorMRParser.Assign) | (1 << XplorMRParser.Restraints) | (1 << XplorMRParser.Dihedral) | (1 << XplorMRParser.Sanisotropy) | (1 << XplorMRParser.Xdipolar) | (1 << XplorMRParser.Dipolar) | (1 << XplorMRParser.VectorAngle) | (1 << XplorMRParser.Tensor) | (1 << XplorMRParser.Anisotropy) | (1 << XplorMRParser.Planar) | (1 << XplorMRParser.Group) | (1 << XplorMRParser.Initialize) | (1 << XplorMRParser.Harmonic) | (1 << XplorMRParser.Xadc) | (1 << XplorMRParser.Coupling))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (XplorMRParser.Carbon - 65)) | (1 << (XplorMRParser.Proton - 65)) | (1 << (XplorMRParser.Observed - 65)) | (1 << (XplorMRParser.Ramachandran - 65)) | (1 << (XplorMRParser.Collapse - 65)) | (1 << (XplorMRParser.Danisotropy - 65)) | (1 << (XplorMRParser.Orient - 65)) | (1 << (XplorMRParser.Dcsa - 65)) | (1 << (XplorMRParser.Pcsa - 65)) | (1 << (XplorMRParser.OneBond - 65)) | (1 << (XplorMRParser.AngleDb - 65)) | (1 << (XplorMRParser.Paramagnetic - 65)) | (1 << (XplorMRParser.Xpcs - 65)) | (1 << (XplorMRParser.Xrdcoupling - 65)) | (1 << (XplorMRParser.Xangle - 65)) | (1 << (XplorMRParser.Xccr - 65)))) != 0) or ((((_la - 132)) & ~0x3f) == 0 and ((1 << (_la - 132)) & ((1 << (XplorMRParser.Flags - 132)) | (1 << (XplorMRParser.Vector - 132)) | (1 << (XplorMRParser.Evaluate_Lp - 132)) | (1 << (XplorMRParser.Patch - 132)) | (1 << (XplorMRParser.For - 132)) | (1 << (XplorMRParser.Hbda - 132)) | (1 << (XplorMRParser.Hbdb - 132)))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Noe) | (1 << XplorMRParser.Assign) | (1 << XplorMRParser.Restraints) | (1 << XplorMRParser.Dihedral) | (1 << XplorMRParser.Sanisotropy) | (1 << XplorMRParser.Xdipolar) | (1 << XplorMRParser.Dipolar) | (1 << XplorMRParser.VeAngle) | (1 << XplorMRParser.Tensor) | (1 << XplorMRParser.Anisotropy) | (1 << XplorMRParser.Planar) | (1 << XplorMRParser.Group) | (1 << XplorMRParser.Initialize) | (1 << XplorMRParser.Harmonic) | (1 << XplorMRParser.Xadc) | (1 << XplorMRParser.Coupling))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (XplorMRParser.Carbon - 65)) | (1 << (XplorMRParser.Proton - 65)) | (1 << (XplorMRParser.Observed - 65)) | (1 << (XplorMRParser.Ramachandran - 65)) | (1 << (XplorMRParser.Collapse - 65)) | (1 << (XplorMRParser.Danisotropy - 65)) | (1 << (XplorMRParser.Orient - 65)) | (1 << (XplorMRParser.Dcsa - 65)) | (1 << (XplorMRParser.Pcsa - 65)) | (1 << (XplorMRParser.OneBond - 65)) | (1 << (XplorMRParser.AngleDb - 65)) | (1 << (XplorMRParser.Paramagnetic - 65)) | (1 << (XplorMRParser.Xpcs - 65)) | (1 << (XplorMRParser.Xrdcoupling - 65)) | (1 << (XplorMRParser.Xangle - 65)) | (1 << (XplorMRParser.Xccr - 65)))) != 0) or ((((_la - 132)) & ~0x3f) == 0 and ((1 << (_la - 132)) & ((1 << (XplorMRParser.Flags - 132)) | (1 << (XplorMRParser.Vector - 132)) | (1 << (XplorMRParser.Evaluate_Lp - 132)) | (1 << (XplorMRParser.Patch - 132)) | (1 << (XplorMRParser.For - 132)) | (1 << (XplorMRParser.Hbda - 132)) | (1 << (XplorMRParser.Hbdb - 132)))) != 0):
                 self.state = 295
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -2758,8 +2757,8 @@ class XplorMRParser ( Parser ):
                 return self.getTypedRuleContext(XplorMRParser.Xdip_statementContext,i)
 
 
-        def VectorAngle(self):
-            return self.getToken(XplorMRParser.VectorAngle, 0)
+        def VeAngle(self):
+            return self.getToken(XplorMRParser.VeAngle, 0)
 
         def vean_statement(self, i:int=None):
             if i is None:
@@ -2850,10 +2849,10 @@ class XplorMRParser ( Parser ):
                 self.state = 338
                 self.match(XplorMRParser.End)
                 pass
-            elif token in [XplorMRParser.VectorAngle]:
+            elif token in [XplorMRParser.VeAngle]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 339
-                self.match(XplorMRParser.VectorAngle)
+                self.match(XplorMRParser.VeAngle)
                 self.state = 343
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
@@ -13529,32 +13528,32 @@ class XplorMRParser ( Parser ):
         def SegIdentifier(self):
             return self.getToken(XplorMRParser.SegIdentifier, 0)
 
-        def Store_1(self):
-            return self.getToken(XplorMRParser.Store_1, 0)
+        def Store1(self):
+            return self.getToken(XplorMRParser.Store1, 0)
 
-        def Store_2(self):
-            return self.getToken(XplorMRParser.Store_2, 0)
+        def Store2(self):
+            return self.getToken(XplorMRParser.Store2, 0)
 
-        def Store_3(self):
-            return self.getToken(XplorMRParser.Store_3, 0)
+        def Store3(self):
+            return self.getToken(XplorMRParser.Store3, 0)
 
-        def Store_4(self):
-            return self.getToken(XplorMRParser.Store_4, 0)
+        def Store4(self):
+            return self.getToken(XplorMRParser.Store4, 0)
 
-        def Store_5(self):
-            return self.getToken(XplorMRParser.Store_5, 0)
+        def Store5(self):
+            return self.getToken(XplorMRParser.Store5, 0)
 
-        def Store_6(self):
-            return self.getToken(XplorMRParser.Store_6, 0)
+        def Store6(self):
+            return self.getToken(XplorMRParser.Store6, 0)
 
-        def Store_7(self):
-            return self.getToken(XplorMRParser.Store_7, 0)
+        def Store7(self):
+            return self.getToken(XplorMRParser.Store7, 0)
 
-        def Store_8(self):
-            return self.getToken(XplorMRParser.Store_8, 0)
+        def Store8(self):
+            return self.getToken(XplorMRParser.Store8, 0)
 
-        def Store_9(self):
-            return self.getToken(XplorMRParser.Store_9, 0)
+        def Store9(self):
+            return self.getToken(XplorMRParser.Store9, 0)
 
         def Tag(self):
             return self.getToken(XplorMRParser.Tag, 0)
@@ -13992,47 +13991,47 @@ class XplorMRParser ( Parser ):
 
             elif la_ == 21:
                 self.state = 2265
-                self.match(XplorMRParser.Store_1)
+                self.match(XplorMRParser.Store1)
                 pass
 
             elif la_ == 22:
                 self.state = 2266
-                self.match(XplorMRParser.Store_2)
+                self.match(XplorMRParser.Store2)
                 pass
 
             elif la_ == 23:
                 self.state = 2267
-                self.match(XplorMRParser.Store_3)
+                self.match(XplorMRParser.Store3)
                 pass
 
             elif la_ == 24:
                 self.state = 2268
-                self.match(XplorMRParser.Store_4)
+                self.match(XplorMRParser.Store4)
                 pass
 
             elif la_ == 25:
                 self.state = 2269
-                self.match(XplorMRParser.Store_5)
+                self.match(XplorMRParser.Store5)
                 pass
 
             elif la_ == 26:
                 self.state = 2270
-                self.match(XplorMRParser.Store_6)
+                self.match(XplorMRParser.Store6)
                 pass
 
             elif la_ == 27:
                 self.state = 2271
-                self.match(XplorMRParser.Store_7)
+                self.match(XplorMRParser.Store7)
                 pass
 
             elif la_ == 28:
                 self.state = 2272
-                self.match(XplorMRParser.Store_8)
+                self.match(XplorMRParser.Store8)
                 pass
 
             elif la_ == 29:
                 self.state = 2273
-                self.match(XplorMRParser.Store_9)
+                self.match(XplorMRParser.Store9)
                 pass
 
             elif la_ == 30:

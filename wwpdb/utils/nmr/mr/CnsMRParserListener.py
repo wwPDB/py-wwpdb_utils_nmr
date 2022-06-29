@@ -5118,7 +5118,7 @@ class CnsMRParserListener(ParseTreeListener):
             elif ctx.Sfbox():
                 pass
 
-            elif ctx.Store_1():
+            elif ctx.Store1():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> store1")
                 if len(self.storeSet[1]) == 0:
@@ -5129,7 +5129,7 @@ class CnsMRParserListener(ParseTreeListener):
                 else:
                     self.factor = copy.copy(self.storeSet[1])
 
-            elif ctx.Store_2():
+            elif ctx.Store2():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> store2")
                 if len(self.storeSet[2]) == 0:
@@ -5140,7 +5140,7 @@ class CnsMRParserListener(ParseTreeListener):
                 else:
                     self.factor = copy.copy(self.storeSet[2])
 
-            elif ctx.Store_3():
+            elif ctx.Store3():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> store3")
                 if len(self.storeSet[3]) == 0:
@@ -5151,7 +5151,7 @@ class CnsMRParserListener(ParseTreeListener):
                 else:
                     self.factor = copy.copy(self.storeSet[3])
 
-            elif ctx.Store_4():
+            elif ctx.Store4():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> store4")
                 if len(self.storeSet[4]) == 0:
@@ -5162,7 +5162,7 @@ class CnsMRParserListener(ParseTreeListener):
                 else:
                     self.factor = copy.copy(self.storeSet[4])
 
-            elif ctx.Store_5():
+            elif ctx.Store5():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> store5")
                 if len(self.storeSet[5]) == 0:
@@ -5173,7 +5173,7 @@ class CnsMRParserListener(ParseTreeListener):
                 else:
                     self.factor = copy.copy(self.storeSet[5])
 
-            elif ctx.Store_6():
+            elif ctx.Store6():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> store6")
                 if len(self.storeSet[6]) == 0:
@@ -5184,7 +5184,7 @@ class CnsMRParserListener(ParseTreeListener):
                 else:
                     self.factor = copy.copy(self.storeSet[6])
 
-            elif ctx.Store_7():
+            elif ctx.Store7():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> store7")
                 if len(self.storeSet[7]) == 0:
@@ -5195,7 +5195,7 @@ class CnsMRParserListener(ParseTreeListener):
                 else:
                     self.factor = copy.copy(self.storeSet[7])
 
-            elif ctx.Store_8():
+            elif ctx.Store8():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> store8")
                 if len(self.storeSet[8]) == 0:
@@ -5206,7 +5206,7 @@ class CnsMRParserListener(ParseTreeListener):
                 else:
                     self.factor = copy.copy(self.storeSet[8])
 
-            elif ctx.Store_9():
+            elif ctx.Store9():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> store9")
                 if len(self.storeSet[9]) == 0:

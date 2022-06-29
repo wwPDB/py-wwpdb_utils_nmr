@@ -30,7 +30,7 @@ DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
-ANGLE_RESTRAINT_RANGE = {'min_inclusive': -271.0, 'max_inclusive': 271.0}
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -330.0, 'max_inclusive': 330.0}
 ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
 
 

@@ -1396,7 +1396,7 @@ class XplorMRParserListener(ParseTreeListener):
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                     f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['atom_id']} or "\
                     f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
                 return False
@@ -5878,12 +5878,12 @@ class XplorMRParserListener(ParseTreeListener):
             if self.inVector3D_columnSel == 0:
                 self.inVector3D_tail = atomSelection[0]
                 if len(atomSelection) > 1:
-                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         "Ambiguous atoms have been selected to create a 3d-vector in the 'tail' clause.\n"
             else:
                 self.inVector3D_head = atomSelection[0]
                 if len(atomSelection) > 1:
-                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         "Ambiguous atoms have been selected to create a 3d-vector in the 'head' clause.\n"
 
         else:
@@ -6584,13 +6584,13 @@ class XplorMRParserListener(ParseTreeListener):
             del __factor['atom_selection']
             if self.__cur_subtype != 'plane':
                 if cifCheck:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}.\n"
                 else:
-                    self.__warningInAtomSelection += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}.\n"
             else:
-                self.warningMessage += f"[Atom nomenclature mismatch] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                     f"The {clauseName} has no effect for a factor {__factor}.\n"
 
         if 'chain_id' in _factor:
@@ -6736,7 +6736,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                             f"The {clauseName!r} clause has no effect.\n"
 
                     else:
@@ -6932,7 +6932,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                         if len(self.factor['atom_selection']) == 0:
                             self.factor['atom_id'] = [None]
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                                 f"The {clauseName!r} clause has no effect.\n"
 
             elif ctx.Atom():
@@ -7281,7 +7281,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if validProp and len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
                     _absolute = ' abs' if absolute else ''
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.\n"
 
             elif ctx.BondedTo():
@@ -7437,12 +7437,12 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                             "The 'bondedto' clause has no effect.\n"
 
                 else:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         "The 'bondedto' clause has no effect because no atom is selected.\n"
 
             elif ctx.ByGroup():
@@ -7543,14 +7543,14 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(atomSelection) <= len(self.factor['atom_selection']):
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                             "The 'bygroup' clause has no effect.\n"
 
                     self.factor['atom_selection'] = atomSelection
 
                 else:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         "The 'bygroup' clause has no effect because no atom is selected.\n"
 
             elif ctx.ByRes():
@@ -7603,12 +7603,12 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                             "The 'byres' clause has no effect.\n"
 
                 else:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         "The 'byres' clause has no effect because no atom is selected.\n"
 
             elif ctx.Chemical():
@@ -7741,7 +7741,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         "The 'not' clause has no effect.\n"
 
             elif ctx.Point():
@@ -7814,7 +7814,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if self.vector3D is None:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         "The 'point' clause has no effect because no 3d-vector is specified.\n"
 
                 else:
@@ -7864,7 +7864,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                             "The 'cut' clause has no effect.\n"
 
                 self.inVector3D = False
@@ -7922,7 +7922,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         "The 'pseudo' clause has no effect.\n"
 
             elif ctx.Residue():
@@ -8196,7 +8196,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         "The 'tag' clause has no effect.\n"
 
             elif ctx.Donor():

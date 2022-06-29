@@ -21048,7 +21048,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                            elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -21080,8 +21080,8 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Atom nomenclature mismatch]'):
-                                self.report.warning.appendDescription('atom_nomenclature_mismatch',
+                            elif warn.startswith('[Insufficient atom selection]'):
+                                self.report.warning.appendDescription('insufficient_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -21158,7 +21158,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                            elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -21190,8 +21190,8 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Atom nomenclature mismatch]'):
-                                self.report.warning.appendDescription('atom_nomenclature_mismatch',
+                            elif warn.startswith('[Insufficient atom selection]'):
+                                self.report.warning.appendDescription('insufficient_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 

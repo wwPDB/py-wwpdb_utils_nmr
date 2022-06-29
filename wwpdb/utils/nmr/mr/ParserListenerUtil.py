@@ -10,6 +10,7 @@ import sys
 import re
 import copy
 import collections
+import itertools
 
 import numpy as np
 
@@ -642,7 +643,16 @@ def isLongRangeRestraint(atoms):
     if len(collections.Counter(chainIds).most_common()) > 1:
         return True
 
-    return len(collections.Counter(seqIds).most_common()) > 1
+    commonSeqId = collections.Counter(seqIds).most_common()
+
+    if len(commonSeqId) == 1:
+        return False
+
+    for s1, s2 in itertools.combinations(commonSeqId, 2):
+        if abs(s1[0] - s2[0]) > 1:
+            return True
+
+    return False
 
 
 def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms):

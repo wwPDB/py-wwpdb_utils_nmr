@@ -1340,19 +1340,17 @@ class DynamoMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an RDC vector over multiple covalent bonds; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):

@@ -171,6 +171,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # current restraint subtype
     __cur_subtype = ''
+    __cur_subtype_altered = False
+    __cur_rdc_orientation = 0
 
     # RDC parameter dictionary
     rdcParameterDict = None
@@ -183,6 +185,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # collection of number selection
     numberSelection = []
+
+    # collection of auxiliary atom selection
+    auxAtomSelectionSet = ''
 
     warningMessage = ''
 
@@ -319,6 +324,8 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext != 'cco' else 'jcoup'
 
+        self.__cur_subtype_altered = False
+
     # Exit a parse tree produced by CyanaMRParser#distance_restraints.
     def exitDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         pass
@@ -376,7 +383,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         f"The relative weight value of '{weight}' must be a positive value.\n"
                     return
 
-                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
                     if self.__max_dist_value is None:
                         self.__max_dist_value = value
                     if value > self.__max_dist_value:
@@ -418,12 +425,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 else:  # 'lol_w_upl'
                     lower_limit = value
 
-                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
-
-                if dstFunc is None:
-                    return
-
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
                     return
 
                 chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
@@ -436,6 +438,102 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
 
                 if len(self.atomSelectionSet) < 2:
+                    return
+
+                if len(self.atomSelectionSet[0]) == 1 and len(self.atomSelectionSet[1]) == 1:
+
+                    isRdc = True
+
+                    chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                    seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                    comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                    atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                    chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                    seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                    comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                    atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                    if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                        isRdc = False
+
+                    if chain_id_1 != chain_id_2:
+                        isRdc = False
+
+                    if abs(seq_id_1 - seq_id_2) > 1:
+                        isRdc = False
+
+                    if abs(seq_id_1 - seq_id_2) == 1:
+
+                        if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                            pass
+
+                        else:
+                            isRdc = False
+
+                    elif atom_id_1 == atom_id_2:
+                        isRdc = False
+
+                    elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                        if not any(b for b in self.__ccU.lastBonds
+                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                isRdc = False
+
+                    if not isRdc:
+                        self.__cur_subtype_altered = False
+
+                    else:
+
+                        isRdc = False
+
+                        if self.__cur_subtype_altered and atom_id_1 + atom_id_2 == self.auxAtomSelectionSet:
+                            isRdc = True
+
+                        elif value < 1.0 or value > 6.0:
+                            self.auxAtomSelectionSet = atom_id_1 + atom_id_2
+                            self.__cur_subtype_altered = True
+                            self.__cur_rdc_orientation += 1
+                            isRdc = True
+
+                        if isRdc:
+                            self.__cur_subtype = 'rdc'
+                            self.rdcRestraints += 1
+                            self.distRestraints -= 1
+
+                            target_value = value
+                            lower_limit = upper_limit = None
+
+                            if len(self.numberSelection) > 2:
+                                error = self.numberSelection[1]
+                                lower_limit = target_value - error
+                                upper_limit = target_value + error
+
+                            dstFunc = self.validateRdcRange(weight, self.__cur_rdc_orientation, target_value, lower_limit, upper_limit)
+
+                            if dstFunc is None:
+                                return
+
+                            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                                  self.atomSelectionSet[1]):
+                                if isLongRangeRestraint([atom1, atom2]):
+                                    continue
+                                if self.__debug:
+                                    print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+                            self.__cur_subtype = 'dist'
+
+                            return
+
+                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
+
+                if dstFunc is None:
                     return
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -896,6 +994,8 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterTorsion_angle_restraints(self, ctx: CyanaMRParser.Torsion_angle_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dihed'
 
+        self.__cur_subtype_altered = False
+
     # Exit a parse tree produced by CyanaMRParser#torsion_angle_restraints.
     def exitTorsion_angle_restraints(self, ctx: CyanaMRParser.Torsion_angle_restraintsContext):  # pylint: disable=unused-argument
         pass
@@ -1234,6 +1334,8 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'rdc'
 
+        self.__cur_subtype_altered = False
+
         self.rdcParameterDict = {}
 
     # Exit a parse tree produced by CyanaMRParser#rdc_restraints.
@@ -1242,7 +1344,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#rdc_parameter.
     def enterRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):  # pylint: disable=unused-argument
-        orientation = int(str(ctx.Integer(0)))
+        orientation = self.__cur_rdc_orientation = int(str(ctx.Integer(0)))
         magnitude = float(str(ctx.Float(0)))
         rhombicity = float(str(ctx.Float(1)))
         orientationCenterSeqId = int(str(ctx.Integer(1)))
@@ -1380,19 +1482,17 @@ class CyanaMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an RDC vector over multiple covalent bonds; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -1503,6 +1603,8 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#pcs_restraints.
     def enterPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'pcs'
+
+        self.__cur_subtype_altered = False
 
         self.pcsParameterDict = {}
 
@@ -1674,6 +1776,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__reasons is not None and 'noepk_fixres' in self.__reasons:
             self.__cur_subtype = 'noepk'
 
+        self.__cur_subtype_altered = False
+
     # Exit a parse tree produced by CyanaMRParser#fixres_distance_restraints.
     def exitFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
         pass
@@ -1791,6 +1895,8 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext not in ('upv', 'lov') else 'noepk'
         if self.__reasons is not None and 'noepk_fixresw' in self.__reasons:
             self.__cur_subtype = 'noepk'
+
+        self.__cur_subtype_altered = False
 
     # Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
     def exitFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -1946,6 +2052,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__reasons is not None and 'noepk_fixresw2' in self.__reasons:
             self.__cur_subtype = 'noepk'
 
+        self.__cur_subtype_altered = False
+
     # Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
     def exitFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext):  # pylint: disable=unused-argument
         pass
@@ -2071,6 +2179,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__reasons is not None and 'noepk_fixatm' in self.__reasons:
             self.__cur_subtype = 'noepk'
 
+        self.__cur_subtype_altered = False
+
     # Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
     def exitFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext):  # pylint: disable=unused-argument
         pass
@@ -2188,6 +2298,8 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext not in ('upv', 'lov') else 'noepk'
         if self.__reasons is not None and 'noepk_fixatmw' in self.__reasons:
             self.__cur_subtype = 'noepk'
+
+        self.__cur_subtype_altered = False
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
     def exitFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -2343,6 +2455,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__reasons is not None and 'noepk_fixatmw2' in self.__reasons:
             self.__cur_subtype = 'noepk'
 
+        self.__cur_subtype_altered = False
+
     # Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
     def exitFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext):  # pylint: disable=unused-argument
         pass
@@ -2465,6 +2579,8 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#cco_restraints.
     def enterCco_restraints(self, ctx: CyanaMRParser.Cco_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'jcoup'
+
+        self.__cur_subtype_altered = False
 
     # Exit a parse tree produced by CyanaMRParser#cco_restraints.
     def exitCco_restraints(self, ctx: CyanaMRParser.Cco_restraintsContext):  # pylint: disable=unused-argument

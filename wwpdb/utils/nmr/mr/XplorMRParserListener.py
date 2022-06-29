@@ -1396,7 +1396,7 @@ class XplorMRParserListener(ParseTreeListener):
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
-                self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['atom_id']} or "\
                     f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
                 return False
@@ -1536,19 +1536,17 @@ class XplorMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -2146,19 +2144,17 @@ class XplorMRParserListener(ParseTreeListener):
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
-                else:
+                elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                    if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                        if not any(b for b in self.__ccU.lastBonds
-                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    "Found an RDC vector over multiple covalent bonds in the 'VEANgle' statement; "\
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                                return
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an RDC vector over multiple covalent bonds in the 'VEANgle' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -2409,19 +2405,17 @@ class XplorMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds in the 'TENSOr' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an RDC vector over multiple covalent bonds in the 'TENSOr' statement; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -2562,19 +2556,17 @@ class XplorMRParserListener(ParseTreeListener):
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
-                else:
+                elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                    if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                        if not any(b for b in self.__ccU.lastBonds
-                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    "Found an RDC vector over multiple covalent bonds in the 'ANISotropy' statement; "\
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                                return
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an RDC vector over multiple covalent bonds in the 'ANISotropy' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -2940,19 +2932,17 @@ class XplorMRParserListener(ParseTreeListener):
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
-                else:
+                elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                    if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                        if not any(b for b in self.__ccU.lastBonds
-                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    "Found an J-coupling vector over multiple covalent bonds in the 'COUPling' statement; "\
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                                return
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an J-coupling vector over multiple covalent bonds in the 'COUPling' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            return
 
             if len(self.atomSelectionSet) == 4:
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -3587,19 +3577,17 @@ class XplorMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an dihedral angle vector over multiple covalent bonds in the 'RAMAchandran' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an dihedral angle vector over multiple covalent bonds in the 'RAMAchandran' statement; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
         for i in range(0, len(self.atomSelectionSet), 4):
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[i],
@@ -3809,19 +3797,17 @@ class XplorMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found a diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found a diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -5234,19 +5220,17 @@ class XplorMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds in the 'XRDCoupling' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an RDC vector over multiple covalent bonds in the 'XRDCoupling' statement; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -5370,19 +5354,17 @@ class XplorMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an orientation vector over multiple covalent bonds in the 'XANGle' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an orientation vector over multiple covalent bonds in the 'XANGle' statement; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -5503,19 +5485,17 @@ class XplorMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an CCR vector over multiple covalent bonds in the 'XCCR' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an CCR vector over multiple covalent bonds in the 'XCCR' statement; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
                                                   self.atomSelectionSet[2]):

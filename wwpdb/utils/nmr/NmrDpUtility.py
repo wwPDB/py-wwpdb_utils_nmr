@@ -21107,7 +21107,7 @@ class NmrDpUtility:
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
 
-                    # support content subtype change during MR validation with the coordinates for XPLOR-NIH only
+                    # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
 
             elif file_type == 'nm-res-cns':
@@ -21434,6 +21434,9 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    # support content subtype change during MR validation with the coordinates
+                    input_source.setItemValue('content_subtype', listener.getContentSubtype())
 
             elif file_type == 'nm-res-ros':
                 reader = RosettaMRReader(self.__verbose, self.__lfh,

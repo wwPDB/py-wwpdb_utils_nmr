@@ -1832,8 +1832,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 func['lower_limit'] = lb
                 func['upper_limit'] = ub
-                func['upper_linear_limit'] = ub + rswitch
-                func['lower_linear_limit'] = lb - rswitch
+                if ub + rswitch < DIST_ERROR_MAX or self.__cur_subtype != 'dist':
+                    func['upper_linear_limit'] = ub + rswitch
+                if lb - rswitch >= DIST_ERROR_MIN or self.__cur_subtype != 'dist':
+                    func['lower_linear_limit'] = lb - rswitch
 
             elif ctx.PERIODICBOUNDED():  # period lb ub sd rswitch tag
                 funcType = 'PERIODICBOUNDED'
@@ -1891,8 +1893,11 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 func['lower_limit'] = lb
                 func['upper_limit'] = ub
-                func['upper_linear_limit'] = ub + rswitch
-                func['lower_linear_limit'] = lb - rswitch
+
+                if ub + rswitch < DIST_ERROR_MAX or self.__cur_subtype != 'dist':
+                    func['upper_linear_limit'] = ub + rswitch
+                if lb - rswitch >= DIST_ERROR_MIN or self.__cur_subtype != 'dist':
+                    func['lower_linear_limit'] = lb - rswitch
 
             elif ctx.OFFSETPERIODICBOUNDED():  # offset period lb ub sd rswitch tag
                 funcType = 'OFFSETPERIODICBOUNDED'
@@ -1952,8 +1957,11 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 func['lower_limit'] = lb + offset
                 func['upper_limit'] = ub + offset
-                func['upper_linear_limit'] = ub + rswitch + offset
-                func['lower_linear_limit'] = lb - rswitch + offset
+
+                if ub + rswitch < DIST_ERROR_MAX or self.__cur_subtype != 'dist':
+                    func['upper_linear_limit'] = ub + rswitch
+                if lb - rswitch >= DIST_ERROR_MIN or self.__cur_subtype != 'dist':
+                    func['lower_linear_limit'] = lb - rswitch
 
             elif ctx.AMBERPERIODIC() or ctx.CHARMMPERIODIC():  # x0 n_period k
                 funcType = 'AMBERPERIODIC' if ctx.AMBERPERIODIC() else 'CHARMMPERIODIC'

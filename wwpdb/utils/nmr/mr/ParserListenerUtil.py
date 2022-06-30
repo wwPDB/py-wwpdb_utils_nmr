@@ -281,6 +281,9 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
             elif atomId.startswith('2H'):
                 if atomId[1:] + '2' in refAtomIdList:
                     return atomId[1:] + '2'
+            elif atomId == "HX'":  # derived from 2mko AMBER RDC restraints
+                if "H4'" in refAtomIdList:
+                    return "H4'"
 
     # GROMACS atom nomenclature
     if refCompId is not None:

@@ -4576,9 +4576,29 @@ class AmberMRParserListener(ParseTreeListener):
                 if _id in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_id])
                 else:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.\n"
-                    continue
+                    atom_id_i = None
+                    if _jd in self.__atomNumberDict:
+                        atom_sel_j = self.__atomNumberDict[_jd]
+                        comp_id_j = atom_sel_j['comp_id']
+                        atom_id_j = atom_sel_j['atom_id']
+                        if self.__ccU.updateChemCompDict(comp_id_j):  # matches with comp_id in CCD
+                            if atom_id_j[0] == 'H':
+                                b = next((b for b in self.__ccU.lastBonds
+                                          if atom_id_j in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
+                            else:
+                                b = next((b for b in self.__ccU.lastBonds
+                                          if (b[self.__ccU.ccbAtomId1] == atom_id_j and b[self.__ccU.ccbAtomId2][0] != 'H')
+                                          or (b[self.__ccU.ccbAtomId2] == atom_id_j and b[self.__ccU.ccbAtomId1][0] != 'H')), None)
+                            if b is not None:
+                                atom_id_i = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_j else b[self.__ccU.ccbAtomId2]
+                                atom_sel_i = copy.copy(atom_sel_j)
+                                atom_sel_i['auth_atom_id'] = atom_sel_i['atom_id'] = atom_id_i
+                                self.__atomNumberDict[_id] = atom_sel_i
+                                atomSelection.append(atom_sel_i)
+                    if atom_id_i is None:
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                            f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.\n"
+                        continue
 
                 chain_id_1 = atomSelection[0]['chain_id']
                 seq_id_1 = atomSelection[0]['seq_id']
@@ -4592,9 +4612,29 @@ class AmberMRParserListener(ParseTreeListener):
                 if _jd in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_jd])
                 else:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.\n"
-                    continue
+                    atom_id_j = None
+                    if _id in self.__atomNumberDict:
+                        atom_sel_i = self.__atomNumberDict[_id]
+                        comp_id_i = atom_sel_i['comp_id']
+                        atom_id_i = atom_sel_i['atom_id']
+                        if self.__ccU.updateChemCompDict(comp_id_i):  # matches with comp_id in CCD
+                            if atom_id_i[0] == 'H':
+                                b = next((b for b in self.__ccU.lastBonds
+                                          if atom_id_i in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
+                            else:
+                                b = next((b for b in self.__ccU.lastBonds
+                                          if (b[self.__ccU.ccbAtomId1] == atom_id_i and b[self.__ccU.ccbAtomId2][0] != 'H')
+                                          or (b[self.__ccU.ccbAtomId2] == atom_id_i and b[self.__ccU.ccbAtomId1][0] != 'H')), None)
+                            if b is not None:
+                                atom_id_j = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_i else b[self.__ccU.ccbAtomId2]
+                                atom_sel_j = copy.copy(atom_sel_i)
+                                atom_sel_j['auth_atom_id'] = atom_sel_j['atom_id'] = atom_id_j
+                                self.__atomNumberDict[_jd] = atom_sel_j
+                                atomSelection.append(atom_sel_j)
+                    if atom_id_j is None:
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                            f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.\n"
+                        continue
 
                 chain_id_2 = atomSelection[0]['chain_id']
                 seq_id_2 = atomSelection[0]['seq_id']

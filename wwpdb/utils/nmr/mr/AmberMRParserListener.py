@@ -3168,8 +3168,8 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.ATNAM_Lp():
             varName = 'atnam'
 
-            if ctx.Decimal_AQP():
-                decimal = int(str(ctx.Decimal_AQP()))
+            if ctx.Decimal_AP():
+                decimal = int(str(ctx.Decimal_AP()))
                 if decimal <= 0 or decimal > MAX_COL_IAT:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IAT}.\n"
@@ -3180,20 +3180,20 @@ class AmberMRParserListener(ParseTreeListener):
                     valArray = ','.join([str(val) for col, val in enumerate(self.atnam) if len(val) > 0 and col < maxCol])
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                        f"and '{varName}({decimal})={str(ctx.Qstring_AQP())}', which will overwrite.\n"
+                        f"and '{varName}({decimal})={str(ctx.Qstring_AP())}', which will overwrite.\n"
                 if self.setAtnamCol is None:
                     self.setAtnamCol = []
                 if decimal in self.setAtnamCol:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The argument value of '{varName}({decimal})' must be unique. "\
-                        f"'{varName}({decimal})={str(ctx.Qstring_AQP())}' will overwrite.\n"
+                        f"'{varName}({decimal})={str(ctx.Qstring_AP())}' will overwrite.\n"
                 else:
                     self.setAtnamCol.append(decimal)
-                rawStrArray = str(ctx.Qstring_AQP()).split(',')
+                rawStrArray = str(ctx.Qstring_AP()).split(',')
                 val = rawStrArray[0].strip('\'').strip('"').rstrip()
                 if len(rawStrArray) > 1:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The '{varName}({decimal})={str(ctx.Qstring_AQP())}' can not be an array of strings, "\
+                        f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "\
                         f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
                 self.atnam[decimal - 1] = val
                 if len(val) == 0:
@@ -3279,8 +3279,8 @@ class AmberMRParserListener(ParseTreeListener):
                 self.numGrnamCol[varNum] = 0
                 self.setGrnamCol[varNum] = None
 
-            if ctx.Decimal_AQP():
-                decimal = int(str(ctx.Decimal_AQP()))
+            if ctx.Decimal_AP():
+                decimal = int(str(ctx.Decimal_AP()))
                 if decimal <= 0 or decimal > MAX_COL_IGR:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IGR}.\n"
@@ -3291,20 +3291,20 @@ class AmberMRParserListener(ParseTreeListener):
                     valArray = ','.join([str(val) for col, val in enumerate(self.grnam[varNum]) if len(val) > 0 and col < maxCol])
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                        f"and '{varName}({decimal})={str(ctx.Qstring_AQP())}', which will overwrite.\n"
+                        f"and '{varName}({decimal})={str(ctx.Qstring_AP())}', which will overwrite.\n"
                 if self.setGrnamCol[varNum] is None:
                     self.setGrnamCol[varNum] = []
                 if decimal in self.setGrnamCol[varNum]:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The argument value of '{varName}({decimal})' must be unique. "\
-                        f"'{varName}({decimal})={str(ctx.Qstring_AQP())}' will overwrite.\n"
+                        f"'{varName}({decimal})={str(ctx.Qstring_AP())}' will overwrite.\n"
                 else:
                     self.setGrnamCol[varNum].append(decimal)
-                rawStrArray = str(ctx.Qstring_AQP()).split(',')
+                rawStrArray = str(ctx.Qstring_AP()).split(',')
                 val = rawStrArray[0].strip('\'').strip('"').rstrip()
                 if len(rawStrArray) > 1:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The '{varName}({decimal})={str(ctx.Qstring_AQP())}' can not be an array of strings, "\
+                        f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "\
                         f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
                 self.grnam[varNum][decimal - 1] = val
                 if len(val) == 0:

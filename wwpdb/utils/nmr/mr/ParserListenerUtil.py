@@ -21,7 +21,7 @@ except ImportError:
 
 
 MAX_ERROR_REPORT = 1
-MAX_ERR_LINENUM_REPORT = 100
+MAX_ERR_LINENUM_REPORT = 20
 
 
 REPRESENTATIVE_MODEL_ID = 1
@@ -275,6 +275,12 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                 return atomId[0:-1] + 'A'
             elif atomId[0].endswith('3') and (atomId[0:-1] + 'B') in refAtomIdList:
                 return atomId[0:-1] + 'B'
+            elif atomId.startswith('1H'):
+                if atomId[1:] + '1' in refAtomIdList:
+                    return atomId[1:] + '1'
+            elif atomId.startswith('2H'):
+                if atomId[1:] + '2' in refAtomIdList:
+                    return atomId[1:] + '2'
 
     # GROMACS atom nomenclature
     if refCompId is not None:

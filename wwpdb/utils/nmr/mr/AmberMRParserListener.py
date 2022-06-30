@@ -238,6 +238,8 @@ class AmberMRParserListener(ParseTreeListener):
     lastComment = None
     prevComment = None
 
+    lastDihedPlaneSeqId = None
+
     # IAT
     numIatCol = 0
     setIatCol = None
@@ -541,9 +543,14 @@ class AmberMRParserListener(ParseTreeListener):
                                            r'\(\s*(\d+) (\S+) (\S+)\s*\) '
                                            r'([-+]?\d*\.?\d+) '
                                            r'([-+]?\d*\.?\d+).*')
+
         self.dihed_chiral_sander_pat = re.compile(r'chirality for residue (\d+) atoms: '
                                                   r'(\S+) (\S+) (\S+) (\S+).*')
         self.dihed_omega_sander_pat = re.compile(r'trans-omega constraint for residue (\d+).*')
+
+        self.dihed_plane_residue_pat = re.compile(r'PLANAR RESTRAINTS FOR RESIDUE (\d+).*')
+        self.dihed_plane_sander_pat = re.compile(r'ANGLE (\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+) -> '
+                                                 r'([-+]?\d*\.?\d+).*')
 
         self.dihed_omega_atoms = ['CA', 'N', 'C', 'CA']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), CA(i-1)
 
@@ -611,6 +618,9 @@ class AmberMRParserListener(ParseTreeListener):
             else:
                 break
         self.lastComment = None if len(comment) == 0 else ' '.join(comment)
+        if self.dihed_plane_residue_pat.match(self.lastComment):
+            g = self.dihed_plane_residue_pat.search(self.lastComment).groups()
+            self.lastDihedPlaneSeqId = int(g[0])
 
     # Enter a parse tree produced by AmberMRParser#nmr_restraint.
     def enterNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):  # pylint: disable=unused-argument
@@ -1198,6 +1208,26 @@ class AmberMRParserListener(ParseTreeListener):
                         go = None\
                             if self.lastComment is None or not self.dihed_omega_sander_pat.match(self.lastComment)\
                             else self.dihed_omega_sander_pat.search(self.lastComment).groups()
+
+                        gp = None\
+                            if self.lastComment is None or self.lastDihedPlaneSeqId is None or not self.dihed_plane_sander_pat.match(self.lastComment)\
+                            else self.dihed_plane_sander_pat.search(self.lastComment).groups()
+
+                        if gp is not None:
+                            for col, iat in enumerate(self.iat):
+
+                                if iat > 0:
+                                    if iat in self.__sanderAtomNumberDict:
+                                        pass
+                                    else:
+                                        factor = {'auth_seq_id': self.lastDihedPlaneSeqId,
+                                                  'auth_atom_id': gp[col],
+                                                  'iat': iat
+                                                  }
+                                        if not self.updateSanderAtomNumberDict(factor):
+                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
+                                                f"based on Sander comment 'PLANAR RESTRAINTS FOR RESIDUE {self.lastDihedPlaneSeqId}' and {gp[col]!r}.\n"
 
                         if go is not None:
                             for col, iat in enumerate(self.iat):
@@ -2449,9 +2479,9 @@ class AmberMRParserListener(ParseTreeListener):
                 compId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
                 cifSeqId = None if useDefault else ps['seq_id'][idx]
-                authCompId = factor['auth_comp_id'].upper()
+                authCompId = factor['auth_comp_id'].upper() if 'auth_comp_id' in factor else 'None'
 
-                if (((authCompId in (compId, origCompId) or compId not in monDict3) and useDefault) or not useDefault)\
+                if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
                    or compId == translateToStdResName(authCompId):
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)

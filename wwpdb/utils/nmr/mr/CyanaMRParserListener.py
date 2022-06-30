@@ -1051,6 +1051,10 @@ class CyanaMRParserListener(ParseTreeListener):
             if angleName in ('EPSILN', 'EPSLN'):
                 angleName = 'EPSILON'
 
+            # nucleic CHI angle
+            if angleName == 'CHIN':
+                angleName = 'CHI'
+
             if angleName not in KNOWN_ANGLE_NAMES:
                 lenAngleName = len(angleName)
                 try:

@@ -837,6 +837,15 @@ class AmberMRParserListener(ParseTreeListener):
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
                 if self.__atomNumberDict is not None:
 
+                    subtype_name = ''
+                    if self.__cur_subtype == 'dist':
+                        subtype_name = ' as a distance restraint'
+                    elif self.__cur_subtype == 'ang':
+                        subtype_name = ' as an angle restraint'
+                    elif self.__cur_subtype == 'dihed':
+                        subtype_name = ' as a dihedral angle restraint'
+                    hint = '' if self.lastComment is None else f" or Sander comment {self.lastComment!r} couldn't be interpreted{subtype_name}"
+
                     for col, iat in enumerate(self.iat):
 
                         atomSelection = []
@@ -848,19 +857,19 @@ class AmberMRParserListener(ParseTreeListener):
                                     atomSelection.append(self.__atomNumberDict[iat])
                                 else:
                                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                        f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                        f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file{hint}.\n"
                             elif iat < 0:
                                 varNum = col + 1
                                 if self.igr is None:
                                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
+                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.\n"
                                 elif varNum in self.igr:
                                     for igr in self.igr[varNum]:
                                         if igr in self.__atomNumberDict:
                                             atomSelection.append(self.__atomNumberDict[igr])
                                         else:
                                             self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                                f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file.\n"
+                                                f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file{hint}.\n"
 
                         else:
 
@@ -882,7 +891,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 varNum = col + 1
                                 if self.igr is None:
                                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
+                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.\n"
                                 elif varNum in self.igr:
                                     if varNum not in self.grnam:
                                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1145,7 +1154,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 varNum = col + 1
                                 if self.igr is None:
                                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file.\n"
+                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.\n"
                                 elif varNum in self.igr:
                                     igr = self.igr[varNum]
                                     if igr[0] not in self.__sanderAtomNumberDict:

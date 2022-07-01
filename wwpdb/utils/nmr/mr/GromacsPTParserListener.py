@@ -23,10 +23,12 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (letterToDigit, indexToLetter,
+    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+                                           letterToDigit, indexToLetter,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
-                                           trimSequenceAlignment)
+                                           trimSequenceAlignment,
+                                           retrieveAtomIdentFromMRMap)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.GromacsPTParser import GromacsPTParser
@@ -37,14 +39,19 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (letterToDigit, indexToLetter,
+    from nmr.AlignUtil import (monDict3,
+                               letterToDigit, indexToLetter,
                                alignPolymerSequence,
                                assignPolymerSequence,
-                               trimSequenceAlignment)
+                               trimSequenceAlignment,
+                               retrieveAtomIdentFromMRMap)
 
 
 # This class defines a complete listener for a parse tree produced by GromacsPTParser.
 class GromacsPTParserListener(ParseTreeListener):
+
+    # atom name mapping of public MR file between the archive coordinates and submitted ones
+    __mrAtomNameMapping = None
 
     defaultStatements = 0
     moleculetypeStatements = 0
@@ -118,7 +125,10 @@ class GromacsPTParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 mrAtomNameMapping=None,
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None):
+
+        self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         if cR is not None:
             ret = checkCoordinates(verbose, log, representativeModelId, cR, cC, testTag=False)
@@ -188,6 +198,8 @@ class GromacsPTParserListener(ParseTreeListener):
             atomType = atom['atom_type']
             _seqId = atom['auth_seq_id']
             compId = atom['auth_comp_id']
+            if compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                _, compId, atomName = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, compId, atomName)
             # the second condition indicates metal ions
             if terminus[atomNum - 2]\
                or (compId == atomName and compId.title() in NAMES_ELEMENT)\

@@ -44,6 +44,7 @@ class XplorMRReader:
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 mrAtomNameMapping=None,
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
         self.__verbose = verbose
@@ -54,6 +55,7 @@ class XplorMRReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__representativeModelId = representativeModelId
+        self.__mrAtomNameMapping = mrAtomNameMapping
 
         if cR is not None and cC is None:
             cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
@@ -148,6 +150,7 @@ class XplorMRReader:
             walker = ParseTreeWalker()
             listener = XplorMRParserListener(self.__verbose, self.__lfh,
                                              self.__representativeModelId,
+                                             self.__mrAtomNameMapping,
                                              self.__cR, self.__cC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              self.__reasons)

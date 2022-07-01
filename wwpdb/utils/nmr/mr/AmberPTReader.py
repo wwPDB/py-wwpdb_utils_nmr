@@ -44,6 +44,7 @@ class AmberPTReader:
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 mrAtomNameMapping=None,
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -52,6 +53,7 @@ class AmberPTReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__representativeModelId = representativeModelId
+        self.__mrAtomNameMapping = mrAtomNameMapping
 
         if cR is not None and cC is None:
             cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
@@ -142,6 +144,7 @@ class AmberPTReader:
             walker = ParseTreeWalker()
             listener = AmberPTParserListener(self.__verbose, self.__lfh,
                                              self.__representativeModelId,
+                                             self.__mrAtomNameMapping,
                                              self.__cR, self.__cC,
                                              self.__ccU, self.__csStat, self.__nefT)
             walker.walk(listener, tree)

@@ -86,6 +86,9 @@ class GromacsMRParserListener(ParseTreeListener):
     __debug = False
     __omitDistLimitOutlier = True
 
+    # atom name mapping of public MR file between the archive coordinates and submitted ones
+    # __mrAtomNameMapping = None
+
     distRestraints = 0      # GROMACS: Distance restraints
     angRestraints = 0       # GROMACS: Angle restraints
     dihedRestraints = 0     # GROMACS: Dihedral angle restraints
@@ -150,10 +153,14 @@ class GromacsMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 mrAtomNameMapping=None,   # pylint: disable=unused-argument
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None,
                  atomNumberDict=None):
         # self.__verbose = verbose
         # self.__lfh = log
+
+        # self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
+
         # self.__cR = cR
         self.__hasCoord = cR is not None
 

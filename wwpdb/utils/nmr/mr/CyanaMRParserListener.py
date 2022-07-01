@@ -38,11 +38,13 @@ try:
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from wwpdb.utils.nmr.AlignUtil import (updatePolySeqRst,
+    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+                                           updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
-                                           trimSequenceAlignment)
+                                           trimSequenceAlignment,
+                                           retrieveAtomIdentFromMRMap)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.CyanaMRParser import CyanaMRParser
@@ -69,11 +71,13 @@ except ImportError:
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from nmr.AlignUtil import (updatePolySeqRst,
+    from nmr.AlignUtil import (monDict3,
+                               updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
-                               trimSequenceAlignment)
+                               trimSequenceAlignment,
+                               retrieveAtomIdentFromMRMap)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -112,6 +116,9 @@ class CyanaMRParserListener(ParseTreeListener):
     __debug = False
     __remediate = False
     __omitDistLimitOutlier = True
+
+    # atom name mapping of public MR file between the archive coordinates and submitted ones
+    __mrAtomNameMapping = None
 
     distRestraints = 0      # CYANA: Distance restraint file (.upl or .lol)
     dihedRestraints = 0     # CYANA: Torsion angle restraint file (.aco)
@@ -197,10 +204,14 @@ class CyanaMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 mrAtomNameMapping=None,
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None, upl_or_lol=None, file_ext=None):
         # self.__verbose = verbose
         # self.__lfh = log
+
+        self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
+
         # self.__cR = cR
         self.__hasCoord = cR is not None
 
@@ -514,7 +525,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             lower_limit = upper_limit = None
 
                             if len(self.numberSelection) > 2:
-                                error = self.numberSelection[1]
+                                error = abs(self.numberSelection[1])
                                 lower_limit = target_value - error
                                 upper_limit = target_value + error
 
@@ -777,10 +788,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def getRealChainSeqId(self, ps, seqId, compId):
+    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
         compId = translateToStdResName(compId)
         if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
-            seqKey = (ps['chain_id'], seqId)
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
@@ -793,7 +804,7 @@ class CyanaMRParserListener(ParseTreeListener):
             idx = ps['seq_id'].index(seqId)
             if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                 return ps['auth_chain_id'], ps['auth_seq_id'][idx]
-        return ps['chain_id'], seqId
+        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId
 
     def assignCoordPolymerSequence(self, seqId, compId, atomId):
         """ Assign polymer sequences of the coordinates.
@@ -801,6 +812,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
         chainAssign = []
         _seqId = seqId
+
+        if self.__mrAtomNameMapping is not None and compId not in monDict3:
+            seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'], _seqId, translateToStdResName(compId))
 
@@ -823,7 +837,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if self.__hasNonPoly:
             for np in self.__nonPoly:
-                chainId, seqId = self.getRealChainSeqId(np, _seqId, compId)
+                chainId, seqId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
@@ -860,7 +874,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if self.__hasNonPoly:
                 for np in self.__nonPoly:
-                    chainId = np['chain_id']
+                    chainId = np['auth_chain_id']
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
@@ -902,6 +916,9 @@ class CyanaMRParserListener(ParseTreeListener):
         """
 
         atomSelection = []
+
+        if self.__mrAtomNameMapping is not None and compId not in monDict3:
+            seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         for chainId, cifSeqId, cifCompId in chainAssign:
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)

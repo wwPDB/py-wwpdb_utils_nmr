@@ -46,6 +46,7 @@ class GromacsMRReader:
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 mrAtomNameMapping=None,
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None,
                  atomNumberDict=None):
         self.__verbose = verbose
@@ -56,6 +57,7 @@ class GromacsMRReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__representativeModelId = representativeModelId
+        self.__mrAtomNameMapping = mrAtomNameMapping
 
         if cR is not None and cC is None:
             cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
@@ -123,6 +125,7 @@ class GromacsMRReader:
             if ptFilePath is not None and self.__atomNumberDict is None:
                 ptR = GromacsPTReader(self.__verbose, self.__lfh,
                                       self.__representativeModelId,
+                                      self.__mrAtomNameMapping,
                                       self.__cR, self.__cC,
                                       self.__ccU, self.__csStat, self.__nefT)
                 ptPL, _, _ = ptR.parse(ptFilePath, cifFilePath)
@@ -162,6 +165,7 @@ class GromacsMRReader:
             walker = ParseTreeWalker()
             listener = GromacsMRParserListener(self.__verbose, self.__lfh,
                                                self.__representativeModelId,
+                                               self.__mrAtomNameMapping,
                                                self.__cR, self.__cC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                self.__atomNumberDict)

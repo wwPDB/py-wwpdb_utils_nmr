@@ -3674,6 +3674,9 @@ class NmrDpUtility:
         # suspended error items for lazy evaluation
         self.__suspended_errors_for_lazy_eval = []
 
+        # atom name mapping of public MR file between the coordinates and submitted file
+        self.__mr_atom_name_mapping = None
+
         # RCI
         self.__rci = RCI(False, self.__lfh)
 
@@ -8020,44 +8023,44 @@ class NmrDpUtility:
         """
 
         if file_type == 'nm-res-xpl':
-            return XplorMRReader(verbose, self.__lfh, None, None, None,
+            return XplorMRReader(verbose, self.__lfh, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT,
                                  reasons)
         if file_type == 'nm-res-cns':
-            return CnsMRReader(verbose, self.__lfh, None, None, None,
+            return CnsMRReader(verbose, self.__lfh, None, None, None, None,
                                self.__ccU, self.__csStat, self.__nefT,
                                reasons)
         if file_type == 'nm-res-amb':
-            return AmberMRReader(verbose, self.__lfh, None, None, None,
+            return AmberMRReader(verbose, self.__lfh, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-aux-amb':
-            return AmberPTReader(verbose, self.__lfh, None, None, None,
+            return AmberPTReader(verbose, self.__lfh, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-res-cya':
-            reader = CyanaMRReader(verbose, self.__lfh, None, None, None,
+            reader = CyanaMRReader(verbose, self.__lfh, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT,
                                    reasons,
                                    file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
             reader.setRemediateMode(self.__remediation_mode)
             return reader
         if file_type == 'nm-res-ros':
-            reader = RosettaMRReader(verbose, self.__lfh, None, None, None,
+            reader = RosettaMRReader(verbose, self.__lfh, None, None, None, None,
                                      self.__ccU, self.__csStat, self.__nefT,
                                      reasons)
             reader.setRemediateMode(self.__remediation_mode)
             return reader
         if file_type == 'nm-res-bio':
-            return BiosymMRReader(verbose, self.__lfh, None, None, None,
+            return BiosymMRReader(verbose, self.__lfh, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
                                   reasons)
         if file_type == 'nm-res-gro':
-            return GromacsMRReader(verbose, self.__lfh, None, None, None,
+            return GromacsMRReader(verbose, self.__lfh, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-aux-gro':
-            return GromacsPTReader(verbose, self.__lfh, None, None, None,
+            return GromacsPTReader(verbose, self.__lfh, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-res-dyn':
-            return DynamoMRReader(verbose, self.__lfh, None, None, None,
+            return DynamoMRReader(verbose, self.__lfh, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
                                   reasons)
 
@@ -10160,6 +10163,8 @@ class NmrDpUtility:
 
         split_file_list = []
 
+        self.__mr_atom_name_mapping = []
+
         for ar in self.__inputParamDict[ar_file_path_list]:
 
             src_file = ar['file_name']
@@ -10249,6 +10254,7 @@ class NmrDpUtility:
 
                 header = True
                 pdb_record = False
+                footer = False
 
                 has_datablock = False
                 has_anonymous_saveframe = False
@@ -10310,9 +10316,27 @@ class NmrDpUtility:
 
                         # skip MR footer
                         if 'Submitted Coord H atom name' in line:
-                            break
+                            footer = True
+                            continue
 
-                        ofp.write(line)
+                        if footer:
+                            col = line.split()
+                            if len(col) == 10:
+                                original_comp_id = col[5]
+                                if original_comp_id not in monDict3:  # extract non-standard residues
+                                    try:
+                                        atom_map = {'auth_atom_id': col[1],
+                                                    'auth_comp_id': col[2],
+                                                    'auth_seq_id': int(col[3]),
+                                                    'original_atom_id': col[4],
+                                                    'original_comp_id': original_comp_id,
+                                                    'original_seq_id': int(col[3])}
+                                        self.__mr_atom_name_mapping.append(atom_map)
+                                    except ValueError:
+                                        pass
+
+                        else:
+                            ofp.write(line)
 
                 if last_str_line_num - first_str_line_num < 10:
                     has_str_format = has_cif_format = False
@@ -20820,6 +20844,7 @@ class NmrDpUtility:
 
                     reader = AmberPTReader(self.__verbose, self.__lfh,
                                            self.__representative_model_id,
+                                           self.__mr_atom_name_mapping,
                                            self.__cR, cC,
                                            self.__ccU, self.__csStat, self.__nefT)
 
@@ -20892,6 +20917,7 @@ class NmrDpUtility:
 
                     reader = GromacsPTReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
+                                             self.__mr_atom_name_mapping,
                                              self.__cR, cC,
                                              self.__ccU, self.__csStat, self.__nefT)
 
@@ -21003,6 +21029,7 @@ class NmrDpUtility:
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
+                                       self.__mr_atom_name_mapping,
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT)
 
@@ -21014,6 +21041,7 @@ class NmrDpUtility:
                     if reasons is not None:
                         reader = XplorMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
+                                               self.__mr_atom_name_mapping,
                                                self.__cR, cC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
@@ -21113,6 +21141,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-cns':
                 reader = CnsMRReader(self.__verbose, self.__lfh,
                                      self.__representative_model_id,
+                                     self.__mr_atom_name_mapping,
                                      self.__cR, cC,
                                      self.__ccU, self.__csStat, self.__nefT)
 
@@ -21124,6 +21153,7 @@ class NmrDpUtility:
                     if reasons is not None:
                         reader = CnsMRReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
+                                             self.__mr_atom_name_mapping,
                                              self.__cR, cC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
@@ -21220,6 +21250,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-amb':
                 reader = AmberMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
+                                       self.__mr_atom_name_mapping,
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT,
                                        amberAtomNumberDict)
@@ -21328,6 +21359,7 @@ class NmrDpUtility:
 
                 reader = CyanaMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
+                                       self.__mr_atom_name_mapping,
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT,
                                        None, upl_or_lol, cya_file_ext)
@@ -21341,6 +21373,7 @@ class NmrDpUtility:
                     if reasons is not None:
                         reader = CyanaMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
+                                               self.__mr_atom_name_mapping,
                                                self.__cR, cC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons, upl_or_lol, cya_file_ext)
@@ -21441,6 +21474,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-ros':
                 reader = RosettaMRReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
+                                         self.__mr_atom_name_mapping,
                                          self.__cR, cC,
                                          self.__ccU, self.__csStat, self.__nefT)
                 reader.setRemediateMode(self.__remediation_mode)
@@ -21453,6 +21487,7 @@ class NmrDpUtility:
                     if reasons is not None:
                         reader = RosettaMRReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
+                                                 self.__mr_atom_name_mapping,
                                                  self.__cR, cC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
@@ -21550,6 +21585,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-bio':
                 reader = BiosymMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
+                                        self.__mr_atom_name_mapping,
                                         self.__cR, cC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
@@ -21561,6 +21597,7 @@ class NmrDpUtility:
                     if reasons is not None:
                         reader = BiosymMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
+                                                self.__mr_atom_name_mapping,
                                                 self.__cR, cC,
                                                 self.__ccU, self.__csStat, self.__nefT,
                                                 reasons)
@@ -21657,6 +21694,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-gro':
                 reader = GromacsMRReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
+                                         self.__mr_atom_name_mapping,
                                          self.__cR, cC,
                                          self.__ccU, self.__csStat, self.__nefT,
                                          gromacsAtomNumberDict)
@@ -21739,6 +21777,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-dyn':
                 reader = DynamoMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
+                                        self.__mr_atom_name_mapping,
                                         self.__cR, cC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
@@ -21750,6 +21789,7 @@ class NmrDpUtility:
                     if reasons is not None:
                         reader = DynamoMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
+                                                self.__mr_atom_name_mapping,
                                                 self.__cR, cC,
                                                 self.__ccU, self.__csStat, self.__nefT,
                                                 reasons)

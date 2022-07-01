@@ -869,3 +869,30 @@ def trimSequenceAlignment(seqAlign, chainAssignSet):
     if len(ineffSeqAlignIdx) > 0:
         for idx in ineffSeqAlignIdx:
             del seqAlign[idx]
+
+
+def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId):
+    """ Retrieve atom identifiers from atom name mapping of public MR file.
+    """
+
+    try:
+        map = next(map for map in mrAtomNameMapping
+                   if map['original_seq_id'] == seqId
+                   and map['original_comp_id'] == compId
+                   and map['original_atom_id'] == atomId)
+        return map['auth_seq_id'], map['auth_comp_id'], map['auth_atom_id']
+    except StopIteration:
+        return seqId, compId, atomId
+
+def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId):
+    """ Retrieve atom id from atom name mapping of public MR file.
+    """
+
+    try:
+        map = next(map for map in mrAtomNameMapping
+                   if map['auth_seq_id'] == cifSeqId
+                   and map['auth_comp_id'] == cifCompId
+                   and map['original_atom_id'] == atomId)
+        return map['auth_atom_id']
+    except StopIteration:
+        return atomId

@@ -44,6 +44,7 @@ class CyanaMRReader:
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 mrAtomNameMapping=None,
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None, upl_or_lol=None, file_ext=None):
         self.__verbose = verbose
@@ -55,6 +56,7 @@ class CyanaMRReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__representativeModelId = representativeModelId
+        self.__mrAtomNameMapping = mrAtomNameMapping
 
         if cR is not None and cC is None:
             cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
@@ -158,6 +160,7 @@ class CyanaMRReader:
             walker = ParseTreeWalker()
             listener = CyanaMRParserListener(self.__verbose, self.__lfh,
                                              self.__representativeModelId,
+                                             self.__mrAtomNameMapping,
                                              self.__cR, self.__cC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              self.__reasons, self.__upl_or_lol, self.__file_ext)
@@ -186,12 +189,12 @@ class CyanaMRReader:
             if self.__verbose:
                 self.__lfh.write(f"+CyanaMRReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
-
+            """
         except Exception as e:
             if self.__verbose and isFilePath:
                 self.__lfh.write(f"+CyanaMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
-
+            """
         finally:
             if isFilePath and ifp is not None:
                 ifp.close()

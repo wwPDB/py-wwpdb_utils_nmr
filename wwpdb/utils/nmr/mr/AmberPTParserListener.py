@@ -24,10 +24,12 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (letterToDigit, indexToLetter,
+    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+                                           letterToDigit, indexToLetter,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
-                                           trimSequenceAlignment)
+                                           trimSequenceAlignment,
+                                           retrieveAtomIdentFromMRMap)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberPTParser import AmberPTParser
@@ -38,10 +40,12 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (letterToDigit, indexToLetter,
+    from nmr.AlignUtil import (monDict3,
+                               letterToDigit, indexToLetter,
                                alignPolymerSequence,
                                assignPolymerSequence,
-                               trimSequenceAlignment)
+                               trimSequenceAlignment,
+                               retrieveAtomIdentFromMRMap)
 
 
 def chunk_string(string, length=4):
@@ -52,6 +56,9 @@ def chunk_string(string, length=4):
 
 # This class defines a complete listener for a parse tree produced by AmberPTParser.
 class AmberPTParserListener(ParseTreeListener):
+
+    # atom name mapping of public MR file between the archive coordinates and submitted ones
+    __mrAtomNameMapping = None
 
     versionStatements = 0
     amberAtomTypeStatements = 0
@@ -164,7 +171,10 @@ class AmberPTParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 mrAtomNameMapping=None,
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None):
+
+        self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         if cR is not None:
             ret = checkCoordinates(verbose, log, representativeModelId, cR, cC, testTag=False)
@@ -256,6 +266,8 @@ class AmberPTParserListener(ParseTreeListener):
             if seqId not in seqIdList:
                 seqIdList.append(seqId)
                 compIdList.append(compId)
+            if compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                _, compId, atomName = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomName)
             self.__atomNumberDict[atomNum] = {'chain_id': chainId,
                                               'seq_id': seqId,
                                               'auth_comp_id': compId,

@@ -436,6 +436,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst):
 
     seqAlign = []
 
+    tabooList = set()
+
     for s1 in polySeqModel:
         chain_id = s1['auth_chain_id']
 
@@ -451,11 +453,13 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst):
             length = len(myAlign)
 
             if length == 0:
+                tabooList.add({chain_id, chain_id2})
                 continue
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
             if length == unmapped + conflict or _matched <= conflict:
+                tabooList.add({chain_id, chain_id2})
                 continue
 
             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -550,6 +554,11 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst):
                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
             seqAlign.append(seq_align)
+
+    if len(tabooList) > 0:
+        for sa in seqAlign:
+            if {sa['ref_chain_id'], sa['test_chain_id']} in tabooList:
+                del seqAlign[sa]
 
     return seqAlign
 
@@ -883,6 +892,7 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId):
         return map['auth_seq_id'], map['auth_comp_id'], map['auth_atom_id']
     except StopIteration:
         return seqId, compId, atomId
+
 
 def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId):
     """ Retrieve atom id from atom name mapping of public MR file.

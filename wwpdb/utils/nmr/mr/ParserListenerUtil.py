@@ -383,14 +383,15 @@ def translateToStdResName(compId):
     if compId in ('HIE', 'HIP', 'HID'):
         return 'HIS'
 
-    if compId == 'ADE':
-        return 'DA'
-    if compId == 'CYT':
-        return 'DC'
-    if compId == 'GUA':
-        return 'DG'
-    if compId == 'THY':
-        return 'DT'
+    if len(compId) == 3:
+        if compId == 'ADE' or compId.startswith('DA'):
+            return 'DA'
+        if compId == 'CYT' or compId.startswith('DC'):
+            return 'DC'
+        if compId == 'GUA' or compId.startswith('DG'):
+            return 'DG'
+        if compId == 'THY' or compId.startswith('DT'):
+            return 'DT'
 
     if compId == 'RADE':
         return 'A'

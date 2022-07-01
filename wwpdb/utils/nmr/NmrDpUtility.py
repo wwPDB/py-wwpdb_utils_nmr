@@ -3671,8 +3671,8 @@ class NmrDpUtility:
         # used for debuging only, it should be empty for production
         self.__target_framecode = ''
 
-        # suspended error items for polypeptide
-        self.__suspended_errors_for_polypeptide = []
+        # suspended error items for lazy evaluation
+        self.__suspended_errors_for_lazy_eval = []
 
         # RCI
         self.__rci = RCI(False, self.__lfh)
@@ -7849,8 +7849,8 @@ class NmrDpUtility:
                     err = "NMR restraint file does not include mandatory distance restraints or is not recognized properly. "\
                         "Please re-upload the NMR restraint file."
 
-                    self.__suspended_errors_for_polypeptide.append({'content_mismatch':
-                                                                    {'file_name': file_name, 'description': err}})
+                    self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                                 {'file_name': file_name, 'description': err}})
 
                     # self.report.error.appendDescription('content_mismatch',
                     #                                     {'file_name': file_name, 'description': err})
@@ -7864,8 +7864,8 @@ class NmrDpUtility:
                     err = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
                         "However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
 
-                    self.__suspended_errors_for_polypeptide.append({'content_mismatch':
-                                                                    {'file_name': file_name, 'description': err}})
+                    self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                                 {'file_name': file_name, 'description': err}})
 
                     # self.report.error.appendDescription('content_mismatch',
                     #                                     {'file_name': file_name, 'description': err})
@@ -7918,7 +7918,7 @@ class NmrDpUtility:
             self.__sf_category_list = []
             self.__lp_category_list = []
 
-            self.__suspended_errors_for_polypeptide = []
+            self.__suspended_errors_for_lazy_eval = []
 
             for content_subtype in self.__lp_data:
                 self.__lp_data[content_subtype] = []
@@ -27811,12 +27811,12 @@ class NmrDpUtility:
                     if 'polypeptide' in type:
                         rmsd_label = 'ca_rmsd'
 
-                        if len(self.__suspended_errors_for_polypeptide) > 0:
-                            for msg in self.__suspended_errors_for_polypeptide:
+                        if len(self.__suspended_errors_for_lazy_eval) > 0:
+                            for msg in self.__suspended_errors_for_lazy_eval:
                                 for k, v in msg.items():
                                     self.report.error.appendDescription(k, v)
                                     self.report.setError()
-                            self.__suspended_errors_for_polypeptide = []
+                            self.__suspended_errors_for_lazy_eval = []
 
                     elif 'ribonucleotide' in type:
                         rmsd_label = 'p_rmsd'
@@ -28875,7 +28875,641 @@ class NmrDpUtility:
                 # map polymer sequences between coordinate and NMR data using Hungarian algorithm
                 m = Munkres()
 
-                # from model to nmr
+                # from model to nmr (first trial, never raise a warning or an error)
+
+                mat = []
+                indices = []
+
+                for s1 in cif_polymer_sequence:
+                    chain_id = s1['chain_id']
+
+                    cost = [0 for i in range(nmr_chains)]
+
+                    for s2 in nmr_polymer_sequence:
+                        chain_id2 = s2['chain_id']
+
+                        result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
+                                       if seq_align['ref_chain_id'] == chain_id
+                                       and seq_align['test_chain_id'] == chain_id2), None)
+
+                        if result is not None:
+                            cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
+                            if not self.__combined_mode and result['length'] >= len(s1['seq_id']) - result['unmapped']:
+                                indices.append((cif_polymer_sequence.index(s1), nmr_polymer_sequence.index(s2)))
+
+                    mat.append(cost)
+
+                if self.__combined_mode:
+                    indices = m.compute(mat)
+
+                concatenated_nmr_chain = {}
+
+                for row, column in indices:
+
+                    if mat[row][column] >= 0:
+                        if self.__combined_mode:
+                            continue
+
+                        _cif_chains = []
+                        for _row, _column in indices:
+                            if column == _column:
+                                _cif_chains.append(cif_polymer_sequence[_row]['chain_id'])
+
+                        if len(_cif_chains) > 1:
+                            chain_id2 = nmr_polymer_sequence[column]['chain_id']
+                            concatenated_nmr_chain[chain_id2] = _cif_chains
+
+                    chain_id = cif_polymer_sequence[row]['chain_id']
+                    chain_id2 = nmr_polymer_sequence[column]['chain_id']
+
+                    result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
+                                  if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
+                    _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
+                                    if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
+
+                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
+                                    'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
+                                    'sequence_coverage': result['sequence_coverage']}
+
+                    auth_chain_id = chain_id
+                    if 'auth_chain_id' in cif_polymer_sequence[row]:
+                        auth_chain_id = cif_polymer_sequence[row]['auth_chain_id']
+                        chain_assign['ref_auth_chain_id'] = auth_chain_id
+
+                    s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
+                    s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
+
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                    self.__pA.doAlign()
+
+                    myAlign = self.__pA.getAlignment(chain_id)
+
+                    length = len(myAlign)
+
+                    _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                    _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                    _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+
+                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                        __s1, __s2 = beautifyPolySeq(_s1, _s2)
+                        _s1 = __s1
+                        _s2 = __s2
+
+                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                        self.__pA.doAlign()
+
+                        myAlign = self.__pA.getAlignment(chain_id)
+
+                        length = len(myAlign)
+
+                        _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
+
+                        if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                            result['conflict'] = 0
+                            s2 = __s2
+
+                    ref_code = getOneLetterCodeSequence(s1['comp_id'])
+                    test_code = getOneLetterCodeSequence(s2['comp_id'])
+
+                    for r_code, t_code, seq_id, seq_id2 in zip(ref_code, test_code, s1['seq_id'], s2['seq_id']):
+                        if r_code == 'X' and t_code == 'X':
+                            nmr_input_source.updateNonStandardResidueByExptlData(chain_id2, seq_id2, 'coordinate')
+                            cif_input_source.updateNonStandardResidueByExptlData(chain_id, seq_id, 'coordinate')
+
+                    if result['unmapped'] > 0 or result['conflict'] > 0:
+
+                        aligned = [True] * length
+                        seq_id1 = []
+                        seq_id2 = []
+
+                        j = 0
+                        for i in range(length):
+                            if str(myAlign[i][0]) != '.':
+                                seq_id1.append(s1['seq_id'][j])
+                                j += 1
+                            else:
+                                seq_id1.append(None)
+
+                        j = 0
+                        for i in range(length):
+                            if str(myAlign[i][1]) != '.':
+                                seq_id2.append(s2['seq_id'][j])
+                                j += 1
+                            else:
+                                seq_id2.append(None)
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            myPr0 = str(myPr[0])
+                            myPr1 = str(myPr[1])
+                            if myPr0 == '.' or myPr1 == '.':
+                                aligned[i] = False
+                            elif myPr0 != myPr1:
+                                pass
+                            else:
+                                break
+
+                        for i in reversed(range(length)):
+                            myPr = myAlign[i]
+                            myPr0 = str(myPr[0])
+                            myPr1 = str(myPr[1])
+                            if myPr0 == '.' or myPr1 == '.':
+                                aligned[i] = False
+                            elif myPr0 != myPr1:
+                                pass
+                            else:
+                                break
+
+                        if not self.__combined_mode:
+
+                            _conflicts = 0
+
+                            for i in range(length):
+                                myPr = myAlign[i]
+                                if myPr[0] == myPr[1]:
+                                    continue
+
+                                cif_comp_id = str(myPr[0])
+                                nmr_comp_id = str(myPr[1])
+
+                                if nmr_comp_id == '.' and cif_comp_id != '.':
+                                    pass
+
+                                elif nmr_comp_id != cif_comp_id and aligned[i]:
+                                    _conflicts += 1
+
+                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
+                                continue
+
+                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                                continue
+
+                        unmapped = []
+                        conflict = []
+                        # offset_1 = 0
+                        # offset_2 = 0
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[0] == myPr[1]:
+                                continue
+
+                            cif_comp_id = str(myPr[0])
+                            nmr_comp_id = str(myPr[1])
+
+                            if nmr_comp_id == '.' and cif_comp_id != '.':
+
+                                unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
+
+                                if not aligned[i]:
+                                    cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+
+                                    auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
+                                                     if seq_align['chain_id'] == chain_id), None)
+
+                                    if auth_seq is not None:
+                                        try:
+                                            auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
+                                            if seq_id1[i] != auth_seq_id:
+                                                cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme)"
+                                        except:  # noqa: E722 pylint: disable=bare-except
+                                            pass
+
+                            elif nmr_comp_id != cif_comp_id and aligned[i]:
+
+                                conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
+                                                 'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
+
+                                cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                if cif_comp_id == '.':
+                                    cif_seq_code += ', insertion error'
+                                nmr_seq_code = f"{chain_id2}:{seq_id2[i]}:{nmr_comp_id}"
+                                if nmr_comp_id == '.':
+                                    nmr_seq_code += ', insertion error'
+
+                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
+                                                 if seq_align['chain_id'] == chain_id), None)
+
+                                if auth_seq is not None and cif_comp_id != '.':
+                                    try:
+                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
+                                        if seq_id1[i] != auth_seq_id:
+                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
+                                    except:  # noqa: E722 pylint: disable=bare-except
+                                        pass
+
+                        if len(unmapped) > 0:
+                            chain_assign['unmapped_sequence'] = unmapped
+
+                        if len(conflict) > 0:
+                            chain_assign['conflict_sequence'] = conflict
+                            chain_assign['conflict'] = len(conflict)
+                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
+                            if chain_assign['unmapped'] < 0:
+                                chain_assign['conflict'] -= chain_assign['unmapped']
+                                chain_assign['unmapped'] = 0
+
+                            result['conflict'] = chain_assign['conflict']
+                            result['unmapped'] = chain_assign['unmapped']
+
+                            if _result is not None:
+                                _result['conflict'] = chain_assign['conflict']
+                                _result['unmapped'] = chain_assign['unmapped']
+
+                # from nmr to model
+
+                mat = []
+                indices = []
+
+                for s1 in nmr_polymer_sequence:
+                    chain_id = s1['chain_id']
+
+                    cost = [0 for i in range(cif_chains)]
+
+                    for s2 in cif_polymer_sequence:
+                        chain_id2 = s2['chain_id']
+
+                        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
+                                       if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)
+
+                        if result is not None:
+                            cost[cif_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
+                            if not self.__combined_mode and result['length'] >= len(s2['seq_id']) - result['unmapped']:
+                                indices.append((nmr_polymer_sequence.index(s1), cif_polymer_sequence.index(s2)))
+
+                    mat.append(cost)
+
+                if self.__combined_mode:
+                    indices = m.compute(mat)
+
+                chain_assign_set = []
+
+                for row, column in indices:
+
+                    if self.__combined_mode and mat[row][column] >= 0:
+                        continue
+
+                    chain_id = nmr_polymer_sequence[row]['chain_id']
+                    chain_id2 = cif_polymer_sequence[column]['chain_id']
+
+                    result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
+                                  if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
+                    _result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
+                                    if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
+
+                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
+                                    'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
+                                    'sequence_coverage': result['sequence_coverage']}
+
+                    auth_chain_id2 = chain_id2
+                    if 'auth_chain_id' in cif_polymer_sequence[column]:
+                        auth_chain_id2 = cif_polymer_sequence[column]['auth_chain_id']
+                        chain_assign['test_auth_chain_id'] = auth_chain_id2
+
+                    s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
+                    s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
+
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                    self.__pA.doAlign()
+
+                    myAlign = self.__pA.getAlignment(chain_id)
+
+                    length = len(myAlign)
+
+                    _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                    _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
+                    _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+
+                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                        __s1, __s2 = beautifyPolySeq(_s1, _s2)
+                        _s1 = __s1
+                        _s2 = __s2
+
+                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                        self.__pA.doAlign()
+
+                        myAlign = self.__pA.getAlignment(chain_id)
+
+                        length = len(myAlign)
+
+                        _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
+
+                        if _conflict == 0 and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
+                            result['conflict'] = 0
+                            s1 = __s1
+
+                    if result['unmapped'] > 0 or result['conflict'] > 0:
+
+                        aligned = [True] * length
+                        seq_id1 = []
+                        seq_id2 = []
+
+                        for i in range(length):
+                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):  # DAOTHER-7421
+                                seq_id1.append(s1['seq_id'][i])
+                            else:
+                                seq_id1.append(None)
+
+                        for i in range(length):
+                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):  # DAOTHER-7421
+                                seq_id2.append(s2['seq_id'][i])
+                            else:
+                                seq_id2.append(None)
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            myPr0 = str(myPr[0])
+                            myPr1 = str(myPr[1])
+                            if myPr0 == '.' or myPr1 == '.':
+                                aligned[i] = False
+                            elif myPr0 != myPr1:
+                                pass
+                            else:
+                                break
+
+                        for i in reversed(range(length)):
+                            myPr = myAlign[i]
+                            myPr0 = str(myPr[0])
+                            myPr1 = str(myPr[1])
+                            if myPr0 == '.' or myPr1 == '.':
+                                aligned[i] = False
+                            elif myPr0 != myPr1:
+                                pass
+                            else:
+                                break
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if aligned[i]:
+                                if str(myPr[0]) == '.':
+                                    if (seq_id2[i] is not None)\
+                                       and ((i > 0 and seq_id2[i - 1] is not None and seq_id2[i - 1] + 1 == seq_id2[i])
+                                            or (i + 1 < len(seq_id2) and seq_id2[i + 1] is not None and seq_id2[i + 1] - 1 == seq_id2[i])):
+                                        aligned[i] = False
+                                if str(myPr[1]) == '.':
+                                    if (seq_id1[i] is not None)\
+                                       and ((i > 0 and seq_id1[i - 1] is not None and seq_id1[i - 1] + 1 == seq_id1[i])
+                                            or (i + 1 < len(seq_id1) and seq_id1[i + 1] is not None and seq_id1[i + 1] - 1 == seq_id1[i])):
+                                        aligned[i] = False
+
+                        if not self.__combined_mode:
+
+                            _conflicts = 0
+
+                            for i in range(length):
+                                myPr = myAlign[i]
+                                if myPr[0] == myPr[1]:
+                                    continue
+
+                                nmr_comp_id = str(myPr[0])
+                                cif_comp_id = str(myPr[1])
+
+                                if cif_comp_id == '.' and nmr_comp_id != '.':
+                                    pass
+
+                                elif cif_comp_id != nmr_comp_id and aligned[i]:
+                                    _conflicts += 1
+
+                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
+                                continue
+
+                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                                continue
+
+                        unmapped = []
+                        conflict = []
+                        # offset_1 = 0
+                        # offset_2 = 0
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[0] == myPr[1]:
+                                continue
+
+                            nmr_comp_id = str(myPr[0])
+                            cif_comp_id = str(myPr[1])
+
+                            if cif_comp_id == '.' and nmr_comp_id != '.':
+
+                                unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id})
+
+                                if not aligned[i]:
+
+                                    if self.__combined_mode or chain_id not in concatenated_nmr_chain or chain_id2 not in concatenated_nmr_chain[chain_id]:
+
+                                        warn = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id} is not present in the coordinate (chain_id {chain_id2}). "\
+                                            "Please update the sequence in the Macromolecules page."
+
+                                        self.report.warning.appendDescription('sequence_mismatch',
+                                                                              {'file_name': nmr_file_name, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
+                                    # """
+                                    # ref_code = result['ref_code']
+                                    # test_code = result['test_code']
+                                    # test_gauge_code = result['test_gauge_code']
+
+                                    # offset = 0
+                                    # hit = False
+                                    # while i + offset >= 0:
+                                    #     if seq_id2[i + offset] is not None:
+                                    #         hit = True
+                                    #         break
+                                    #     offset -= 1
+
+                                    # if not hit:
+                                    #     offset = 0
+                                    #     while i + offset < length:
+                                    #         offset += 1
+
+                                    # if i + offset >= 0 and i + offset < length:
+                                    #     p = offset_2 + s2['seq_id'].index(seq_id2[i + offset]) - offset
+                                    #     test_code = test_code[0:p] + '-' + test_code[p:]
+                                    #     test_gauge_code = test_gauge_code[0:p] + ' ' + test_gauge_code[p:]
+
+                                    #     result['test_code'] = test_code
+                                    #     result['test_gauge_code'] = test_gauge_code
+                                    #     result['mid_code'] = getMiddleCode(ref_code, test_code)
+                                    # """
+                            elif cif_comp_id != nmr_comp_id and aligned[i]:
+
+                                conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id,
+                                                 'test_seq_id': seq_id2[i], 'test_comp_id': cif_comp_id})
+
+                                cif_seq_code = f"{auth_chain_id2}:{seq_id2[i]}:{cif_comp_id}"
+                                if cif_comp_id == '.':
+                                    cif_seq_code += ', insertion error'
+                                nmr_seq_code = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id}"
+                                if nmr_comp_id == '.':
+                                    nmr_seq_code += ', insertion error'
+
+                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
+                                                 if seq_align['chain_id'] == chain_id2), None)
+
+                                if auth_seq is not None and cif_comp_id != '.':
+                                    try:
+                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id2[i])]
+                                        if seq_id2[i] != auth_seq_id:
+                                            cif_seq_code += f", or {auth_chain_id2}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
+                                    except:  # noqa: E722 pylint: disable=bare-except
+                                        pass
+
+                                err = f"Sequence alignment error between the NMR data ({nmr_seq_code}) and the coordinate ({cif_seq_code}). "\
+                                    "Please verify the two sequences and re-upload the correct file(s)."
+
+                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(cif_comp_id, nmr_comp_id):
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': nmr_file_name, 'description': err})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
+
+                                else:
+                                    self.report.error.appendDescription('sequence_mismatch',
+                                                                        {'file_name': nmr_file_name, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - {err}\n")
+                                # """
+                                # ref_code = result['ref_code']
+                                # test_code = result['test_code']
+                                # ref_gauge_code = result['ref_gauge_code']
+                                # test_gauge_code = result['test_gauge_code']
+
+                                # _ref_code = _result['ref_code']
+                                # _test_code = _result['test_code']
+                                # _ref_gauge_code = _result['ref_gauge_code']
+                                # _test_gauge_code = _result['test_gauge_code']
+
+                                # if nmr_comp_id == '.':
+
+                                #     offset = 0
+                                #     hit = False
+                                #     while i + offset >= 0:
+                                #         if seq_id1[i + offset] is not None:
+                                #             hit = True
+                                #             break
+                                #         offset -= 1
+
+                                #     if not hit:
+                                #         offset = 0
+                                #         while i + offset < length:
+                                #             offset += 1
+
+                                #     p = offset_1 + s1['seq_id'].index(seq_id1[i + offset]) - offset
+                                #     ref_code = ref_code[0:p] + '-' + ref_code[p:]
+                                #     ref_gauge_code = ref_gauge_code[0:p] + ' ' + ref_gauge_code[p:]
+
+                                #     result['ref_code'] = ref_code
+                                #     result['ref_gauge_code'] = ref_gauge_code
+                                #     result['mid_code'] = getMiddleCode(ref_code, test_code)
+
+                                #     _test_code = _test_code[0:p] + '-' + _test_code[p:]
+                                #     _test_gauge_code = _test_gauge_code[0:p] + ' ' + _test_gauge_code[p:]
+
+                                #     _result['test_code'] = _test_code
+                                #     _result['test_gauge_code'] = _test_gauge_code
+                                #     _result['mid_code'] = getMiddleCode(_ref_code, _test_code)
+
+                                #     offset_1 += 1
+
+                                # elif cif_comp_id == '.':
+
+                                #     offset = 0
+                                #     hit = False
+                                #     while i + offset >= 0:
+                                #         if seq_id2[i + offset] is not None:
+                                #             hit = True
+                                #             break
+                                #         offset -= 1
+
+                                #     if not hit:
+                                #         offset = 0
+                                #         while i + offset < length:
+                                #             offset += 1
+
+                                #     p = offset_2 + s2['seq_id'].index(seq_id2[i + offset]) - offset
+                                #     test_code = test_code[0:p] + '-' + test_code[p:]
+                                #     test_gauge_code = test_gauge_code[0:p] + ' ' + test_gauge_code[p:]
+
+                                #     result['test_code'] = test_code
+                                #     result['test_gauge_code'] = test_gauge_code
+                                #     result['mid_code'] = getMiddleCode(ref_code, test_code)
+
+                                #     _ref_code = _ref_code[0:p] + '-' + _ref_code[p:]
+                                #     _ref_gauge_code = _ref_gauge_code[0:p] + ' ' + _ref_gauge_code[p:]
+
+                                #     _result['ref_code'] = _ref_code
+                                #     _result['ref_gauge_code'] = _ref_gauge_code
+                                #     _result['mid_code'] = getMiddleCode(_ref_code, _test_code)
+
+                                #     offset_2 += 1
+                                # """
+                        if len(unmapped) > 0:
+                            chain_assign['unmapped_sequence'] = unmapped
+
+                        if len(conflict) > 0:
+                            chain_assign['conflict_sequence'] = conflict
+                            chain_assign['conflict'] = len(conflict)
+                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
+                            if chain_assign['unmapped'] < 0:
+                                chain_assign['conflict'] -= chain_assign['unmapped']
+                                chain_assign['unmapped'] = 0
+
+                            result['conflict'] = chain_assign['conflict']
+                            result['unmapped'] = chain_assign['unmapped']
+
+                            if _result is not None:
+                                _result['conflict'] = chain_assign['conflict']
+                                _result['unmapped'] = chain_assign['unmapped']
+
+                    chain_assign_set.append(chain_assign)
+
+                if len(chain_assign_set) > 0 and fileListId == 0:
+
+                    if len(cif_polymer_sequence) > 1:
+
+                        if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
+
+                            _chain_assign_set = chain_assign_set.copy()
+
+                            for chain_assign in _chain_assign_set:
+
+                                if chain_assign['conflict'] > 0:
+                                    continue
+
+                                _chain_id = chain_assign['test_chain_id']
+                                _auth_chain_id = None if 'test_auth_chain_id' not in chain_assign else chain_assign['test_auth_chain_id']
+
+                                try:
+                                    identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
+                                                    if s['chain_id'] == _chain_id and 'identical_chain_id' in s)
+
+                                    for _chain_id in identity:
+
+                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id):
+                                            _chain_assign = chain_assign.copy()
+                                            _chain_assign['test_chain_id'] = _chain_id
+                                            if _auth_chain_id is not None:
+                                                _chain_assign['test_auth_chain_id'] = _auth_chain_id
+                                            chain_assign_set.append(_chain_assign)
+
+                                except StopIteration:
+                                    pass
+
+                    self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign_set)
+
+                # from model to nmr (final)
 
                 mat = []
                 indices = []
@@ -29268,396 +29902,6 @@ class NmrDpUtility:
                                     pass
 
                     self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', chain_assign_set)
-
-                # from nmr to model
-
-                mat = []
-                indices = []
-
-                for s1 in nmr_polymer_sequence:
-                    chain_id = s1['chain_id']
-
-                    cost = [0 for i in range(cif_chains)]
-
-                    for s2 in cif_polymer_sequence:
-                        chain_id2 = s2['chain_id']
-
-                        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
-                                       if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)
-
-                        if result is not None:
-                            cost[cif_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
-                            if not self.__combined_mode and result['length'] >= len(s2['seq_id']) - result['unmapped']:
-                                indices.append((nmr_polymer_sequence.index(s1), cif_polymer_sequence.index(s2)))
-
-                    mat.append(cost)
-
-                if self.__combined_mode:
-                    indices = m.compute(mat)
-
-                chain_assign_set = []
-
-                for row, column in indices:
-
-                    if self.__combined_mode and mat[row][column] >= 0:
-                        continue
-
-                    chain_id = nmr_polymer_sequence[row]['chain_id']
-                    chain_id2 = cif_polymer_sequence[column]['chain_id']
-
-                    result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
-                                  if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
-                    _result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
-                                    if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
-
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
-                                    'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
-                                    'sequence_coverage': result['sequence_coverage']}
-
-                    auth_chain_id2 = chain_id2
-                    if 'auth_chain_id' in cif_polymer_sequence[column]:
-                        auth_chain_id2 = cif_polymer_sequence[column]['auth_chain_id']
-                        chain_assign['test_auth_chain_id'] = auth_chain_id2
-
-                    s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
-                    s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
-
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                    self.__pA.addTestSequence(s2['comp_id'], chain_id)
-                    self.__pA.doAlign()
-
-                    myAlign = self.__pA.getAlignment(chain_id)
-
-                    length = len(myAlign)
-
-                    _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
-
-                    _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                    _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
-                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
-                        __s1, __s2 = beautifyPolySeq(_s1, _s2)
-                        _s1 = __s1
-                        _s2 = __s2
-
-                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
-                        self.__pA.addTestSequence(_s2['comp_id'], chain_id)
-                        self.__pA.doAlign()
-
-                        myAlign = self.__pA.getAlignment(chain_id)
-
-                        length = len(myAlign)
-
-                        _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
-
-                        if _conflict == 0 and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
-                            result['conflict'] = 0
-                            s1 = __s1
-
-                    if result['unmapped'] > 0 or result['conflict'] > 0:
-
-                        aligned = [True] * length
-                        seq_id1 = []
-                        seq_id2 = []
-
-                        for i in range(length):
-                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):  # DAOTHER-7421
-                                seq_id1.append(s1['seq_id'][i])
-                            else:
-                                seq_id1.append(None)
-
-                        for i in range(length):
-                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):  # DAOTHER-7421
-                                seq_id2.append(s2['seq_id'][i])
-                            else:
-                                seq_id2.append(None)
-
-                        for i in range(length):
-                            myPr = myAlign[i]
-                            myPr0 = str(myPr[0])
-                            myPr1 = str(myPr[1])
-                            if myPr0 == '.' or myPr1 == '.':
-                                aligned[i] = False
-                            elif myPr0 != myPr1:
-                                pass
-                            else:
-                                break
-
-                        for i in reversed(range(length)):
-                            myPr = myAlign[i]
-                            myPr0 = str(myPr[0])
-                            myPr1 = str(myPr[1])
-                            if myPr0 == '.' or myPr1 == '.':
-                                aligned[i] = False
-                            elif myPr0 != myPr1:
-                                pass
-                            else:
-                                break
-
-                        for i in range(length):
-                            myPr = myAlign[i]
-                            if aligned[i]:
-                                if str(myPr[0]) == '.':
-                                    if (seq_id2[i] is not None)\
-                                       and ((i > 0 and seq_id2[i - 1] is not None and seq_id2[i - 1] + 1 == seq_id2[i])
-                                            or (i + 1 < len(seq_id2) and seq_id2[i + 1] is not None and seq_id2[i + 1] - 1 == seq_id2[i])):
-                                        aligned[i] = False
-                                if str(myPr[1]) == '.':
-                                    if (seq_id1[i] is not None)\
-                                       and ((i > 0 and seq_id1[i - 1] is not None and seq_id1[i - 1] + 1 == seq_id1[i])
-                                            or (i + 1 < len(seq_id1) and seq_id1[i + 1] is not None and seq_id1[i + 1] - 1 == seq_id1[i])):
-                                        aligned[i] = False
-
-                        if not self.__combined_mode:
-
-                            _conflicts = 0
-
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                if myPr[0] == myPr[1]:
-                                    continue
-
-                                nmr_comp_id = str(myPr[0])
-                                cif_comp_id = str(myPr[1])
-
-                                if cif_comp_id == '.' and nmr_comp_id != '.':
-                                    pass
-
-                                elif cif_comp_id != nmr_comp_id and aligned[i]:
-                                    _conflicts += 1
-
-                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
-                                continue
-
-                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
-                                continue
-
-                        unmapped = []
-                        conflict = []
-                        # offset_1 = 0
-                        # offset_2 = 0
-
-                        for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[0] == myPr[1]:
-                                continue
-
-                            nmr_comp_id = str(myPr[0])
-                            cif_comp_id = str(myPr[1])
-
-                            if cif_comp_id == '.' and nmr_comp_id != '.':
-
-                                unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id})
-
-                                if not aligned[i]:
-
-                                    if self.__combined_mode or chain_id not in concatenated_nmr_chain or chain_id2 not in concatenated_nmr_chain[chain_id]:
-
-                                        warn = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id} is not present in the coordinate (chain_id {chain_id2}). "\
-                                            "Please update the sequence in the Macromolecules page."
-
-                                        self.report.warning.appendDescription('sequence_mismatch',
-                                                                              {'file_name': nmr_file_name, 'description': warn})
-                                        self.report.setWarning()
-
-                                        if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
-                                    # """
-                                    # ref_code = result['ref_code']
-                                    # test_code = result['test_code']
-                                    # test_gauge_code = result['test_gauge_code']
-
-                                    # offset = 0
-                                    # hit = False
-                                    # while i + offset >= 0:
-                                    #     if seq_id2[i + offset] is not None:
-                                    #         hit = True
-                                    #         break
-                                    #     offset -= 1
-
-                                    # if not hit:
-                                    #     offset = 0
-                                    #     while i + offset < length:
-                                    #         offset += 1
-
-                                    # if i + offset >= 0 and i + offset < length:
-                                    #     p = offset_2 + s2['seq_id'].index(seq_id2[i + offset]) - offset
-                                    #     test_code = test_code[0:p] + '-' + test_code[p:]
-                                    #     test_gauge_code = test_gauge_code[0:p] + ' ' + test_gauge_code[p:]
-
-                                    #     result['test_code'] = test_code
-                                    #     result['test_gauge_code'] = test_gauge_code
-                                    #     result['mid_code'] = getMiddleCode(ref_code, test_code)
-                                    # """
-                            elif cif_comp_id != nmr_comp_id and aligned[i]:
-
-                                conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id,
-                                                 'test_seq_id': seq_id2[i], 'test_comp_id': cif_comp_id})
-
-                                cif_seq_code = f"{auth_chain_id2}:{seq_id2[i]}:{cif_comp_id}"
-                                if cif_comp_id == '.':
-                                    cif_seq_code += ', insertion error'
-                                nmr_seq_code = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id}"
-                                if nmr_comp_id == '.':
-                                    nmr_seq_code += ', insertion error'
-
-                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                 if seq_align['chain_id'] == chain_id2), None)
-
-                                if auth_seq is not None and cif_comp_id != '.':
-                                    try:
-                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id2[i])]
-                                        if seq_id2[i] != auth_seq_id:
-                                            cif_seq_code += f", or {auth_chain_id2}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
-                                    except:  # noqa: E722 pylint: disable=bare-except
-                                        pass
-
-                                err = f"Sequence alignment error between the NMR data ({nmr_seq_code}) and the coordinate ({cif_seq_code}). "\
-                                    "Please verify the two sequences and re-upload the correct file(s)."
-
-                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(cif_comp_id, nmr_comp_id):
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': nmr_file_name, 'description': err})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
-
-                                else:
-                                    self.report.error.appendDescription('sequence_mismatch',
-                                                                        {'file_name': nmr_file_name, 'description': err})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - {err}\n")
-                                # """
-                                # ref_code = result['ref_code']
-                                # test_code = result['test_code']
-                                # ref_gauge_code = result['ref_gauge_code']
-                                # test_gauge_code = result['test_gauge_code']
-
-                                # _ref_code = _result['ref_code']
-                                # _test_code = _result['test_code']
-                                # _ref_gauge_code = _result['ref_gauge_code']
-                                # _test_gauge_code = _result['test_gauge_code']
-
-                                # if nmr_comp_id == '.':
-
-                                #     offset = 0
-                                #     hit = False
-                                #     while i + offset >= 0:
-                                #         if seq_id1[i + offset] is not None:
-                                #             hit = True
-                                #             break
-                                #         offset -= 1
-
-                                #     if not hit:
-                                #         offset = 0
-                                #         while i + offset < length:
-                                #             offset += 1
-
-                                #     p = offset_1 + s1['seq_id'].index(seq_id1[i + offset]) - offset
-                                #     ref_code = ref_code[0:p] + '-' + ref_code[p:]
-                                #     ref_gauge_code = ref_gauge_code[0:p] + ' ' + ref_gauge_code[p:]
-
-                                #     result['ref_code'] = ref_code
-                                #     result['ref_gauge_code'] = ref_gauge_code
-                                #     result['mid_code'] = getMiddleCode(ref_code, test_code)
-
-                                #     _test_code = _test_code[0:p] + '-' + _test_code[p:]
-                                #     _test_gauge_code = _test_gauge_code[0:p] + ' ' + _test_gauge_code[p:]
-
-                                #     _result['test_code'] = _test_code
-                                #     _result['test_gauge_code'] = _test_gauge_code
-                                #     _result['mid_code'] = getMiddleCode(_ref_code, _test_code)
-
-                                #     offset_1 += 1
-
-                                # elif cif_comp_id == '.':
-
-                                #     offset = 0
-                                #     hit = False
-                                #     while i + offset >= 0:
-                                #         if seq_id2[i + offset] is not None:
-                                #             hit = True
-                                #             break
-                                #         offset -= 1
-
-                                #     if not hit:
-                                #         offset = 0
-                                #         while i + offset < length:
-                                #             offset += 1
-
-                                #     p = offset_2 + s2['seq_id'].index(seq_id2[i + offset]) - offset
-                                #     test_code = test_code[0:p] + '-' + test_code[p:]
-                                #     test_gauge_code = test_gauge_code[0:p] + ' ' + test_gauge_code[p:]
-
-                                #     result['test_code'] = test_code
-                                #     result['test_gauge_code'] = test_gauge_code
-                                #     result['mid_code'] = getMiddleCode(ref_code, test_code)
-
-                                #     _ref_code = _ref_code[0:p] + '-' + _ref_code[p:]
-                                #     _ref_gauge_code = _ref_gauge_code[0:p] + ' ' + _ref_gauge_code[p:]
-
-                                #     _result['ref_code'] = _ref_code
-                                #     _result['ref_gauge_code'] = _ref_gauge_code
-                                #     _result['mid_code'] = getMiddleCode(_ref_code, _test_code)
-
-                                #     offset_2 += 1
-                                # """
-                        if len(unmapped) > 0:
-                            chain_assign['unmapped_sequence'] = unmapped
-
-                        if len(conflict) > 0:
-                            chain_assign['conflict_sequence'] = conflict
-                            chain_assign['conflict'] = len(conflict)
-                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
-                            if chain_assign['unmapped'] < 0:
-                                chain_assign['conflict'] -= chain_assign['unmapped']
-                                chain_assign['unmapped'] = 0
-
-                            result['conflict'] = chain_assign['conflict']
-                            result['unmapped'] = chain_assign['unmapped']
-
-                            if _result is not None:
-                                _result['conflict'] = chain_assign['conflict']
-                                _result['unmapped'] = chain_assign['unmapped']
-
-                    chain_assign_set.append(chain_assign)
-
-                if len(chain_assign_set) > 0 and fileListId == 0:
-
-                    if len(cif_polymer_sequence) > 1:
-
-                        if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
-
-                            _chain_assign_set = chain_assign_set.copy()
-
-                            for chain_assign in _chain_assign_set:
-
-                                if chain_assign['conflict'] > 0:
-                                    continue
-
-                                _chain_id = chain_assign['test_chain_id']
-                                _auth_chain_id = None if 'test_auth_chain_id' not in chain_assign else chain_assign['test_auth_chain_id']
-
-                                try:
-                                    identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
-                                                    if s['chain_id'] == _chain_id and 'identical_chain_id' in s)
-
-                                    for _chain_id in identity:
-
-                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id):
-                                            _chain_assign = chain_assign.copy()
-                                            _chain_assign['test_chain_id'] = _chain_id
-                                            if _auth_chain_id is not None:
-                                                _chain_assign['test_auth_chain_id'] = _auth_chain_id
-                                            chain_assign_set.append(_chain_assign)
-
-                                except StopIteration:
-                                    pass
-
-                    self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign_set)
 
             else:
 

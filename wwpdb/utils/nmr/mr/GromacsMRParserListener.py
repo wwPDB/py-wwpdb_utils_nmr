@@ -558,21 +558,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-        """
-        if target_value is not None:
 
-            if lower_limit is not None:
-                if lower_limit > target_value:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.\n"
-
-            if upper_limit is not None:
-                if upper_limit < target_value:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be grater than the target value '{target_value}'.\n"
-        """
         if not validRange:
             return None
 

@@ -1041,41 +1041,43 @@ class XplorMRParserListener(ParseTreeListener):
                         "It indicates that a negative value was unexpectedly set: "\
                         f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
 
-        if lower_limit is not None and upper_limit is not None:
-            if lower_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+        else:
 
-        if lower_linear_limit is not None and upper_limit is not None:
-            if lower_linear_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+            if lower_limit is not None and upper_limit is not None:
+                if lower_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_limit is not None and upper_linear_limit is not None:
-            if lower_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_limit is not None:
+                if lower_linear_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_linear_limit is not None and upper_linear_limit is not None:
-            if lower_linear_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and upper_linear_limit is not None:
+                if lower_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if lower_limit is not None and lower_linear_limit is not None:
-            if lower_linear_limit > lower_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_linear_limit is not None:
+                if lower_linear_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if upper_limit is not None and upper_linear_limit is not None:
-            if upper_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and lower_linear_limit is not None:
+                if lower_linear_limit > lower_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+
+            if upper_limit is not None and upper_linear_limit is not None:
+                if upper_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
 
         if not validRange:
             return None
@@ -1288,57 +1290,7 @@ class XplorMRParserListener(ParseTreeListener):
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-        """
-        if target_value is not None:
 
-            if lower_limit is not None:
-                if lower_limit > target_value:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
-
-            if lower_linear_limit is not None:
-                if lower_linear_limit > target_value:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'.\n"
-
-            if upper_limit is not None:
-                if upper_limit < target_value:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
-
-            if upper_linear_limit is not None:
-                if upper_linear_limit < target_value:
-                    validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
-
-        if lower_limit is not None and upper_limit is not None:
-            if lower_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
-
-        if lower_linear_limit is not None and upper_limit is not None:
-            if lower_linear_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
-
-        if lower_limit is not None and upper_linear_limit is not None:
-            if lower_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
-
-        if lower_linear_limit is not None and upper_linear_limit is not None:
-            if lower_linear_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
-        """
         if lower_limit is not None and lower_linear_limit is not None:
             if lower_linear_limit > lower_limit:
                 validRange = False
@@ -1653,41 +1605,43 @@ class XplorMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                         f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
 
-        if lower_limit is not None and upper_limit is not None:
-            if lower_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+        else:
 
-        if lower_linear_limit is not None and upper_limit is not None:
-            if lower_linear_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+            if lower_limit is not None and upper_limit is not None:
+                if lower_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_limit is not None and upper_linear_limit is not None:
-            if lower_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_limit is not None:
+                if lower_linear_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_linear_limit is not None and upper_linear_limit is not None:
-            if lower_linear_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and upper_linear_limit is not None:
+                if lower_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if lower_limit is not None and lower_linear_limit is not None:
-            if lower_linear_limit > lower_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_linear_limit is not None:
+                if lower_linear_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if upper_limit is not None and upper_linear_limit is not None:
-            if upper_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and lower_linear_limit is not None:
+                if lower_linear_limit > lower_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+
+            if upper_limit is not None and upper_linear_limit is not None:
+                if upper_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
 
         if not validRange:
             return None
@@ -3910,41 +3864,43 @@ class XplorMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                         f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
 
-        if lower_limit is not None and upper_limit is not None:
-            if lower_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+        else:
 
-        if lower_linear_limit is not None and upper_limit is not None:
-            if lower_linear_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+            if lower_limit is not None and upper_limit is not None:
+                if lower_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_limit is not None and upper_linear_limit is not None:
-            if lower_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_limit is not None:
+                if lower_linear_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_linear_limit is not None and upper_linear_limit is not None:
-            if lower_linear_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and upper_linear_limit is not None:
+                if lower_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if lower_limit is not None and lower_linear_limit is not None:
-            if lower_linear_limit > lower_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_linear_limit is not None:
+                if lower_linear_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if upper_limit is not None and upper_linear_limit is not None:
-            if upper_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and lower_linear_limit is not None:
+                if lower_linear_limit > lower_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+
+            if upper_limit is not None and upper_linear_limit is not None:
+                if upper_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
 
         if not validRange:
             return None
@@ -4427,41 +4383,43 @@ class XplorMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                         f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
 
-        if lower_limit is not None and upper_limit is not None:
-            if lower_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+        else:
 
-        if lower_linear_limit is not None and upper_limit is not None:
-            if lower_linear_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+            if lower_limit is not None and upper_limit is not None:
+                if lower_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_limit is not None and upper_linear_limit is not None:
-            if lower_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_limit is not None:
+                if lower_linear_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_linear_limit is not None and upper_linear_limit is not None:
-            if lower_linear_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and upper_linear_limit is not None:
+                if lower_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if lower_limit is not None and lower_linear_limit is not None:
-            if lower_linear_limit > lower_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_linear_limit is not None:
+                if lower_linear_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if upper_limit is not None and upper_linear_limit is not None:
-            if upper_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and lower_linear_limit is not None:
+                if lower_linear_limit > lower_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+
+            if upper_limit is not None and upper_linear_limit is not None:
+                if upper_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
 
         if not validRange:
             return None
@@ -4788,41 +4746,43 @@ class XplorMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                         f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
 
-        if lower_limit is not None and upper_limit is not None:
-            if lower_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+        else:
 
-        if lower_linear_limit is not None and upper_limit is not None:
-            if lower_linear_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+            if lower_limit is not None and upper_limit is not None:
+                if lower_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_limit is not None and upper_linear_limit is not None:
-            if lower_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_limit is not None:
+                if lower_linear_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_linear_limit is not None and upper_linear_limit is not None:
-            if lower_linear_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and upper_linear_limit is not None:
+                if lower_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if lower_limit is not None and lower_linear_limit is not None:
-            if lower_linear_limit > lower_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_linear_limit is not None:
+                if lower_linear_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if upper_limit is not None and upper_linear_limit is not None:
-            if upper_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and lower_linear_limit is not None:
+                if lower_linear_limit > lower_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+
+            if upper_limit is not None and upper_linear_limit is not None:
+                if upper_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
 
         if not validRange:
             return None
@@ -5048,41 +5008,43 @@ class XplorMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                         f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
 
-        if lower_limit is not None and upper_limit is not None:
-            if lower_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+        else:
 
-        if lower_linear_limit is not None and upper_limit is not None:
-            if lower_linear_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+            if lower_limit is not None and upper_limit is not None:
+                if lower_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_limit is not None and upper_linear_limit is not None:
-            if lower_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_limit is not None:
+                if lower_linear_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_linear_limit is not None and upper_linear_limit is not None:
-            if lower_linear_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and upper_linear_limit is not None:
+                if lower_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if lower_limit is not None and lower_linear_limit is not None:
-            if lower_linear_limit > lower_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_linear_limit is not None:
+                if lower_linear_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if upper_limit is not None and upper_linear_limit is not None:
-            if upper_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and lower_linear_limit is not None:
+                if lower_linear_limit > lower_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+
+            if upper_limit is not None and upper_linear_limit is not None:
+                if upper_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
 
         if not validRange:
             return None
@@ -5598,41 +5560,43 @@ class XplorMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                         f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
 
-        if lower_limit is not None and upper_limit is not None:
-            if lower_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+        else:
 
-        if lower_linear_limit is not None and upper_limit is not None:
-            if lower_linear_limit > upper_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+            if lower_limit is not None and upper_limit is not None:
+                if lower_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_limit is not None and upper_linear_limit is not None:
-            if lower_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_limit is not None:
+                if lower_linear_limit > upper_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
 
-        if lower_linear_limit is not None and upper_linear_limit is not None:
-            if lower_linear_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and upper_linear_limit is not None:
+                if lower_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if lower_limit is not None and lower_linear_limit is not None:
-            if lower_linear_limit > lower_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+            if lower_linear_limit is not None and upper_linear_limit is not None:
+                if lower_linear_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
 
-        if upper_limit is not None and upper_linear_limit is not None:
-            if upper_limit > upper_linear_limit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+            if lower_limit is not None and lower_linear_limit is not None:
+                if lower_linear_limit > lower_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+
+            if upper_limit is not None and upper_linear_limit is not None:
+                if upper_limit > upper_linear_limit:
+                    validRange = False
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
 
         if not validRange:
             return None

@@ -3862,7 +3862,7 @@
         },
         "insufficient_mr_data": {
           "$ref": "#/definitions/common_message"
-        }
+        },
         "conflicted_mr_data": {
           "$ref": "#/definitions/common_message"
         },

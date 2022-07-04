@@ -3252,7 +3252,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         if 'alt_chain_id' in _factor:
             for _atom in atomSelection:
-                self.updateSgmentIdDict(_factor, _atom['chain_id'])
+                self.updateSegmentIdDict(_factor, _atom['chain_id'])
 
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
@@ -3339,7 +3339,7 @@ class CnsMRParserListener(ParseTreeListener):
                     atomId = atomId.upper()
 
                     if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, atomId)
+                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
                     atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                     if 'alt_atom_id' in _factor and details is not None:
@@ -3496,7 +3496,7 @@ class CnsMRParserListener(ParseTreeListener):
                 chainId = _chainId
         return chainId
 
-    def updateSgmentIdDict(self, factor, chainId):
+    def updateSegmentIdDict(self, factor, chainId):
         if self.__reasons is not None or 'alt_chain_id' not in factor\
            or self.reasonsForReParsing is None or 'segment_id_mismatch' not in self.reasonsForReParsing:
             return

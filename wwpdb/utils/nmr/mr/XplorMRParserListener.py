@@ -2188,27 +2188,7 @@ class XplorMRParserListener(ParseTreeListener):
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"The upper limit value(2)='{upper_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-        """
-        if lower_limit_1 > target_value_1:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1:.3f}' must be less than the target value(1) '{target_value_1}'.\n"
 
-        if upper_limit_1 < target_value_1:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1:.3f}' must be grater than the target value(1) '{target_value_1}'.\n"
-
-        if lower_limit_2 > target_value_2:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2:.3f}' must be less than the target value(2) '{target_value_2}'.\n"
-
-        if upper_limit_2 < target_value_2:
-            validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2:.3f}' must be grater than the target value(2) '{target_value_2}'.\n"
-        """
         if not validRange:
             return None
 

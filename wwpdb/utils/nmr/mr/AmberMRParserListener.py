@@ -2111,31 +2111,7 @@ class AmberMRParserListener(ParseTreeListener):
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
-        """
-        if self.lowerLimit is not None and self.upperLimit is not None:
-            if self.lowerLimit > self.upperLimit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.\n"
 
-        if self.lowerLinearLimit is not None and self.upperLimit is not None:
-            if self.lowerLinearLimit > self.upperLimit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.\n"
-
-        if self.lowerLimit is not None and self.upperLinearLimit is not None:
-            if self.lowerLimit > self.upperLinearLimit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.\n"
-
-        if self.lowerLinearLimit is not None and self.upperLinearLimit is not None:
-            if self.lowerLinearLimit > self.upperLinearLimit:
-                validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.\n"
-        """
         if self.lowerLimit is not None and self.lowerLinearLimit is not None:
             if self.lowerLinearLimit > self.lowerLimit:
                 validRange = False

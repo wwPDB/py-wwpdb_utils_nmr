@@ -4320,7 +4320,24 @@
               }
             },
             "model_poly_seq_vs_mr_topology": {
-              "description": "The object provides sequence alignment between sequence of the coordinates and sequence of parameter/topology file for description of NMR restraints.",
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence of parameter/topology file.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_mr_restraint": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence of overall restraint files.",
               "type": [
                 "array",
                 "null"

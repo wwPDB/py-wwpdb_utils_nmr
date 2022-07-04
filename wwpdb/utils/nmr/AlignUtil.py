@@ -427,7 +427,7 @@ def sortPolySeqRst(polySeqRst):
         ps['comp_id'] = _compIds
 
 
-def alignPolymerSequence(pA, polySeqModel, polySeqRst):
+def alignPolymerSequence(pA, polySeqModel, polySeqRst, useTabooList=True):
     """ Align polymer sequence of the coordinates and restraints.
     """
 
@@ -555,10 +555,10 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst):
 
             seqAlign.append(seq_align)
 
-    if len(tabooList) > 0:
+    if len(tabooList) > 0 and useTabooList:
         for sa in seqAlign:
             if {sa['ref_chain_id'], sa['test_chain_id']} in tabooList:
-                del seqAlign[sa]
+                seqAlign.remove(sa)
 
     return seqAlign
 
@@ -601,6 +601,9 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
         _a_mr_format_name = 'the ' + _mr_format_name + ' parameter/topology'
     elif fileType == 'nm-res-dyn':
         _mr_format_name = 'DYNAMO/PALES/TALOS'
+        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
+    else:
+        _mr_format_name = 'MR'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
 
     mr_chains = len(polySeqRst)

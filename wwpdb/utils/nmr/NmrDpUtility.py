@@ -202,7 +202,12 @@ try:
                                            fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
                                            getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
                                            getOneLetterCode, getOneLetterCodeSequence,
-                                           letterToDigit, indexToLetter)
+                                           letterToDigit, indexToLetter,
+                                           updatePolySeqRst,
+                                           sortPolySeqRst,
+                                           alignPolymerSequence,
+                                           assignPolymerSequence,
+                                           trimSequenceAlignment)
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.io.CifReader import CifReader
@@ -261,7 +266,12 @@ except ImportError:
                                fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
                                getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
                                getOneLetterCode, getOneLetterCodeSequence,
-                               letterToDigit, indexToLetter)
+                               letterToDigit, indexToLetter,
+                               updatePolySeqRst,
+                               sortPolySeqRst,
+                               alignPolymerSequence,
+                               assignPolymerSequence,
+                               trimSequenceAlignment)
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.io.CifReader import CifReader
@@ -20995,6 +21005,8 @@ class NmrDpUtility:
                     else:
                         cyanaLolDistRest += 1
 
+        poly_seq_set = []
+
         fileListId = self.__file_path_list_len
 
         for ar in self.__inputParamDict[ar_file_path_list]:
@@ -21151,6 +21163,12 @@ class NmrDpUtility:
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
 
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    poly_seq_set.append(poly_seq)
+
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
 
@@ -21263,6 +21281,12 @@ class NmrDpUtility:
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
 
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    poly_seq_set.append(poly_seq)
+
             elif file_type == 'nm-res-amb':
                 reader = AmberMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
@@ -21353,6 +21377,12 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-cya':
                 has_dist_restraint = 'dist_restraint' in content_subtype
@@ -21492,6 +21522,12 @@ class NmrDpUtility:
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
 
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    poly_seq_set.append(poly_seq)
+
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
 
@@ -21606,6 +21642,12 @@ class NmrDpUtility:
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
 
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    poly_seq_set.append(poly_seq)
+
             elif file_type == 'nm-res-bio':
                 reader = BiosymMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
@@ -21715,6 +21757,12 @@ class NmrDpUtility:
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
 
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    poly_seq_set.append(poly_seq)
+
             elif file_type == 'nm-res-gro':
                 reader = GromacsMRReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
@@ -21797,6 +21845,12 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-dyn':
                 reader = DynamoMRReader(self.__verbose, self.__lfh,
@@ -21914,6 +21968,57 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    poly_seq_set.append(poly_seq)
+
+        if len(poly_seq_set) > 1:
+
+            poly_seq_rst = None
+            for idx, poly_seq in enumerate(poly_seq_set):
+                if idx == 0:
+                    poly_seq_rst = poly_seq
+                    continue
+                for ps in poly_seq:
+                    chain_id = ps['chain_id']
+                    for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
+                        updatePolySeqRst(poly_seq_rst, chain_id, seq_id, comp_id)
+
+            poly_seq_model = cC['polymer_sequence']
+
+            sortPolySeqRst(poly_seq_rst)
+
+            file_type = 'nm-res-mr'
+
+            seq_align = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, False)
+            chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+
+            if chain_assign is not None:
+
+                chain_mapping = {}
+
+                for ca in chain_assign:
+                    ref_chain_id = ca['ref_chain_id']
+                    test_chain_id = ca['test_chain_id']
+
+                    if ref_chain_id != test_chain_id:
+                        chain_mapping[test_chain_id] = ref_chain_id
+
+                if len(chain_mapping) > 0:
+
+                    for ps in poly_seq_rst:
+                        if ps['chain_id'] in chain_mapping:
+                            ps['chain_id'] = chain_mapping[ps['chain_id']]
+
+                    seq_align = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, False)
+                    chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+
+                trimSequenceAlignment(seq_align, chain_assign)
+
+            self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
         return not self.report.isError()
 

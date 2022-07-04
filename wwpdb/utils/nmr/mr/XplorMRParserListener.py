@@ -6303,732 +6303,18 @@ class XplorMRParserListener(ParseTreeListener):
 
         _atomSelection = []
 
-        cur_subtype_w_axis = self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs', 'pre', 'prdc')
-        cur_sybtype_w_para = self.__cur_subtype in ('pcs', 'pre', 'prdc', 'pccr')
+        withAxis = self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs', 'pre', 'prdc')
+        withPara = self.__cur_subtype in ('pcs', 'pre', 'prdc', 'pccr')
 
         if _factor['atom_id'][0] is not None:
-
-            foundCompId = False
-
-            for chainId in _factor['chain_id']:
-                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                for seqId in _factor['seq_id']:
-                    seqId = self.getRealSeqId(ps, seqId)
-
-                    if ps is not None and seqId in ps['auth_seq_id']:
-                        compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                    else:
-                        compId = None
-
-                    seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
-
-                    if compId is None and seqKey in self.__authToLabelSeq:
-                        _, seqId = self.__authToLabelSeq[seqKey]
-                        if ps is not None and seqId in ps['auth_seq_id']:
-                            compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
-
-                    if compId is None and coordAtomSite is not None and ps is not None and seqKey[1] in ps['auth_seq_id']:
-                        compId = ps['comp_id'][ps['auth_seq_id'].index(seqKey[1])]
-
-                    if compId is None:
-                        continue
-
-                    foundCompId = True
-
-                    if not cur_subtype_w_axis and not cur_sybtype_w_para:
-                        updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
-
-                    for atomId in _factor['atom_id']:
-                        if cur_subtype_w_axis:
-                            if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
-                                continue
-                        if cur_sybtype_w_para:
-                            if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS):
-                                continue
-
-                        if cur_subtype_w_axis or cur_sybtype_w_para:
-                            updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
-
-                        origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
-
-                        atomId = atomId.upper()
-
-                        if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, atomId)
-
-                        atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-                        if 'alt_atom_id' in _factor and details is not None:
-                            atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
-
-                        if details is not None:
-                            _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
-                            if _atomId != atomId:
-                                atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
-
-                        # @see: https://bmrb.io/ref_info/atom_nom.tbl
-                        if self.__trust_bmrb_ref_info:
-                            pass
-
-                        # @see: https://bmrb.io/macro/files/xplor_to_iupac.Nov140620
-                        else:
-                            if compId == 'ASN':
-                                if atomId == 'HD21':
-                                    _atomId = atomId[:-1] + '2'
-                                    if self.__nefT.validate_comp_atom(compId, _atomId):
-                                        atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                elif atomId == 'HD22':
-                                    _atomId = atomId[:-1] + '1'
-                                    if self.__nefT.validate_comp_atom(compId, _atomId):
-                                        atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                            elif compId == 'GLN':
-                                if atomId == 'HE21':
-                                    _atomId = atomId[:-1] + '2'
-                                    if self.__nefT.validate_comp_atom(compId, _atomId):
-                                        atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                elif atomId == 'HE22':
-                                    _atomId = atomId[:-1] + '1'
-                                    if self.__nefT.validate_comp_atom(compId, _atomId):
-                                        atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-
-                        for _atomId in atomIds:
-                            ccdCheck = not cifCheck
-
-                            if cifCheck:
-                                _atom = None
-                                if coordAtomSite is not None:
-                                    if _atomId in coordAtomSite['atom_id']:
-                                        _atom = {}
-                                        _atom['comp_id'] = coordAtomSite['comp_id']
-                                        _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['atom_id'].index(_atomId)]
-                                    elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
-                                        _atom = {}
-                                        _atom['comp_id'] = coordAtomSite['comp_id']
-                                        _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
-                                        self.__authAtomId = 'auth_atom_id'
-                                    elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                        if _coordAtomSite is not None:
-                                            if _atomId in _coordAtomSite['atom_id']:
-                                                _atom = {}
-                                                _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                seqKey = _seqKey
-                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                _atom = {}
-                                                _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                self.__authAtomId = 'auth_atom_id'
-                                                seqKey = _seqKey
-
-                                elif self.__preferAuthSeq:
-                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                    if _coordAtomSite is not None:
-                                        if _atomId in _coordAtomSite['atom_id']:
-                                            _atom = {}
-                                            _atom['comp_id'] = _coordAtomSite['comp_id']
-                                            _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
-                                            self.__preferAuthSeq = False
-                                            self.__authSeqId = 'label_seq_id'
-                                            seqKey = _seqKey
-                                        elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                            _atom = {}
-                                            _atom['comp_id'] = _coordAtomSite['comp_id']
-                                            _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
-                                            self.__preferAuthSeq = False
-                                            self.__authSeqId = 'label_seq_id'
-                                            self.__authAtomId = 'auth_atom_id'
-                                            seqKey = _seqKey
-
-                                if _atom is not None:
-                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                    if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
-                                       and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
-                                else:
-                                    ccdCheck = True
-
-                            if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
-                                _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
-                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                    if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-                                        if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                            if self.__cur_subtype != 'plane':
-                                                checked = False
-                                                if seqId == 1 and _atomId in ('H', 'HN'):
-                                                    if 'H1' in coordAtomSite['atom_id']:
-                                                        checked = True
-                                                if _atomId[0] == 'H':
-                                                    ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                                                if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                                    if ccb is not None:
-                                                        bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if bondedTo[0] in ('N', 'O', 'S'):
-                                                            checked = True
-                                                if not checked:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
-                                    elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
-                                        if self.__reasons is None and seqKey in self.__authToLabelSeq:
-                                            _, _seqId = self.__authToLabelSeq[seqKey]
-                                            if ps is not None and _seqId in ps['auth_seq_id']:
-                                                _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                                                if self.__ccU.updateChemCompDict(_compId):
-                                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                                    if cca is not None:
-                                                        if self.reasonsForReParsing is None:
-                                                            self.reasonsForReParsing = {}
-                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = True
-                                        if cifCheck and self.__cur_subtype != 'plane':
-                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
-
+            foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, withAxis, withPara, isPolySeq=True, isChainSpecified=True)
             if self.__hasNonPoly:
-                for chainId in _factor['chain_id']:
-                    np = next((np for np in self.__nonPoly if np['auth_chain_id'] == chainId), None)
-                    for seqId in _factor['seq_id']:
-                        seqId = self.getRealSeqId(np, seqId, False)
-
-                        if np is not None and seqId in np['auth_seq_id']:
-                            compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
-                        else:
-                            compId = None
-
-                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
-
-                        if compId is None and seqKey in self.__authToLabelSeq:
-                            _, seqId = self.__authToLabelSeq[seqKey]
-                            if np is not None and seqId in np['auth_seq_id']:
-                                compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
-                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
-
-                        if compId is None and coordAtomSite is not None and np is not None and seqKey[1] in np['auth_seq_id']:
-                            compId = np['comp_id'][np['auth_seq_id'].index(seqKey[1])]
-
-                        if compId is None:
-                            continue
-
-                        foundCompId = True
-
-                        if not cur_subtype_w_axis and not cur_sybtype_w_para:
-                            updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
-
-                        for atomId in _factor['atom_id']:
-                            if cur_subtype_w_axis:
-                                if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
-                                    continue
-                            if cur_sybtype_w_para:
-                                if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS):
-                                    continue
-
-                            if cur_subtype_w_axis or cur_sybtype_w_para:
-                                updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
-
-                            origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
-
-                            atomId = atomId.upper()
-
-                            if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, atomId)
-
-                            atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-                            if 'alt_atom_id' in _factor and details is not None:
-                                atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
-
-                            if details is not None:
-                                _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
-                                if _atomId != atomId:
-                                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
-
-                            # @see: https://bmrb.io/ref_info/atom_nom.tbl
-                            if self.__trust_bmrb_ref_info:
-                                pass
-
-                            # @see: https://bmrb.io/macro/files/xplor_to_iupac.Nov140620
-                            else:
-                                if compId == 'ASN':
-                                    if atomId == 'HD21':
-                                        _atomId = atomId[:-1] + '2'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                    elif atomId == 'HD22':
-                                        _atomId = atomId[:-1] + '1'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                elif compId == 'GLN':
-                                    if atomId == 'HE21':
-                                        _atomId = atomId[:-1] + '2'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                    elif atomId == 'HE22':
-                                        _atomId = atomId[:-1] + '1'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-
-                            for _atomId in atomIds:
-                                ccdCheck = not cifCheck
-
-                                if cifCheck:
-                                    _atom = None
-                                    if coordAtomSite is not None:
-                                        if _atomId in coordAtomSite['atom_id']:
-                                            _atom = {}
-                                            _atom['comp_id'] = coordAtomSite['comp_id']
-                                            _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['atom_id'].index(_atomId)]
-                                        elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
-                                            _atom = {}
-                                            _atom['comp_id'] = coordAtomSite['comp_id']
-                                            _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
-                                            self.__authAtomId = 'auth_atom_id'
-                                        elif self.__preferAuthSeq:
-                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                            if _coordAtomSite is not None:
-                                                if _atomId in _coordAtomSite['atom_id']:
-                                                    _atom = {}
-                                                    _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
-                                                    self.__preferAuthSeq = False
-                                                    self.__authSeqId = 'label_seq_id'
-                                                    seqKey = _seqKey
-                                                elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                    _atom = {}
-                                                    _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
-                                                    self.__preferAuthSeq = False
-                                                    self.__authSeqId = 'label_seq_id'
-                                                    self.__authAtomId = 'auth_atom_id'
-                                                    seqKey = _seqKey
-
-                                    elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                        if _coordAtomSite is not None:
-                                            if _atomId in _coordAtomSite['atom_id']:
-                                                _atom = {}
-                                                _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                seqKey = _seqKey
-                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                _atom = {}
-                                                _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                self.__authAtomId = 'auth_atom_id'
-                                                seqKey = _seqKey
-
-                                    if _atom is not None:
-                                        _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                        if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
-                                           and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
-                                    else:
-                                        ccdCheck = True
-
-                                if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
-                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                    if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
-                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                        if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-                                            if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                                if self.__cur_subtype != 'plane':
-                                                    checked = False
-                                                    if seqId == 1 and _atomId in ('H', 'HN'):
-                                                        if 'H1' in coordAtomSite['atom_id']:
-                                                            checked = True
-                                                    if _atomId[0] == 'H':
-                                                        ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                                                    if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                                        if ccb is not None:
-                                                            bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                            if bondedTo[0] in ('N', 'O', 'S'):
-                                                                checked = True
-                                                    if not checked:
-                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
-                                        elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
-                                            if self.__reasons is None and seqKey in self.__authToLabelSeq:
-                                                _, _seqId = self.__authToLabelSeq[seqKey]
-                                                if np is not None and _seqId in np['auth_seq_id']:
-                                                    _compId = np['comp_id'][np['auth_seq_id'].index(_seqId)]
-                                                    if self.__ccU.updateChemCompDict(_compId):
-                                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                                        if cca is not None:
-                                                            if self.reasonsForReParsing is None:
-                                                                self.reasonsForReParsing = {}
-                                                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                                self.reasonsForReParsing['label_seq_scheme'] = True
-                                            if cifCheck and self.__cur_subtype != 'plane':
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, withAxis, withPara, isPolySeq=False, isChainSpecified=True)
 
             if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1:
-
-                for chainId in [ps['auth_chain_id'] for ps in self.__polySeq]:
-                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                    for seqId in _factor['seq_id']:
-                        seqId = self.getRealSeqId(ps, seqId)
-
-                        if ps is not None and seqId in ps['auth_seq_id']:
-                            compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                        else:
-                            compId = None
-
-                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
-
-                        if compId is None and seqKey in self.__authToLabelSeq:
-                            _, seqId = self.__authToLabelSeq[seqKey]
-                            if ps is not None and seqId in ps['auth_seq_id']:
-                                compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
-
-                        if compId is None and coordAtomSite is not None and ps is not None and seqKey[1] in ps['auth_seq_id']:
-                            compId = ps['comp_id'][ps['auth_seq_id'].index(seqKey[1])]
-
-                        if compId is None:
-                            continue
-
-                        if not cur_subtype_w_axis and not cur_sybtype_w_para:
-                            updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
-
-                        for atomId in _factor['atom_id']:
-                            if cur_subtype_w_axis:
-                                if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
-                                    continue
-                            if cur_sybtype_w_para:
-                                if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS):
-                                    continue
-
-                            if cur_subtype_w_axis or cur_sybtype_w_para:
-                                updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
-
-                            origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
-
-                            atomId = atomId.upper()
-
-                            if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, atomId)
-
-                            atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-                            if 'alt_atom_id' in _factor and details is not None:
-                                atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
-
-                            if details is not None:
-                                _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
-                                if _atomId != atomId:
-                                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
-
-                            # @see: https://bmrb.io/ref_info/atom_nom.tbl
-                            if self.__trust_bmrb_ref_info:
-                                pass
-
-                            # @see: https://bmrb.io/macro/files/xplor_to_iupac.Nov140620
-                            else:
-                                if compId == 'ASN':
-                                    if atomId == 'HD21':
-                                        _atomId = atomId[:-1] + '2'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                    elif atomId == 'HD22':
-                                        _atomId = atomId[:-1] + '1'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                elif compId == 'GLN':
-                                    if atomId == 'HE21':
-                                        _atomId = atomId[:-1] + '2'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                    elif atomId == 'HE22':
-                                        _atomId = atomId[:-1] + '1'
-                                        if self.__nefT.validate_comp_atom(compId, _atomId):
-                                            atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-
-                            for _atomId in atomIds:
-                                ccdCheck = not cifCheck
-
-                                if cifCheck:
-                                    _atom = None
-                                    if coordAtomSite is not None:
-                                        if _atomId in coordAtomSite['atom_id']:
-                                            _atom = {}
-                                            _atom['comp_id'] = coordAtomSite['comp_id']
-                                            _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['atom_id'].index(_atomId)]
-                                        elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
-                                            _atom = {}
-                                            _atom['comp_id'] = coordAtomSite['comp_id']
-                                            _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
-                                            self.__authAtomId = 'auth_atom_id'
-                                        elif self.__preferAuthSeq:
-                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                            if _coordAtomSite is not None:
-                                                if _atomId in _coordAtomSite['atom_id']:
-                                                    _atom = {}
-                                                    _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
-                                                    self.__preferAuthSeq = False
-                                                    self.__authSeqId = 'label_seq_id'
-                                                    seqKey = _seqKey
-                                                elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                    _atom = {}
-                                                    _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
-                                                    self.__preferAuthSeq = False
-                                                    self.__authSeqId = 'label_seq_id'
-                                                    self.__authAtomId = 'auth_atom_id'
-                                                    seqKey = _seqKey
-
-                                    elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                        if _coordAtomSite is not None:
-                                            if _atomId in _coordAtomSite['atom_id']:
-                                                _atom = {}
-                                                _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                seqKey = _seqKey
-                                            elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                _atom = {}
-                                                _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                self.__authAtomId = 'auth_atom_id'
-                                                seqKey = _seqKey
-
-                                    if _atom is not None:
-                                        _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                        if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
-                                           and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
-                                    else:
-                                        ccdCheck = True
-
-                                if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
-                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                    if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
-                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                        if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-                                            if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                                if self.__cur_subtype != 'plane':
-                                                    checked = False
-                                                    if seqId == 1 and _atomId in ('H', 'HN'):
-                                                        if 'H1' in coordAtomSite['atom_id']:
-                                                            checked = True
-                                                    if _atomId[0] == 'H':
-                                                        ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                                                    if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                                        if ccb is not None:
-                                                            bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                            if bondedTo[0] in ('N', 'O', 'S'):
-                                                                checked = True
-                                                    if not checked:
-                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
-                                        elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
-                                            if self.__reasons is None and seqKey in self.__authToLabelSeq:
-                                                _, _seqId = self.__authToLabelSeq[seqKey]
-                                                if ps is not None and _seqId in ps['auth_seq_id']:
-                                                    _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                                                    if self.__ccU.updateChemCompDict(_compId):
-                                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                                        if cca is not None:
-                                                            if self.reasonsForReParsing is None:
-                                                                self.reasonsForReParsing = {}
-                                                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                                self.reasonsForReParsing['label_seq_scheme'] = True
-                                            if cifCheck and self.__cur_subtype != 'plane':
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
-
+                self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, withAxis, withPara, isPolySeq=True, isChainSpecified=False)
                 if self.__hasNonPoly:
-                    for chainId in [np['auth_chain_id'] for np in self.__nonPoly]:
-                        np = next((np for np in self.__polySeq if np['auth_chain_id'] == chainId), None)
-                        for seqId in _factor['seq_id']:
-                            seqId = self.getRealSeqId(np, seqId, False)
-
-                            if np is not None and seqId in np['auth_seq_id']:
-                                compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
-                            else:
-                                compId = None
-
-                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
-
-                            if compId is None and seqKey in self.__authToLabelSeq:
-                                _, seqId = self.__authToLabelSeq[seqKey]
-                                if np is not None and seqId in np['auth_seq_id']:
-                                    compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
-                                    seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
-
-                            if compId is None and coordAtomSite is not None and np is not None and seqKey[1] in np['auth_seq_id']:
-                                compId = np['comp_id'][np['auth_seq_id'].index(seqKey[1])]
-
-                            if compId is None:
-                                continue
-
-                            if not cur_subtype_w_axis and not cur_sybtype_w_para:
-                                updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
-
-                            for atomId in _factor['atom_id']:
-                                if cur_subtype_w_axis:
-                                    if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
-                                        continue
-                                if cur_sybtype_w_para:
-                                    if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS):
-                                        continue
-
-                                if cur_subtype_w_axis or cur_sybtype_w_para:
-                                    updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
-
-                                origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
-
-                                atomId = atomId.upper()
-
-                                if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, atomId)
-
-                                atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-                                if 'alt_atom_id' in _factor and details is not None:
-                                    atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
-
-                                if details is not None:
-                                    _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
-                                    if _atomId != atomId:
-                                        atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
-
-                                # @see: https://bmrb.io/ref_info/atom_nom.tbl
-                                if self.__trust_bmrb_ref_info:
-                                    pass
-
-                                # @see: https://bmrb.io/macro/files/xplor_to_iupac.Nov140620
-                                else:
-                                    if compId == 'ASN':
-                                        if atomId == 'HD21':
-                                            _atomId = atomId[:-1] + '2'
-                                            if self.__nefT.validate_comp_atom(compId, _atomId):
-                                                atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                        elif atomId == 'HD22':
-                                            _atomId = atomId[:-1] + '1'
-                                            if self.__nefT.validate_comp_atom(compId, _atomId):
-                                                atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                    elif compId == 'GLN':
-                                        if atomId == 'HE21':
-                                            _atomId = atomId[:-1] + '2'
-                                            if self.__nefT.validate_comp_atom(compId, _atomId):
-                                                atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-                                        elif atomId == 'HE22':
-                                            _atomId = atomId[:-1] + '1'
-                                            if self.__nefT.validate_comp_atom(compId, _atomId):
-                                                atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
-
-                                for _atomId in atomIds:
-                                    ccdCheck = not cifCheck
-
-                                    if cifCheck:
-                                        _atom = None
-                                        if coordAtomSite is not None:
-                                            if _atomId in coordAtomSite['atom_id']:
-                                                _atom = {}
-                                                _atom['comp_id'] = coordAtomSite['comp_id']
-                                                _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['atom_id'].index(_atomId)]
-                                            elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
-                                                _atom = {}
-                                                _atom['comp_id'] = coordAtomSite['comp_id']
-                                                _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
-                                                self.__authAtomId = 'auth_atom_id'
-                                            elif self.__preferAuthSeq:
-                                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                                if _coordAtomSite is not None:
-                                                    if _atomId in _coordAtomSite['atom_id']:
-                                                        _atom = {}
-                                                        _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                        _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
-                                                        self.__preferAuthSeq = False
-                                                        self.__authSeqId = 'label_seq_id'
-                                                        seqKey = _seqKey
-                                                    elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                        _atom = {}
-                                                        _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                        _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
-                                                        self.__preferAuthSeq = False
-                                                        self.__authSeqId = 'label_seq_id'
-                                                        self.__authAtomId = 'auth_atom_id'
-                                                        seqKey = _seqKey
-
-                                        elif self.__preferAuthSeq:
-                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
-                                            if _coordAtomSite is not None:
-                                                if _atomId in _coordAtomSite['atom_id']:
-                                                    _atom = {}
-                                                    _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
-                                                    self.__preferAuthSeq = False
-                                                    self.__authSeqId = 'label_seq_id'
-                                                    seqKey = _seqKey
-                                                elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                    _atom = {}
-                                                    _atom['comp_id'] = _coordAtomSite['comp_id']
-                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
-                                                    self.__preferAuthSeq = False
-                                                    self.__authSeqId = 'label_seq_id'
-                                                    self.__authAtomId = 'auth_atom_id'
-                                                    seqKey = _seqKey
-
-                                        if _atom is not None:
-                                            _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                            if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
-                                               and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
-                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
-                                        else:
-                                            ccdCheck = True
-
-                                    if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
-                                        _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                        if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
-                                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                            if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
-                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-                                                if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                                    if self.__cur_subtype != 'plane':
-                                                        checked = False
-                                                        if seqId == 1 and _atomId in ('H', 'HN'):
-                                                            if 'H1' in coordAtomSite['atom_id']:
-                                                                checked = True
-                                                        if _atomId[0] == 'H':
-                                                            ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                                                        if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                                            if ccb is not None:
-                                                                bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                                if bondedTo[0] in ('N', 'O', 'S'):
-                                                                    checked = True
-                                                        if not checked:
-                                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
-                                            elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
-                                                if self.__reasons is None and seqKey in self.__authToLabelSeq:
-                                                    _, _seqId = self.__authToLabelSeq[seqKey]
-                                                    if np is not None and _seqId in np['auth_seq_id']:
-                                                        _compId = np['comp_id'][np['auth_seq_id'].index(_seqId)]
-                                                        if self.__ccU.updateChemCompDict(_compId):
-                                                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                                            if cca is not None:
-                                                                if self.reasonsForReParsing is None:
-                                                                    self.reasonsForReParsing = {}
-                                                                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                                    self.reasonsForReParsing['label_seq_scheme'] = True
-                                                if cifCheck and self.__cur_subtype != 'plane':
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                    self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, withAxis, withPara, isPolySeq=False, isChainSpecified=False)
 
         if 'atom_ids' in _factor:
             del _factor['atom_ids']
@@ -7049,10 +6335,10 @@ class XplorMRParserListener(ParseTreeListener):
             _factor['atom_selection'] = _atomSelection
 
         if len(_factor['atom_selection']) == 0:
-            if cur_subtype_w_axis and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+            if withAxis and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
-            if cur_sybtype_w_para and ((_factor['atom_id'][0] == _factor['comp_id'][0] and _factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                       or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+            if withPara and ((_factor['atom_id'][0] == _factor['comp_id'][0] and _factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
+                             or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
                 return _factor
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
@@ -7083,6 +6369,191 @@ class XplorMRParserListener(ParseTreeListener):
             del _factor['alt_atom_id']
 
         return _factor
+
+    def __consumeFactor_expressions__(self, _factor, cifCheck, _atomSelection, withAxis, withPara, isPolySeq=True, isChainSpecified=True):
+        foundCompId = False
+
+        for chainId in (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else self.__nonPoly)]):
+            ps = next((ps for ps in (self.__polySeq if isPolySeq else self.__nonPoly) if ps['auth_chain_id'] == chainId), None)
+            for seqId in _factor['seq_id']:
+                seqId = self.getRealSeqId(ps, seqId, isPolySeq)
+
+                if ps is not None and seqId in ps['auth_seq_id']:
+                    compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                else:
+                    compId = None
+
+                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                if compId is None and seqKey in self.__authToLabelSeq:
+                    _, seqId = self.__authToLabelSeq[seqKey]
+                    if ps is not None and seqId in ps['auth_seq_id']:
+                        compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                if compId is None and coordAtomSite is not None and ps is not None and seqKey[1] in ps['auth_seq_id']:
+                    compId = ps['comp_id'][ps['auth_seq_id'].index(seqKey[1])]
+
+                if compId is None:
+                    continue
+
+                foundCompId = True
+
+                if not withAxis and not withPara:
+                    updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
+
+                for atomId in _factor['atom_id']:
+                    if withAxis:
+                        if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                            continue
+                    if withPara:
+                        if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS):
+                            continue
+
+                    if withAxis or withPara:
+                        updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
+
+                    origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
+
+                    atomId = atomId.upper()
+
+                    if compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, atomId)
+
+                    atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                    if 'alt_atom_id' in _factor and details is not None:
+                        atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+
+                    if details is not None:
+                        _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
+                        if _atomId != atomId:
+                            atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
+
+                    # @see: https://bmrb.io/ref_info/atom_nom.tbl
+                    if self.__trust_bmrb_ref_info:
+                        pass
+
+                    # @see: https://bmrb.io/macro/files/xplor_to_iupac.Nov140620
+                    else:
+                        if compId == 'ASN':
+                            if atomId == 'HD21':
+                                _atomId = atomId[:-1] + '2'
+                                if self.__nefT.validate_comp_atom(compId, _atomId):
+                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                            elif atomId == 'HD22':
+                                _atomId = atomId[:-1] + '1'
+                                if self.__nefT.validate_comp_atom(compId, _atomId):
+                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                        elif compId == 'GLN':
+                            if atomId == 'HE21':
+                                _atomId = atomId[:-1] + '2'
+                                if self.__nefT.validate_comp_atom(compId, _atomId):
+                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+                            elif atomId == 'HE22':
+                                _atomId = atomId[:-1] + '1'
+                                if self.__nefT.validate_comp_atom(compId, _atomId):
+                                    atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+
+                    for _atomId in atomIds:
+                        ccdCheck = not cifCheck
+
+                        if cifCheck:
+                            _atom = None
+                            if coordAtomSite is not None:
+                                if _atomId in coordAtomSite['atom_id']:
+                                    _atom = {}
+                                    _atom['comp_id'] = coordAtomSite['comp_id']
+                                    _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['atom_id'].index(_atomId)]
+                                elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
+                                    _atom = {}
+                                    _atom['comp_id'] = coordAtomSite['comp_id']
+                                    _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
+                                    self.__authAtomId = 'auth_atom_id'
+                                elif self.__preferAuthSeq:
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                    if _coordAtomSite is not None:
+                                        if _atomId in _coordAtomSite['atom_id']:
+                                            _atom = {}
+                                            _atom['comp_id'] = _coordAtomSite['comp_id']
+                                            _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                            self.__preferAuthSeq = False
+                                            self.__authSeqId = 'label_seq_id'
+                                            seqKey = _seqKey
+                                        elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                            _atom = {}
+                                            _atom['comp_id'] = _coordAtomSite['comp_id']
+                                            _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                            self.__preferAuthSeq = False
+                                            self.__authSeqId = 'label_seq_id'
+                                            self.__authAtomId = 'auth_atom_id'
+                                            seqKey = _seqKey
+
+                            elif self.__preferAuthSeq:
+                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                if _coordAtomSite is not None:
+                                    if _atomId in _coordAtomSite['atom_id']:
+                                        _atom = {}
+                                        _atom['comp_id'] = _coordAtomSite['comp_id']
+                                        _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                        self.__preferAuthSeq = False
+                                        self.__authSeqId = 'label_seq_id'
+                                        seqKey = _seqKey
+                                    elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
+                                        _atom = {}
+                                        _atom['comp_id'] = _coordAtomSite['comp_id']
+                                        _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                        self.__preferAuthSeq = False
+                                        self.__authSeqId = 'label_seq_id'
+                                        self.__authAtomId = 'auth_atom_id'
+                                        seqKey = _seqKey
+
+                            if _atom is not None:
+                                _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
+                                   and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
+                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
+                            else:
+                                ccdCheck = True
+
+                        if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                            _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                            if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
+                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
+                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                    if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+                                        if self.__cur_subtype != 'plane':
+                                            checked = False
+                                            if seqId == 1 and _atomId in ('H', 'HN'):
+                                                if 'H1' in coordAtomSite['atom_id']:
+                                                    checked = True
+                                            if _atomId[0] == 'H':
+                                                ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                                            if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                                                if ccb is not None:
+                                                    bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
+                                                    if bondedTo[0] in ('N', 'O', 'S'):
+                                                        checked = True
+                                            if not checked:
+                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
+                                    if self.__reasons is None and seqKey in self.__authToLabelSeq:
+                                        _, _seqId = self.__authToLabelSeq[seqKey]
+                                        if ps is not None and _seqId in ps['auth_seq_id']:
+                                            _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                                            if self.__ccU.updateChemCompDict(_compId):
+                                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                                if cca is not None:
+                                                    if self.reasonsForReParsing is None:
+                                                        self.reasonsForReParsing = {}
+                                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                        self.reasonsForReParsing['label_seq_scheme'] = True
+                                    if cifCheck and self.__cur_subtype != 'plane':
+                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+
+        return foundCompId
 
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
         if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:

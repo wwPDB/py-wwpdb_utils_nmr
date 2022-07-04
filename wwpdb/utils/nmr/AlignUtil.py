@@ -427,7 +427,7 @@ def sortPolySeqRst(polySeqRst):
         ps['comp_id'] = _compIds
 
 
-def alignPolymerSequence(pA, polySeqModel, polySeqRst, useTabooList=True):
+def alignPolymerSequence(pA, polySeqModel, polySeqRst, inhibitory=True):
     """ Align polymer sequence of the coordinates and restraints.
     """
 
@@ -437,6 +437,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, useTabooList=True):
     seqAlign = []
 
     tabooList = []
+    inhibitList = []
 
     for s1 in polySeqModel:
         chain_id = s1['auth_chain_id']
@@ -458,8 +459,11 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, useTabooList=True):
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-            if length == unmapped + conflict or _matched <= conflict:
+            if conflict > 0:
                 tabooList.append({chain_id, chain_id2})
+
+            if length == unmapped + conflict or _matched <= conflict:
+                inhibitList.append({chain_id, chain_id2})
                 continue
 
             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -555,9 +559,16 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, useTabooList=True):
 
             seqAlign.append(seq_align)
 
-    if len(tabooList) > 0 and useTabooList:
-        for sa in seqAlign:
+    if len(tabooList) > 0:
+        _seqAlign = copy.copy(seqAlign)
+        for sa in _seqAlign:
             if {sa['ref_chain_id'], sa['test_chain_id']} in tabooList:
+                seqAlign.remove(sa)
+
+    if len(inhibitList) > 0 and inhibitory:
+        _seqAlign = copy.copy(seqAlign)
+        for sa in _seqAlign:
+            if {sa['ref_chain_id'], sa['test_chain_id']} in inhibitList:
                 seqAlign.remove(sa)
 
     return seqAlign

@@ -1765,7 +1765,7 @@ class NmrDpReportSequenceAlignment:
                       'model_poly_seq_vs_csa_restraint', 'model_poly_seq_vs_ang_restraint', 'model_poly_seq_vs_pre_restraint',
                       'model_poly_seq_vs_pcs_restraint', 'model_poly_seq_vs_prdc_restraint', 'model_poly_seq_vs_pang_restraint',
                       'model_poly_seq_vs_pccr_restraint', 'model_poly_seq_vs_hbond_restraint', 'model_poly_seq_vs_geo_restraint',
-                      'model_poly_seq_vs_noepk_restraint',
+                      'model_poly_seq_vs_noepk_restraint', 'model_poly_seq_vs_mr_topology',
                       'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint',
                       'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak', 'nmr_poly_seq_vs_spectral_peak_alt')
 

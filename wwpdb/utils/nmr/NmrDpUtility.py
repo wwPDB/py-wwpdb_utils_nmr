@@ -20900,6 +20900,14 @@ class NmrDpUtility:
 
                         amberAtomNumberDict = listener.getAtomNumberDict()
 
+                        poly_seq = listener.getPolymerSequence()
+                        if poly_seq is not None:
+                            input_source.setItemValue('polymer_sequence', poly_seq)
+
+                        seq_align = listener.getSequenceAlignment()
+                        if seq_align is not None:
+                            self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+
             elif file_type == 'nm-aux-gro' and content_subtype is not None and 'topology' in content_subtype:
 
                 if 'is_valid' in ar and ar['is_valid']:
@@ -20972,6 +20980,14 @@ class NmrDpUtility:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
 
                         gromacsAtomNumberDict = listener.getAtomNumberDict()
+
+                        poly_seq = listener.getPolymerSequence()
+                        if poly_seq is not None:
+                            input_source.setItemValue('polymer_sequence', poly_seq)
+
+                        seq_align = listener.getSequenceAlignment()
+                        if seq_align is not None:
+                            self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
                 elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
                     if ar['is_upl']:

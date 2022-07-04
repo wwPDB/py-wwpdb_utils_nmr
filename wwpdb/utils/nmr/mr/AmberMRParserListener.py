@@ -2331,7 +2331,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
 
-                atomIds = self.__nefT.get_valid_star_atom(compId, atomId)[0]
+                atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
@@ -2432,7 +2432,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                         atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
 
-                        atomIds = self.__nefT.get_valid_star_atom(compId, atomId)[0]
+                        atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
@@ -2567,7 +2567,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     authAtomId = translateToStdAtomName(authAtomId, compId, ccU=self.__ccU)
 
-                    atomIds = self.__nefT.get_valid_star_atom(compId, authAtomId)[0]
+                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
                     if 'iat' in factor:
                         iat = factor['iat']
@@ -2747,7 +2747,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if compId not in monDict3 and self.__mrAtomNameMapping is not None:
                         _, compId, authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, authAtomId)
 
-                    atomIds = self.__nefT.get_valid_star_atom(compId, authAtomId)[0]
+                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 

@@ -436,7 +436,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst):
 
     seqAlign = []
 
-    tabooList = set()
+    tabooList = []
 
     for s1 in polySeqModel:
         chain_id = s1['auth_chain_id']
@@ -453,13 +453,13 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst):
             length = len(myAlign)
 
             if length == 0:
-                tabooList.add({chain_id, chain_id2})
+                tabooList.append({chain_id, chain_id2})
                 continue
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
             if length == unmapped + conflict or _matched <= conflict:
-                tabooList.add({chain_id, chain_id2})
+                tabooList.append({chain_id, chain_id2})
                 continue
 
             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)

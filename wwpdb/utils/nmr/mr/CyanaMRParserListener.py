@@ -1201,8 +1201,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None:
-                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                f"The sequence number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates.\n"
+                            self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates.\n"
                             return
 
                         self.__ccU.updateChemCompDict(_cifCompId)
@@ -1278,8 +1278,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None:
-                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                f"The sequence number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates.\n"
+                            self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates.\n"
                             return
 
                         self.__ccU.updateChemCompDict(_cifCompId)

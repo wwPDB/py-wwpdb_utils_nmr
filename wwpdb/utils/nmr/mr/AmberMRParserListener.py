@@ -635,18 +635,19 @@ class AmberMRParserListener(ParseTreeListener):
                 break
         self.lastComment = None if len(comment) == 0 else ' '.join(comment)
 
-        if len(comment) == 1 and self.__hasNonPoly:
-            self.lastElemName = ''.join([s for s in self.lastComment.upper() if not s.isdigit()])
-            if not any(np for np in self.__nonPoly if self.lastElemName in np['auth_comp_id']):
-                self.lastElemName = None
-            if self.lastElemName is not None:
-                if self.metalIonMapping is None:
-                    self.metalIonMapping = {}
-                self.metalIonMapping[self.lastElemName] = []
+        if self.lastComment:
+            if len(comment) == 1 and self.__hasNonPoly:
+                self.lastElemName = ''.join([s for s in self.lastComment.upper() if not s.isdigit()])
+                if not any(np for np in self.__nonPoly if self.lastElemName in np['auth_comp_id']):
+                    self.lastElemName = None
+                if self.lastElemName is not None:
+                    if self.metalIonMapping is None:
+                        self.metalIonMapping = {}
+                    self.metalIonMapping[self.lastElemName] = []
 
-        if self.dihed_plane_residue_pat.match(self.lastComment):
-            g = self.dihed_plane_residue_pat.search(self.lastComment).groups()
-            self.lastPlaneSeqId = int(g[0])
+            if self.dihed_plane_residue_pat.match(self.lastComment):
+                g = self.dihed_plane_residue_pat.search(self.lastComment).groups()
+                self.lastPlaneSeqId = int(g[0])
 
     # Enter a parse tree produced by AmberMRParser#nmr_restraint.
     def enterNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):  # pylint: disable=unused-argument

@@ -84,6 +84,7 @@
 # 12-Apr-2022  M. Yokochi - add get_valid_star_atom_in_xplor(), which translates XPLOR atom name to IUPAC one (v3.1.1, NMR restraint remediation, DAOTHER-7407)
 # 13-Apr-2022  M. Yokochi - use auth_*_id scheme preferentially in combined format translation (v3.1.2, NMR restraint remediation)
 # 02-May-2022  M. Yokochi - remediate inconsistent _Atom_chem_shift.Chem_comp_ID tag values in reference to _Atom_chem_shift.Seq_ID (v3.1.3, NMR restraint remediation)
+# 04-Jul-2022  M. Yokochi - add support for old XPLOR atom nomenclature, i.e. 1HB (v3.1.4, NMR restraint remediation)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -111,7 +112,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.1.3'
+__version__ = '3.1.4'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -1311,7 +1312,7 @@ class NEFTranslator:
                 chains = sorted(set(i[2] for i in seq_data))
                 offset_seq_ids = {i[2]: 0 for i in seq_data}
                 for c in chains:
-                    min_seq_id = min([int(i[0]) for i in seq_data if i[2] == c])
+                    min_seq_id = min(int(i[0]) for i in seq_data if i[2] == c)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
                 sorted_seq = sorted(set(f"{i[2]} {int(i[0]) + offset_seq_ids[i[2]]:04d} {i[1]}" for i in seq_data))
@@ -1522,7 +1523,7 @@ class NEFTranslator:
                 chains = sorted(set(i[2] for i in seq_data))
                 offset_seq_ids = {i[2]: 0 for i in seq_data}
                 for c in chains:
-                    min_seq_id = min([int(i[0]) for i in seq_data if i[2] == c])
+                    min_seq_id = min(int(i[0]) for i in seq_data if i[2] == c)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
                 sorted_seq = sorted(set(f"{i[2]} {int(i[0]) + offset_seq_ids[i[2]]:04d} {i[1]}" for i in seq_data))
@@ -1736,7 +1737,7 @@ class NEFTranslator:
                 chains = sorted(set(i[4] for i in seq_data))
                 offset_seq_ids = {i[4]: 0 for i in seq_data}
                 for c in chains:
-                    min_seq_id = min([int(i[3]) for i in seq_data if i[4] == c])
+                    min_seq_id = min(int(i[3]) for i in seq_data if i[4] == c)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
                 sorted_seq = sorted(set(f"{i[4]}:{int(i[3]) + offset_seq_ids[i[4]]:04d}:{i[2]}:{i[0]: >4}:{i[1]}" for i in seq_data))
@@ -4253,6 +4254,9 @@ class NEFTranslator:
 
         if '#' in atom_id:
             atom_id = atom_id.replace('#', '%')
+
+        if atom_id[0] in ('1', '2', '3'):
+            atom_id = atom_id[1:] + atom_id[0]
 
         if atom_id[0] in ('H', 'Q', 'M'):
 

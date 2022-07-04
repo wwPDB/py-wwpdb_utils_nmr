@@ -200,7 +200,7 @@ class ChemCompUtil:
             atmList.extend([a for a in ends_w_num if a.endswith('1')])
 
         if len(ends_w_alp) > 0:
-            min_len = min([len(a) for a in ends_w_alp])
+            min_len = min(len(a) for a in ends_w_alp)
             atmList.extend([a for a in ends_w_alp if len(a) == min_len])
 
         return atmList

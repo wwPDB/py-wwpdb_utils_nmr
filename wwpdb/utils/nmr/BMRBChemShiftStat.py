@@ -608,7 +608,7 @@ class BMRBChemShiftStat:
             atm_list.extend([a for a in ends_w_num if a.endswith('1')])
 
         if len(ends_w_alp) > 0:
-            min_len = min([len(a) for a in ends_w_alp])
+            min_len = min(len(a) for a in ends_w_alp)
             atm_list.extend([a for a in ends_w_alp if len(a) == min_len])
 
         return atm_list
@@ -1392,7 +1392,7 @@ class BMRBChemShiftStat:
         for comp_id in comp_ids:
             _list = [i for i in atm_list if i['comp_id'] == comp_id]
 
-            max_count = max([i['count'] for i in _list])
+            max_count = max(i['count'] for i in _list)
 
             for i in _list:
                 i['norm_freq'] = float(f"{float(i['count']) / max_count:.3f}")

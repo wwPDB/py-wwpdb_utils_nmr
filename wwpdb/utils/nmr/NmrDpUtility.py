@@ -21425,6 +21425,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
+                            elif warn.startswith('[Sequence mismatch warning]'):
+                                self.report.warning.appendDescription('sequence_mismatch',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
                             elif warn.startswith('[Enum mismatch ignorable]'):
                                 self.report.warning.appendDescription('enum_mismatch_ignorable',
                                                                       {'file_name': file_name, 'description': warn})
@@ -21839,6 +21847,14 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch warning]'):
+                                self.report.warning.appendDescription('sequence_mismatch',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Enum mismatch ignorable]'):
                                 self.report.warning.appendDescription('enum_mismatch_ignorable',

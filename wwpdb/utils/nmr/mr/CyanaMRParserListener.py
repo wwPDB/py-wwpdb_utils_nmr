@@ -1201,21 +1201,24 @@ class CyanaMRParserListener(ParseTreeListener):
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None:
-                            self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates.\n"
-                            return
+                            self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
+                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                "Please update the sequence in the Macromolecules page.\n"
+                            _cifCompId = '.'
+                            cifAtomId = atomId
 
-                        self.__ccU.updateChemCompDict(_cifCompId)
-
-                        if isinstance(atomId, str):
-                            cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                         else:
-                            cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+                            self.__ccU.updateChemCompDict(_cifCompId)
 
-                        if cifAtomId is None:
-                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
-                            return
+                            if isinstance(atomId, str):
+                                cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                            else:
+                                cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+
+                            if cifAtomId is None:
+                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                    f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                                return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
 
@@ -1278,18 +1281,21 @@ class CyanaMRParserListener(ParseTreeListener):
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None:
-                            self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates.\n"
-                            return
+                            self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
+                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                "Please update the sequence in the Macromolecules page.\n"
+                            _cifCompId = '.'
+                            cifAtomId = atomId
 
-                        self.__ccU.updateChemCompDict(_cifCompId)
+                        else:
+                            self.__ccU.updateChemCompDict(_cifCompId)
 
-                        cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
 
-                        if cifAtomId is None:
-                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
-                            return
+                            if cifAtomId is None:
+                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                    f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                                return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
 

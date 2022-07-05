@@ -839,6 +839,8 @@ class AmberMRParserListener(ParseTreeListener):
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
                 if self.__atomNumberDict is not None:
 
+                    self.__hasComments = True
+
                     subtype_name = ''
                     if self.__cur_subtype == 'dist':
                         subtype_name = ' as a distance restraint'
@@ -912,8 +914,6 @@ class AmberMRParserListener(ParseTreeListener):
                         self.atomSelectionSet.append(atomSelection)
 
                     if self.lastComment is not None:
-                        if not self.__hasComments:
-                            self.__hasComments = True
                         if self.__debug:
                             print('# ' + self.lastComment)
 
@@ -1096,8 +1096,7 @@ class AmberMRParserListener(ParseTreeListener):
                 # try to update AMBER atom number dictionary based on Sander comments
                 elif self.__hasPolySeq and self.iresid == 0:
 
-                    if not self.__hasComments:
-                        self.__hasComments = True
+                    self.__hasComments = True
 
                     if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
                         subtype_name = 'distance restraint'
@@ -1375,11 +1374,14 @@ class AmberMRParserListener(ParseTreeListener):
                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
                                                 f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
 
+                elif self.lastComment is not None:
+                    if not self.__hasComments:
+                        self.__hasComments = True
+
             # Amber 10: ambmask
             else:
 
-                if not self.__hasComments:
-                    self.__hasComments = True
+                self.__hasComments = True
 
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
                 if self.__atomNumberDict is not None:

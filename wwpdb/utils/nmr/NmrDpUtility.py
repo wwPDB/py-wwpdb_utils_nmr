@@ -10671,6 +10671,18 @@ class NmrDpUtility:
 
                 return False
 
+            has_content = False
+            with open(dst_file, 'r') as ifp:
+                for line in ifp:
+                    if line.isspace() or comment_pattern.match(line):
+                        continue
+                    has_content = True
+                    break
+
+            if not has_content:
+                with open(os.path.join(dir_path, '.entry_wo_mr'), 'w') as ofp:
+                    ofp.write('')
+
             if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                 dst_file = cor_dst_file
 
@@ -21035,7 +21047,7 @@ class NmrDpUtility:
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
-            if file_type == 'nm-res-amb' and amberAtomNumberDict is None and not ar['has_comments']:
+            if file_type == 'nm-res-amb' and amberAtomNumberDict is None and 'has_comments' in ar and not ar['has_comments']:
 
                 err = f"To verify AMBER restraint file {file_name!r}, AMBER parameter/topology file must be uploaded "\
                     "or Sander comments should be included in the AMBER restraint file."

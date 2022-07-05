@@ -198,18 +198,23 @@ class GromacsMRReader:
             if self.__verbose:
                 self.__lfh.write(f"+GromacsMRReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
-            """
+
         except Exception as e:
             if self.__verbose and isFilePath:
                 self.__lfh.write(f"+GromacsMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
-            """
+
         finally:
             if isFilePath and ifp is not None:
                 ifp.close()
 
 
 if __name__ == "__main__":
+    reader = GromacsMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6v5d/gromacs_orientation_restraints.itp',
+                 '../../tests-nmr/mock-data-remediation/6v5d/6v5d.cif')
+
     reader = GromacsMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mzh/2mzh.rst',

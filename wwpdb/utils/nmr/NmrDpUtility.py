@@ -6888,7 +6888,7 @@ class NmrDpUtility:
 
                         pos += 1
 
-                        if pos == 1 and line.startswith('defa'):
+                        if pos == 1 and not (line.isdigit() or len(line.strip(' ').split()) > 1):
                             has_amb_inpcrd = True
 
                         elif pos == 2 and has_amb_inpcrd:
@@ -7128,7 +7128,7 @@ class NmrDpUtility:
 
                         elif is_aux_amb:
 
-                            if pos == 1 and line.startswith('defa'):
+                            if pos == 1 and not (line.isdigit() or len(line.strip(' ').split()) > 1):
                                 has_amb_inpcrd = True
 
                             elif pos == 2 and has_amb_inpcrd:
@@ -10865,12 +10865,12 @@ class NmrDpUtility:
                     else:
                         file_ext = os.path.basename(split_ext[0])
 
-                    if file_ext in ('crd', 'rst', 'inpcrd', 'restrt'):  # AMBER coordinate file extensions
+                    if file_ext in ('crd', 'rst', 'inp', 'inpcrd', 'restrt'):  # AMBER coordinate file extensions
                         is_crd = False
                         with open(dst_file, 'r') as ifp:
                             for pos, line in enumerate(ifp, start=1):
                                 if pos == 1:
-                                    if not line.startswith('defa'):
+                                    if line.isdigit() or len(line.strip(' ').split()) > 1:
                                         break
                                 elif pos == 2:
                                     try:
@@ -10904,7 +10904,7 @@ class NmrDpUtility:
                                     is_seq = False
                                     break
                                 if len_seq == 2:
-                                    if (seq[0] in monDict3 and seq[1].isdigit()) or (seq[1] in monDict3 and seq[0].isdigit()):
+                                    if (translateToStdResName(seq[0]) in monDict3 and seq[1].isdigit()) or (translateToStdResName(seq[1]) in monDict3 and seq[0].isdigit()):
                                         is_seq = True
                                     else:
                                         is_seq = False

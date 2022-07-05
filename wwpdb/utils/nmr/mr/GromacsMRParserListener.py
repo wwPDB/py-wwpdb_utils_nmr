@@ -1162,6 +1162,7 @@ class GromacsMRParserListener(ParseTreeListener):
         contentSubtype = {'dist_restraint': self.distRestraints,
                           'ang_restraint': self.angRestraints,
                           'dihed_restraint': self.dihedRestraints,
+                          'rdc_restraint': self.rdcRestraints,
                           'geo_restraint': self.geoRestraints
                           }
 

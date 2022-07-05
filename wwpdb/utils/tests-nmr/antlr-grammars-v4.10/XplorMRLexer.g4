@@ -419,7 +419,7 @@ Angle_or_Dihedral:	'ANGL' 'E'? | 'DIHE' 'D'? 'R'? 'A'? 'L'?;
 /* XPLOR-NIH: Paramagnetic relaxation enhancement restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node438.html
 */
-Paramagnetic:		'PMAG' 'N'? 'E'? 'T'? 'I'? 'C'?;	// Paramagnetic { pre_statement } End
+PMagnetic:		'PMAG' 'N'? 'E'? 'T'? 'I'? 'C'?;	// PMagnetic { pre_statement } End
 //Assign:		'ASSI' 'G'? 'N'?;			// selection selection Real Real
 //Classification:	'CLAS' 'S'? 'I'? 'F'? 'I'? 'C'? 'A'? 'T'? 'I'? 'O'? 'N'?;	// = Class_name
 //ForceConstant:	'FORC' 'E'? 'C'? 'O'? 'N'? 'S'? 'T'? 'A'? 'N'? 'T'?;		// = Class_name Real

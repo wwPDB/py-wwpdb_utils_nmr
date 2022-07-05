@@ -132,7 +132,7 @@ angle_db_restraint:
 	AngleDb angle_db_statement* End;
 
 pre_restraint:
-	Paramagnetic pre_statement* End;
+	PMagnetic pre_statement* End;
 
 pcs_restraint:
 	Xpcs pcs_statement* End;

@@ -1390,7 +1390,7 @@ class XplorMRParser ( Parser ):
                       "Phase", "Quartic", "Shape", "Sort", "Dimensions", 
                       "Collapse", "Danisotropy", "Orient", "Height", "MaxGaussians", 
                       "NewGaussian", "Dcsa", "Sigma", "Pcsa", "OneBond", 
-                      "AngleDb", "DerivFlag", "Angle_or_Dihedral", "Paramagnetic", 
+                      "AngleDb", "DerivFlag", "Angle_or_Dihedral", "PMagnetic", 
                       "Kconst", "Omega", "Tauc", "Debug", "Xpcs", "Tolerance", 
                       "Save", "Fmed", "ErrOn", "ErrOff", "Fon", "Foff", 
                       "Son", "Soff", "Frun", "Xrdcoupling", "Xangle", "Xccr", 
@@ -1691,7 +1691,7 @@ class XplorMRParser ( Parser ):
     AngleDb=94
     DerivFlag=95
     Angle_or_Dihedral=96
-    Paramagnetic=97
+    PMagnetic=97
     Kconst=98
     Omega=99
     Tauc=100
@@ -2300,7 +2300,7 @@ class XplorMRParser ( Parser ):
             self.state = 297
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Noe) | (1 << XplorMRParser.Assign) | (1 << XplorMRParser.Restraints) | (1 << XplorMRParser.Dihedral) | (1 << XplorMRParser.Sanisotropy) | (1 << XplorMRParser.Xdipolar) | (1 << XplorMRParser.Dipolar) | (1 << XplorMRParser.VeAngle) | (1 << XplorMRParser.Tensor) | (1 << XplorMRParser.Anisotropy) | (1 << XplorMRParser.Planar) | (1 << XplorMRParser.Group) | (1 << XplorMRParser.Initialize) | (1 << XplorMRParser.Harmonic) | (1 << XplorMRParser.Xadc) | (1 << XplorMRParser.Coupling))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (XplorMRParser.Carbon - 65)) | (1 << (XplorMRParser.Proton - 65)) | (1 << (XplorMRParser.Observed - 65)) | (1 << (XplorMRParser.Ramachandran - 65)) | (1 << (XplorMRParser.Collapse - 65)) | (1 << (XplorMRParser.Danisotropy - 65)) | (1 << (XplorMRParser.Orient - 65)) | (1 << (XplorMRParser.Dcsa - 65)) | (1 << (XplorMRParser.Pcsa - 65)) | (1 << (XplorMRParser.OneBond - 65)) | (1 << (XplorMRParser.AngleDb - 65)) | (1 << (XplorMRParser.Paramagnetic - 65)) | (1 << (XplorMRParser.Xpcs - 65)) | (1 << (XplorMRParser.Xrdcoupling - 65)) | (1 << (XplorMRParser.Xangle - 65)) | (1 << (XplorMRParser.Xccr - 65)))) != 0) or ((((_la - 132)) & ~0x3f) == 0 and ((1 << (_la - 132)) & ((1 << (XplorMRParser.Flags - 132)) | (1 << (XplorMRParser.Vector - 132)) | (1 << (XplorMRParser.Evaluate_Lp - 132)) | (1 << (XplorMRParser.Patch - 132)) | (1 << (XplorMRParser.For - 132)) | (1 << (XplorMRParser.Hbda - 132)) | (1 << (XplorMRParser.Hbdb - 132)))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Noe) | (1 << XplorMRParser.Assign) | (1 << XplorMRParser.Restraints) | (1 << XplorMRParser.Dihedral) | (1 << XplorMRParser.Sanisotropy) | (1 << XplorMRParser.Xdipolar) | (1 << XplorMRParser.Dipolar) | (1 << XplorMRParser.VeAngle) | (1 << XplorMRParser.Tensor) | (1 << XplorMRParser.Anisotropy) | (1 << XplorMRParser.Planar) | (1 << XplorMRParser.Group) | (1 << XplorMRParser.Initialize) | (1 << XplorMRParser.Harmonic) | (1 << XplorMRParser.Xadc) | (1 << XplorMRParser.Coupling))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (XplorMRParser.Carbon - 65)) | (1 << (XplorMRParser.Proton - 65)) | (1 << (XplorMRParser.Observed - 65)) | (1 << (XplorMRParser.Ramachandran - 65)) | (1 << (XplorMRParser.Collapse - 65)) | (1 << (XplorMRParser.Danisotropy - 65)) | (1 << (XplorMRParser.Orient - 65)) | (1 << (XplorMRParser.Dcsa - 65)) | (1 << (XplorMRParser.Pcsa - 65)) | (1 << (XplorMRParser.OneBond - 65)) | (1 << (XplorMRParser.AngleDb - 65)) | (1 << (XplorMRParser.PMagnetic - 65)) | (1 << (XplorMRParser.Xpcs - 65)) | (1 << (XplorMRParser.Xrdcoupling - 65)) | (1 << (XplorMRParser.Xangle - 65)) | (1 << (XplorMRParser.Xccr - 65)))) != 0) or ((((_la - 132)) & ~0x3f) == 0 and ((1 << (_la - 132)) & ((1 << (XplorMRParser.Flags - 132)) | (1 << (XplorMRParser.Vector - 132)) | (1 << (XplorMRParser.Evaluate_Lp - 132)) | (1 << (XplorMRParser.Patch - 132)) | (1 << (XplorMRParser.For - 132)) | (1 << (XplorMRParser.Hbda - 132)) | (1 << (XplorMRParser.Hbdb - 132)))) != 0):
                 self.state = 295
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -3837,8 +3837,8 @@ class XplorMRParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def Paramagnetic(self):
-            return self.getToken(XplorMRParser.Paramagnetic, 0)
+        def PMagnetic(self):
+            return self.getToken(XplorMRParser.PMagnetic, 0)
 
         def End(self):
             return self.getToken(XplorMRParser.End, 0)
@@ -3872,7 +3872,7 @@ class XplorMRParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 497
-            self.match(XplorMRParser.Paramagnetic)
+            self.match(XplorMRParser.PMagnetic)
             self.state = 501
             self._errHandler.sync(self)
             _la = self._input.LA(1)

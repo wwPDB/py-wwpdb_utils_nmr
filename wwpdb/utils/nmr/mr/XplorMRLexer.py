@@ -2038,7 +2038,7 @@ class XplorMRLexer(Lexer):
     AngleDb = 94
     DerivFlag = 95
     Angle_or_Dihedral = 96
-    Paramagnetic = 97
+    PMagnetic = 97
     Kconst = 98
     Omega = 99
     Tauc = 100
@@ -2275,9 +2275,9 @@ class XplorMRLexer(Lexer):
             "Gaussian", "Phase", "Quartic", "Shape", "Sort", "Dimensions", 
             "Collapse", "Danisotropy", "Orient", "Height", "MaxGaussians", 
             "NewGaussian", "Dcsa", "Sigma", "Pcsa", "OneBond", "AngleDb", 
-            "DerivFlag", "Angle_or_Dihedral", "Paramagnetic", "Kconst", 
-            "Omega", "Tauc", "Debug", "Xpcs", "Tolerance", "Save", "Fmed", 
-            "ErrOn", "ErrOff", "Fon", "Foff", "Son", "Soff", "Frun", "Xrdcoupling", 
+            "DerivFlag", "Angle_or_Dihedral", "PMagnetic", "Kconst", "Omega", 
+            "Tauc", "Debug", "Xpcs", "Tolerance", "Save", "Fmed", "ErrOn", 
+            "ErrOff", "Fon", "Foff", "Son", "Soff", "Frun", "Xrdcoupling", 
             "Xangle", "Xccr", "Weip", "Kdir", "Klin", "Nseg", "Nmin", "Nmax", 
             "Segm", "Ohcut", "Coh1cut", "Coh2cut", "Ohncut", "Updfrq", "Prnfrq", 
             "Freemode", "Donor", "Acceptor", "Flags", "All", "Around", "Atom", 
@@ -2328,7 +2328,7 @@ class XplorMRLexer(Lexer):
                   "Gaussian", "Phase", "Quartic", "Shape", "Sort", "Dimensions", 
                   "Collapse", "Danisotropy", "Orient", "Height", "MaxGaussians", 
                   "NewGaussian", "Dcsa", "Sigma", "Pcsa", "OneBond", "AngleDb", 
-                  "DerivFlag", "Angle_or_Dihedral", "Paramagnetic", "Kconst", 
+                  "DerivFlag", "Angle_or_Dihedral", "PMagnetic", "Kconst", 
                   "Omega", "Tauc", "Debug", "Xpcs", "Tolerance", "Save", 
                   "Fmed", "ErrOn", "ErrOff", "Fon", "Foff", "Son", "Soff", 
                   "Frun", "Xrdcoupling", "Xangle", "Xccr", "Weip", "Kdir", 

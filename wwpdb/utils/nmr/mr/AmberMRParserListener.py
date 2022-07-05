@@ -2702,7 +2702,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                            if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                 if 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] == 'H':
@@ -2884,7 +2884,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                            if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                 if 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] == 'H':

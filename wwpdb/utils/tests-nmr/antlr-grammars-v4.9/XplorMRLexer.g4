@@ -631,6 +631,19 @@ Patch:			P A T C H;				// ( patch_statement )
 Reference:		R E F E R? E? N? C? E?;
 Nil:			N I L;
 
+/* XPLOR-NIH: Parameter statement - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node50.html
+*/
+Parameter:		P A R A M? E? T? E? R?;			// ( parameter_statement )
+UB:			U B;
+Mult:			M U L T;
+HBonded:		H B O N D? E? D?;
+Improper:		I M P R O? P? E? R?;
+NBFix:			N B F I X?;
+NonB:			N O N B;
+VDWOff:			V D W O F? F?;
+Verbose:		V E R B O? S? E?;
+
 /* XPLOR-NIH: Control statement - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/doc/current/xplor/node24.html
 */

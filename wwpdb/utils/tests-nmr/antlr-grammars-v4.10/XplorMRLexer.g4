@@ -606,8 +606,15 @@ Nil:			'NIL';
 /* XPLOR-NIH: Parameter statement - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node50.html
 */
-Parameter:		'PARA' 'M'? 'E'? 'T'? 'E'? 'R';
-
+Parameter:		'PARA' 'M'? 'E'? 'T'? 'E'? 'R'?;	// ( parameter_statement )
+UB:			'UB';
+Mult:			'MULT';
+HBonded:		'HBON' 'D'? 'E'? 'D'?;
+Improper:		'IMPR' 'O'? 'P'? 'E'? 'R'?;
+NBFix:			'NBFI' 'X'?;
+NonB:			'NONB';
+VDWOff:			'VDWO' 'F'? 'F'?;
+Verbose:		'VERB' 'O'? 'S'? 'E'?;
 
 /* XPLOR-NIH: Control statement - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/doc/current/xplor/node24.html

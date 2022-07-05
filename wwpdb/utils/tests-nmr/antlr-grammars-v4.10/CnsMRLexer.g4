@@ -340,6 +340,19 @@ Patch:			'PATC' 'H'?;				// ( patch_statement )
 Reference:		'REFE' 'R'? 'E'? 'N'? 'C'? 'E'?;
 Nil:			'NIL';
 
+/* CNS: Parameter statement - Syntax
+ See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
+*/
+Parameter:		'PARA' 'M'? 'E'? 'T'? 'E'? 'R'?;	// ( parameter_statement )
+UB:			'UB';
+Mult:			'MULT';
+HBonded:		'HBON' 'D'? 'E'? 'D'?;
+Improper:		'IMPR' 'O'? 'P'? 'E'? 'R'?;
+NBFix:			'NBFI' 'X'?;
+NonB:			'NONB';
+VDWOff:			'VDWO' 'F'? 'F'?;
+Verbose:		'VERB' 'O'? 'S'? 'E'?;
+
 /* Control statement - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */

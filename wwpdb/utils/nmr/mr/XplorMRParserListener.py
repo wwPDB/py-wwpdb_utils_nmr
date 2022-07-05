@@ -8517,6 +8517,23 @@ class XplorMRParserListener(ParseTreeListener):
     def exitPatch_statement(self, ctx: XplorMRParser.Patch_statementContext):  # pylint: disable=unused-argument
         pass
 
+    # Enter a parse tree produced by XplorMRParser#parameter_setting.
+    def enterParameter_setting(self, ctx: XplorMRParser.Parameter_settingContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XplorMRParser#parameter_setting.
+    def exitParameter_setting(self, ctx: XplorMRParser.Parameter_settingContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by XplorMRParser#parameter_statement.
+    def enterParameter_statement(self, ctx: XplorMRParser.Parameter_statementContext):  # pylint: disable=unused-argument
+        self.geoRestraints += 1
+        self.__cur_subtype = 'geo'
+
+    # Exit a parse tree produced by XplorMRParser#parameter_statement.
+    def exitParameter_statement(self, ctx: XplorMRParser.Parameter_statementContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by XplorMRParser#noe_assign_loop.
     def enterNoe_assign_loop(self, ctx: XplorMRParser.Noe_assign_loopContext):
         symbol_name = None

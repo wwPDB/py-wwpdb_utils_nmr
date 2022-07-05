@@ -48,6 +48,7 @@ xplor_nih_mr:
 	vector_statement |
 	evaluate_statement |
 	patch_statement |
+	parameter_setting |
 	noe_assign_loop |		// allowing bare assign clauses for Distance restraints
 	dihedral_assign_loop |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign_loop |		// allowing bare assign clauses for RDC restraints
@@ -72,7 +73,8 @@ xplor_nih_mr:
 	csa_assign |			// allowing bare assign clauses for CSA restraints
 	pre_assign |			// allowing bare assign clauses for PRE restraints
 	pcs_assign |			// allowing bare assign clauses for PCS restraints or Carbon chemical shift restraints
-	observed			// allowing bare observed clauses for Proton chemical shift restraints
+	observed |			// allowing bare observed clauses for Proton chemical shift restraints
+	parameter_statement		// allowing bare parameter statement
 	)*
 	EOF;
 
@@ -842,6 +844,22 @@ evaluate_operation:
 */
 patch_statement:
 	Patch Simple_name? Reference Equ_op (Nil | Integer) Equ_op selection (Reference Equ_op (Nil | Integer) Equ_op selection)? End;
+
+/* XPLOR-NIH: Parameter statement - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node50.html
+*/
+parameter_setting:
+	Parameter parameter_statement* End;
+
+parameter_statement:
+	AngleDb Simple_name Simple_name Simple_name number_s number_s (UB number_s number_s)? |
+	BondedTo Simple_name Simple_name number_s number_s |
+	(Dihedral | Improper) Simple_name Simple_name Simple_name Simple_name (Mult Integer)? number_s Integer number_s |
+	HBonded Simple_names Simple_names number_s number_s |
+	NBFix Simple_name Simple_name number_s number_s number_s number_s |
+	NonB Simple_name number_s number_s number_s number_s |
+	(Reset | VDWOff) Simple_name |
+	Verbose;
 
 /* XPLOR-NIH: Control statement - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/doc/current/xplor/node24.html

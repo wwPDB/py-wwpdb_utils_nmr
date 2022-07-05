@@ -7644,6 +7644,8 @@ class NmrDpUtility:
 
                                 if file_type == 'nm-res-cya' and has_dist_restraint:
                                     ar['is_upl'] = listener.isUplDistanceRestraint()
+                                if file_type == 'nm-res-amb':
+                                    ar['has_comments'] = listener.hasComments()
 
                                 ar['is_valid'] = True
 
@@ -21032,6 +21034,20 @@ class NmrDpUtility:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+
+            if file_type == 'nm-res-amb' and amberAtomNumberDict is None and not ar['has_comments']:
+
+                err = f"To verify AMBER restraint file {file_name!r}, AMBER parameter/topology file must be uploaded "\
+                    "or Sander comments should be included in the AMBER restraint file."
+
+                self.report.error.appendDescription('missing_mandatory_content',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
+                continue
 
             if file_type == 'nm-res-gro' and not has_nm_aux_gro_file:
 

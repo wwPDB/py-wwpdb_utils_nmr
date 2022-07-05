@@ -205,6 +205,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # AMBER atom number dictionary reconstructing from Sander comments
     __sanderAtomNumberDict = None
+    __hasComments = False
 
     # CIF reader
     # __cR = None
@@ -911,6 +912,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.atomSelectionSet.append(atomSelection)
 
                     if self.lastComment is not None:
+                        if not self.__hasComments:
+                            self.__hasComments = True
                         if self.__debug:
                             print('# ' + self.lastComment)
 
@@ -1092,6 +1095,9 @@ class AmberMRParserListener(ParseTreeListener):
 
                 # try to update AMBER atom number dictionary based on Sander comments
                 elif self.__hasPolySeq and self.iresid == 0:
+
+                    if not self.__hasComments:
+                        self.__hasComments = True
 
                     if self.__cur_subtype == 'dist' and len(self.iat) == COL_DIST:
                         subtype_name = 'distance restraint'
@@ -1371,6 +1377,9 @@ class AmberMRParserListener(ParseTreeListener):
 
             # Amber 10: ambmask
             else:
+
+                if not self.__hasComments:
+                    self.__hasComments = True
 
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
                 if self.__atomNumberDict is not None:
@@ -5863,6 +5872,11 @@ class AmberMRParserListener(ParseTreeListener):
         """ Return AMBER atomic number dictionary based on Sander comments.
         """
         return self.__sanderAtomNumberDict
+
+    def hasComments(self):
+        """ Return whether Sander comments are available.
+        """
+        return self.__hasComments
 
 
 # del AmberMRParser

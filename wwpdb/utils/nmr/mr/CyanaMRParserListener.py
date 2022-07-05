@@ -172,6 +172,9 @@ class CyanaMRParserListener(ParseTreeListener):
     __hasNonPoly = False
     __preferAuthSeq = True
 
+    # chain number dictionary
+    __chainNumberDict = None
+
     # polymer sequence of MR file
     __polySeqRst = None
 
@@ -285,6 +288,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
+        self.__chainNumberDict = {}
         self.__polySeqRst = []
 
     # Exit a parse tree produced by CyanaMRParser#cyana_mr.
@@ -913,6 +917,144 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return chainAssign
 
+    def assignCoordPolymerSequenceWithChainId(self, refChainId, seqId, compId, atomId):
+        """ Assign polymer sequences of the coordinates.
+        """
+
+        chainAssign = []
+        _seqId = seqId
+
+        if self.__mrAtomNameMapping is not None and compId not in monDict3:
+            seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+
+        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId))
+
+        for ps in self.__polySeq:
+            chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
+            if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                if chainId != self.__chainNumberDict[refChainId]:
+                    continue
+            if seqId in ps['auth_seq_id']:
+                idx = ps['auth_seq_id'].index(seqId)
+                cifCompId = ps['comp_id'][idx]
+                origCompId = ps['auth_comp_id'][idx]
+                if compId in (cifCompId, origCompId):
+                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.append((chainId, seqId, cifCompId))
+                        if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                            self.__chainNumberDict[refChainId] = chainId
+                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    chainAssign.append((chainId, seqId, cifCompId))
+                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                        self.__chainNumberDict[refChainId] = chainId
+                    """ defer to sequence alignment error
+                    if cifCompId != translateToStdResName(compId):
+                        self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                            f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    """
+
+        if self.__hasNonPoly:
+            for np in self.__nonPoly:
+                chainId, seqId = self.getRealChainSeqId(np, _seqId, compId, False)
+                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                if seqId in np['auth_seq_id']:
+                    idx = np['auth_seq_id'].index(seqId)
+                    cifCompId = np['comp_id'][idx]
+                    origCompId = np['auth_comp_id'][idx]
+                    if compId in (cifCompId, origCompId):
+                        if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.append((chainId, seqId, cifCompId))
+                            if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                self.__chainNumberDict[refChainId] = chainId
+                    elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.append((chainId, seqId, cifCompId))
+                        if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                            self.__chainNumberDict[refChainId] = chainId
+
+        if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__authToLabelSeq:
+                    _, seqId = self.__authToLabelSeq[seqKey]
+                    if seqId in ps['seq_id']:
+                        cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                        origCompId = ps['auth_comp_id'][ps['seq_id'].index(seqId)]
+                        if compId in (cifCompId, origCompId):
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
+                                if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                    self.__chainNumberDict[refChainId] = chainId
+                                if self.reasonsForReParsing is None:
+                                    self.reasonsForReParsing = {}
+                                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['label_seq_scheme'] = True
+                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
+                            if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                self.__chainNumberDict[refChainId] = chainId
+                            """ defer to sequence alignment error
+                            if cifCompId != translateToStdResName(compId):
+                                self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                                    f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            """
+
+            if self.__hasNonPoly:
+                for np in self.__nonPoly:
+                    chainId = np['auth_chain_id']
+                    if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                        if chainId != self.__chainNumberDict[refChainId]:
+                            continue
+                    seqKey = (chainId, _seqId)
+                    if seqKey in self.__authToLabelSeq:
+                        _, seqId = self.__authToLabelSeq[seqKey]
+                        if seqId in np['seq_id']:
+                            cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
+                            origCompId = np['auth_comp_id'][np['seq_id'].index(seqId)]
+                            if compId in (cifCompId, origCompId):
+                                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
+                                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                        self.__chainNumberDict[refChainId] = chainId
+                                    if self.reasonsForReParsing is None:
+                                        self.reasonsForReParsing = {}
+                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                        self.reasonsForReParsing['label_seq_scheme'] = True
+                            elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
+                                if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                    self.__chainNumberDict[refChainId] = chainId
+
+        if len(chainAssign) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                chainId = ps['auth_chain_id']
+                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                if _seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    chainAssign.append(chainId, _seqId, cifCompId)
+                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                        self.__chainNumberDict[refChainId] = chainId
+                    """ defer to sequence alignment error
+                    if cifCompId != translateToStdResName(compId):
+                        self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                            f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    """
+
+        if len(chainAssign) == 0:
+            if seqId == 1 and atomId in ('H', 'HN'):
+                return self.assignCoordPolymerSequenceWithChainId(refChainId, seqId, compId, 'H1')
+            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+
+        return chainAssign
+
     def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True):
         """ Select atoms of the coordinates.
         """
@@ -1066,9 +1208,14 @@ class CyanaMRParserListener(ParseTreeListener):
 
         try:
 
-            seqId = int(str(ctx.Integer(0)))
             compId = str(ctx.Simple_name(0)).upper()
-            angleName = str(ctx.Simple_name(1)).upper()
+            if self.__cur_subtype_altered:  # invoked from exitCco_restraint()
+                seqId = int(str(ctx.Integer()))
+                chainId = str(ctx.Simple_name(1)).upper()
+                angleName = str(ctx.Simple_name(2)).upper()
+            else:
+                seqId = int(str(ctx.Integer(0)))
+                angleName = str(ctx.Simple_name(1)).upper()
 
             if None in self.numberSelection:
                 return
@@ -1146,7 +1293,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 else:  # nucleic CHI angle
                     atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
 
-                chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
+                if self.__cur_subtype_altered:  # invoked from exitCco_restraint()
+                    chainAssign = self.assignCoordPolymerSequenceWithChainId(chainId, seqId, compId, atomId)
+                else:
+                    chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
@@ -2652,6 +2802,14 @@ class CyanaMRParserListener(ParseTreeListener):
             compId1 = str(ctx.Simple_name(0)).upper()
             atomId1 = str(ctx.Simple_name(1)).upper()
             atomId2 = str(ctx.Simple_name(2)).upper()
+
+            if atomId2 in KNOWN_ANGLE_NAMES:
+                self.__cur_subtype_altered = True
+                self.__cur_subtype = 'dihed'
+                self.dihedRestraints += 1
+                self.jcoupRestraints -= 1
+                self.exitTorsion_angle_restraint(ctx)
+                return
 
             if None in self.numberSelection:
                 return

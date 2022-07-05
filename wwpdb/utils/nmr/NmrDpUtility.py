@@ -10173,6 +10173,8 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
+        dir_path = '.'
+        mr_file_name = '.'
         split_file_list = []
 
         self.__mr_atom_name_mapping = []
@@ -10198,6 +10200,8 @@ class NmrDpUtility:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+
+            mr_file_name = file_name
 
             self.__cur_original_ar_file_name = original_file_name
 
@@ -11083,6 +11087,26 @@ class NmrDpUtility:
                 input_source.setItemValue('content_type', 'nmr-restraints')
                 if 'original_file_name' in _ar:
                     input_source.setItemValue('original_file_name', os.path.basename(_ar['original_file_name']))
+
+        else:
+
+            touch_file = os.path.join(dir_path, '.entry_without_mr')
+            if not os.path.exists(touch_file):
+                with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
+                    ofp.write('')
+
+            err = "NMR restraint file contains no restraints or is not recognized properly. "\
+                "Please re-upload the NMR restraint file."
+
+            self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                         {'file_name': mr_file_name, 'description': err}})
+
+            # self.report.error.appendDescription('content_mismatch',
+            #                                     {'file_name': file_name, 'description': err})
+            # self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
         return not self.report.isError()
 

@@ -6319,6 +6319,10 @@ class XplorMRParserListener(ParseTreeListener):
 
         for chainId in (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else self.__nonPoly)]):
             ps = next((ps for ps in (self.__polySeq if isPolySeq else self.__nonPoly) if ps['auth_chain_id'] == chainId), None)
+
+            if ps is None:
+                continue
+
             for seqId in _factor['seq_id']:
                 seqId = self.getRealSeqId(ps, seqId, isPolySeq)
 

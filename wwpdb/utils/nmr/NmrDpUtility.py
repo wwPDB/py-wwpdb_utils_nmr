@@ -10680,7 +10680,7 @@ class NmrDpUtility:
                     break
 
             if not has_content:
-                with open(os.path.join(dir_path, '.entry_wo_mr'), 'w') as ofp:
+                with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
                     ofp.write('')
 
             if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
@@ -10862,32 +10862,62 @@ class NmrDpUtility:
 
                     if len(split_ext) == 2:
                         file_ext = split_ext[1][1:].lower()
+                    else:
+                        file_ext = os.path.basename(split_ext[0])
 
                     if file_ext in ('crd', 'rst', 'inpcrd', 'restrt'):  # AMBER coordinate file extensions
-                        is_real_crd = False
+                        is_crd = False
                         with open(dst_file, 'r') as ifp:
-                            for idx, line in enumerate(ifp):
-                                if idx == 0:
-                                    if not line.startswith('default_name'):
+                            for pos, line in enumerate(ifp, start=1):
+                                if pos == 1:
+                                    if not line.startswith('defa'):
                                         break
-                                elif idx == 1:
+                                elif pos == 2:
                                     try:
-                                        int(line)
+                                        int(line.lstrip().split()[0])
                                     except ValueError:
                                         break
-                                elif idx == 2:
-                                    try:
-                                        crds = line.split()
-                                        for crd in crds:
-                                            float(crd)
-                                    except ValueError:
-                                        break
-                                    is_real_crd = True
-                                else:
+                                elif pos == 3:
+                                    if line.count('.') == 6:
+                                        is_crd = True
                                     break
 
-                        if is_real_crd:
+                        if is_crd:
                             shutil.copyfile(dst_file, ign_dst_file)  # ignore AMBER input coordinate file for the next time
+                            continue
+
+                    if file_ext == 'seq':
+                        is_seq = False
+                        _len_seq = None
+                        with open(dst_file, 'r') as ifp:
+                            for line in ifp:
+                                if line.isspace() or comment_pattern.match(line):
+                                    continue
+                                seq = line.upper().split()
+                                len_seq = len(seq)
+                                if len_seq > 2:
+                                    is_seq = False
+                                    break
+                                if _len_seq is None:
+                                    _len_seq = len_seq
+                                elif len_seq != _len_seq:
+                                    is_seq = False
+                                    break
+                                if len_seq == 2:
+                                    if (seq[0] in monDict3 and seq[1].isdigit()) or (seq[1] in monDict3 and seq[0].isdigit()):
+                                        is_seq = True
+                                    else:
+                                        is_seq = False
+                                        break
+                                elif len_seq == 1:
+                                    if seq[0] in monDict3:
+                                        is_seq = True
+                                    else:
+                                        is_seq = False
+                                        break
+
+                        if is_seq:
+                            shutil.copyfile(dst_file, ign_dst_file)  # ignore sequence file for the next time
                             continue
 
                     cor_dst_file = dst_file + '-corrected'

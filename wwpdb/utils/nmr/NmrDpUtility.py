@@ -10699,6 +10699,17 @@ class NmrDpUtility:
                 for dst_file in dst_file_list:
 
                     if dst_file.endswith('-div_ext.mr'):
+
+                        ign_dst_file = dst_file + '-ignored'
+
+                        if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
+                            continue
+
+                        ign_pk_file = dst_file + '-ignored-as-peak-list'
+
+                        if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+                            continue
+
                         _ar = ar.copy()
 
                         _ar['file_name'] = dst_file
@@ -10919,6 +10930,11 @@ class NmrDpUtility:
                         if is_seq:
                             shutil.copyfile(dst_file, ign_dst_file)  # ignore sequence file for the next time
                             continue
+
+                    ign_pk_file = dst_file + '-ignored-as-peak-list'
+
+                    if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+                        continue
 
                     cor_dst_file = dst_file + '-corrected'
 

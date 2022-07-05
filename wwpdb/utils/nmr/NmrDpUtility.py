@@ -6896,6 +6896,8 @@ class NmrDpUtility:
                                 int(line.lstrip().split()[0])
                             except ValueError:
                                 has_amb_inpcrd = False
+                            except IndexError:
+                                has_amb_inpcrd = False
 
                         elif pos == 3 and has_amb_inpcrd:
                             if line.count('.') != 6:
@@ -7135,6 +7137,8 @@ class NmrDpUtility:
                                 try:
                                     int(line.lstrip().split()[0])
                                 except ValueError:
+                                    has_amb_inpcrd = False
+                                except IndexError:
                                     has_amb_inpcrd = False
 
                             elif pos == 3 and has_amb_inpcrd:
@@ -10891,6 +10895,8 @@ class NmrDpUtility:
                                     try:
                                         int(line.lstrip().split()[0])
                                     except ValueError:
+                                        break
+                                    except IndexError:
                                         break
                                 elif pos == 3:
                                     if line.count('.') == 6:

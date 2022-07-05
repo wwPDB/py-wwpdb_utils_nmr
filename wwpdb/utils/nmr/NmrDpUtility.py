@@ -10858,6 +10858,38 @@ class NmrDpUtility:
                     if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
                         continue
 
+                    split_ext = os.path.splitext(dst_file)
+
+                    if len(split_ext) == 2:
+                        file_ext = split_ext[1][1:].lower()
+
+                    if file_ext in ('crd', 'rst', 'inpcrd', 'restrt'):  # AMBER coordinate file extensions
+                        is_real_crd = False
+                        with open(dst_file, 'r') as ifp:
+                            for idx, line in enumerate(ifp):
+                                if idx == 0:
+                                    if not line.startswith('default_name'):
+                                        break
+                                elif idx == 1:
+                                    try:
+                                        int(line)
+                                    except ValueError:
+                                        break
+                                elif idx == 2:
+                                    try:
+                                        crds = line.split()
+                                        for crd in crds:
+                                            float(crd)
+                                    except ValueError:
+                                        break
+                                    is_real_crd = True
+                                else:
+                                    break
+
+                        if is_real_crd:
+                            shutil.copyfile(dst_file, ign_dst_file)  # ignore AMBER input coordinate file for the next time
+                            continue
+
                     cor_dst_file = dst_file + '-corrected'
 
                     if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists

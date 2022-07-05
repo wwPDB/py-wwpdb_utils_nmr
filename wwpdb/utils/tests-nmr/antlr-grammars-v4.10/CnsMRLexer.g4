@@ -273,7 +273,7 @@ DerivFlag:		'DERI' 'V'? 'F'? 'L'? 'A'? 'G'?;	// On_or_Off
 //Zero:			'ZERO';
 
 //On_or_Off:		'ON' | 'OFF';
-Angle_or_Dihedral:	'ANGL' 'E'? | 'DIHE' 'D'? 'R'? 'A'? 'L'?;
+//Angle_or_Dihedral:	'ANGL' 'E'? | 'DIHE' 'D'? 'R'? 'A'? 'L'?;
 
 /* CNS: Flags - Syntax
  See alos https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html (compatible with XPLOR-NIH)

@@ -301,7 +301,7 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 //Zero:			Z E R O;
 
 //On_or_Off:		O N | O F F;
-Angle_or_Dihedral:	A N G L E? | D I H E D? R? A? L?;
+//Angle_or_Dihedral:	A N G L E? | D I H E D? R? A? L?;
 
 /* CNS: Flags - Syntax
  See alos https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html (compatible with XPLOR-NIH)

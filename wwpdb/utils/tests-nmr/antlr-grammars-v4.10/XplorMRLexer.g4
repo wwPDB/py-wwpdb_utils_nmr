@@ -414,7 +414,7 @@ DerivFlag:		'DERI' 'V'? 'F'? 'L'? 'A'? 'G'?;	// On_or_Off
 //Zero:			'ZERO';
 
 //On_or_Off:		'ON' | 'OFF';
-Angle_or_Dihedral:	'ANGL' 'E'? | 'DIHE' 'D'? 'R'? 'A'? 'L'?;
+//Angle_or_Dihedral:	'ANGL' 'E'? | 'DIHE' 'D'? 'R'? 'A'? 'L'?;
 
 /* XPLOR-NIH: Paramagnetic relaxation enhancement restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node438.html
@@ -602,6 +602,12 @@ Evaluate_Lp:		'EVAL' 'U'? 'A'? 'T'? 'E'? ' '* L_paren -> pushMode(VECTOR_EXPR_MO
 Patch:			'PATC' 'H'?;				// ( patch_statement )
 Reference:		'REFE' 'R'? 'E'? 'N'? 'C'? 'E'?;
 Nil:			'NIL';
+
+/* XPLOR-NIH: Parameter statement - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node50.html
+*/
+Parameter:		'PARA' 'M'? 'E'? 'T'? 'E'? 'R';
+
 
 /* XPLOR-NIH: Control statement - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/doc/current/xplor/node24.html

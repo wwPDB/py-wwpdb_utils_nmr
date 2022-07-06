@@ -11002,6 +11002,17 @@ class NmrDpUtility:
                         peak_list_file.append(ign_pk_file)
                         continue
 
+                    ign_ext_file = dst_file + '-ignored-as-ext-mr'
+
+                    if os.path.exists(ign_ext_file):  # in case the MR files can not be parsed
+                        _ar = ar.copy()
+
+                        _ar['file_name'] = dst_file
+                        _ar['file_type'] = 'nm-res-oth'
+                        split_file_list.append(_ar)
+
+                        continue
+
                     cor_dst_file = dst_file + '-corrected'
 
                     if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists

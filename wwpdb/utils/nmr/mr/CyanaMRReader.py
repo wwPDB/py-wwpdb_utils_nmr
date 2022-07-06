@@ -8,7 +8,7 @@
 import sys
 import os
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
@@ -151,7 +151,7 @@ class CyanaMRReader:
             stream = CommonTokenStream(lexer)
             parser = CyanaMRParser(stream)
             # try with simpler/faster SLL prediction mode
-            parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
+            # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
@@ -201,6 +201,11 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lj5/2lj5-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2lj5/2lj5.cif')
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mk3/rdc_test.mr',

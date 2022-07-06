@@ -375,6 +375,10 @@ class CyanaMRParserListener(ParseTreeListener):
             upper_limit = None
 
             if None in self.numberSelection:
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                elif self.__cur_subtype == 'jcoup':
+                    self.jcoupRestraints -= 1
                 return
 
             if self.__cur_subtype == 'dist':
@@ -1218,6 +1222,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 angleName = str(ctx.Simple_name(1)).upper()
 
             if None in self.numberSelection:
+                self.dihedRestraints -= 1
                 return
 
             target_value = None
@@ -1581,6 +1586,7 @@ class CyanaMRParserListener(ParseTreeListener):
             atomId2 = str(ctx.Simple_name(3)).upper()
 
             if None in self.numberSelection:
+                self.rdcRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -1848,6 +1854,7 @@ class CyanaMRParserListener(ParseTreeListener):
             atomId = str(ctx.Simple_name(1)).upper()
 
             if None in self.numberSelection:
+                self.pcsRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -2006,6 +2013,10 @@ class CyanaMRParserListener(ParseTreeListener):
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
             if None in self.numberSelection:
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                else:
+                    self.noepkRestraints -= 1
                 return
 
             for num_col, value in enumerate(self.numberSelection):
@@ -2126,6 +2137,10 @@ class CyanaMRParserListener(ParseTreeListener):
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
             if None in self.numberSelection:
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                else:
+                    self.noepkRestraints -= 1
                 return
 
             for num_col in range(0, len(self.numberSelection), 2):
@@ -2282,6 +2297,10 @@ class CyanaMRParserListener(ParseTreeListener):
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
             if None in self.numberSelection:
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                else:
+                    self.noepkRestraints -= 1
                 return
 
             for num_col in range(0, len(self.numberSelection), 3):
@@ -2410,6 +2429,10 @@ class CyanaMRParserListener(ParseTreeListener):
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
             if None in self.numberSelection:
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                else:
+                    self.noepkRestraints -= 1
                 return
 
             for num_col, value in enumerate(self.numberSelection):
@@ -2530,6 +2553,10 @@ class CyanaMRParserListener(ParseTreeListener):
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
             if None in self.numberSelection:
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                else:
+                    self.noepkRestraints -= 1
                 return
 
             for num_col in range(0, len(self.numberSelection), 2):
@@ -2686,6 +2713,10 @@ class CyanaMRParserListener(ParseTreeListener):
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
             if None in self.numberSelection:
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                else:
+                    self.noepkRestraints -= 1
                 return
 
             for num_col in range(0, len(self.numberSelection), 3):
@@ -2812,6 +2843,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 return
 
             if None in self.numberSelection:
+                self.jcoupRestraints -= 1
                 return
 
             target = self.numberSelection[0]

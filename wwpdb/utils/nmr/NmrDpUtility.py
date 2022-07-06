@@ -8615,7 +8615,6 @@ class NmrDpUtility:
                                 corrected = True
 
             if concat_gromacs_tag:
-
                 test_line = err_input[err_column_position + 1:]
 
                 if len(test_line) > 0:
@@ -8776,7 +8775,6 @@ class NmrDpUtility:
             if not (corrected or concat_xplor_assi or concat_xplor_rest or concat_xplor_set or concat_amber_rst)\
                and (j + j_offset) in (0, err_line_number - 1)\
                and (not xplor_missing_end_before or xplor_no_syntax_err_in_fac_or_ann):
-
                 test_line = err_input
 
                 if reader is None:

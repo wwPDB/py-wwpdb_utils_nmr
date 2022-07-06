@@ -226,7 +226,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         self.concat_resnum_chain_pat = re.compile(r'^(\d+)(\S+)$')
 
-        self.__dist_lb_grater_than_ub = False
+        self.__dist_lb_greater_than_ub = False
         self.__dist_ub_always_positive = True
 
     def setDebugMode(self, debug):
@@ -281,7 +281,7 @@ class RosettaMRParserListener(ParseTreeListener):
             self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
 
         if self.__remediate:
-            if self.__dist_lb_grater_than_ub and self.__dist_ub_always_positive:
+            if self.__dist_lb_greater_than_ub and self.__dist_ub_always_positive:
                 if self.reasonsForReParsing is None:
                     self.reasonsForReParsing = {}
                 if 'dist_unusual_order' not in self.reasonsForReParsing:
@@ -481,13 +481,13 @@ class RosettaMRParserListener(ParseTreeListener):
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"{srcFunc}, the upper limit value='{upper_limit}' must be grater than the target value '{target_value}'.\n"
+                        f"{srcFunc}, the upper limit value='{upper_limit}' must be greater than the target value '{target_value}'.\n"
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' must be grater than the target value '{target_value}'.\n"
+                        f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' must be greater than the target value '{target_value}'.\n"
 
         else:
 
@@ -1816,7 +1816,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
                     if self.__remediate:
                         if self.__cur_subtype == 'dist' and lb > sd:
-                            self.__dist_lb_grater_than_ub = True
+                            self.__dist_lb_greater_than_ub = True
                 if self.__remediate:
                     if self.__cur_subtype == 'dist' and (ub > lb or sd > lb):
                         self.__dist_ub_always_positive = False
@@ -1877,7 +1877,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
                     if self.__remediate:
                         if self.__cur_subtype == 'dist' and lb > sd:
-                            self.__dist_lb_grater_than_ub = True
+                            self.__dist_lb_greater_than_ub = True
                 if self.__remediate:
                     if self.__cur_subtype == 'dist' and (ub > lb or sd > lb):
                         self.__dist_ub_always_positive = False
@@ -1941,7 +1941,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         f"{funcType} lower boundary 'lb={lb}' must be less than or equal to upper boundary 'ub={ub}'.\n"
                     if self.__remediate:
                         if self.__cur_subtype == 'dist' and lb > sd:
-                            self.__dist_lb_grater_than_ub = True
+                            self.__dist_lb_greater_than_ub = True
                 if self.__remediate:
                     if self.__cur_subtype == 'dist' and (ub > lb or sd > lb):
                         self.__dist_ub_always_positive = False

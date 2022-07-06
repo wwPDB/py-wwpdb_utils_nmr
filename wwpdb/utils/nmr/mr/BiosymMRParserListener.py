@@ -446,7 +446,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit}' must be greater than the target value '{target_value}'.\n"
 
         else:
 

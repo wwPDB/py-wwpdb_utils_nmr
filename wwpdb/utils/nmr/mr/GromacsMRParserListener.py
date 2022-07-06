@@ -763,19 +763,19 @@ class GromacsMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -783,13 +783,13 @@ class GromacsMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
         if not validRange:
             return None
@@ -806,14 +806,14 @@ class GromacsMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 

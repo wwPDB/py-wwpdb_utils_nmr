@@ -4218,7 +4218,7 @@ class AmberMRParserListener(ParseTreeListener):
             self.cter = int(str(ctx.Integer()))
             if self.nter >= self.cter:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The residue number of C-terminus 'cter={self.cter}' must be grater than 'nter={self.nter}'.\n"
+                    f"The residue number of C-terminus 'cter={self.cter}' must be greater than 'nter={self.nter}'.\n"
                 return
 
         elif ctx.NAMR():

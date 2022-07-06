@@ -621,7 +621,7 @@ pcs_statement:
 	Frun Integer;
 
 pcs_assign:
-	Assign selection selection selection selection selection number number?;
+	Assign selection selection selection selection selection number number? number?;
 
 /* XPLOR-NIH: Paramagnetic residual dipolar coupling restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node445.html

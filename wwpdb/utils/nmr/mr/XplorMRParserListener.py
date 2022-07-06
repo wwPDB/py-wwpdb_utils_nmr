@@ -341,6 +341,9 @@ class XplorMRParserListener(ParseTreeListener):
     # collection of atom selection
     atomSelectionSet = []
 
+    # factor of paramagnetic center
+    paramagCenter = None
+
     # collection of number selection
     numberSelection = []
 
@@ -1029,7 +1032,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'. "\
+                        f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value}'. "\
                         "It indicates that a negative value was unexpectedly set: "\
                         f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
 
@@ -1037,7 +1040,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'. "\
+                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be greater than the target value '{target_value}'. "\
                         "It indicates that a negative value was unexpectedly set: "\
                         f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
 
@@ -1436,10 +1439,10 @@ class XplorMRParserListener(ParseTreeListener):
                 lower_limit = target - delta
                 upper_limit = target + delta
                 if len(self.numberSelection) > 2:
-                    error_grater = delta
-                    error_less = abs(self.numberSelection[2])
+                    error_less = delta
+                    error_greater = abs(self.numberSelection[2])
                     lower_limit = target - error_less
-                    upper_limit = target + error_grater
+                    upper_limit = target + error_greater
 
             dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
                                             target_value, lower_limit, upper_limit)
@@ -1549,35 +1552,35 @@ class XplorMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if lower_linear_limit is not None:
             if RDC_ERROR_MIN <= lower_linear_limit < RDC_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if upper_linear_limit is not None:
             if RDC_ERROR_MIN < upper_linear_limit <= RDC_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -1585,25 +1588,25 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
         else:
 
@@ -1611,37 +1614,37 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
 
         if not validRange:
             return None
@@ -1658,28 +1661,28 @@ class XplorMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if lower_linear_limit is not None:
             if RDC_RANGE_MIN <= lower_linear_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if upper_linear_limit is not None:
             if RDC_RANGE_MIN <= upper_linear_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -1772,16 +1775,16 @@ class XplorMRParserListener(ParseTreeListener):
 
                 target_value_1 = self.numberSelection[0]
                 target_value_2 = self.numberSelection[3]
-                error_grater_1 = abs(self.numberSelection[1])
+                error_greater_1 = abs(self.numberSelection[1])
                 error_less_1 = abs(self.numberSelection[2])
-                error_grater_2 = abs(self.numberSelection[4])
+                error_greater_2 = abs(self.numberSelection[4])
                 error_less_2 = abs(self.numberSelection[5])
 
                 if self.potential == 'square':
                     lower_limit_1 = target_value_1 - error_less_1
-                    upper_limit_1 = target_value_1 + error_grater_1
+                    upper_limit_1 = target_value_1 + error_greater_1
                     lower_limit_2 = target_value_2 - error_less_2
-                    upper_limit_2 = target_value_2 + error_grater_2
+                    upper_limit_2 = target_value_2 + error_greater_2
 
                 dstFunc = self.validateRdcRange2(self.scale, {'potential': self.potential, 'average': self.average},
                                                  target_value_1, lower_limit_1, upper_limit_1,
@@ -1799,10 +1802,10 @@ class XplorMRParserListener(ParseTreeListener):
                     lower_limit = target - delta
                     upper_limit = target + delta
                     if len(self.numberSelection) > 2:
-                        error_grater = delta
-                        error_less = abs(self.numberSelection[2])
+                        error_less = delta
+                        error_greater = abs(self.numberSelection[2])
                         lower_limit = target - error_less
-                        upper_limit = target + error_grater
+                        upper_limit = target + error_greater
                 else:
                     target_value = target
 
@@ -1900,66 +1903,66 @@ class XplorMRParserListener(ParseTreeListener):
                 dstFunc[k] = v
 
         if RDC_ERROR_MIN < target_value_1 < RDC_ERROR_MAX:
-            dstFunc['target_value_1'] = f"{target_value_1:.3f}"
+            dstFunc['target_value_1'] = f"{target_value_1:.6f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"The target value(1)='{target_value_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if RDC_ERROR_MIN <= lower_limit_1 < RDC_ERROR_MAX:
-            dstFunc['lower_limit_1'] = f"{lower_limit_1:.3f}"
+            dstFunc['lower_limit_1'] = f"{lower_limit_1:.6f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                f"The lower limit value(1)='{lower_limit_1:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if RDC_ERROR_MIN < upper_limit_1 <= RDC_ERROR_MAX:
-            dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
+            dstFunc['upper_limit_1'] = f"{upper_limit_1:.6f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                f"The upper limit value(1)='{upper_limit_1:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if RDC_ERROR_MIN < target_value_2 < RDC_ERROR_MAX:
-            dstFunc['target_value_2'] = f"{target_value_2:.3f}"
+            dstFunc['target_value_2'] = f"{target_value_2:.6f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                 f"The target value(2)='{target_value_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if RDC_ERROR_MIN <= lower_limit_2 < RDC_ERROR_MAX:
-            dstFunc['lower_limit_2'] = f"{lower_limit_2:.3f}"
+            dstFunc['lower_limit_2'] = f"{lower_limit_2:.6f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                f"The lower limit value(2)='{lower_limit_2:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if RDC_ERROR_MIN < upper_limit_2 <= RDC_ERROR_MAX:
-            dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
+            dstFunc['upper_limit_2'] = f"{upper_limit_2:.6f}"
         else:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2:.3f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                f"The upper limit value(2)='{upper_limit_2:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
 
         if lower_limit_1 > target_value_1:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1:.3f}' must be less than the target value(1) '{target_value_1}'.\n"
+                f"The lower limit value(1)='{lower_limit_1:.6f}' must be less than the target value(1) '{target_value_1}'.\n"
 
         if upper_limit_1 < target_value_1:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1:.3f}' must be grater than the target value(1) '{target_value_1}'.\n"
+                f"The upper limit value(1)='{upper_limit_1:.6f}' must be greater than the target value(1) '{target_value_1}'.\n"
 
         if lower_limit_2 > target_value_2:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2:.3f}' must be less than the target value(2) '{target_value_2}'.\n"
+                f"The lower limit value(2)='{lower_limit_2:.6f}' must be less than the target value(2) '{target_value_2}'.\n"
 
         if upper_limit_2 < target_value_2:
             validRange = False
             self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2:.3f}' must be grater than the target value(2) '{target_value_2}'.\n"
+                f"The upper limit value(2)='{upper_limit_2:.6f}' must be greater than the target value(2) '{target_value_2}'.\n"
 
         if not validRange:
             return None
@@ -1974,13 +1977,13 @@ class XplorMRParserListener(ParseTreeListener):
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                f"The lower limit value(1)='{lower_limit_1:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if RDC_RANGE_MIN <= upper_limit_1 <= RDC_RANGE_MAX:
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                f"The upper limit value(1)='{upper_limit_1:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if RDC_RANGE_MIN <= target_value_2 <= RDC_RANGE_MAX:
             pass
@@ -1992,13 +1995,13 @@ class XplorMRParserListener(ParseTreeListener):
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2:.3f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                f"The lower limit value(2)='{lower_limit_2:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
 
         if RDC_RANGE_MIN <= upper_limit_2 <= RDC_RANGE_MAX:
             pass
         else:
             self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                f"The upper limit value(2)='{upper_limit_2:.6f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -3788,35 +3791,35 @@ class XplorMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if T1T2_ERROR_MIN <= lower_limit < T1T2_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if T1T2_ERROR_MIN < upper_limit <= T1T2_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
 
         if lower_linear_limit is not None:
             if T1T2_ERROR_MIN <= lower_linear_limit < T1T2_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
 
         if upper_linear_limit is not None:
             if T1T2_ERROR_MIN < upper_linear_limit <= T1T2_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -3824,25 +3827,25 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
         else:
 
@@ -3850,37 +3853,37 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
 
         if not validRange:
             return None
@@ -3897,28 +3900,28 @@ class XplorMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if T1T2_RANGE_MIN <= upper_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
 
         if lower_linear_limit is not None:
             if T1T2_RANGE_MIN <= lower_linear_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
 
         if upper_linear_limit is not None:
             if T1T2_RANGE_MIN <= upper_linear_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -4307,35 +4310,35 @@ class XplorMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if CSA_ERROR_MIN <= lower_limit < CSA_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if CSA_ERROR_MIN < upper_limit <= CSA_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
 
         if lower_linear_limit is not None:
             if CSA_ERROR_MIN <= lower_linear_limit < CSA_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
 
         if upper_linear_limit is not None:
             if CSA_ERROR_MIN < upper_linear_limit <= CSA_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -4343,25 +4346,25 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
         else:
 
@@ -4369,37 +4372,37 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
 
         if not validRange:
             return None
@@ -4416,28 +4419,28 @@ class XplorMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if CSA_RANGE_MIN <= upper_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
 
         if lower_linear_limit is not None:
             if CSA_RANGE_MIN <= lower_linear_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
 
         if upper_linear_limit is not None:
             if CSA_RANGE_MIN <= upper_linear_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -4631,7 +4634,7 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
-            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
 
             chain_id = self.atomSelectionSet[1][0]['chain_id']
             seq_id = self.atomSelectionSet[1][0]['seq_id']
@@ -4646,7 +4649,7 @@ class XplorMRParserListener(ParseTreeListener):
             for atom1 in self.atomSelectionSet[1]:
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
-                          f"paramag={atom_id_0} atom={atom1} {dstFunc}")
+                          f"paramag_center={atom_id_0} atom={atom1} {dstFunc}")
 
         finally:
             self.numberSelection.clear()
@@ -4670,35 +4673,35 @@ class XplorMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if PRE_ERROR_MIN <= lower_limit < PRE_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if PRE_ERROR_MIN < upper_limit <= PRE_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
 
         if lower_linear_limit is not None:
             if PRE_ERROR_MIN <= lower_linear_limit < PRE_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
 
         if upper_linear_limit is not None:
             if PRE_ERROR_MIN < upper_linear_limit <= PRE_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -4706,25 +4709,25 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
         else:
 
@@ -4732,37 +4735,37 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
 
         if not validRange:
             return None
@@ -4779,28 +4782,28 @@ class XplorMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if PRE_RANGE_MIN <= upper_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
 
         if lower_linear_limit is not None:
             if PRE_RANGE_MIN <= lower_linear_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
 
         if upper_linear_limit is not None:
             if PRE_RANGE_MIN <= upper_linear_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -4840,13 +4843,6 @@ class XplorMRParserListener(ParseTreeListener):
             if None in self.numberSelection:
                 return
 
-            target = self.numberSelection[0]
-
-            if len(self.numberSelection) > 1:
-                delta = abs(self.numberSelection[1])
-            else:
-                delta = 0.0
-
             try:
                 # check whether if carbon shift restraints or not
                 atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
@@ -4868,7 +4864,7 @@ class XplorMRParserListener(ParseTreeListener):
                 atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
                 atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
             except IndexError:
-                atom_id_1, atom_id_2, atom_id_3, atom_id_4 = 'OO', 'X', 'Y', 'Z'
+                atom_id_1, atom_id_2, atom_id_3, atom_id_4 = 'OO', 'Z', 'X', 'Y'
 
             atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
 
@@ -4891,9 +4887,22 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:  # can't decide whether CARB or XPCS wo the coordinates
                 return
 
+            target = self.numberSelection[0]
+
+            if len(self.numberSelection) > 1:
+                delta = abs(self.numberSelection[1])
+            else:
+                delta = 0.0
+
             target_value = target
             lower_limit = target - delta
             upper_limit = target + delta
+
+            if len(self.numberSelection) > 2:
+                error_less = delta
+                error_greater = abs(self.numberSelection[2])
+                lower_limit = target - error_less
+                upper_limit = target + error_greater
 
             dstFunc = self.validatePcsRange(1.0, target_value, lower_limit, upper_limit)
 
@@ -4903,12 +4912,12 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
-            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
 
             for atom1 in self.atomSelectionSet[4]:
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
-                          f"paramag={atom_id_0} atom={atom1} {dstFunc}")
+                          f"paramag_center={atom_id_0} atom={atom1} {dstFunc}")
 
         finally:
             self.numberSelection.clear()
@@ -4932,35 +4941,35 @@ class XplorMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if PCS_ERROR_MIN <= lower_limit < PCS_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if PCS_ERROR_MIN < upper_limit <= PCS_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
 
         if lower_linear_limit is not None:
             if PCS_ERROR_MIN <= lower_linear_limit < PCS_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
 
         if upper_linear_limit is not None:
             if PCS_ERROR_MIN < upper_linear_limit <= PCS_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -4968,25 +4977,25 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
         else:
 
@@ -4994,37 +5003,37 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
 
         if not validRange:
             return None
@@ -5041,28 +5050,28 @@ class XplorMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if PCS_RANGE_MIN <= upper_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
         if lower_linear_limit is not None:
             if PCS_RANGE_MIN <= lower_linear_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
         if upper_linear_limit is not None:
             if PCS_RANGE_MIN <= upper_linear_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -5127,7 +5136,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.warningMessage += self.__warningInAtomSelection
                 return
 
-            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
 
             chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
             seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
@@ -5195,7 +5204,7 @@ class XplorMRParserListener(ParseTreeListener):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XRDC) id={self.prdcRestraints} "
-                          f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+                          f"paramag_center={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
 
         finally:
             self.numberSelection.clear()
@@ -5392,7 +5401,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.warningMessage += self.__warningInAtomSelection
                 return
 
-            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else 'paramagnetic center'
+            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
 
             chain_id_1 = self.atomSelectionSet[1][0]['chain_id']
             seq_id_1 = self.atomSelectionSet[1][0]['seq_id']
@@ -5460,7 +5469,7 @@ class XplorMRParserListener(ParseTreeListener):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XCCR) id={self.prdcRestraints} "
-                          f"paramag={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+                          f"paramag_center={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
 
         finally:
             self.numberSelection.clear()
@@ -5484,35 +5493,35 @@ class XplorMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if CCR_ERROR_MIN <= lower_limit < CCR_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
             if CCR_ERROR_MIN < upper_limit <= CCR_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
 
         if lower_linear_limit is not None:
             if CCR_ERROR_MIN <= lower_linear_limit < CCR_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
+                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
 
         if upper_linear_limit is not None:
             if CCR_ERROR_MIN < upper_linear_limit <= CCR_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
+                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
 
         if target_value is not None:
 
@@ -5520,25 +5529,25 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be grater than the target value '{target_value}'.\n"
+                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
 
         else:
 
@@ -5546,37 +5555,37 @@ class XplorMRParserListener(ParseTreeListener):
                 if lower_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
 
         if not validRange:
             return None
@@ -5593,28 +5602,28 @@ class XplorMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+                    f"The lower limit value='{lower_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
 
         if upper_limit is not None:
             if CCR_RANGE_MIN <= upper_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+                    f"The upper limit value='{upper_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
 
         if lower_linear_limit is not None:
             if CCR_RANGE_MIN <= lower_linear_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
 
         if upper_linear_limit is not None:
             if CCR_RANGE_MIN <= upper_linear_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
 
         return dstFunc
 
@@ -6250,6 +6259,9 @@ class XplorMRParserListener(ParseTreeListener):
         withAxis = self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs', 'pre', 'prdc')
         withPara = self.__cur_subtype in ('pcs', 'pre', 'prdc', 'pccr')
 
+        if withPara and len(self.atomSelectionSet) == 0:
+            self.paramagCenter = copy.copy(_factor)
+
         if _factor['atom_id'][0] is not None:
             foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, withAxis, withPara, isPolySeq=True, isChainSpecified=True)
             if self.__hasNonPoly:
@@ -6281,7 +6293,7 @@ class XplorMRParserListener(ParseTreeListener):
         if len(_factor['atom_selection']) == 0:
             if withAxis and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
-            if withPara and ((_factor['atom_id'][0] == _factor['comp_id'][0] and _factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
+            if withPara and (('comp_id' in _factor and _factor['atom_id'][0] == _factor['comp_id'][0] and _factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
                              or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
                 return _factor
             __factor = copy.copy(_factor)

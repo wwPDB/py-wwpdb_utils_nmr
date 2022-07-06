@@ -8845,6 +8845,9 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
+                    if ' U ' in err_input and err_input.count('E') == 2:  # XEASY peak list
+                        return self.__peelLegacyMRIfNecessary(file_path, file_type, err_desc, src_path, offset)
+
                     if self.__mr_debug:
                         print('DIV-MR-EXIT #5')
 
@@ -9213,9 +9216,17 @@ class NmrDpUtility:
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
                 if not has_lexer_error:
-                    os.remove(div_src_file)
-                    os.remove(div_ext_file)
-                    os.remove(div_try_file)
+                    if j3 == 0 and ' U ' in err_input and err_input.count('E') == 2:  # XEASY peak list
+                        shutil.copyfile(div_ext_file, div_ext_file + '-ignored-as-peak-list')
+                        os.remove(div_try_file)
+                        os.remove(file_path)
+
+                        corrected = True
+
+                    else:
+                        os.remove(div_src_file)
+                        os.remove(div_ext_file)
+                        os.remove(div_try_file)
 
                     if self.__mr_debug:
                         print('PEEL-MR-EXIT #6')

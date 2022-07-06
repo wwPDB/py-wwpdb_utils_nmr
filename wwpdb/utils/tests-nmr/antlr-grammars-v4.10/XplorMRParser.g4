@@ -845,7 +845,7 @@ evaluate_operation:
 patch_statement:
 	Patch Simple_name? Reference Equ_op (Nil | Integer) Equ_op selection (Reference Equ_op (Nil | Integer) Equ_op selection)? End;
 
-/* XPLOR-NIH: Parameter statement - Syntax
+/* XPLOR-NIH: Parameter statement - Syntax (implement only type-based statement)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node50.html
 */
 parameter_setting:

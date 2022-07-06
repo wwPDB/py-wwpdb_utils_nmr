@@ -30,6 +30,7 @@
             "nm-aux-amb",
             "nm-aux-gro",
             "nm-res-dyn",
+            "nm-res-syb",
             "nm-res-mr"
           ]
         },

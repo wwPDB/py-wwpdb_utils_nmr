@@ -1,21 +1,21 @@
 ##
-# XplorMRReader.py
+# SybylMRReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing XPLOR-NIH MR files.
+""" A collection of classes for parsing SYBYL MR files.
 """
 import sys
 import os
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
 
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.mr.XplorMRLexer import XplorMRLexer
-    from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
-    from wwpdb.utils.nmr.mr.XplorMRParserListener import XplorMRParserListener
+    from wwpdb.utils.nmr.mr.SybylMRLexer import SybylMRLexer
+    from wwpdb.utils.nmr.mr.SybylMRParser import SybylMRParser
+    from wwpdb.utils.nmr.mr.SybylMRParserListener import SybylMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
@@ -26,9 +26,9 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.mr.XplorMRLexer import XplorMRLexer
-    from nmr.mr.XplorMRParser import XplorMRParser
-    from nmr.mr.XplorMRParserListener import XplorMRParserListener
+    from nmr.mr.SybylMRLexer import SybylMRLexer
+    from nmr.mr.SybylMRParser import SybylMRParser
+    from nmr.mr.SybylMRParserListener import SybylMRParserListener
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
@@ -38,8 +38,8 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
-class XplorMRReader:
-    """ Accessor methods for parsing XPLOR-NIH MR files.
+class SybylMRReader:
+    """ Accessor methods for parsing SYBYL MR files.
     """
 
     def __init__(self, verbose=True, log=sys.stdout,
@@ -85,8 +85,8 @@ class XplorMRReader:
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, mrFilePath, cifFilePath=None, isFilePath=True):
-        """ Parse XPLOR-NIH MR file.
-            @return: XplorMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+        """ Parse SYBYL MR file.
+            @return: SybylMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifp = None
@@ -98,7 +98,7 @@ class XplorMRReader:
 
                 if not os.access(mrFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"XplorMRReader.parse() {mrFilePath} is not accessible.\n")
+                        self.__lfh.write(f"SybylMRReader.parse() {mrFilePath} is not accessible.\n")
                     return None, None, None
 
                 ifp = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
@@ -109,7 +109,7 @@ class XplorMRReader:
 
                 if mrString is None or len(mrString) == 0:
                     if self.__verbose:
-                        self.__lfh.write("XplorMRReader.parse() Empty string.\n")
+                        self.__lfh.write("SybylMRReader.parse() Empty string.\n")
                     return None, None, None
 
                 input = InputStream(mrString)
@@ -117,7 +117,7 @@ class XplorMRReader:
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"XplorMRReader.parse() {cifFilePath} is not accessible.\n")
+                        self.__lfh.write(f"SybylMRReader.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
@@ -125,10 +125,10 @@ class XplorMRReader:
                     if not self.__cR.parse(cifFilePath):
                         return None, None, None
 
-            lexer = XplorMRLexer(input)
+            lexer = SybylMRLexer(input)
             lexer.removeErrorListeners()
 
-            lexer_error_listener = LexerErrorListener(mrFilePath, inputString=mrString, maxErrorReport=self.__maxLexerErrorReport)
+            lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
             lexer.addErrorListener(lexer_error_listener)
 
             messageList = lexer_error_listener.getMessageList()
@@ -141,14 +141,16 @@ class XplorMRReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = XplorMRParser(stream)
+            parser = SybylMRParser(stream)
+            # try with simpler/faster SLL prediction mode
+            parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(mrFilePath, inputString=mrString, maxErrorReport=self.__maxParserErrorReport)
+            parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.xplor_nih_mr()
+            tree = parser.sybyl_mr()
 
             walker = ParseTreeWalker()
-            listener = XplorMRParserListener(self.__verbose, self.__lfh,
+            listener = SybylMRParserListener(self.__verbose, self.__lfh,
                                              self.__representativeModelId,
                                              self.__mrAtomNameMapping,
                                              self.__cR, self.__cC,
@@ -176,12 +178,12 @@ class XplorMRReader:
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+XplorMRReader.parse() ++ Error - {str(e)}\n")
+                self.__lfh.write(f"+SybylMRReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
 
         except Exception as e:
             if self.__verbose and isFilePath:
-                self.__lfh.write(f"+XplorMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
+                self.__lfh.write(f"+SybylMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
 
         finally:
@@ -190,92 +192,7 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
-    reader = XplorMRReader(True)
+    reader = SybylMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2l3b/cacb_shift.mr',
-                 '../../tests-nmr/mock-data-remediation/2l3b/2l3b.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2kw8/2kw8-trimmed-div_dst-div_src.mr',
-                 '../../tests-nmr/mock-data-remediation/2kw8/2kw8.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2bjc/test_no_eff.mr',
-                 '../../tests-nmr/mock-data-remediation/2bjc/2bjc.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2bgo/test.mr',
-                 '../../tests-nmr/mock-data-remediation/2bgo/2bgo.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/5ks5/vean.test',
-                 '../../tests-nmr/mock-data-remediation/5ks5/5ks5.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2bjc/test.mr',
-                 '../../tests-nmr/mock-data-remediation/2bjc/2bjc.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/4by9/test.mr',
-                 '../../tests-nmr/mock-data-remediation/4by9/4by9.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-daother-7871/wsh2090_ambig_rev.tbl',
-                 '../../tests-nmr/mock-data-daother-7871/D_800473_model_P1.cif.V3')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2n55/test.mr',
-                 '../../tests-nmr/mock-data-remediation/2n55/2n55.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2m54/2m54-trimmed.mr',
-                 '../../tests-nmr/mock-data-remediation/2m54/2m54.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2n21/2n21-corrected.mr',
-                 '../../tests-nmr/mock-data-remediation/2n21/2n21.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6p6c/pea-15erk2c13shifts_ded.tbl',
-                 '../../tests-nmr/mock-data-remediation/6p6c/6p6c.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6jcd/submit-plane.tbl',
-                 '../../tests-nmr/mock-data-remediation/6jcd/6jcd.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-daother-7690/D_1300020446_mr-upload_P5.xplor-nih.V1',
-                 '../../tests-nmr/mock-data-daother-7690/D_1300020446_model-release_P1.cif.V2')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-daother-7690/D_1300020646_mr-upload_P1.xplor-nih.V2',
-                 '../../tests-nmr/mock-data-daother-7690/D_1300020646_model-annotate_P1.cif.V2')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-pdbstat/D_1000243168_mr-upload_P8.xplor-nih.V1',
-                 '../../tests-nmr/mock-data-pdbstat/6pvr.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-pdbstat/D_1000243168_mr-upload_P2.xplor-nih.V1',
-                 '../../tests-nmr/mock-data-pdbstat/6pvr.cif')
-
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-pdbstat/atom_sel_expr_example.txt',
-                 '../../tests-nmr/mock-data-pdbstat/6pvr.cif')
+    reader.parse('../../tests-nmr/mock-data-remediation/6gft/restraints.txt',
+                 '../../tests-nmr/mock-data-remediation/6gft/6gft.cif')

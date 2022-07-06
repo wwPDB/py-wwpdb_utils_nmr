@@ -66,6 +66,7 @@
 # 01-Jun-2022  M. Yokochi - add 'nm-res-gro' and 'nm-aux-gro' file types for GROMACS restraint format (DAOTHER-7769, NMR restraint remediation)
 # 17-Jun-2022  M. Yokochi - add 'nm-res-dyn' file type for DYNAMO/PALES/TALOS restraint format (DAOTHER-7872, NMR restraint remediation)
 # 29-Jun-2022  M. Yokochi - add 'insufficient_mr_data' warning type (NMR restraint remediation)
+# 06-Jul-2022  M. Yokochi - add 'nm-res-syb' file type for SYBYL restraint format (DAOTHER-7902, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1664,7 +1665,7 @@ class NmrDpReportInputSource:
                            'nef', 'nmr-star',
                            'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth',
                            'nm-aux-amb', 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro',
-                           'nm-res-dyn',
+                           'nm-res-dyn', 'nm-res-syb',
                            'nm-res-mr')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',

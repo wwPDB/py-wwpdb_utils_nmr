@@ -156,6 +156,7 @@
 # 17-May-2022  M. Yokochi - add support for BIOSYM MR format (DAOTHER-7825, NMR restraint remediation)
 # 01-Jun-2022  M. Yokochi - add support for GROMACS PT/MR format (DAOTHER-7769, NMR restraint remediation)
 # 17-Jun-2022  M. Yokochi - add support for DYNAMO/PALES/TALOS MR format (DAOTHER-7872, NMR restraint remediation)
+# 06-Jul-2022  M. Yokochi - add support for SYBYL MR format (DAOTHER-7902, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -242,6 +243,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.GromacsPTReader import GromacsPTReader
     from wwpdb.utils.nmr.mr.DynamoMRReader import DynamoMRReader
+    from wwpdb.utils.nmr.mr.SybylMRReader import SybylMRReader
 
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -306,6 +308,7 @@ except ImportError:
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.GromacsPTReader import GromacsPTReader
     from nmr.mr.DynamoMRReader import DynamoMRReader
+    from nmr.mr.SybylMRReader import SybylMRReader
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -6637,13 +6640,17 @@ class NmrDpUtility:
             elif file_type == 'nm-res-dyn':
                 mr_format_name = 'DYNAMO/PALES/TALOS'
                 a_mr_format_name = 'a ' + mr_format_name
+            elif file_type == 'nm-res-syb':
+                mr_format_name = 'SYBYL'
+                a_mr_format_name = 'a ' + mr_format_name
             elif file_type == 'nm-res-mr':
                 mr_format_name = 'MR'
             else:
                 mr_format_name = 'other'
 
             atom_like_names =\
-                self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-oth') or is_aux_amb or is_aux_gro else 1))
+                self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
+                                                                                 'nm-res-oth') or is_aux_amb or is_aux_gro else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
@@ -7061,7 +7068,8 @@ class NmrDpUtility:
                                     in_igr1 = False
                                     in_igr2 = False
 
-            elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-oth') or is_aux_amb or is_aux_gro:
+            elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
+                               'nm-res-oth') or is_aux_amb or is_aux_gro:
 
                 if is_aux_amb:
 
@@ -7453,7 +7461,8 @@ class NmrDpUtility:
                        system_names > 0 and molecule_names > 0 and atom_names > 0:
                         has_topology = True
 
-            if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
+            if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
+                             'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='utf-8') as ifp:
 
@@ -7517,12 +7526,12 @@ class NmrDpUtility:
             try:
 
                 if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
-                                 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn'):
+                                 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn', 'nm-res-syb'):
                     reader = self.__getSimpleMRPTFileReader(file_type, self.__verbose)
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                    if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn'):
+                    if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb'):
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
@@ -8079,6 +8088,10 @@ class NmrDpUtility:
             return DynamoMRReader(verbose, self.__lfh, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
                                   reasons)
+        if file_type == 'nm-res-syb':
+            return SybylMRReader(verbose, self.__lfh, None, None, None, None,
+                                 self.__ccU, self.__csStat, self.__nefT,
+                                 reasons)
 
         return None
 
@@ -8138,6 +8151,9 @@ class NmrDpUtility:
         elif file_type == 'nm-res-dyn':
             # mr_format_name = 'DYNAMO/PALES/TALOS'
             pass
+        elif file_type == 'nm-res-syb':
+            # mr_format_name = 'SYBYL'
+            pass
         else:
             return False
 
@@ -8190,7 +8206,7 @@ class NmrDpUtility:
 
         concat_gromacs_tag = not gromacs_file_type and bool(gromacs_tag_pattern.search(err_input))
 
-        concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn')
+        concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb')
                           and err_message.startswith(no_viable_alt_err_msg)
                           and bool(comment_pattern.search(err_input)))
 
@@ -9070,7 +9086,7 @@ class NmrDpUtility:
                 return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset) | corrected
 
             for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
-                                   'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn']:
+                                   'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn', 'nm-res-syb']:
 
                 if test_file_type == file_type:
                     continue
@@ -9314,6 +9330,9 @@ class NmrDpUtility:
         elif file_type == 'nm-res-dyn':
             # mr_format_name = 'DYNAMO/PALES/TALOS'
             pass
+        elif file_type == 'nm-res-syb':
+            # mr_format_name = 'SYBYL'
+            pass
         else:
             return False
 
@@ -9368,7 +9387,7 @@ class NmrDpUtility:
                             and bool(amber_rst_pattern.search(err_input))
                             and not bool(amber_rst_pattern.match(err_input)))
 
-        concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn')
+        concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb')
                           and err_message.startswith(no_viable_alt_err_msg)
                           and bool(comment_pattern.search(err_input)))
 
@@ -9872,7 +9891,7 @@ class NmrDpUtility:
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
             if listener is not None:
-                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn'):
+                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb'):
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -10023,6 +10042,15 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
+        if (not is_valid or multiple_check) and file_type != 'nm-res-syb':
+            _is_valid, _err, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-syb')
+
+            is_valid |= is_valid
+            err += _err
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
         _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
         _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
 
@@ -10048,6 +10076,8 @@ class NmrDpUtility:
             mr_format_name = 'GROMACS'
         elif file_type == 'nm-res-dyn':
             mr_format_name = 'DYNAMO/PALES/TALOS'
+        elif file_type == 'nm-res-syb':
+            mr_format_name = 'SYBYL'
         elif file_type == 'nm-res-mr':
             mr_format_name = 'MR'
         else:
@@ -10082,6 +10112,9 @@ class NmrDpUtility:
             _a_mr_format_name = 'a ' + _mr_format_name + ' parameter/topology'
         elif _file_type == 'nm-res-dyn':
             _mr_format_name = 'DYNAMO/PALES/TALOS'
+            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-res-syb':
+            _mr_format_name = 'SYBYL'
             _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
 
         is_valid = False
@@ -10789,6 +10822,11 @@ class NmrDpUtility:
                             _ar['file_type'] = 'nm-res-dyn'
                             split_file_list.append(_ar)
 
+                        elif len_valid_types == 2 and 'nm-res-syb' in valid_types and 'nm-res-cya' in valid_types:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-syb'
+                            split_file_list.append(_ar)
+
                         else:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = valid_types[0]
@@ -11037,6 +11075,13 @@ class NmrDpUtility:
                             elif len_valid_types == 2 and 'nm-res-dyn' in valid_types and 'nm-res-cya' in valid_types:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-dyn'
+                                if distict:
+                                    _ar['original_file_name'] = file_name
+                                split_file_list.append(_ar)
+
+                            elif len_valid_types == 2 and 'nm-res-syb' in valid_types and 'nm-res-cya' in valid_types:
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = 'nm-res-syb'
                                 if distict:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
@@ -22072,6 +22117,121 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Enum mismatch ignorable]'):
+                                self.report.warning.appendDescription('enum_mismatch_ignorable',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Range value error]'):
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]'):
+                                self.report.warning.appendDescription('unusual_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                """ defer to sequence alignment error
+                            elif warn.startswith('[Unmatched residue name]'):
+                                self.report.warning.appendDescription('conflicted_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                                """
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    poly_seq_set.append(poly_seq)
+
+            elif file_type == 'nm-res-syb':
+                reader = SybylMRReader(self.__verbose, self.__lfh,
+                                       self.__representative_model_id,
+                                       self.__mr_atom_name_mapping,
+                                       self.__cR, cC,
+                                       self.__ccU, self.__csStat, self.__nefT)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = SybylMRReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, cC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
+                                self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom nomenclature]'):
+                                self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Enum mismatch ignorable]'):
                                 self.report.warning.appendDescription('enum_mismatch_ignorable',

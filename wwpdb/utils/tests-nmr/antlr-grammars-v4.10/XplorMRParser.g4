@@ -843,7 +843,7 @@ evaluate_operation:
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node86.html
 */
 patch_statement:
-	Patch Simple_name? Reference Equ_op (Nil | Integer) Equ_op selection (Reference Equ_op (Nil | Integer) Equ_op selection)? End;
+	Patch (Simple_name | AngleDb | HBonded | Dihedral | Improper)? Reference Equ_op (Nil | Integer) Equ_op selection (Reference Equ_op (Nil | Integer) Equ_op selection)? End;
 
 /* XPLOR-NIH: Parameter statement - Syntax (implement only type-based statement)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node50.html

@@ -613,6 +613,9 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
     elif fileType == 'nm-res-dyn':
         _mr_format_name = 'DYNAMO/PALES/TALOS'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
+    elif fileType == 'nm-res-syb':
+        _mr_format_name = 'SYBYL'
+        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
     else:
         _mr_format_name = 'MR'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'

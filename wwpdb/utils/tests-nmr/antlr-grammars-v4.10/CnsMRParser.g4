@@ -493,7 +493,7 @@ evaluate_operation:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 patch_statement:
-	Patch Simple_name? Reference Equ_op (Nil | Integer) Equ_op selection (Reference Equ_op (Nil | Integer) Equ_op selection)? End;
+	Patch (Simple_name | AngleDb | HBonded | Dihedral | Improper)? Reference Equ_op (Nil | Integer) Equ_op selection (Reference Equ_op (Nil | Integer) Equ_op selection)? End;
 
 /* CNS: Parameter statement - Syntax (implement only type-based statement)
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

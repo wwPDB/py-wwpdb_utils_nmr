@@ -21710,15 +21710,15 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
-                                """ defer to sequence alignment error
-                            elif warn.startswith('[Unmatched residue name]'):
-                                self.report.warning.appendDescription('conflicted_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
+                            #     """ defer to sequence alignment error
+                            # elif warn.startswith('[Unmatched residue name]'):
+                            #     self.report.warning.appendDescription('conflicted_mr_data',
+                            #                                           {'file_name': file_name, 'description': warn})
+                            #     self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
-                                """
+                            #     if self.__verbose:
+                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                            #     """
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
                                 self.report.setError()
@@ -21945,15 +21945,15 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
-                                """ defer to sequence alignment error
-                            elif warn.startswith('[Unmatched residue name]'):
-                                self.report.warning.appendDescription('conflicted_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
+                            #     """ defer to sequence alignment error
+                            # elif warn.startswith('[Unmatched residue name]'):
+                            #     self.report.warning.appendDescription('conflicted_mr_data',
+                            #                                           {'file_name': file_name, 'description': warn})
+                            #     self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
-                                """
+                            #     if self.__verbose:
+                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                            #     """
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
                                 self.report.setError()
@@ -22157,15 +22157,15 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
-                                """ defer to sequence alignment error
-                            elif warn.startswith('[Unmatched residue name]'):
-                                self.report.warning.appendDescription('conflicted_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
+                            #     """ defer to sequence alignment error
+                            # elif warn.startswith('[Unmatched residue name]'):
+                            #     self.report.warning.appendDescription('conflicted_mr_data',
+                            #                                           {'file_name': file_name, 'description': warn})
+                            #     self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
-                                """
+                            #     if self.__verbose:
+                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                            #     """
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
                                 self.report.setError()
@@ -22272,15 +22272,15 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
-                                """ defer to sequence alignment error
-                            elif warn.startswith('[Unmatched residue name]'):
-                                self.report.warning.appendDescription('conflicted_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
+                            #     """ defer to sequence alignment error
+                            # elif warn.startswith('[Unmatched residue name]'):
+                            #     self.report.warning.appendDescription('conflicted_mr_data',
+                            #                                           {'file_name': file_name, 'description': warn})
+                            #     self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
-                                """
+                            #     if self.__verbose:
+                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                            #     """
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
                                 self.report.setError()

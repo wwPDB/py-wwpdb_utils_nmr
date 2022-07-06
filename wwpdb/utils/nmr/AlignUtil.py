@@ -785,20 +785,20 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                 if mr_comp_id == '.' and cif_comp_id != '.':
 
                     unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
-                    """ unmapped residue is not error
-                    if not aligned[i]:
+                    # """ unmapped residue is not error """
+                    # if not aligned[i]:
 
-                        if not ccU.updateChemCompDict(cif_comp_id):
-                            continue
+                    #     if not ccU.updateChemCompDict(cif_comp_id):
+                    #         continue
 
-                        if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
-                            continue
+                    #     if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
+                    #         continue
 
-                        cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                    #     cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
 
-                        warningMessage += f"[Sequence mismatch] {cif_seq_code} is not present "\
-                            f"in {_a_mr_format_name} data (chain_id {chain_id2}).\n"
-                    """
+                    #     warningMessage += f"[Sequence mismatch] {cif_seq_code} is not present "\
+                    #         f"in {_a_mr_format_name} data (chain_id {chain_id2}).\n"
+                    #
                 elif mr_comp_id != cif_comp_id and aligned[i]:
 
                     conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
@@ -902,11 +902,11 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId):
     """
 
     try:
-        map = next(map for map in mrAtomNameMapping
-                   if map['original_seq_id'] == seqId
-                   and map['original_comp_id'] == compId
-                   and map['original_atom_id'] == atomId)
-        return map['auth_seq_id'], map['auth_comp_id'], map['auth_atom_id']
+        amap = next(map for map in mrAtomNameMapping  # pylint: disable=redefined-builtin
+                    if map['original_seq_id'] == seqId
+                    and map['original_comp_id'] == compId
+                    and map['original_atom_id'] == atomId)
+        return amap['auth_seq_id'], amap['auth_comp_id'], amap['auth_atom_id']
     except StopIteration:
         return seqId, compId, atomId
 
@@ -916,10 +916,10 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId):
     """
 
     try:
-        map = next(map for map in mrAtomNameMapping
-                   if map['auth_seq_id'] == cifSeqId
-                   and map['auth_comp_id'] == cifCompId
-                   and map['original_atom_id'] == atomId)
-        return map['auth_atom_id']
+        amap = next(map for map in mrAtomNameMapping   # pylint: disable=redefined-builtin
+                    if map['auth_seq_id'] == cifSeqId
+                    and map['auth_comp_id'] == cifCompId
+                    and map['original_atom_id'] == atomId)
+        return amap['auth_atom_id']
     except StopIteration:
         return atomId

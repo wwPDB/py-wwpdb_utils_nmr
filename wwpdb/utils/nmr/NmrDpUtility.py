@@ -8859,7 +8859,7 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
-                    if ' U ' in err_input and err_input.count('E') == 2:  # XEASY peak list
+                    if ' U ' in err_input and err_input.count('E') >= 2:  # XEASY peak list
                         return self.__peelLegacyMRIfNecessary(file_path, file_type, err_desc, src_path, offset)
 
                     if self.__mr_debug:
@@ -9230,7 +9230,7 @@ class NmrDpUtility:
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
                 if not has_lexer_error:
-                    if j3 == 0 and ' U ' in err_input and err_input.count('E') == 2:  # XEASY peak list
+                    if j3 == 0 and ' U ' in err_input and err_input.count('E') >= 2:  # XEASY peak list
                         shutil.copyfile(div_ext_file, div_ext_file + '-ignored-as-peak-list')
                         os.remove(div_try_file)
                         os.remove(file_path)
@@ -10222,6 +10222,7 @@ class NmrDpUtility:
         dir_path = '.'
         mr_file_name = '.'
         split_file_list = []
+        peak_list_file = []
 
         self.__mr_atom_name_mapping = []
 
@@ -10304,6 +10305,12 @@ class NmrDpUtility:
             ign_dst_file = src_basename + '-ignored.mr'
 
             if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
+                continue
+
+            ign_pk_file = src_basename + '-ignored-as-peak-list.mr'
+
+            if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+                peak_list_file.append(ign_pk_file)
                 continue
 
             has_mr_header = False
@@ -10758,6 +10765,7 @@ class NmrDpUtility:
                         ign_pk_file = dst_file + '-ignored-as-peak-list'
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+                            peak_list_file.append(ign_pk_file)
                             continue
 
                         _ar = ar.copy()
@@ -10991,6 +10999,7 @@ class NmrDpUtility:
                     ign_pk_file = dst_file + '-ignored-as-peak-list'
 
                     if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+                        peak_list_file.append(ign_pk_file)
                         continue
 
                     cor_dst_file = dst_file + '-corrected'
@@ -11155,7 +11164,16 @@ class NmrDpUtility:
                 with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
                     ofp.write('')
 
-            err = "NMR restraint file contains no restraints or is not recognized properly. "\
+            hint = ' or is not recognized properly'
+
+            if len(peak_list_file) > 0:
+                touch_file = os.path.join(dir_path, '.entry_with_pk')
+                if not os.path.exists(touch_file):
+                    with open(os.path.join(dir_path, '.entry_with_pk'), 'w') as ofp:
+                        ofp.write('')
+                hint = f', except for {len(peak_list_file)} peak list file(s)'
+
+            err = f"NMR restraint file contains no restraints{hint}. "\
                 "Please re-upload the NMR restraint file."
 
             self.__suspended_errors_for_lazy_eval.append({'content_mismatch':

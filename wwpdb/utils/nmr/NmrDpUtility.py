@@ -11115,6 +11115,35 @@ class NmrDpUtility:
 
                         continue
 
+                    if file_ext in ('finalstereo', 'cya'):
+                        is_finalstereo = False
+                        with open(dst_file, 'r') as ifp:
+                            for pos, line in enumerate(ifp, start=1):
+                                if pos == 1:
+                                    if not line.startswith('var info echo'):
+                                        break
+                                elif pos == 2:
+                                    if not line.startswith('echo:'):
+                                        break
+                                elif pos == 3:
+                                    if not line.startswith('info:'):
+                                        break
+                                elif pos == 4:
+                                    if line.startswith('atom stereo'):
+                                        is_finalstereo = True
+                                    break
+
+                        if is_finalstereo:
+                            shutil.copyfile(dst_file, ign_ext_file)  # ignore AMBER input coordinate file for the next time
+
+                            _ar = ar.copy()
+
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-oth'
+                            split_file_list.append(_ar)
+
+                            continue
+
                     sel_ros_file = dst_file + '-selected-as-res-ros'
 
                     if os.path.exists(sel_ros_file):  # in case the MR file is ROSETTA MR file

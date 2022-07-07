@@ -6671,6 +6671,7 @@ class NmrDpUtility:
             has_plane_restraint = False
             has_hbond_restraint = False
             has_rdc_origins = False
+            has_peaks = False
 
             has_coordinate = False
             has_amb_coord = False
@@ -7457,6 +7458,18 @@ class NmrDpUtility:
                             elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
                                 has_dihed_restraint = True
 
+                    with open(file_path, 'r', encoding='utf-8') as ifp:
+
+                        for line in ifp:
+
+                            if line.isspace() or comment_pattern.match(line):
+                                continue
+
+                            if is_peak_list_header(line):
+                                has_peaks = True
+
+                            break
+
                 if is_aux_amb:
 
                     if has_atom_name and has_residue_label and has_residue_pointer and has_amb_atom_type and\
@@ -7743,6 +7756,18 @@ class NmrDpUtility:
 
             elif has_chem_shift:
                 has_chem_shift = False
+
+            if has_peaks:
+
+                err = f"The {mr_format_name} restraint file includes spectral peak list. "\
+                    "Did you accidentally select the wrong format? Please re-upload the file as spectral peak list file."
+
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
             if content_subtype is None:
                 content_subtype = {'chem_shift': 1 if has_chem_shift else 0,

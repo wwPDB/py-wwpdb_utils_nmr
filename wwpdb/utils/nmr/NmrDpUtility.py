@@ -7462,21 +7462,34 @@ class NmrDpUtility:
                             elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
                                 has_dihed_restraint = True
 
+                if file_type == 'nm-res-oth':
+
                     with open(file_path, 'r', encoding='utf-8') as ifp:
-
                         has_header = False
-
                         for line in ifp:
-
                             if line.isspace() or comment_pattern.match(line):
                                 if line.startswith('#INAME'):
                                     has_header = True
                                 continue
-
                             if is_peak_list(line, has_header):
                                 has_peaks = True
-
                             break
+
+                    with open(file_path, 'r', encoding='utf-8') as ifp:
+                        for pos, line in enumerate(ifp, start=1):
+                            if pos == 1:
+                                if 'Structures from CYANA' not in line:
+                                    break
+                            elif pos == 2:
+                                if 'CYANA' not in line:
+                                    break
+                            elif pos == 3:
+                                if line.count('Number') < 3:
+                                    break
+                            elif pos == 4:
+                                if line.count('.') >= 3:
+                                    has_coordinate = True
+                                break
 
                 if is_aux_amb:
 
@@ -11158,17 +11171,15 @@ class NmrDpUtility:
                     has_peaks = False
 
                     with open(dst_file, 'r') as ifp:
-
                         has_header = False
-
                         for line in ifp:
-
                             if line.isspace() or comment_pattern.match(line):
                                 if line.startswith('#INAME'):
                                     has_header = True
                                 continue
-
                             if is_peak_list(line, has_header):
+                                has_peaks = True
+
                                 shutil.copyfile(dst_file, ign_pk_file)
 
                                 _ar = ar.copy()
@@ -11176,8 +11187,6 @@ class NmrDpUtility:
                                 _ar['file_name'] = dst_file
                                 _ar['file_type'] = 'nm-pea-any'
                                 peak_file_list.append(_ar)
-
-                                has_peaks = True
 
                             break
 

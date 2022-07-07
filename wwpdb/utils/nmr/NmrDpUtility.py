@@ -11106,6 +11106,28 @@ class NmrDpUtility:
                             shutil.copyfile(dst_file, ign_dst_file)  # ignore sequence file for the next time
                             continue
 
+                    if file_type == 'cor':
+                        is_cor = False
+                        with open(dst_file, 'r') as ifp:
+                            for pos, line in enumerate(ifp, start=1):
+                                if pos == 1:
+                                    if 'Structures from CYANA' not in line:
+                                        break
+                                elif pos == 2:
+                                    if 'CYANA' not in line:
+                                        break
+                                elif pos == 3:
+                                    if line.count('Number') < 3:
+                                        break
+                                elif pos == 4:
+                                    if line.count('.') >= 3:
+                                        is_cor = True
+                                    break
+
+                        if is_cor:
+                            shutil.copyfile(dst_file, ign_dst_file)  # ignore CYANA coordinate file for the next time
+                            continue
+
                     ign_pk_file = dst_file + '-ignored-as-pea-any'
 
                     if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file

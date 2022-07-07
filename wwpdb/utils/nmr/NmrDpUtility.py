@@ -7791,7 +7791,7 @@ class NmrDpUtility:
                 if has_hbond_restraint:
                     subtype_name += "Hydrogen bond restraints, "
                 if has_amb_inpcrd:
-                    subtype_name += "AMBER restart coordinates (.rst), "
+                    subtype_name += "AMBER restart coordinates (aka. .crd or .rst file), "
 
                 if len(subtype_name) > 0:
                     subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
@@ -10948,7 +10948,7 @@ class NmrDpUtility:
                     else:
                         file_ext = os.path.basename(split_ext[0])
 
-                    if file_ext in ('crd', 'rst', 'inp', 'inpcrd', 'restrt'):  # AMBER coordinate file extensions
+                    if file_ext in ('x', 'crd', 'rst', 'inp', 'inpcrd', 'restrt'):  # AMBER coordinate file extensions
                         is_crd = False
                         with open(dst_file, 'r') as ifp:
                             for pos, line in enumerate(ifp, start=1):

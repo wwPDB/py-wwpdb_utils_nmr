@@ -442,7 +442,7 @@ vector_statement:
 	Vector vector_mode selection;
 
 vector_mode:
-	(Do_Lp | Identify_Lp) vector_expression R_paren_VE |
+	(Do_Lp | Identity_Lp) vector_expression R_paren_VE |
 	Show vector_show_property;
 
 vector_expression:

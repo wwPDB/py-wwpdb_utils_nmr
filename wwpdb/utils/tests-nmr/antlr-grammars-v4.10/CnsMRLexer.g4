@@ -324,7 +324,7 @@ Tag:			'TAG';
 Vector:			'VECT' 'O'? 'R'?;			// vector_mode vector_expression selection
 
 Do_Lp:			'DO' ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
-Identify_Lp:		'IDEN' 'T'? 'I'? 'F'? 'Y'? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
+Identity_Lp:		'IDEN' 'T'? 'I'? 'T'? 'Y'? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 Show:			'SHOW' -> pushMode(VECTOR_SHOW_MODE);	// Vector_show_property
 
 /* CNS: Gloval statement/Evaluate statement - Syntax

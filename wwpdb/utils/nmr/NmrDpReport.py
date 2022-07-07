@@ -67,6 +67,7 @@
 # 17-Jun-2022  M. Yokochi - add 'nm-res-dyn' file type for DYNAMO/PALES/TALOS restraint format (DAOTHER-7872, NMR restraint remediation)
 # 29-Jun-2022  M. Yokochi - add 'insufficient_mr_data' warning type (NMR restraint remediation)
 # 06-Jul-2022  M. Yokochi - add 'nm-res-syb' file type for SYBYL restraint format (DAOTHER-7902, NMR restraint remediation)
+# 07-Jul-2022  M. Yokochi - add 'nmr-peaks' content type and 'nm-pea-any' file type (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1666,10 +1667,10 @@ class NmrDpReportInputSource:
                            'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth',
                            'nm-aux-amb', 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro',
                            'nm-res-dyn', 'nm-res-syb',
-                           'nm-res-mr')
+                           'nm-res-mr', 'nm-pea-any')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
-                              'nmr-chemical-shifts', 'nmr-restraints')
+                              'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')
         self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift',
                                  'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint',
                                  'plane_restraint', 'adist_restraint', 'jcoup_restraint', 'hvycs_restraint',

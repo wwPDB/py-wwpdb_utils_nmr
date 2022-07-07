@@ -31,7 +31,8 @@
             "nm-aux-gro",
             "nm-res-dyn",
             "nm-res-syb",
-            "nm-res-mr"
+            "nm-res-mr",
+            "nm-pea-any"
           ]
         },
         "original_file_name": {
@@ -50,7 +51,8 @@
             "nmr-data-nef",
             "nmr-data-str",
             "nmr-chemical-shifts",
-            "nmr-restraints"
+            "nmr-restraints",
+            "nmr-peaks"
           ]
         },
         "content_subtype": {

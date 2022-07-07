@@ -880,7 +880,7 @@ class CnsMRParser ( Parser ):
                       "Resname", "Saround", "SegIdentifier", "Sfbox", "Store1", 
                       "Store2", "Store3", "Store4", "Store5", "Store6", 
                       "Store7", "Store8", "Store9", "Tag", "Vector", "Do_Lp", 
-                      "Identify_Lp", "Show", "Evaluate_Lp", "Patch", "Reference", 
+                      "Identity_Lp", "Show", "Evaluate_Lp", "Patch", "Reference", 
                       "Nil", "Parameter", "UB", "Mult", "HBonded", "Improper", 
                       "NBFix", "NonB", "VDWOff", "Verbose", "For", "Loop", 
                       "Tail", "Head", "Or_op", "And_op", "Not_op", "Comma", 
@@ -1133,7 +1133,7 @@ class CnsMRParser ( Parser ):
     Tag=120
     Vector=121
     Do_Lp=122
-    Identify_Lp=123
+    Identity_Lp=123
     Show=124
     Evaluate_Lp=125
     Patch=126
@@ -8647,8 +8647,8 @@ class CnsMRParser ( Parser ):
         def Do_Lp(self):
             return self.getToken(CnsMRParser.Do_Lp, 0)
 
-        def Identify_Lp(self):
-            return self.getToken(CnsMRParser.Identify_Lp, 0)
+        def Identity_Lp(self):
+            return self.getToken(CnsMRParser.Identity_Lp, 0)
 
         def Show(self):
             return self.getToken(CnsMRParser.Show, 0)
@@ -8680,11 +8680,11 @@ class CnsMRParser ( Parser ):
             self.state = 1402
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Do_Lp, CnsMRParser.Identify_Lp]:
+            if token in [CnsMRParser.Do_Lp, CnsMRParser.Identity_Lp]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1396
                 _la = self._input.LA(1)
-                if not(_la==CnsMRParser.Do_Lp or _la==CnsMRParser.Identify_Lp):
+                if not(_la==CnsMRParser.Do_Lp or _la==CnsMRParser.Identity_Lp):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)

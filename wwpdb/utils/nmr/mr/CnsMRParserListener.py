@@ -5435,7 +5435,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#vector_mode.
     def enterVector_mode(self, ctx: CnsMRParser.Vector_modeContext):
-        if ctx.Identify_Lp():
+        if ctx.Identity_Lp():
             self.__cur_vector_mode = 'identity'
 
         elif ctx.Do_Lp():

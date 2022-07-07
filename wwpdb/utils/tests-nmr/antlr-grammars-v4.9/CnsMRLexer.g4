@@ -352,7 +352,7 @@ Tag:			T A G;
 Vector:			V E C T O? R?;				// vector_mode vector_expression selection
 
 Do_Lp:			D O ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
-Identify_Lp:		I D E N T? I? F? Y? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
+Identity_Lp:		I D E N T? I? T? Y? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 Show:			S H O W -> pushMode(VECTOR_SHOW_MODE);	// Vector_show_property
 
 /* CNS: Gloval statement/Evaluate statement - Syntax

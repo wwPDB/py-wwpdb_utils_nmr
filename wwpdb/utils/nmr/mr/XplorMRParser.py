@@ -1438,7 +1438,7 @@ class XplorMRParser ( Parser ):
                       "Previous", "Pseudo", "Residue", "Resname", "Saround", 
                       "SegIdentifier", "Store1", "Store2", "Store3", "Store4", 
                       "Store5", "Store6", "Store7", "Store8", "Store9", 
-                      "Tag", "Vector", "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", 
+                      "Tag", "Vector", "Do_Lp", "Identity_Lp", "Show", "Evaluate_Lp", 
                       "Patch", "Reference", "Nil", "Parameter", "UB", "Mult", 
                       "HBonded", "Improper", "NBFix", "NonB", "VDWOff", 
                       "Verbose", "For", "Loop", "Tail", "Head", "Or_op", 
@@ -1798,7 +1798,7 @@ class XplorMRParser ( Parser ):
     Tag=161
     Vector=162
     Do_Lp=163
-    Identify_Lp=164
+    Identity_Lp=164
     Show=165
     Evaluate_Lp=166
     Patch=167
@@ -14570,8 +14570,8 @@ class XplorMRParser ( Parser ):
         def Do_Lp(self):
             return self.getToken(XplorMRParser.Do_Lp, 0)
 
-        def Identify_Lp(self):
-            return self.getToken(XplorMRParser.Identify_Lp, 0)
+        def Identity_Lp(self):
+            return self.getToken(XplorMRParser.Identity_Lp, 0)
 
         def Show(self):
             return self.getToken(XplorMRParser.Show, 0)
@@ -14603,11 +14603,11 @@ class XplorMRParser ( Parser ):
             self.state = 2339
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Do_Lp, XplorMRParser.Identify_Lp]:
+            if token in [XplorMRParser.Do_Lp, XplorMRParser.Identity_Lp]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2333
                 _la = self._input.LA(1)
-                if not(_la==XplorMRParser.Do_Lp or _la==XplorMRParser.Identify_Lp):
+                if not(_la==XplorMRParser.Do_Lp or _la==XplorMRParser.Identity_Lp):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)

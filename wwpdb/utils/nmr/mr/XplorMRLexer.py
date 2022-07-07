@@ -1293,8 +1293,8 @@ def serializedATN():
         2661,7,4,0,0,2661,2662,7,1,0,0,2662,2663,7,3,0,0,2663,2665,1,0,0,
         0,2664,2666,7,2,0,0,2665,2664,1,0,0,0,2665,2666,1,0,0,0,2666,2668,
         1,0,0,0,2667,2669,7,7,0,0,2668,2667,1,0,0,0,2668,2669,1,0,0,0,2669,
-        2671,1,0,0,0,2670,2672,7,18,0,0,2671,2670,1,0,0,0,2671,2672,1,0,
-        0,0,2672,2674,1,0,0,0,2673,2675,7,9,0,0,2674,2673,1,0,0,0,2674,2675,
+        2671,1,0,0,0,2670,2672,7,2,0,0,2671,2670,1,0,0,0,2671,2672,1,0,0,
+        0,2672,2674,1,0,0,0,2673,2675,7,9,0,0,2674,2673,1,0,0,0,2674,2675,
         1,0,0,0,2675,2679,1,0,0,0,2676,2678,5,32,0,0,2677,2676,1,0,0,0,2678,
         2681,1,0,0,0,2679,2677,1,0,0,0,2679,2680,1,0,0,0,2680,2682,1,0,0,
         0,2681,2679,1,0,0,0,2682,2683,3,436,212,0,2683,2684,1,0,0,0,2684,
@@ -2143,7 +2143,7 @@ class XplorMRLexer(Lexer):
     Tag = 161
     Vector = 162
     Do_Lp = 163
-    Identify_Lp = 164
+    Identity_Lp = 164
     Show = 165
     Evaluate_Lp = 166
     Patch = 167
@@ -2331,7 +2331,7 @@ class XplorMRLexer(Lexer):
             "Known", "Name", "Point", "Cut", "Previous", "Pseudo", "Residue", 
             "Resname", "Saround", "SegIdentifier", "Store1", "Store2", "Store3", 
             "Store4", "Store5", "Store6", "Store7", "Store8", "Store9", 
-            "Tag", "Vector", "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", 
+            "Tag", "Vector", "Do_Lp", "Identity_Lp", "Show", "Evaluate_Lp", 
             "Patch", "Reference", "Nil", "Parameter", "UB", "Mult", "HBonded", 
             "Improper", "NBFix", "NonB", "VDWOff", "Verbose", "For", "Loop", 
             "Tail", "Head", "Or_op", "And_op", "Not_op", "Comma", "Complex", 
@@ -2386,7 +2386,7 @@ class XplorMRLexer(Lexer):
                   "Point", "Cut", "Previous", "Pseudo", "Residue", "Resname", 
                   "Saround", "SegIdentifier", "Store1", "Store2", "Store3", 
                   "Store4", "Store5", "Store6", "Store7", "Store8", "Store9", 
-                  "Tag", "Vector", "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", 
+                  "Tag", "Vector", "Do_Lp", "Identity_Lp", "Show", "Evaluate_Lp", 
                   "Patch", "Reference", "Nil", "Parameter", "UB", "Mult", 
                   "HBonded", "Improper", "NBFix", "NonB", "VDWOff", "Verbose", 
                   "For", "Loop", "Tail", "Head", "Or_op", "And_op", "Not_op", 

@@ -8363,7 +8363,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#vector_mode.
     def enterVector_mode(self, ctx: XplorMRParser.Vector_modeContext):
-        if ctx.Identify_Lp():
+        if ctx.Identity_Lp():
             self.__cur_vector_mode = 'identity'
 
         elif ctx.Do_Lp():

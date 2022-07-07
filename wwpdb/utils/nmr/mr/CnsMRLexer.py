@@ -1119,7 +1119,7 @@ def serializedATN():
         1,0,0,0,2222,2223,7,9,0,0,2223,2224,7,4,0,0,2224,2225,7,1,0,0,2225,
         2226,7,3,0,0,2226,2228,1,0,0,0,2227,2229,7,2,0,0,2228,2227,1,0,0,
         0,2228,2229,1,0,0,0,2229,2231,1,0,0,0,2230,2232,7,9,0,0,2231,2230,
-        1,0,0,0,2231,2232,1,0,0,0,2232,2234,1,0,0,0,2233,2235,7,18,0,0,2234,
+        1,0,0,0,2231,2232,1,0,0,0,2232,2234,1,0,0,0,2233,2235,7,2,0,0,2234,
         2233,1,0,0,0,2234,2235,1,0,0,0,2235,2237,1,0,0,0,2236,2238,7,8,0,
         0,2237,2236,1,0,0,0,2237,2238,1,0,0,0,2238,2242,1,0,0,0,2239,2241,
         5,32,0,0,2240,2239,1,0,0,0,2241,2244,1,0,0,0,2242,2240,1,0,0,0,2242,
@@ -1949,7 +1949,7 @@ class CnsMRLexer(Lexer):
     Tag = 120
     Vector = 121
     Do_Lp = 122
-    Identify_Lp = 123
+    Identity_Lp = 123
     Show = 124
     Evaluate_Lp = 125
     Patch = 126
@@ -2120,7 +2120,7 @@ class CnsMRLexer(Lexer):
             "Point", "Cut", "Previous", "Pseudo", "Residue", "Resname", 
             "Saround", "SegIdentifier", "Sfbox", "Store1", "Store2", "Store3", 
             "Store4", "Store5", "Store6", "Store7", "Store8", "Store9", 
-            "Tag", "Vector", "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", 
+            "Tag", "Vector", "Do_Lp", "Identity_Lp", "Show", "Evaluate_Lp", 
             "Patch", "Reference", "Nil", "Parameter", "UB", "Mult", "HBonded", 
             "Improper", "NBFix", "NonB", "VDWOff", "Verbose", "For", "Loop", 
             "Tail", "Head", "Or_op", "And_op", "Not_op", "Comma", "Complex", 
@@ -2168,7 +2168,7 @@ class CnsMRLexer(Lexer):
                   "Cut", "Previous", "Pseudo", "Residue", "Resname", "Saround", 
                   "SegIdentifier", "Sfbox", "Store1", "Store2", "Store3", 
                   "Store4", "Store5", "Store6", "Store7", "Store8", "Store9", 
-                  "Tag", "Vector", "Do_Lp", "Identify_Lp", "Show", "Evaluate_Lp", 
+                  "Tag", "Vector", "Do_Lp", "Identity_Lp", "Show", "Evaluate_Lp", 
                   "Patch", "Reference", "Nil", "Parameter", "UB", "Mult", 
                   "HBonded", "Improper", "NBFix", "NonB", "VDWOff", "Verbose", 
                   "For", "Loop", "Tail", "Head", "Or_op", "And_op", "Not_op", 

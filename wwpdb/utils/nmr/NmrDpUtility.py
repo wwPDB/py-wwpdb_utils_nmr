@@ -6911,7 +6911,7 @@ class NmrDpUtility:
 
                         pos += 1
 
-                        if pos == 1 and not (line.isdigit() or len(line.strip(' ').split()) > 1):
+                        if pos == 1 and not line.isdigit():
                             has_amb_inpcrd = True
 
                         elif pos == 2 and has_amb_inpcrd:
@@ -7154,7 +7154,7 @@ class NmrDpUtility:
 
                         elif is_aux_amb:
 
-                            if pos == 1 and not (line.isdigit() or len(line.strip(' ').split()) > 1):
+                            if pos == 1 and not line.isdigit():
                                 has_amb_inpcrd = True
 
                             elif pos == 2 and has_amb_inpcrd:
@@ -7488,6 +7488,23 @@ class NmrDpUtility:
                                     break
                             elif pos == 4:
                                 if line.count('.') >= 3:
+                                    has_coordinate = True
+                                break
+
+                    with open(file_path, 'r', encoding='utf-8') as ifp:
+                        for pos, line in enumerate(ifp, start=1):
+                            if pos == 1:
+                                if line.isdigit():
+                                    break
+                            elif pos == 2:
+                                try:
+                                    int(line.lstrip().split()[0])
+                                except ValueError:
+                                    break
+                                except IndexError:
+                                    break
+                            elif pos == 3:
+                                if line.count('.') == 6:
                                     has_coordinate = True
                                 break
 
@@ -11038,7 +11055,7 @@ class NmrDpUtility:
                         with open(dst_file, 'r') as ifp:
                             for pos, line in enumerate(ifp, start=1):
                                 if pos == 1:
-                                    if line.isdigit() or len(line.strip(' ').split()) > 1:
+                                    if line.isdigit():
                                         break
                                 elif pos == 2:
                                     try:

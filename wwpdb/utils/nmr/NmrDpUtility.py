@@ -6595,7 +6595,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type == 'nm-res-mr':
+            if file_type == ('nm-res-mr', 'nm-pea-any'):
                 md5_list.append(None)
                 continue
 
@@ -6643,8 +6643,6 @@ class NmrDpUtility:
             elif file_type == 'nm-res-syb':
                 mr_format_name = 'SYBYL'
                 a_mr_format_name = 'a ' + mr_format_name
-            elif file_type == 'nm-res-mr':
-                mr_format_name = 'MR'
             else:
                 mr_format_name = 'other'
 
@@ -7866,7 +7864,7 @@ class NmrDpUtility:
 
                 fileListId += 1
 
-                if file_type in ('nm-res-mr', 'nmr-star'):
+                if file_type in ('nm-res-mr', 'nmr-star', 'nm-pea-any'):
                     continue
 
                 if (content_subtype is not None and 'dist_restraint' in content_subtype) or file_type in ('nm-aux-amb', 'nm-aux-gro'):
@@ -8845,6 +8843,7 @@ class NmrDpUtility:
         len_possible_types = len(possible_types)
 
         if len_valid_types == 0 and len_possible_types == 0:
+
             if err_column_position > 0 and not err_input[0:err_column_position].isspace():
                 test_line = err_input[0:err_column_position]
 
@@ -9231,7 +9230,7 @@ class NmrDpUtility:
 
                 if not has_lexer_error:
                     if j3 == 0 and ' U ' in err_input and err_input.count('E') >= 2:  # XEASY peak list
-                        shutil.copyfile(div_ext_file, div_ext_file + '-ignored-as-peak-list')
+                        shutil.copyfile(div_ext_file, div_ext_file + '-ignored-as-pea-any')
                         os.remove(div_try_file)
                         os.remove(file_path)
 
@@ -10222,7 +10221,7 @@ class NmrDpUtility:
         dir_path = '.'
         mr_file_name = '.'
         split_file_list = []
-        peak_list_file = []
+        peak_file_list = []
 
         self.__mr_atom_name_mapping = []
 
@@ -10307,10 +10306,15 @@ class NmrDpUtility:
             if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
                 continue
 
-            ign_pk_file = src_basename + '-ignored-as-peak-list.mr'
+            ign_pk_file = src_basename + '-ignored-as-pea-any.mr'
 
             if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
-                peak_list_file.append(ign_pk_file)
+                _ar = ar.copy()
+
+                _ar['file_name'] = src_basename + '.mr'
+                _ar['file_type'] = 'nm-pea-any'
+                peak_file_list.append(_ar)
+
                 continue
 
             has_mr_header = False
@@ -10762,10 +10766,15 @@ class NmrDpUtility:
                         if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
                             continue
 
-                        ign_pk_file = dst_file + '-ignored-as-peak-list'
+                        ign_pk_file = dst_file + '-ignored-as-pea-any'
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
-                            peak_list_file.append(ign_pk_file)
+                            _ar = ar.copy()
+
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-pea-any'
+                            peak_file_list.append(_ar)
+
                             continue
 
                         _ar = ar.copy()
@@ -10996,13 +11005,18 @@ class NmrDpUtility:
                             shutil.copyfile(dst_file, ign_dst_file)  # ignore sequence file for the next time
                             continue
 
-                    ign_pk_file = dst_file + '-ignored-as-peak-list'
+                    ign_pk_file = dst_file + '-ignored-as-pea-any'
 
                     if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
-                        peak_list_file.append(ign_pk_file)
+                        _ar = ar.copy()
+
+                        _ar['file_name'] = dst_file
+                        _ar['file_type'] = 'nm-pea-any'
+                        peak_file_list.append(_ar)
+
                         continue
 
-                    ign_ext_file = dst_file + '-ignored-as-ext-mr'
+                    ign_ext_file = dst_file + '-ignored-as-res-oth'
 
                     if os.path.exists(ign_ext_file):  # in case the MR files can not be parsed
                         _ar = ar.copy()
@@ -11026,6 +11040,17 @@ class NmrDpUtility:
                         dst_file_list.append(dst_file)
 
                     for _dst_file in dst_file_list:
+
+                        ign_pk_file = _dst_file + '-ignored-as-pea-any'
+
+                        if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+                            _ar = ar.copy()
+
+                            _ar['file_name'] = _dst_file
+                            _ar['file_type'] = 'nm-pea-any'
+                            peak_file_list.append(_ar)
+
+                            continue
 
                         if _dst_file.endswith('-div_ext.mr'):
                             _ar = ar.copy()
@@ -11153,6 +11178,8 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
+        len_peak_file_list = len(peak_file_list)
+
         if len(split_file_list) > 0:
             self.__inputParamDict[ar_file_path_list].extend(split_file_list)
 
@@ -11177,12 +11204,8 @@ class NmrDpUtility:
 
             hint = ' or is not recognized properly'
 
-            if len(peak_list_file) > 0:
-                touch_file = os.path.join(dir_path, '.entry_with_pk')
-                if not os.path.exists(touch_file):
-                    with open(os.path.join(dir_path, '.entry_with_pk'), 'w') as ofp:
-                        ofp.write('')
-                hint = f', except for {len(peak_list_file)} peak list file(s)'
+            if len_peak_file_list > 0:
+                hint = f', except for {len_peak_file_list} peak list file(s)'
 
             err = f"NMR restraint file contains no restraints{hint}. "\
                 "Please re-upload the NMR restraint file."
@@ -11196,6 +11219,27 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+        if len_peak_file_list > 0:
+
+            self.__inputParamDict[ar_file_path_list].extend(peak_file_list)
+
+            for _ar in peak_file_list:
+
+                self.report.appendInputSource()
+
+                input_source = self.report.input_sources[-1]
+
+                input_source.setItemValue('file_name', os.path.basename(_ar['file_name']))
+                input_source.setItemValue('file_type', _ar['file_type'])
+                input_source.setItemValue('content_type', 'nmr-peaks')
+                if 'original_file_name' in _ar:
+                    input_source.setItemValue('original_file_name', os.path.basename(_ar['original_file_name']))
+
+            touch_file = os.path.join(dir_path, '.entry_with_pk')
+            if not os.path.exists(touch_file):
+                with open(os.path.join(dir_path, '.entry_with_pk'), 'w') as ofp:
+                    ofp.write('')
 
         return not self.report.isError()
 
@@ -21226,7 +21270,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr'):
+            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-pea-any'):
                 continue
 
             file_name = input_source_dic['file_name']

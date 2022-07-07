@@ -890,14 +890,18 @@ def concat_nmr_restraint_names(content_subtype):
     return '' if len(subtype_name) == 0 else subtype_name[:-2]
 
 
-def is_peak_list_header(input):
-    """ Return whether a given input is header of peak list in any native formats.
+def is_peak_list(input, has_header=True):
+    """ Return whether a given input is derived from peak list in any native format.
     """
 
-    if ' U ' in input and (input.count('E') >= 2 or input.count('e') >= 2):  # XEASY peak list
-        return True
+    if has_header and input.count('E') + input.count('e') >= 2:  # CYANA peak list
+        s = filter(None, re.split(r'[\t ]', input))
+        return 'U' in s or 'T' in s
 
     if 'Data Height' in input and 'w1' in input and 'w2' in input:  # SPARKY peak list
+        return True
+
+    if 'label' in input and 'dataset' in input and 'sw' in input and 'sf' in input:  # NMRView peak list
         return True
 
     return False
@@ -7460,12 +7464,16 @@ class NmrDpUtility:
 
                     with open(file_path, 'r', encoding='utf-8') as ifp:
 
+                        has_header = False
+
                         for line in ifp:
 
                             if line.isspace() or comment_pattern.match(line):
+                                if line.startswith('#INAME'):
+                                    has_header = True
                                 continue
 
-                            if is_peak_list_header(line):
+                            if is_peak_list(line, has_header):
                                 has_peaks = True
 
                             break
@@ -8026,7 +8034,7 @@ class NmrDpUtility:
 
         split_ext = os.path.splitext(self.__cur_original_ar_file_name)
 
-        if len(split_ext) < 2:
+        if len(split_ext) != 2 or len(split_ext[1]) == 0:
             return None
 
         file_ext = split_ext[1][1:].lower()
@@ -8896,7 +8904,7 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
-                    if is_peak_list_header(err_input):
+                    if is_peak_list(err_input):
                         return self.__peelLegacyMRIfNecessary(file_path, file_type, err_desc, src_path, offset)
 
                     if self.__mr_debug:
@@ -9267,7 +9275,7 @@ class NmrDpUtility:
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
                 if not has_lexer_error:
-                    if j3 == 0 and is_peak_list_header(err_input):
+                    if j3 == 0 and is_peak_list(err_input):
                         shutil.copyfile(div_ext_file, div_ext_file + '-ignored-as-pea-any')
                         os.remove(div_try_file)
                         os.remove(file_path)
@@ -11004,11 +11012,15 @@ class NmrDpUtility:
                     split_ext = os.path.splitext(dst_file)
 
                     if len(split_ext) == 2:
-                        file_ext = split_ext[1][1:].lower()
+                        if len(split_ext[1]) > 0:
+                            file_ext = split_ext[1][1:].lower()
+                        else:
+                            file_ext = os.path.basename(split_ext[0]).lower()
                     else:
-                        file_ext = os.path.basename(split_ext[0])
+                        file_ext = os.path.basename(split_ext[0]).lower()
 
-                    if file_ext in ('x', 'crd', 'rst', 'inp', 'inpcrd', 'restrt'):  # AMBER coordinate file extensions
+                    if file_ext in ('x', 'crd', 'rst', 'inp', 'inpcrd', 'restrt')\
+                       or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:  # AMBER coordinate file extensions
                         is_crd = False
                         with open(dst_file, 'r') as ifp:
                             for pos, line in enumerate(ifp, start=1):
@@ -11029,6 +11041,22 @@ class NmrDpUtility:
 
                         if is_crd:
                             shutil.copyfile(dst_file, ign_dst_file)  # ignore AMBER input coordinate file for the next time
+                            continue
+
+                    if file_ext in ('frc', 'known') or 'frc' in file_ext:
+                        is_frc = False
+                        with open(dst_file, 'r') as ifp:
+                            for pos, line in enumerate(ifp, start=1):
+                                if pos == 1:
+                                    if not line.startswith('FRCMOD'):
+                                        break
+                                elif pos == 2:
+                                    if line.startswith('MASS'):
+                                        is_frc = True
+                                    break
+
+                        if is_frc:
+                            shutil.copyfile(dst_file, ign_dst_file)  # ignore AMBER frcmod file for the next time
                             continue
 
                     if file_ext == 'seq':
@@ -11098,13 +11126,20 @@ class NmrDpUtility:
 
                         continue
 
-                    is_peak_list = False
+                    has_peaks = False
 
                     with open(dst_file, 'r') as ifp:
+
+                        has_header = False
+
                         for line in ifp:
+
                             if line.isspace() or comment_pattern.match(line):
+                                if line.startswith('#INAME'):
+                                    has_header = True
                                 continue
-                            if is_peak_list_header(line):
+
+                            if is_peak_list(line, has_header):
                                 shutil.copyfile(dst_file, ign_pk_file)
 
                                 _ar = ar.copy()
@@ -11113,11 +11148,11 @@ class NmrDpUtility:
                                 _ar['file_type'] = 'nm-pea-any'
                                 peak_file_list.append(_ar)
 
-                                is_peak_list = True
+                                has_peaks = True
 
                             break
 
-                    if is_peak_list:
+                    if has_peaks:
                         continue
 
                     cor_dst_file = dst_file + '-corrected'

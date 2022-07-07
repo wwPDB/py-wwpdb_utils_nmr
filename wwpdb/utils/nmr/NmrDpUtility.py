@@ -890,6 +890,19 @@ def concat_nmr_restraint_names(content_subtype):
     return '' if len(subtype_name) == 0 else subtype_name[:-2]
 
 
+def is_peak_list_header(input):
+    """ Return whether a given input is header of peak list in any native formats.
+    """
+
+    if ' U ' in input and (input.count('E') >= 2 or input.count('e') >= 2):  # XEASY peak list
+        return True
+
+    if 'Data Height' in input and 'w1' in input and 'w2' in input:  # SPARKY peak list
+        return True
+
+    return False
+
+
 class NmrDpUtility:
     """ Wrapper class for data processing for NMR data.
     """
@@ -8858,7 +8871,7 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
-                    if ' U ' in err_input and err_input.count('E') >= 2:  # XEASY peak list
+                    if is_peak_list_header(err_input):
                         return self.__peelLegacyMRIfNecessary(file_path, file_type, err_desc, src_path, offset)
 
                     if self.__mr_debug:
@@ -9229,7 +9242,7 @@ class NmrDpUtility:
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
                 if not has_lexer_error:
-                    if j3 == 0 and ' U ' in err_input and err_input.count('E') >= 2:  # XEASY peak list
+                    if j3 == 0 and is_peak_list_header(err_input):
                         shutil.copyfile(div_ext_file, div_ext_file + '-ignored-as-pea-any')
                         os.remove(div_try_file)
                         os.remove(file_path)
@@ -11058,6 +11071,28 @@ class NmrDpUtility:
                         _ar['file_type'] = 'nm-res-ros'
                         split_file_list.append(_ar)
 
+                        continue
+
+                    is_peak_list = False
+
+                    with open(dst_file, 'r') as ifp:
+                        for line in ifp:
+                            if line.isspace() or comment_pattern.match(line):
+                                continue
+                            if is_peak_list_header(line):
+                                shutil.copyfile(dst_file, ign_pk_file)
+
+                                _ar = ar.copy()
+
+                                _ar['file_name'] = dst_file
+                                _ar['file_type'] = 'nm-pea-any'
+                                peak_file_list.append(_ar)
+
+                                is_peak_list = True
+
+                            break
+
+                    if is_peak_list:
                         continue
 
                     cor_dst_file = dst_file + '-corrected'

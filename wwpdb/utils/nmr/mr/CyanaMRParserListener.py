@@ -1253,6 +1253,16 @@ class CyanaMRParserListener(ParseTreeListener):
             if self.__remediate and upper_limit < 0.0:
                 self.__dihed_ub_always_positive = False
 
+            # target_value = (upper_limit + lower_limit) / 2.0
+
+            dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq:
+                return
+
             # support AMBER's dihedral angle naming convention for nucleic acids
             # http://ambermd.org/tutorials/advanced/tutorial4/
             if angleName in ('EPSILN', 'EPSLN'):
@@ -1268,19 +1278,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     # For the case 'EPSIL' could be standard name 'EPSILON'
                     angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
-                    self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
-                        f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown.\n"
+                    self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
+                        f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {compId!r}.\n"
                     return
-
-            # target_value = (upper_limit + lower_limit) / 2.0
-
-            dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
-
-            if dstFunc is None:
-                return
-
-            if not self.__hasPolySeq:
-                return
 
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1313,6 +1313,22 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
 
+                    if peptide and angleName in ('PHI', 'PSI', 'OMEGA',
+                                                 'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
+                                                 'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42'):
+                        pass
+                    elif nucleotide and angleName in ('ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
+                                                      'CHI', 'ETA', 'THETA', "ETA'", "THETA'",
+                                                      'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
+                                                      'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4'):
+                        pass
+                    elif carbohydrate and angleName in ('PHI', 'PSI', 'OMEGA'):
+                        pass
+                    else:
+                        self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
+                            f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {compId!r}.\n"
+                        return
+
                     atomNames = None
                     seqOffset = None
 
@@ -1331,22 +1347,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     else:
                         atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                         seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
-
-                    if peptide and angleName in ('PHI', 'PSI', 'OMEGA',
-                                                 'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
-                                                 'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42'):
-                        pass
-                    elif nucleotide and angleName in ('ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
-                                                      'CHI', 'ETA', 'THETA', "ETA'", "THETA'",
-                                                      'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
-                                                      'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4'):
-                        pass
-                    elif carbohydrate and angleName in ('PHI', 'PSI', 'OMEGA'):
-                        pass
-                    else:
-                        self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
-                            f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {compId!r}.\n"
-                        return
 
                     atomSelection = []
 
@@ -1424,7 +1424,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if nucleotide:
                         pass
                     else:
-                        self.warningMessage += f"[Enum mismatch ignorable] {self.__getCurrentRestraint()}"\
+                        self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
                             f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {compId!r}.\n"
                         return
 

@@ -21970,8 +21970,8 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
+                            elif warn.startswith('[Insufficient angle selection]'):
+                                self.report.warning.appendDescription('insufficient_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 

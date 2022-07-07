@@ -11106,7 +11106,7 @@ class NmrDpUtility:
                             shutil.copyfile(dst_file, ign_dst_file)  # ignore sequence file for the next time
                             continue
 
-                    if file_type == 'cor':
+                    if file_ext == 'cor':
                         is_cor = False
                         with open(dst_file, 'r') as ifp:
                             for pos, line in enumerate(ifp, start=1):

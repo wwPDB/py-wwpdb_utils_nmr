@@ -10317,6 +10317,17 @@ class NmrDpUtility:
 
                 continue
 
+            sel_ros_file = src_basename + '-selected-as-res-ros.mr'
+
+            if os.path.exists(sel_ros_file):  # in case the MR file is ROSETTA MR file
+                _ar = ar.copy()
+
+                _ar['file_name'] = src_basename + '.mr'
+                _ar['file_type'] = 'nm-res-ros'
+                split_file_list.append(_ar)
+
+                continue
+
             has_mr_header = False
             has_pdb_format = False
             has_cif_format = False
@@ -10777,6 +10788,17 @@ class NmrDpUtility:
 
                             continue
 
+                        sel_ros_file = dst_file + '-selected-as-res-ros'
+
+                        if os.path.exists(sel_ros_file):  # in case the MR file is ROSETTA MR file
+                            _ar = ar.copy()
+
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-ros'
+                            split_file_list.append(_ar)
+
+                            continue
+
                         _ar = ar.copy()
 
                         _ar['file_name'] = dst_file
@@ -11027,6 +11049,17 @@ class NmrDpUtility:
 
                         continue
 
+                    sel_ros_file = dst_file + '-selected-as-res-ros'
+
+                    if os.path.exists(sel_ros_file):  # in case the MR file is ROSETTA MR file
+                        _ar = ar.copy()
+
+                        _ar['file_name'] = dst_file
+                        _ar['file_type'] = 'nm-res-ros'
+                        split_file_list.append(_ar)
+
+                        continue
+
                     cor_dst_file = dst_file + '-corrected'
 
                     if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
@@ -11049,6 +11082,17 @@ class NmrDpUtility:
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = 'nm-pea-any'
                             peak_file_list.append(_ar)
+
+                            continue
+
+                        sel_ros_file = _dst_file + '-selected-as-res-ros'
+
+                        if os.path.exists(sel_ros_file):  # in case the MR file is ROSETTA MR file
+                            _ar = ar.copy()
+
+                            _ar['file_name'] = _dst_file
+                            _ar['file_type'] = 'nm-res-ros'
+                            split_file_list.append(_ar)
 
                             continue
 

@@ -1279,7 +1279,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
                     self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                        f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {compId!r}.\n"
+                        f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {compId!r}, "\
+                        "of which CYANA residue library should be uploaded.\n"
                     return
 
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
@@ -1326,7 +1327,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         pass
                     else:
                         self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                            f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {compId!r}.\n"
+                            f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {compId!r}, "\
+                            "of which CYANA residue library should be uploaded.\n"
                         return
 
                     atomNames = None

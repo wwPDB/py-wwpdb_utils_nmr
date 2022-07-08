@@ -192,6 +192,11 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6var/HBVe_sPRE.tab-corrected',
+                 '../../tests-nmr/mock-data-remediation/6var/6var.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6l92/G4II_planarity.txt',
                  '../../tests-nmr/mock-data-remediation/6l92/6l92.cif')
 

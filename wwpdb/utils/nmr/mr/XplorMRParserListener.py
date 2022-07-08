@@ -812,19 +812,21 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#noe_statement.
     def exitNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (NOE) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (NOE) classification={self.classification!r}")
 
     # Enter a parse tree produced by XplorMRParser#noe_assign.
     def enterNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
+        self.__cur_subtype_altered = self.__cur_subtype != 'dist'
         if self.__cur_subtype != 'dist':
             self.distStatements += 1
-        self.__cur_subtype = 'dist'
+        self.__cur_subtype = 'dist' if self.__cur_subtype != 'pre' else 'pre'  # set 'pre' for error message
 
         self.atomSelectionSet.clear()
         self.__warningInAtomSelection = ''
 
         self.scale_a = None
+        self.paramagCenter = None
 
     # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
@@ -833,6 +835,24 @@ class XplorMRParserListener(ParseTreeListener):
 
             if None in self.numberSelection:
                 return
+
+            if self.paramagCenter is not None and len(self.atomSelectionSet) == 2 and len(self.numberSelection) == 2:
+
+                try:
+                    atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                    if atom_id_2[0] == 'H':
+                        self.distRestraints -= 1
+                        self.preRestraints += 1
+                        if self.__cur_subtype_altered:
+                            self.distStatements -= 1
+                            if self.preStatements == 0:
+                                self.preStatements += 1
+                        self.__cur_subtype = 'pre'
+                        self.exitPre_assign(ctx)
+                        return
+
+                except IndexError:
+                    pass
 
             target = self.numberSelection[0]
 
@@ -1403,7 +1423,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#sani_statement.
     def exitSani_statement(self, ctx: XplorMRParser.Sani_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (SANI) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (SANI) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#sani_assign.
@@ -1745,7 +1765,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#xdip_statement.
     def exitXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (XDIP) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (XDIP) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#xdip_assign.
@@ -2016,7 +2036,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#vean_statement.
     def exitVean_statement(self, ctx: XplorMRParser.Vean_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (VEAN) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (VEAN) classification={self.classification!r}")
 
     # Enter a parse tree produced by XplorMRParser#vean_assign.
     def enterVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
@@ -2261,7 +2281,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#tenso_statement.
     def exitTenso_statement(self, ctx: XplorMRParser.Tenso_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (TENSO) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (TENSO) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#tenso_assign.
@@ -2411,7 +2431,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#anis_statement.
     def exitAnis_statement(self, ctx: XplorMRParser.Anis_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (ANIS) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (ANIS) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#anis_assign.
@@ -2681,7 +2701,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#antidistance_statement.
     def exitAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (XADC) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (XADC) classification={self.classification!r} "
                   f"coefficients={self.coefficients} expectation={self.adistExpect}")
 
     # Enter a parse tree produced by XplorMRParser#xadc_assign.
@@ -2736,7 +2756,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#coupling_statement.
     def exitCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (COUP) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (COUP) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#coup_assign.
@@ -2975,7 +2995,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#carbon_shift_statement.
     def exitCarbon_shift_statement(self, ctx: XplorMRParser.Carbon_shift_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (CARB) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (CARB) classification={self.classification!r} "
                   f"expectation={self.csExpect}")
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_assign.
@@ -3135,7 +3155,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#proton_shift_statement.
     def exitProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (PROTON) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (PROTON) classification={self.classification!r}")
 
     # Enter a parse tree produced by XplorMRParser#observed.
     def enterObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
@@ -3460,7 +3480,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#ramachandran_statement.
     def exitRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (RAMA) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (RAMA) classification={self.classification!r}")
 
     # Enter a parse tree produced by XplorMRParser#rama_assign.
     def enterRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
@@ -3653,7 +3673,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#diffusion_statement.
     def exitDiffusion_statement(self, ctx: XplorMRParser.Diffusion_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (DANI) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (DANI) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#dani_assign.
@@ -3936,7 +3956,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#orientation_statement.
     def exitOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (ORIE) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (ORIE) classification={self.classification!r}")
 
     # Enter a parse tree produced by XplorMRParser#orie_assign.
     def enterOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
@@ -4093,7 +4113,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#csa_statement.
     def exitCsa_statement(self, ctx: XplorMRParser.Csa_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (DCSA) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (DCSA) classification={self.classification!r} "
                   f"type={self.csaType} scale={self.scale} coefficients={self.coefficients} sigma={self.csaSigma}")
 
     # Enter a parse tree produced by XplorMRParser#csa_assign.
@@ -4499,7 +4519,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#pcsa_statement.
     def exitPcsa_statement(self, ctx: XplorMRParser.Pcsa_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (PCSA) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (PCSA) classification={self.classification!r} "
                   f"scale={self.scale} coefficients={self.coefficients} sigma={self.csaSigma}")
 
     # Enter a parse tree produced by XplorMRParser#one_bond_coupling_statement.
@@ -4540,6 +4560,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#pre_statement.
     def enterPre_statement(self, ctx: XplorMRParser.Pre_statementContext):
+        if self.preParameterDict is None:
+            self.preParameterDict = {}
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -4554,19 +4577,16 @@ class XplorMRParserListener(ParseTreeListener):
 
         elif ctx.Reset():
             self.potential = 'square'
-            self.preParameterDict = None
 
         elif ctx.Classification():
             self.classification = str(ctx.Simple_name())
-            if self.preParameterDict is None:
-                self.preParameterDict = {}
             self.preParameterDict[self.classification] = {}
 
         elif ctx.Kconst():
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The classification of '{str(ctx.Kconst())}={_classification} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
+                    f"The classification of '{str(ctx.Kconst())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
                 return
             self.preParameterDict[_classification]['k_const'] = self.getNumber_s(ctx.number_s(0))
 
@@ -4574,7 +4594,7 @@ class XplorMRParserListener(ParseTreeListener):
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The classification of '{str(ctx.Omega())}={_classification} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
+                    f"The classification of '{str(ctx.Omega())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
                 return
             self.preParameterDict[_classification]['omega'] = self.getNumber_s(ctx.number_s(0))
 
@@ -4582,15 +4602,17 @@ class XplorMRParserListener(ParseTreeListener):
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The classification of '{str(ctx.Tauc())}={_classification} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
+                    f"The classification of '{str(ctx.Tauc())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
                 return
             self.preParameterDict[_classification]['tauc'] = self.getNumber_s(ctx.number_s(0))
 
     # Exit a parse tree produced by XplorMRParser#pre_statement.
     def exitPre_statement(self, ctx: XplorMRParser.Pre_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (PMAG) classification={self.classification} "
-                  f"parameters={self.preParameterDict[self.classification]}")
+            parameters = f' parameters={self.preParameterDict[self.classification]}'\
+                if self.classification in self.preParameterDict and len(self.preParameterDict[self.classification]) > 0\
+                else ''
+            print(f"subtype={self.__cur_subtype} (PMAG) classification={self.classification!r}{parameters}")
 
     # Enter a parse tree produced by XplorMRParser#pre_assign.
     def enterPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
@@ -4823,7 +4845,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#pcs_statement.
     def exitPcs_statement(self, ctx: XplorMRParser.Pcs_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (XPCS) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (XPCS) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#pcs_assign.
@@ -5092,7 +5114,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#prdc_statement.
     def exitPrdc_statement(self, ctx: XplorMRParser.Prdc_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (XRDC) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (XRDC) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#prdc_assign.
@@ -5220,7 +5242,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#porientation_statement.
     def exitPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (XANG) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (XANG) classification={self.classification!r}")
 
     # Enter a parse tree produced by XplorMRParser#porientation_assign.
     def enterPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
@@ -5357,7 +5379,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#pccr_statement.
     def exitPccr_statement(self, ctx: XplorMRParser.Pccr_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (XCCR) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (XCCR) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by XplorMRParser#pccr_assign.
@@ -5638,7 +5660,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#hbond_statement.
     def exitHbond_statement(self, ctx: XplorMRParser.Hbond_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (HBDA) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (HBDA) classification={self.classification!r}")
 
     # Enter a parse tree produced by XplorMRParser#hbond_assign.
     def enterHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument
@@ -5924,6 +5946,17 @@ class XplorMRParserListener(ParseTreeListener):
             _factor['atom_selection'] = ['*']
             del _factor['chain_id']
             return _factor
+
+        withPara = self.__cur_subtype in ('pcs', 'pre', 'prdc', 'pccr')
+
+        # for the case dist -> pre transition occurs
+        if self.__cur_subtype == 'dist' and len(self.atomSelectionSet) == 0\
+           and 'atom_id' in _factor and _factor['atom_id'][0] != 'CA'\
+           and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] == 'OO'):
+            withPara = True
+
+        if withPara and len(self.atomSelectionSet) == 0:
+            self.paramagCenter = copy.copy(_factor)
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq]
@@ -6257,10 +6290,6 @@ class XplorMRParserListener(ParseTreeListener):
         _atomSelection = []
 
         withAxis = self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs', 'pre', 'prdc')
-        withPara = self.__cur_subtype in ('pcs', 'pre', 'prdc', 'pccr')
-
-        if withPara and len(self.atomSelectionSet) == 0:
-            self.paramagCenter = copy.copy(_factor)
 
         if _factor['atom_id'][0] is not None:
             foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, withAxis, withPara, isPolySeq=True, isChainSpecified=True)
@@ -6873,6 +6902,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if len(self.factor['chain_id']) == 0:
                     if len(self.__polySeq) == 1:
                         self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                        self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
                         self.factor['atom_id'] = [None]
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -8027,6 +8057,7 @@ class XplorMRParserListener(ParseTreeListener):
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                            self.factor['auth_chain_id'] = [begChainId, endChainId]
                         else:
                             self.factor['atom_id'] = [None]
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -8056,7 +8087,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(__chainId)
                     if ctx.Symbol_name():
-                        symbol_name = str(ctx.Symbol_name())
+                        symbol_name = chainId = str(ctx.Symbol_name())
                         if symbol_name in self.evaluate:
                             val = self.evaluate[symbol_name]
                             if isinstance(val, list):
@@ -8075,6 +8106,7 @@ class XplorMRParserListener(ParseTreeListener):
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                            self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\

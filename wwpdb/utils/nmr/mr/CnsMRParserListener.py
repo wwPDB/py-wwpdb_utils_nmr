@@ -620,7 +620,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#noe_statement.
     def exitNoe_statement(self, ctx: CnsMRParser.Noe_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (NOE) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (NOE) classification={self.classification!r}")
 
     # Enter a parse tree produced by CnsMRParser#noe_assign.
     def enterNoe_assign(self, ctx: CnsMRParser.Noe_assignContext):  # pylint: disable=unused-argument
@@ -1328,7 +1328,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#sani_statement.
     def exitSani_statement(self, ctx: CnsMRParser.Sani_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (SANI) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (SANI) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by CnsMRParser#sani_assign.
@@ -1644,7 +1644,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#coupling_statement.
     def exitCoupling_statement(self, ctx: CnsMRParser.Coupling_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (COUP) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (COUP) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by CnsMRParser#coup_assign.
@@ -1850,7 +1850,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#carbon_shift_statement.
     def exitCarbon_shift_statement(self, ctx: CnsMRParser.Carbon_shift_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (CARB) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (CARB) classification={self.classification!r} "
                   f"expectation={self.csExpect}")
 
     # Enter a parse tree produced by CnsMRParser#carbon_shift_assign.
@@ -2012,7 +2012,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#proton_shift_statement.
     def exitProton_shift_statement(self, ctx: CnsMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (PROTON) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (PROTON) classification={self.classification!r}")
 
     # Enter a parse tree produced by CnsMRParser#observed.
     def enterObserved(self, ctx: CnsMRParser.ObservedContext):  # pylint: disable=unused-argument
@@ -2335,7 +2335,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#conformation_statement.
     def exitConformation_statement(self, ctx: CnsMRParser.Conformation_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (CONF) classification={self.classification}")
+            print(f"subtype={self.__cur_subtype} (CONF) classification={self.classification!r}")
 
     # Enter a parse tree produced by CnsMRParser#conf_assign.
     def enterConf_assign(self, ctx: CnsMRParser.Conf_assignContext):  # pylint: disable=unused-argument
@@ -2459,7 +2459,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#diffusion_statement.
     def exitDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (DANI) classification={self.classification} "
+            print(f"subtype={self.__cur_subtype} (DANI) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
     # Enter a parse tree produced by CnsMRParser#dani_assign.
@@ -3838,6 +3838,7 @@ class CnsMRParserListener(ParseTreeListener):
                 if len(self.factor['chain_id']) == 0:
                     if len(self.__polySeq) == 1:
                         self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                        self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
                         self.factor['atom_id'] = [None]
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -5102,6 +5103,7 @@ class CnsMRParserListener(ParseTreeListener):
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                            self.factor['auth_chain_id'] = [begChainId, endChainId]
                         else:
                             self.factor['atom_id'] = [None]
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -5131,7 +5133,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(__chainId)
                     if ctx.Symbol_name():
-                        symbol_name = str(ctx.Symbol_name())
+                        symbol_name = chainId = str(ctx.Symbol_name())
                         if symbol_name in self.evaluate:
                             val = self.evaluate[symbol_name]
                             if isinstance(val, list):
@@ -5150,6 +5152,7 @@ class CnsMRParserListener(ParseTreeListener):
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                            self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\

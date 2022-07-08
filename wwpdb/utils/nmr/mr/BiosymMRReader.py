@@ -194,5 +194,11 @@ class BiosymMRReader:
 if __name__ == "__main__":
     reader = BiosymMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6var/HBVe_SAXS.tab',
+                 '../../tests-nmr/mock-data-remediation/6var/6var.cif')
+    """
+    reader = BiosymMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mug/2mug-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2mug/2mug.cif')
+    """

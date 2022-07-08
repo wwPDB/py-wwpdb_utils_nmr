@@ -6333,10 +6333,13 @@ class XplorMRParserListener(ParseTreeListener):
                         f"The {clauseName} has no effect for a factor {__factor}.\n"
                 else:
                     self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        f"The {clauseName} has no effect for a factor {__factor}.\n"
+                        f"The {clauseName} has no effect for a factor {__factor}. "\
+                        "Please update the sequence in the Macromolecules page.\n"
             else:
+                hint = f" Please verify that the planality restraints match with the residue {_factor['comp_id'][0]!r}"\
+                    if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
                 self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                    f"The {clauseName} has no effect for a factor {__factor}.\n"
+                    f"The {clauseName} has no effect for a factor {__factor}.{hint}\n"
 
         if 'chain_id' in _factor:
             del _factor['chain_id']

@@ -10214,66 +10214,68 @@ class NmrDpUtility:
             if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
-                is_valid = True
+                if has_content or file_type != 'nm-res-oth':
 
-                err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like {_a_mr_format_name} file, "\
-                    f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                    "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                    is_valid = True
 
-                if has_content:
-                    _err = ''
-                    if lexer_err_listener is not None:
-                        messageList = lexer_err_listener.getMessageList()
+                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like {_a_mr_format_name} file, "\
+                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
-                        if messageList is not None:
-                            for description in messageList:
-                                if description['line_number'] in dismiss_err_lines:
-                                    continue
-                                _err += f"[Syntax error as {_a_mr_format_name} file] "\
-                                    f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    enc = detect_encoding(description['input'])
-                                    is_not_ascii = False
-                                    if enc is not None and enc != 'ascii':
-                                        _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                        is_not_ascii = True
-                                    else:
+                    if has_content:
+                        _err = ''
+                        if lexer_err_listener is not None:
+                            messageList = lexer_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
+                                    _err += f"[Syntax error as {_a_mr_format_name} file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
+                                        enc = detect_encoding(description['input'])
+                                        is_not_ascii = False
+                                        if enc is not None and enc != 'ascii':
+                                            _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                            is_not_ascii = True
+                                        else:
+                                            _err += f"{description['input']}\n"
+                                        _err += f"{description['marker']}\n"
+                                        if is_not_ascii:
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
+
+                        if parser_err_listener is not None and len(_err) == 0:
+                            messageList = parser_err_listener.getMessageList()
+
+                            if messageList is not None:
+                                for description in messageList:
+                                    if description['line_number'] in dismiss_err_lines:
+                                        continue
+                                    _err += f"[Syntax error as {_a_mr_format_name} file] "\
+                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    if 'input' in description:
                                         _err += f"{description['input']}\n"
-                                    _err += f"{description['marker']}\n"
-                                    if is_not_ascii:
-                                        _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
+                                        _err += f"{description['marker']}\n"
 
-                    if parser_err_listener is not None and len(_err) == 0:
-                        messageList = parser_err_listener.getMessageList()
+                        if len(_err) > 0:
+                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
+                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                            is_valid = False
+                            err = ''
 
-                        if messageList is not None:
-                            for description in messageList:
-                                if description['line_number'] in dismiss_err_lines:
-                                    continue
-                                _err += f"[Syntax error as {_a_mr_format_name} file] "\
-                                    f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                                if 'input' in description:
-                                    _err += f"{description['input']}\n"
-                                    _err += f"{description['marker']}\n"
+                        if is_valid:
+                            valid_types[_file_type] = len(_content_subtype)
+                        else:
+                            possible_types[_file_type] = len(_content_subtype)
 
-                    if len(_err) > 0:
-                        err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                    elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
-                        is_valid = False
-                        err = ''
+                    if file_type == 'nm-res-oth':
+                        self.report.error.appendDescription('content_mismatch',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
 
-                    if is_valid:
-                        valid_types[_file_type] = len(_content_subtype)
-                    else:
-                        possible_types[_file_type] = len(_content_subtype)
-
-                if file_type == 'nm-res-oth':
-                    self.report.error.appendDescription('content_mismatch',
-                                                        {'file_name': file_name, 'description': err})
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR__() ++ Error  - {err}\n")
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR__() ++ Error  - {err}\n")
 
         except ValueError:
             pass

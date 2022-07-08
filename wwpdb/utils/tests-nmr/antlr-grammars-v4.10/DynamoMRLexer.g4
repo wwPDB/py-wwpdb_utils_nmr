@@ -32,7 +32,7 @@ Format:			'FORMAT' -> pushMode(FORMAT_MODE);
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
-//Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
+//Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
@@ -63,17 +63,74 @@ LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | 
 mode DATA_MODE;
 
 First_resid:		'FIRST_RESID';
-Sequence:		'SEQUENCE';
+Sequence:		'SEQUENCE' -> pushMode(SEQ_MODE);
 
-One_letter_code:	[ABCDEFGHIKLMNPQRSTVWYZ]+;
+Pales_mode:		'PALES_MODE';
+Tensor_mode:		'TENSOR_MODE';
+Saupe_matrix:		'SAUPE_MATRIX';
+S_DA:			'S';
+Saupe:			'SAUPE';
+Irreducible_rep:	'IRREDUCIBLE_REP';
+Irreducible:		'IRREDUCIBLE';
+General_magnitude:	'GENERAL_MAGNITUDE';
+Mapping_corr:		'MAPPING_COOR';
+Mapping:		'MAPPING';
+Inv:			'INV';
+Eigenvalues:		'EIGENVALUES';
+Eigenvectors:		'EIGENVECTORS';
+X_axis:			'X_AXIS';
+Y_axis:			'Y_AXIS';
+Z_axis:			'Z_AXIS';
+Q_euler_solutions:	'Q_EULER_SOLUTIONS';
+Q_euler_angles:		'Q_EULER_ANGLES';
+Euler_solutions:	'EULER_SOLUTIONS';
+Euler_angles:		'EULER_ANGLES';
+Da:			'Da';
+Dr:			'Dr';
+Aa:			'Aa';
+Ar:			'Ar';
+Da_hn:			'Da_HN';
+Rhombicity:		'Rhombicity';
+N:			'N';
+Rms:			'RMS';
+Chi2:			'Chi2';
+Corr:			'CORR';
+R:			'R';
+Q:			'Q';
+Regression:		'REGRESSION';
+Offset:			'OFFSET';
+Slope:			'SLOPE';
+Bax:			'BAX';
+Plus_minus:		'+/-';
+Hz:			'Hz';
+
+Comma_DA:		',';
+L_paren_DA:		'(';
+R_paren_DA:		')';
+L_brkt_DA:		'[';
+R_brkt_DA:		']';
 
 Integer_DA:		('+' | '-')? DECIMAL;
+Float_DA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC);
+Real_DA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
+
+Simple_name_DA:		SIMPLE_NAME;
 
 SPACE_DA:		[ \t]+ -> skip;
 RETURN_DA:		[\r\n]+ -> popMode;
 
 SECTION_COMMENT_DA:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT_DA:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+
+mode SEQ_MODE;
+
+One_letter_code:	[ABCDEFGHIKLMNPQRSTVWYZ]+;
+
+SPACE_SQ:		[ \t]+ -> skip;
+RETURN_SQ:		[\r\n]+ -> mode(DEFAULT_MODE);
+
+SECTION_COMMENT_SQ:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT_SQ:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
 
 mode VARS_MODE;
 
@@ -108,6 +165,9 @@ B:			[Bb];
 C:			[Cc];
 D:			[Dd];
 DD:			[Dd] [Dd];
+DI:			[Dd] [Ii];
+D_diff:			[Dd] '_' [Dd] [Ii] [Ff] [Ff];	
+D_obs:			[Dd] '_' [Oo] [Bb] [Ss];	
 FC:			[Ff] [Cc];
 S:			[Ss];
 W:			[Ww];

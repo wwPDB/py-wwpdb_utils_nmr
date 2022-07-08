@@ -30,6 +30,8 @@ dynamo_mr:
 	rdc_restraints |
 	rdc_restraints_sw_segid |
 	rdc_restraints_ew_segid |
+	pales_meta_outputs |
+	pales_rdc_outputs |
 	coupling_restraints |
 	coupling_restraints_sw_segid |
 	coupling_restraints_ew_segid |
@@ -46,7 +48,11 @@ dynamo_mr:
 */
 
 sequence:
-	Data (First_resid Integer_DA | Sequence One_letter_code+) RETURN_DA;
+	Data
+		(
+		First_resid Integer_DA RETURN_DA |
+		Sequence One_letter_code+ RETURN_SQ
+		);
 
 distance_restraints:
 	Vars Index Group
@@ -214,6 +220,63 @@ rdc_restraints_ew_segid:
 rdc_restraint_ew_segid:
 	Integer Simple_name Simple_name Simple_name
 	Integer Simple_name Simple_name Simple_name
+	number number number;
+
+pales_meta_outputs:
+	Data
+		(
+		Pales_mode Simple_name_DA |
+		Tensor_mode Simple_name_DA (L_paren_DA Simple_name_DA+ R_paren_DA)? |
+		Saupe_matrix 
+			S_DA L_paren_DA Simple_name_DA R_paren_DA
+			S_DA L_paren_DA Simple_name_DA R_paren_DA
+			S_DA L_paren_DA Simple_name_DA R_paren_DA
+			S_DA L_paren_DA Simple_name_DA R_paren_DA
+			S_DA L_paren_DA Simple_name_DA R_paren_DA |
+		Saupe Real_DA Real_DA Real_DA Real_DA Real_DA |
+		Irreducible_rep Simple_name_DA Simple_name_DA Simple_name_DA Simple_name_DA Simple_name_DA |
+		Irreducible (Real_DA Real_DA Real_DA Real_DA Real_DA | General_magnitude Real_DA) |
+		Mapping_corr
+			Simple_name_DA L_paren_DA Simple_name_DA R_paren_DA
+			Simple_name_DA L_paren_DA Simple_name_DA R_paren_DA
+			Simple_name_DA L_paren_DA Simple_name_DA R_paren_DA
+			Simple_name_DA L_paren_DA Simple_name_DA R_paren_DA
+			Simple_name_DA L_paren_DA Simple_name_DA R_paren_DA
+			Simple_name_DA L_paren_DA Simple_name_DA R_paren_DA |
+		Mapping Inv? Float_DA Float_DA Float_DA Float_DA Float_DA Float_DA |
+		Eigenvalues L_paren_DA Simple_name_DA Comma_DA Simple_name_DA Comma_DA Simple_name_DA R_paren_DA Real_DA Real_DA Real_DA |
+		Eigenvectors
+			(
+			L_paren_DA Simple_name_DA Simple_name_DA Simple_name_DA R_paren_DA |
+			(X_axis | Y_axis | Z_axis) Real_DA Real_DA Real_DA
+			) |
+		Q_euler_solutions Simple_name_DA Simple_name_DA Simple_name_DA |
+		Q_euler_angles Integer_DA Float_DA Float_DA Float_DA |
+		Euler_solutions Integer_DA |
+		Euler_angles Float_DA Float_DA Float_DA |
+		(Da | Dr | Aa | Ar | Da_hn | Rhombicity) Real_DA |
+		N Integer_DA |
+		(Rms | Chi2 | Corr R | Q Saupe) Float_DA |
+		Regression (Offset | Bax? Slope) Float_DA Plus_minus Float_DA L_brkt_DA Hz R_brkt_DA
+		)
+		RETURN_DA;
+
+pales_rdc_outputs:
+	Vars
+		Resid_I Resname_I Atomname_I
+		Resid_J Resname_J Atomname_J
+		DI D_obs D D_diff DD W RETURN_VA
+	Format
+		Format_code Format_code Format_code
+		Format_code Format_code Format_code
+		Format_code Format_code Format_code
+		Format_code Format_code Format_code RETURN_FO
+	pales_rdc_output+;
+
+pales_rdc_output:
+	Integer Simple_name Simple_name
+	Integer Simple_name Simple_name
+	number number number
 	number number number;
 
 coupling_restraints:

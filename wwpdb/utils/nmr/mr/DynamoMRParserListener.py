@@ -1696,6 +1696,153 @@ class DynamoMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
+    # Enter a parse tree produced by DynamoMRParser#pales_meta_outputs.
+    def enterPales_meta_outputs(self, ctx: DynamoMRParser.Pales_meta_outputsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by DynamoMRParser#pales_meta_outputs.
+    def exitPales_meta_outputs(self, ctx: DynamoMRParser.Pales_meta_outputsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by DynamoMRParser#pales_rdc_outputs.
+    def enterPales_rdc_outputs(self, ctx: DynamoMRParser.Pales_rdc_outputsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'rdc'
+
+    # Exit a parse tree produced by DynamoMRParser#pales_rdc_outputs.
+    def exitPales_rdc_outputs(self, ctx: DynamoMRParser.Pales_rdc_outputsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by DynamoMRParser#pales_rdc_output.
+    def enterPales_rdc_output(self, ctx: DynamoMRParser.Pales_rdc_outputContext):  # pylint: disable=unused-argument
+        self.rdcRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by DynamoMRParser#pales_rdc_output.
+    def exitPales_rdc_output(self, ctx: DynamoMRParser.Pales_rdc_outputContext):
+
+        try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+            seqId2 = int(str(ctx.Integer(1)))
+            compId2 = str(ctx.Simple_name(2)).upper()
+            atomId2 = str(ctx.Simple_name(3)).upper()
+
+            if None in self.numberSelection:
+                return
+
+            # di
+            target = self.numberSelection[1]  # d_obs
+            # d (calc)
+            # d_diff
+            error = abs(self.numberSelection[4])
+            weight = self.numberSelection[5]
+
+            if weight <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                return
+
+            target_value = target
+            lower_limit = target - error
+            upper_limit = target + error
+
+            dstFunc = self.validateRdcRange(weight, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            chainAssign1 = self.assignCoordPolymerSequence(None, seqId1, compId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(None, seqId2, compId2, atomId2)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            if not self.areUniqueCoordAtoms('an RDC'):
+                return
+
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Non-magnetic susceptible spin appears in RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if chain_id_1 != chain_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-chain RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if abs(seq_id_1 - seq_id_2) > 1:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found inter-residue RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            if abs(seq_id_1 - seq_id_2) == 1:
+
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                    pass
+
+                else:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    "Found zero RDC vector; "\
+                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                return
+
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                if not any(b for b in self.__ccU.lastBonds
+                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an RDC vector over multiple covalent bonds; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if isLongRangeRestraint([atom1, atom2]):
+                    continue
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
+
     def validateRdcRange(self, weight, target_value, lower_limit, upper_limit):
         """ Validate RDC value range.
         """

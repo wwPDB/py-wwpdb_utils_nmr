@@ -3827,6 +3827,9 @@
         "anomalous_bond_length": {
           "$ref": "#/definitions/common_message"
         },
+        "anomalous_rdc_vector": {
+          "$ref": "#/definitions/common_message"
+        },
         "anomalous_chemical_shift": {
           "$ref": "#/definitions/common_message"
         },

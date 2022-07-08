@@ -26,6 +26,7 @@ try:
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        isLongRangeRestraint,
+                                                       isAsymmetricRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
@@ -70,6 +71,7 @@ except ImportError:
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            isLongRangeRestraint,
+                                           isAsymmetricRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
@@ -250,6 +252,11 @@ class XplorMRParserListener(ParseTreeListener):
     __cR = None
     __hasCoord = False
 
+    # experimental method
+    __exptlMethod = ''
+    # whether solid-state NMR is applied to symmetric samples such as fibrils
+    __symmetric = 'no'
+
     # data item name for model ID in 'atom_site' category
     __modelNumName = None
 
@@ -387,6 +394,9 @@ class XplorMRParserListener(ParseTreeListener):
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
+            exptl = cR.getDictList('exptl')
+            if len(exptl) > 0 and 'method' in exptl[0]:
+                self.__exptlMethod = exptl[0]['method']
             ret = checkCoordinates(verbose, log, representativeModelId, cR, cC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
@@ -1488,6 +1498,58 @@ class XplorMRParserListener(ParseTreeListener):
             comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
             atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
+            chain_id_set = None
+            if self.__exptlMethod == 'SOLID-STATE NMR':
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                if ps is not None:
+                    chain_id_set = [chain_id_1]
+                    chain_id_set.extend(ps['identical_auth_chain_id'])
+                    chain_id_set.sort()
+                    if self.__symmetric != 'no':
+                        pass
+                    elif len(chain_id_set) > 2 and chain_id_2 in chain_id_set:
+                        self.__symmetric = 'linear'
+
+                        try:
+
+                            _head =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                 ],
+                                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_set[0]},
+                                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': ('A')}
+                                                                 ])
+
+                            _tail =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                                 ],
+                                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_set[-1]},
+                                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': ('A')}
+                                                                 ])
+
+                            if len(_head) == 1 and len(_tail) == 1:
+                                if numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0])) < 10.0:
+                                    self.__symmetric = 'circular'
+
+                        except Exception as e:
+                            if self.__verbose:
+                                self.__lfh.write(f"+XplorMRParserListener.exitSani_assign() ++ Error  - {str(e)}\n")
+
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Non-magnetic susceptible spin appears in RDC vector; "\
@@ -1496,10 +1558,11 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                if self.__symmetric == 'no':
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
             if abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1521,10 +1584,11 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                if self.__symmetric == 'no':
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found zero RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
@@ -1540,8 +1604,19 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
-                if isLongRangeRestraint([atom1, atom2]):
-                    continue
+                if self.__symmetric == 'no':
+                    if isLongRangeRestraint([atom1, atom2]):
+                        continue
+                else:
+                    if isAsymmetricRangeRestraint([atom1, atom2], chain_id_set, self.__symmetric):
+                        continue
+                    if atom1['chain_id'] != atom2['chain_id']:
+                        self.warningMessage += f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"\
+                            f"Found inter-chain RDC vector; "\
+                            f"({atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']}, "\
+                            f"{atom2['chain_id']}:{atom2['seq_id']}:{atom2['comp_id']}:{atom2['atom_id']}). "\
+                            "However, it might be an artificial RDC constraint on solid-state NMR applied to symmetric samples such as fibrils.\n"
+
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")

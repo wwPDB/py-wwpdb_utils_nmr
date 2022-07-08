@@ -68,6 +68,7 @@
 # 29-Jun-2022  M. Yokochi - add 'insufficient_mr_data' warning type (NMR restraint remediation)
 # 06-Jul-2022  M. Yokochi - add 'nm-res-syb' file type for SYBYL restraint format (DAOTHER-7902, NMR restraint remediation)
 # 07-Jul-2022  M. Yokochi - add 'nmr-peaks' content type and 'nm-pea-any' file type (NMR restraint remediation)
+# 08-Jul-2022  M. Yokochi - add 'anomalous_rdc_vector' warning type for artificial RDCs for protein fibrils using solid-state NMR (NMR restraint remediation, 5w3n)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -2078,7 +2079,7 @@ class NmrDpReportWarning:
                       'disordered_index', 'sequence_mismatch',
                       'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
                       'skipped_saveframe_category', 'skipped_loop_category',
-                      'anomalous_bond_length',
+                      'anomalous_bond_length', 'anomalous_rdc_vector'
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
                       'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',
@@ -2088,7 +2089,7 @@ class NmrDpReportWarning:
 
         self.group_items = ('sequence_mismatch',
                             'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
-                            'anomalous_bond_length',
+                            'anomalous_bond_length', 'anomalous_rdc_vector',
                             'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                             'unusual/rare_data', 'insufficient_data',
                             'conflicted_data', 'inconsistent_data', 'redundant_data',

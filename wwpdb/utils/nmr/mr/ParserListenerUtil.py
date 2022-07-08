@@ -648,10 +648,51 @@ def isLongRangeRestraint(atoms):
     """
 
     chainIds = [a['chain_id'] for a in atoms]
-    seqIds = [a['seq_id'] for a in atoms]
 
     if len(collections.Counter(chainIds).most_common()) > 1:
         return True
+
+    seqIds = [a['seq_id'] for a in atoms]
+
+    commonSeqId = collections.Counter(seqIds).most_common()
+
+    if len(commonSeqId) == 1:
+        return False
+
+    for s1, s2 in itertools.combinations(commonSeqId, 2):
+        if abs(s1[0] - s2[0]) > 1:
+            return True
+
+    return False
+
+
+def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):
+    """ Return whether restraint is asymmetric.
+    """
+
+    lenAtoms = len(atoms)
+
+    if len(set((frozenset(atom.items()) for atom in atoms))) != lenAtoms:  # reject identical atom
+        return True
+
+    lenChainIdSet = len(chainIdSet)
+
+    chainIds = [a['chain_id'] for a in atoms]
+    indices = [chainIdSet.index(c) for c in chainIds]
+
+    for pos, index in enumerate(indices):
+        if pos == lenAtoms - 1:
+            break
+        if index + 1 < lenChainIdSet:
+            nextIndex = index + 1
+        elif symmetric == 'circular':
+            nextIndex = 0
+        else:
+            return True
+        if indices[pos + 1] != nextIndex:
+            return True
+
+    seqIds = [a['seq_id'] for a in atoms]
 
     commonSeqId = collections.Counter(seqIds).most_common()
 

@@ -1042,7 +1042,7 @@ class NmrDpUtility:
                            self.__testCSPseudoAtomNameConsistencyInMrLoop,
                            self.__testCSValueConsistencyInPkLoop,
                            self.__testCSValueConsistencyInPkAltLoop,
-                           self.__testRdcVector
+                           # self.__testRdcVector
                            ]
 
         # validation tasks for coordinate file only
@@ -1062,6 +1062,7 @@ class NmrDpUtility:
                              self.__testCoordCovalentBond,
                              self.__testResidueVariant,
                              self.__validateCSValue,
+                             self.__testRdcVector,
                              self.__extractCoordDisulfideBond,
                              self.__extractCoordOtherBond,
                              self.__validateLegacyMR,
@@ -3669,6 +3670,10 @@ class NmrDpUtility:
         self.__pA = PairwiseAlign()
         self.__pA.setVerbose(self.__verbose)
 
+        # experimental method
+        self.__exptl_method = ''
+        # whether solid-state NMR is applied to symmetric samples such as fibrils
+        self.__symmetric = None
         # representative model id
         self.__representative_model_id = REPRESENTATIVE_MODEL_ID
         # total number of models
@@ -20516,18 +20521,58 @@ class NmrDpUtility:
 
                     if chain_id_1 != chain_id_2:
 
+                        if self.__exptl_method == 'SOLID-STATE NMR' and self.__symmetric is None:
+
+                            id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+
+                            if id >= 0:
+
+                                cif_input_source = self.report.input_sources[id]
+                                cif_input_source_dic = cif_input_source.get()
+
+                                has_cif_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
+
+                                if has_cif_poly_seq:
+
+                                    cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+                                    self.__symmetric = 'no'
+
+                                    for ps in cif_polymer_sequence:
+
+                                        if 'identical_auth_chain_id' in ps:
+
+                                            if len(ps['identical_auth_chain_id']) + 1 > 2:
+                                                self.__symmetric = 'yes'
+
                         idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
-                        err = idx_msg + "Found inter-chain RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) in a loop {lp_category}."
+                        if self.__symmetric == 'no':
 
-                        self.report.error.appendDescription('invalid_data',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                            err = idx_msg + "Found inter-chain RDC vector; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) in a loop {lp_category}."
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
+                            self.report.error.appendDescription('invalid_data',
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
+
+                        else:
+
+                            err = idx_msg + "Found inter-chain RDC vector; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) in a loop {lp_category}. "\
+                                "However, it might be an artificial RDC constraint on solid-state NMR applied to symmetric samples such as fibrils.\n"
+
+                            self.report.warning.appendDescription('anomalous_rdc_vector',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Warning  - {err}\n")
 
                     elif abs(seq_id_1 - seq_id_2) > 1:
 
@@ -21637,6 +21682,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
+                            elif warn.startswith('[Anomalous RDC vector]'):
+                                self.report.warning.appendDescription('anomalous_rdc_vector',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
                             elif warn.startswith('[Unsupported data]'):
                                 self.report.warning.appendDescription('unsupported_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
@@ -21749,6 +21802,14 @@ class NmrDpUtility:
 
                             elif warn.startswith('[Insufficient atom selection]'):
                                 self.report.warning.appendDescription('insufficient_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Anomalous RDC vector]'):
+                                self.report.warning.appendDescription('anomalous_rdc_vector',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -28345,6 +28406,11 @@ class NmrDpUtility:
                     self.__entry_id = self.__entry_id__
                 else:
                     self.__entry_id = entry[0]['id']
+
+            exptl = self.__cR.getDictList('exptl')
+
+            if len(exptl) > 0 and 'method' in exptl[0]:
+                self.__exptl_method = exptl[0]['method']
 
             self.__total_models = 0
 

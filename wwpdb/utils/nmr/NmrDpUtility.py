@@ -10892,6 +10892,13 @@ class NmrDpUtility:
 
                         continue
 
+                    if dst_file.endswith('-div_dst.mr'):
+
+                        ign_dst_file = dst_file + '-ignored'
+
+                        if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
+                            continue
+
                     _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(dst_file, file_name, file_type, [], True)
 
                     len_valid_types = len(valid_types)

@@ -830,7 +830,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype_altered = self.__cur_subtype != 'dist'
         if self.__cur_subtype != 'dist':
             self.distStatements += 1
-        self.__cur_subtype = 'dist' if self.__cur_subtype != 'pre' else 'pre'  # set 'pre' for error message
+        self.__cur_subtype = 'dist' if self.__cur_subtype not in ('pre', 'rdc') else self.__cur_subtype  # set 'pre', 'rdc' for error message
 
         self.atomSelectionSet.clear()
         self.__warningInAtomSelection = ''
@@ -846,23 +846,66 @@ class XplorMRParserListener(ParseTreeListener):
             if None in self.numberSelection:
                 return
 
-            if self.paramagCenter is not None and len(self.atomSelectionSet) == 2 and len(self.numberSelection) == 2:
+            if len(self.atomSelectionSet) == 2 and len(self.numberSelection) == 2:
 
-                try:
+                if self.paramagCenter is not None:
+
+                    try:
+                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                        if atom_id_2[0] == 'H':
+                            self.distRestraints -= 1
+                            self.preRestraints += 1
+                            if self.__cur_subtype_altered:
+                                self.distStatements -= 1
+                                if self.preStatements == 0:
+                                    self.preStatements += 1
+                            self.__cur_subtype = 'pre'
+                            self.exitPre_assign(ctx)
+                            return
+
+                    except IndexError:
+                        pass
+
+                if len(self.atomSelectionSet[0]) == 1 and len(self.atomSelectionSet[1]) == 1:
+                    chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                    seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                    comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                    atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                    chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                    seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                    comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
                     atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
-                    if atom_id_2[0] == 'H':
-                        self.distRestraints -= 1
-                        self.preRestraints += 1
-                        if self.__cur_subtype_altered:
-                            self.distStatements -= 1
-                            if self.preStatements == 0:
-                                self.preStatements += 1
-                        self.__cur_subtype = 'pre'
-                        self.exitPre_assign(ctx)
-                        return
 
-                except IndexError:
-                    pass
+                    if (atom_id_1[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) and (atom_id_2[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+                       and chain_id_1 == chain_id_2:
+                        if seq_id_1 == seq_id_2:
+                            if atom_id_1 != atom_id_2 and self.__ccU.updateChemCompDict(comp_id_1)\
+                               and any(b for b in self.__ccU.lastBonds
+                                       if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                           or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                                self.distRestraints -= 1
+                                self.rdcRestraints += 1
+                                if self.__cur_subtype_altered:
+                                    self.distStatements -= 1
+                                    if self.rdcStatements == 0:
+                                        self.rdcStatements += 1
+                                self.__cur_subtype = 'rdc'
+                                self.exitTenso_assign(ctx)
+                                return
+
+                        elif abs(seq_id_1 - seq_id_2) == 1 and self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                            self.distRestraints -= 1
+                            self.rdcRestraints += 1
+                            if self.__cur_subtype_altered:
+                                self.distStatements -= 1
+                                if self.rdcStatements == 0:
+                                    self.rdcStatements += 1
+                            self.__cur_subtype = 'rdc'
+                            self.exitTenso_assign(ctx)
+                            return
 
             target = self.numberSelection[0]
 

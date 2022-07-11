@@ -183,6 +183,10 @@ class AmberPTReader:
 
 if __name__ == "__main__":
     reader = AmberPTReader(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7b72/ds.prmtop',
+                 '../../tests-nmr/mock-data-remediation/7b72/7b72.cif')
+
+    reader = AmberPTReader(True)
     reader.parse('../../tests-nmr/mock-data-daother-7690/D_1300028390_mr-upload_P1.dat.V1',
                  '../../tests-nmr/mock-data-daother-7690/D_1300028390_model-annotate_P1.cif.V2')
 

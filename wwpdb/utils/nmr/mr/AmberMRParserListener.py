@@ -585,7 +585,7 @@ class AmberMRParserListener(ParseTreeListener):
 
             file_type = 'nm-res-amb'
 
-            self.__seqAlign = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
@@ -608,7 +608,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if ps['chain_id'] in chain_mapping:
                             ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                    self.__seqAlign = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
                     self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)

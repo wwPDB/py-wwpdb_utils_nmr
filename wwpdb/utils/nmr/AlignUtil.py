@@ -431,8 +431,10 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, inhibitory=True):
     """ Align polymer sequence of the coordinates and restraints.
     """
 
+    compIdMapping = []
+
     if pA is None or polySeqModel is None or polySeqRst is None:
-        return None
+        return None, None
 
     seqAlign = []
 
@@ -460,7 +462,35 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, inhibitory=True):
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
             if conflict > 0:
-                tabooList.append({chain_id, chain_id2})
+
+                if any(c2 for c2 in s2['comp_id'] if c2.endswith('?')):  # AMBER/GROMACS topology
+                    s2_comp_id_copy = copy.copy(s2['comp_id'])
+                    for p in range(length):
+                        myPr = myAlign[p]
+                        myPr0 = str(myPr[0])
+                        myPr1 = str(myPr[1])
+                        if myPr0 != myPr1 and myPr1.endswith('?'):
+                            idx = s2_comp_id_copy.index(myPr1)
+                            s2_seq_id = s2['seq_id'][idx]
+                            s2_auth_comp_id = s2['auth_comp_id'][idx]
+                            s2_comp_id_copy[idx] = myPr0
+
+                            pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                            pA.addTestSequence(s2_comp_id_copy, chain_id)
+                            pA.doAlign()
+
+                            myAlign = pA.getAlignment(chain_id)
+
+                            _matched, unmapped, _conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                            if _conflict < conflict:
+                                s2['comp_id'] = s2_comp_id_copy
+                                conflict = _conflict
+                                compIdMapping.append({'chain_id': chain_id2, 'seq_id': s2_seq_id,
+                                                      'comp_id': myPr0, 'auth_comp_id': s2_auth_comp_id})
+
+                if conflict > 0:
+                    tabooList.append({chain_id, chain_id2})
 
             if length == unmapped + conflict or _matched <= conflict:
                 inhibitList.append({chain_id, chain_id2})
@@ -571,7 +601,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, inhibitory=True):
             if {sa['ref_chain_id'], sa['test_chain_id']} in inhibitList:
                 seqAlign.remove(sa)
 
-    return seqAlign
+    return seqAlign, compIdMapping
 
 
 def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign):
@@ -902,11 +932,11 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId):
     """
 
     try:
-        amap = next(map for map in mrAtomNameMapping  # pylint: disable=redefined-builtin
-                    if map['original_seq_id'] == seqId
-                    and map['original_comp_id'] == compId
-                    and map['original_atom_id'] == atomId)
-        return amap['auth_seq_id'], amap['auth_comp_id'], amap['auth_atom_id']
+        item = next(item for item in mrAtomNameMapping
+                    if item['original_seq_id'] == seqId
+                    and item['original_comp_id'] == compId
+                    and item['original_atom_id'] == atomId)
+        return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
     except StopIteration:
         return seqId, compId, atomId
 
@@ -916,10 +946,10 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId):
     """
 
     try:
-        amap = next(map for map in mrAtomNameMapping   # pylint: disable=redefined-builtin
-                    if map['auth_seq_id'] == cifSeqId
-                    and map['auth_comp_id'] == cifCompId
-                    and map['original_atom_id'] == atomId)
-        return amap['auth_atom_id']
+        item = next(item for item in mrAtomNameMapping
+                    if item['auth_seq_id'] == cifSeqId
+                    and item['auth_comp_id'] == cifCompId
+                    and item['original_atom_id'] == atomId)
+        return item['auth_atom_id']
     except StopIteration:
         return atomId

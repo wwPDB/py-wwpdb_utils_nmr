@@ -260,7 +260,7 @@ class GromacsPTParserListener(ParseTreeListener):
                                                                             if atomNum['chain_id'] == chainId
                                                                             and atomNum['seq_id'] == seqId])
                         if compId is not None:
-                            compIdList.append(compId)
+                            compIdList.append(compId + '?')  # decide when coordinate is available
                             chemCompAtomIds = None
                             if self.__ccU.updateChemCompDict(compId):
                                 chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
@@ -283,7 +283,7 @@ class GromacsPTParserListener(ParseTreeListener):
                                                                         if atomNum['chain_id'] == chainId
                                                                         and atomNum['seq_id'] == seqId])
                     if compId is not None:
-                        compIdList.append(compId)
+                        compIdList.append(compId + '?')  # decide when coordinate is available
                         chemCompAtomIds = None
                         if self.__ccU.updateChemCompDict(compId):
                             chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
@@ -335,6 +335,19 @@ class GromacsPTParserListener(ParseTreeListener):
                         if 'atom_type' in atomNum:
                             del atomNum['atom_type']
 
+        file_type = 'nm-aux-gro'
+
+        self.__seqAlign, compIdMapping = alignPolymerSequence(self.__pA, self.__polySeqModel, self.__polySeqPrmTop)
+
+        for cmap in compIdMapping:
+            for atomNum in self.__atomNumberDict.values():
+                if atomNum['chain_id'] == cmap['chain_id'] and atomNum['seq_id'] == cmap['seq_id']:
+                    atomNum['comp_id'] = cmap['comp_id']
+                    atomNum['auth_comp_id'] = cmap['auth_comp_id']
+                    atomNum['atom_id'] = atomNum['auth_atom_id']
+                    if 'atom_type' in atomNum:
+                        del atomNum['atom_type']
+
         for atomNum in self.__atomNumberDict.values():
             if 'atom_id' not in atomNum:
                 if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
@@ -345,13 +358,11 @@ class GromacsPTParserListener(ParseTreeListener):
                 else:
                     authCompId = translateToStdResName(atomNum['auth_comp_id'])
                     if self.__ccU.updateChemCompDict(authCompId):
+                        atomNum['atom_id'] = atomNum['auth_atom_id']
                         self.warningMessage += f"[Unknown atom name] "\
                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "\
                             f"(the original residue label is {atomNum['auth_comp_id']!r}).\n"
 
-        file_type = 'nm-aux-gro'
-
-        self.__seqAlign = alignPolymerSequence(self.__pA, self.__polySeqModel, self.__polySeqPrmTop)
         self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
 
         if len(message) > 0:
@@ -378,7 +389,7 @@ class GromacsPTParserListener(ParseTreeListener):
                     if atomNum['chain_id'] in chain_mapping:
                         atomNum['chain_id'] = chain_mapping[atomNum['chain_id']]
 
-                self.__seqAlign = alignPolymerSequence(self.__pA, self.__polySeqModel, self.__polySeqPrmTop)
+                self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeqModel, self.__polySeqPrmTop)
                 self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
 
             trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
@@ -497,6 +508,7 @@ class GromacsPTParserListener(ParseTreeListener):
                         atomNum['atom_id'] = authAtomId
                     else:
                         if authAtomId not in reported_auth_atom_id:
+                            atomNum['atom_id'] = atomNum['auth_atom_id']
                             self.warningMessage += f"[Unknown atom name] "\
                                 f"{authAtomId!r} is not recognized as the atom name of {compId!r} residue "\
                                 f"(the original residue label is {authCompId!r}).\n"

@@ -774,7 +774,7 @@ class AmberMRParserListener(ParseTreeListener):
                             maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                             valArray = ','.join([str(val) for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol])
                             if len(valArray) > 0:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                                     f"'{varName}={valArray}' has no effect because 'iat({varNum})={iat}'.\n"
                         del self.igr[varNum]
 

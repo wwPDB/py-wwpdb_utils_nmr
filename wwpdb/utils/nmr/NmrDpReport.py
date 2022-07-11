@@ -2079,7 +2079,7 @@ class NmrDpReportWarning:
                       'disordered_index', 'sequence_mismatch',
                       'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
                       'skipped_saveframe_category', 'skipped_loop_category',
-                      'anomalous_bond_length', 'anomalous_rdc_vector'
+                      'anomalous_bond_length', 'anomalous_rdc_vector',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
                       'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',

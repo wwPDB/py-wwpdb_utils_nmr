@@ -2461,6 +2461,145 @@ class DynamoMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
+    # Enter a parse tree produced by DynamoMRParser#talos_restraints_wo_s2.
+    def enterTalos_restraints_wo_s2(self, ctx: DynamoMRParser.Talos_restraints_wo_s2Context):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dihed'
+
+    # Exit a parse tree produced by DynamoMRParser#talos_restraints_wo_s2.
+    def exitTalos_restraints_wo_s2(self, ctx: DynamoMRParser.Talos_restraints_wo_s2Context):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by DynamoMRParser#talos_restraint_wo_s2.
+    def enterTalos_restraint_wo_s2(self, ctx: DynamoMRParser.Talos_restraint_wo_s2Context):  # pylint: disable=unused-argument
+        self.dihedRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by DynamoMRParser#talos_restraint_wo_s2.
+    def exitTalos_restraint_wo_s2(self, ctx: DynamoMRParser.Talos_restraint_wo_s2Context):
+
+        try:
+
+            seqId = int(str(ctx.Integer(0)))
+            compId = str(ctx.Simple_name(0)).upper()
+
+            if compId not in monDict3.values() and compId not in monDict3:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Found unknown residue name {compId!r}.\n"
+                return
+
+            if len(compId) >= 3:
+                pass
+            else:
+                compId = next(k for k, v in monDict3.items() if v == compId and len(k) == 3)
+
+            if None in self.numberSelection:
+                return
+
+            # phi
+            phi_target_value = self.numberSelection[0]
+            psi_target_value = self.numberSelection[1]
+
+            delta_phi_value = self.numberSelection[2]
+            delta_psi_value = self.numberSelection[3]
+
+            # dist = self.numberSelection[4]
+
+            # count = int(str(ctx.Integer(1)))
+
+            _class = str(ctx.Simple_name(1))
+
+            if _class not in TALOS_PREDICTION_CLASSES:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The class name {_class!r} should be one of {TALOS_PREDICTION_CLASSES}.\n"
+                return
+
+            if _class not in TALOS_PREDICTION_MIN_CLASSES:  # ignore suspicious predictions
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            for angleName in ('PHI', 'PSI'):
+                atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+                seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+                if angleName == 'PHI':
+                    target_value = phi_target_value
+                    lower_limit = phi_target_value - delta_phi_value
+                    upper_limit = phi_target_value + delta_phi_value
+                else:
+                    target_value = psi_target_value
+                    lower_limit = psi_target_value - delta_psi_value
+                    upper_limit = psi_target_value + delta_psi_value
+
+                dstFunc = self.validateAngleRange(None, 1.0, target_value, lower_limit, upper_limit)
+
+                if dstFunc is None:
+                    return
+
+                atomId = next(name for name, offset in zip(atomNames, seqOffset) if offset == 0)
+
+                chainAssign = self.assignCoordPolymerSequence(None, seqId, compId, atomId)
+
+                if len(chainAssign) == 0:
+                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                        f"{seqId}:{compId} is not present in the coordinates.\n"
+                    return
+
+                for chainId, cifSeqId, cifCompId in chainAssign:
+                    ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+
+                    atomSelection = []
+
+                    for atomId, offset in zip(atomNames, seqOffset):
+
+                        atomSelection.clear()
+
+                        _cifSeqId = cifSeqId + offset
+                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+
+                        if _cifCompId is None:
+                            self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
+                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                "Please update the sequence in the Macromolecules page.\n"
+                            _cifCompId = '.'
+                            cifAtomId = atomId
+
+                        else:
+                            self.__ccU.updateChemCompDict(_cifCompId)
+
+                            cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+
+                            if cifAtomId is None:
+                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                    f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                                return
+
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+
+                        if len(atomSelection) > 0:
+                            self.atomSelectionSet.append(atomSelection)
+
+                    if len(self.atomSelectionSet) < 4:
+                        return
+
+                    if not self.areUniqueCoordAtoms('a Torsion angle (TALOS)'):
+                        return
+
+                    for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                        self.atomSelectionSet[1],
+                                                                        self.atomSelectionSet[2],
+                                                                        self.atomSelectionSet[3]):
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                            continue
+                        if self.__debug:
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
+
     # Enter a parse tree produced by DynamoMRParser#number.
     def enterNumber(self, ctx: DynamoMRParser.NumberContext):  # pylint: disable=unused-argument
         pass

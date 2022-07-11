@@ -35,7 +35,8 @@ dynamo_mr:
 	coupling_restraints |
 	coupling_restraints_sw_segid |
 	coupling_restraints_ew_segid |
-	talos_restraints
+	talos_restraints |
+	talos_restraints_wo_s2
 	)*
 	EOF;
 
@@ -227,7 +228,7 @@ pales_meta_outputs:
 		(
 		Pales_mode Simple_name_DA |
 		Tensor_mode Simple_name_DA (L_paren_DA Simple_name_DA+ R_paren_DA)? |
-		Saupe_matrix 
+		Saupe_matrix
 			S_DA L_paren_DA Simple_name_DA R_paren_DA
 			S_DA L_paren_DA Simple_name_DA R_paren_DA
 			S_DA L_paren_DA Simple_name_DA R_paren_DA
@@ -370,6 +371,20 @@ talos_restraint:
 	Integer Simple_name
 		number number number number number number
 		Integer Integer Simple_name;
+
+talos_restraints_wo_s2:
+	Vars Resid Resname
+		Phi Psi Dphi Dpsi Dist
+		Count Class RETURN_VA
+	Format Format_code Format_code
+		Format_code Format_code Format_code Format_code Format_code
+		Format_code Format_code RETURN_FO
+	talos_restraint_wo_s2+;
+
+talos_restraint_wo_s2:
+	Integer Simple_name
+		number number number number number
+		Integer Simple_name;
 
 /* number expression in restrains */
 number:	Float | Integer;

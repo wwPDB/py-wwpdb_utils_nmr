@@ -8120,10 +8120,14 @@ class XplorMRParserListener(ParseTreeListener):
                         begChainId = str(ctx.Simple_name(0))
                     elif ctx.Double_quote_string(0):
                         begChainId = str(ctx.Double_quote_string(0)).strip('"').strip()
+                        if len(begChainId) == 0:
+                            return
                     if ctx.Simple_name(1):
                         endChainId = str(ctx.Simple_name(1))
                     elif ctx.Double_quote_string(1):
                         endChainId = str(ctx.Double_quote_string(1)).strip('"').strip()
+                        if len(endChainId) == 0:
+                            return
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                if begChainId <= ps['auth_chain_id'] <= endChainId]
                     if self.__hasNonPoly:
@@ -8147,6 +8151,8 @@ class XplorMRParserListener(ParseTreeListener):
                             chainId = str(ctx.Simple_name(0))
                         elif ctx.Double_quote_string(0):
                             chainId = str(ctx.Double_quote_string(0)).strip('"').strip()
+                            if len(chainId) == 0:
+                                return
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                    if ps['auth_chain_id'] == self.getRealChainId(chainId)]
                         if self.__hasNonPoly:

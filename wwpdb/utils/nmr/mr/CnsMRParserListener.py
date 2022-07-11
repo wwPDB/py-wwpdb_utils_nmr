@@ -4844,10 +4844,14 @@ class CnsMRParserListener(ParseTreeListener):
                         begAtomId = str(ctx.Simple_name(0))
                     elif ctx.Double_quote_string(0):
                         begAtomId = str(ctx.Double_quote_string(0)).strip('"').strip()
+                        if len(begAtomId) == 0:
+                            return
                     if ctx.Simple_name(1):
                         endAtomId = str(ctx.Simple_name(1))
                     elif ctx.Double_quote_string(1):
                         endAtomId = str(ctx.Double_quote_string(1)).strip('"').strip()
+                        if len(endAtomId) == 0:
+                            return
                     self.factor['chain_id'] = [begAtomId, endAtomId]
 
                 elif ctx.Simple_name(0) or ctx.Double_quote_string(0):
@@ -5193,6 +5197,8 @@ class CnsMRParserListener(ParseTreeListener):
                             chainId = str(ctx.Simple_name(0))
                         elif ctx.Double_quote_string(0):
                             chainId = str(ctx.Double_quote_string(0)).strip('"').strip()
+                            if len(chainId) == 0:
+                                return
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                    if ps['auth_chain_id'] == self.getRealChainId(chainId)]
                         if self.__hasNonPoly:

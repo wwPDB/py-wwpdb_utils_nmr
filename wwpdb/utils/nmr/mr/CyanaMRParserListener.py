@@ -187,6 +187,9 @@ class CyanaMRParserListener(ParseTreeListener):
     __cur_subtype_altered = False
     __cur_rdc_orientation = 0
 
+    # column_order of distance restraints with chain
+    __col_order_of_dist_w_chain = None
+
     # RDC parameter dictionary
     rdcParameterDict = None
 
@@ -2807,6 +2810,194 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 int_col += 1
                 str_col += 2
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
+    def enterDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dist'
+
+        self.__col_order_of_dist_w_chain = {}
+
+    # Exit a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
+    def exitDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraint.
+    def enterDistance_w_chain_restraint(self, ctx: CyanaMRParser.Distance_w_chain_restraintContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CyanaMRParser#distance_w_chain_restraint.
+    def exitDistance_w_chain_restraint(self, ctx: CyanaMRParser.Distance_w_chain_restraintContext):
+
+        try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            seqId2 = int(str(ctx.Integer(1)))
+            jVal = [''] * 6
+            for j in range(6):
+                jVal[j] = str(ctx.Simple_name(j)).upper()
+
+            if len(self.__col_order_of_dist_w_chain) == 0:
+                for j in range(3):
+                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j]) in monDict3:
+                        self.__col_order_of_dist_w_chain['comp_id_1'] = j
+                        compId = jVal[j]
+                        if self.__ccU.updateChemCompDict(compId):
+                            for k in range(3):
+                                if k == j:
+                                    continue
+                                atomId = jVal[k]
+                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is not None and len(atomId) > 1:
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+
+                                if details is not None:
+                                    _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                                    if _atomId_ != atomId:
+                                        _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                if len(_atomId) > 0:
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
+                                    if cca is not None:
+                                        self.__col_order_of_dist_w_chain['atom_id_1'] = k
+                                        self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
+                                        break
+                for j in range(3, 6):
+                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j]) in monDict3:
+                        self.__col_order_of_dist_w_chain['comp_id_2'] = j
+                        compId = jVal[j]
+                        if self.__ccU.updateChemCompDict(compId):
+                            for k in range(3, 6):
+                                if k == j:
+                                    continue
+                                atomId = jVal[k]
+                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is not None and len(atomId) > 1:
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+
+                                if details is not None:
+                                    _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                                    if _atomId_ != atomId:
+                                        _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                if len(_atomId) > 0:
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
+                                    if cca is not None:
+                                        self.__col_order_of_dist_w_chain['atom_id_2'] = k
+                                        self.__col_order_of_dist_w_chain['chain_id_2'] = 12 - (j + k)
+                                        break
+
+            if len(self.__col_order_of_dist_w_chain) != 6:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Failed to identify columns for comp_id_1, atom_id_1, chain_id_1, comp_id_2, atom_id_2, chain_id_2.\n"
+                return
+
+            chainId1 = jVal[self.__col_order_of_dist_w_chain['chain_id_1']]
+            chainId2 = jVal[self.__col_order_of_dist_w_chain['chain_id_2']]
+            compId1 = jVal[self.__col_order_of_dist_w_chain['comp_id_1']]
+            compId2 = jVal[self.__col_order_of_dist_w_chain['comp_id_2']]
+            atomId1 = jVal[self.__col_order_of_dist_w_chain['atom_id_1']]
+            atomId2 = jVal[self.__col_order_of_dist_w_chain['atom_id_2']]
+
+            target_value = None
+            lower_limit = None
+            upper_limit = None
+
+            if None in self.numberSelection:
+                return
+
+            value = self.numberSelection[0]
+            weight = 1.0
+
+            has_square = False
+            if len(self.numberSelection) > 2:
+                value2 = self.numberSelection[1]
+                weight = self.numberSelection[2]
+
+                has_square = True
+
+            elif len(self.numberSelection) > 1:
+                value2 = self.numberSelection[1]
+
+                if value2 <= 1.0 or value2 < value:
+                    weight = value2
+                else:
+                    has_square = True
+
+            if weight <= 0.0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                return
+
+            if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
+                if self.__max_dist_value is None:
+                    self.__max_dist_value = value
+                if value > self.__max_dist_value:
+                    self.__max_dist_value = value
+
+            if has_square:
+                if value2 > DIST_RANGE_MAX:  # lol_only
+                    lower_limit = value
+
+                elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
+                    upper_limit = value2
+                    lower_limit = value
+                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                else:  # upl_only
+                    if value2 > 1.8:
+                        upper_limit = value2
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    else:
+                        upper_limit = value2
+
+            elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                if value > 1.8:
+                    upper_limit = value
+                    lower_limit = 1.8  # default value of PDBStat
+                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                else:
+                    lower_limit = value
+
+            elif self.__upl_or_lol == 'upl_w_lol':
+                upper_limit = value
+
+            elif self.__upl_or_lol == 'lol_only':
+                lower_limit = value
+                upper_limit = 5.5  # default value of PDBStat
+                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+            else:  # 'lol_w_upl'
+                lower_limit = value
+
+            dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
 
         finally:
             self.numberSelection.clear()

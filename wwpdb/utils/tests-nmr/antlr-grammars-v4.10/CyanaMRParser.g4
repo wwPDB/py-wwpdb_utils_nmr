@@ -27,6 +27,7 @@ cyana_mr:
 	fixatm_distance_restraints |
 	fixatmw_distance_restraints |
 	fixatmw2_distance_restraints |
+	distance_w_chain_restraints |
 	torsion_angle_restraints |
 	rdc_restraints |
 	pcs_restraints |
@@ -142,6 +143,17 @@ fixatmw2_distance_restraints:
 fixatmw2_distance_restraint:
 	Integer Simple_name Simple_name
 	(Integer Simple_name Simple_name number number number)+;
+
+/* CYANA (undocumented) - arbitrary order among chain_id, comp_id, and atom_id
+*/
+
+distance_w_chain_restraints:
+	distance_w_chain_restraint+;
+
+distance_w_chain_restraint:
+	Integer Simple_name Simple_name Simple_name
+	Integer Simple_name Simple_name Simple_name
+	number number? number?;
 
 /* CYANA (undocumented) - Scalar coupling constant restraint
 */

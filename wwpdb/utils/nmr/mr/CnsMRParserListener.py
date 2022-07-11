@@ -185,7 +185,7 @@ class CnsMRParserListener(ParseTreeListener):
     __cR = None
     __hasCoord = False
 
-    # __exptl.method
+    # experimental method
     __exptlMethod = ''
     # whether solid-state NMR is applied to symmetric samples such as fibrils
     __symmetric = 'no'

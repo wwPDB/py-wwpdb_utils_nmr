@@ -22664,7 +22664,7 @@ class NmrDpUtility:
 
             file_type = 'nm-res-mr'
 
-            seq_align = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, False)
+            seq_align, _ = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, False)
             chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
 
             if chain_assign is not None:
@@ -22684,7 +22684,7 @@ class NmrDpUtility:
                         if ps['chain_id'] in chain_mapping:
                             ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                    seq_align = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, False)
+                    seq_align, _ = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, False)
                     chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
 
                 trimSequenceAlignment(seq_align, chain_assign)

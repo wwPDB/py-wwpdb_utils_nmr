@@ -30,7 +30,8 @@ cyana_mr:
 	torsion_angle_restraints |
 	rdc_restraints |
 	pcs_restraints |
-	cco_restraints
+	cco_restraints |
+	ssbond_macro
 	)*
 	EOF;
 
@@ -149,6 +150,11 @@ cco_restraints:
 
 cco_restraint:
 	Integer Simple_name Simple_name Simple_name number number? number?;
+
+/* CYANA (macro) - ssbond
+*/
+ssbond_macro:
+	Ssbond Ssbond_resids;
 
 /* number expression in restrains */
 number:	Float | Integer;

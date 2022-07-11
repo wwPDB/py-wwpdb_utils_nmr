@@ -126,6 +126,7 @@ class CyanaMRParserListener(ParseTreeListener):
     pcsRestraints = 0       # CYANA: Pseudocontact shift restraint file (.pcs)
     noepkRestraints = 0     # CYANA: NOESY volume restraint file (.upv or .lov)
     jcoupRestraints = 0     # CYANA: Scalar coupling constant restraint file (.cco)
+    geoRestraints = 0       # CYANA: Coordinate geometry restraints
 
     # CCD accessing utility
     __ccU = None
@@ -2949,6 +2950,54 @@ class CyanaMRParserListener(ParseTreeListener):
 
         finally:
             self.numberSelection.clear()
+
+    # Enter a parse tree produced by CyanaMRParser#ssbond_macro.
+    def enterSsbond_macro(self, ctx: CyanaMRParser.Ssbond_macroContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'geo'
+
+    # Exit a parse tree produced by CyanaMRParser#ssbond_macro.
+    def exitSsbond_macro(self, ctx: CyanaMRParser.Ssbond_macroContext):
+        self.geoRestraints += 1
+
+        try:
+            seqId1, seqId2 = str(ctx.Ssbond_resids()).split('-')
+        except ValueError:
+            self.geoRestraints -= 1
+            return
+
+        if not self.__hasPolySeq:
+            return
+
+        compId = 'CYSS'
+        atomId = 'SG'
+
+        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId, atomId)
+        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId, atomId)
+
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign1, seqId1, compId, atomId)
+        self.selectCoordAtoms(chainAssign2, seqId2, compId, atomId)
+
+        if len(self.atomSelectionSet) < 2:
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if atom1['comp_id'] != 'CYS':
+                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+
+        for atom2 in self.atomSelectionSet[1]:
+            if atom2['comp_id'] != 'CYS':
+                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                              self.atomSelectionSet[1]):
+            if self.__debug:
+                print(f"subtype={self.__cur_subtype} (CYANA macro: disulfide bond linkage) id={self.geoRestraints} "
+                      f"atom1={atom1} atom2={atom2}")
 
     # Enter a parse tree produced by CyanaMRParser#number.
     def enterNumber(self, ctx: CyanaMRParser.NumberContext):  # pylint: disable=unused-argument

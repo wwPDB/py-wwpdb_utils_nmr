@@ -64,6 +64,10 @@ Type:			T Y P E;		// = Integer
 Equ_op:			'=';
 Or:			O R;
 
+/* ssbond macro */
+Ssbond:			S S B O N D;
+Ssbond_resids:		DECIMAL '-' DECIMAL;
+
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
 //Residue_name:		SIMPLE_NAME;

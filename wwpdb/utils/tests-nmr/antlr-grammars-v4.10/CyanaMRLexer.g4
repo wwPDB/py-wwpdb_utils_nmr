@@ -40,6 +40,9 @@ Or:			'OR';
 Ssbond:			'SSBOND';
 Ssbond_resids:		DECIMAL '-' DECIMAL;
 
+/* hbond macro */
+Hbond:			'HBOND' -> pushMode(HBOND_MODE);
+
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
 //Residue_name:		SIMPLE_NAME;
@@ -58,4 +61,22 @@ SPACE:			[ \t\r\n]+ -> skip;
 COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+
+mode HBOND_MODE;
+
+Atom1:			'ATOM1';
+Atom2:			'ATOM2';
+Residue1:		'RESIDUE1';
+Residue2:		'RESIDUE2';
+
+Equ_op_HB:		'=';
+
+Integer_HB:		('+' | '-')? DECIMAL;
+Simple_name_HB:		SIMPLE_NAME;
+
+SPACE_HB:		[ \t]+ -> skip;
+RETURN_HB:		[\r\n]+ -> popMode;
+
+SECTION_COMMENT_HB:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT_HB:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
 

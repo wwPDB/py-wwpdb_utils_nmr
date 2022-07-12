@@ -20,7 +20,7 @@ except ImportError:
 
 expecting_multiple_pattern = re.compile(r"(.*) expecting \{(.*)\}")
 expecting_simple_pattern = re.compile(r"(.*) expecting (.*)")
-substitution_pattern = re.compile(r"_(A[APR]|[BIQR][AP]|CM|[DE]A|FO?|V[AS]|Lp)$")
+substitution_pattern = re.compile(r"_(A[APR]|[BIQR][AP]|CM|[DE]A|FO?|HB|V[AS]|Lp)$")
 
 
 class ParserErrorListener(ErrorListener):

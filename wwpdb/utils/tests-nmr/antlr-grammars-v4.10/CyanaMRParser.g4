@@ -32,7 +32,8 @@ cyana_mr:
 	rdc_restraints |
 	pcs_restraints |
 	cco_restraints |
-	ssbond_macro
+	ssbond_macro |
+	hbond_macro
 	)*
 	EOF;
 
@@ -167,6 +168,14 @@ cco_restraint:
 */
 ssbond_macro:
 	Ssbond Ssbond_resids;
+
+/* CYANA (macro) - hbond
+*/
+hbond_macro:
+	Hbond
+		Atom1 Equ_op_HB Simple_name_HB Residue1 Equ_op_HB Integer_HB
+		Atom2 Equ_op_HB Simple_name_HB Residue2 Equ_op_HB Integer_HB
+	RETURN_HB;
 
 /* number expression in restrains */
 number:	Float | Integer;

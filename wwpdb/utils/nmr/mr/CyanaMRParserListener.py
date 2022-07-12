@@ -127,6 +127,7 @@ class CyanaMRParserListener(ParseTreeListener):
     noepkRestraints = 0     # CYANA: NOESY volume restraint file (.upv or .lov)
     jcoupRestraints = 0     # CYANA: Scalar coupling constant restraint file (.cco)
     geoRestraints = 0       # CYANA: Coordinate geometry restraints
+    hbondRestraints = 0     # CYANA: Hydrogen bond geometry restraints
 
     # CCD accessing utility
     __ccU = None
@@ -802,8 +803,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
-        compId = translateToStdResName(compId)
+    def getRealChainSeqId(self, ps, seqId, compId=None, isPolySeq=True):
+        if compId is not None:
+            compId = translateToStdResName(compId)
         if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
@@ -811,11 +813,15 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     return _chainId, _seqId
         if seqId in ps['auth_seq_id']:
+            if compId is None:
+                return ps['auth_chain_id'], seqId
             idx = ps['auth_seq_id'].index(seqId)
             if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                 return ps['auth_chain_id'], seqId
         if seqId in ps['seq_id']:
             idx = ps['seq_id'].index(seqId)
+            if compId is None:
+                return ps['auth_chain_id'], ps['auth_seq_id'][idx]
             if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                 return ps['auth_chain_id'], ps['auth_seq_id'][idx]
         return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId
@@ -1063,13 +1069,82 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return chainAssign
 
+    def assignCoordPolymerSequenceWithoutCompId(self, seqId, atomId):
+        """ Assign polymer sequences of the coordinates.
+        """
+
+        chainAssign = []
+        _seqId = seqId
+
+        for ps in self.__polySeq:
+            chainId, seqId = self.getRealChainSeqId(ps, _seqId, None)
+            if seqId in ps['auth_seq_id']:
+                idx = ps['auth_seq_id'].index(seqId)
+                cifCompId = ps['comp_id'][idx]
+                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    chainAssign.append((chainId, seqId, cifCompId))
+
+        if self.__hasNonPoly:
+            for np in self.__nonPoly:
+                chainId, seqId = self.getRealChainSeqId(np, _seqId, None, False)
+                if seqId in np['auth_seq_id']:
+                    idx = np['auth_seq_id'].index(seqId)
+                    cifCompId = np['comp_id'][idx]
+                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.append((chainId, seqId, cifCompId))
+
+        if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__authToLabelSeq:
+                    _, seqId = self.__authToLabelSeq[seqKey]
+                    if seqId in ps['seq_id']:
+                        cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                        if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
+                            if self.reasonsForReParsing is None:
+                                self.reasonsForReParsing = {}
+                            if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['label_seq_scheme'] = True
+
+            if self.__hasNonPoly:
+                for np in self.__nonPoly:
+                    chainId = np['auth_chain_id']
+                    seqKey = (chainId, _seqId)
+                    if seqKey in self.__authToLabelSeq:
+                        _, seqId = self.__authToLabelSeq[seqKey]
+                        if seqId in np['seq_id']:
+                            cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
+                                if self.reasonsForReParsing is None:
+                                    self.reasonsForReParsing = {}
+                                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['label_seq_scheme'] = True
+
+        if len(chainAssign) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                chainId = ps['auth_chain_id']
+                if _seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    chainAssign.append(chainId, _seqId, cifCompId)
+
+        if len(chainAssign) == 0:
+            if seqId == 1 and atomId in ('H', 'HN'):
+                return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
+            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                f"{_seqId}:{atomId} is not present in the coordinates.\n"
+
+        return chainAssign
+
     def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True):
         """ Select atoms of the coordinates.
         """
 
         atomSelection = []
 
-        if self.__mrAtomNameMapping is not None and compId not in monDict3:
+        if compId is not None and self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         for chainId, cifSeqId, cifCompId in chainAssign:
@@ -3190,6 +3265,40 @@ class CyanaMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} (CYANA macro: disulfide bond linkage) id={self.geoRestraints} "
                       f"atom1={atom1} atom2={atom2}")
 
+    # Enter a parse tree produced by CyanaMRParser#hbond_macro.
+    def enterHbond_macro(self, ctx: CyanaMRParser.Hbond_macroContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'hbond'
+
+    # Exit a parse tree produced by CyanaMRParser#hbond_macro.
+    def exitHbond_macro(self, ctx: CyanaMRParser.Hbond_macroContext):
+        self.hbondRestraints += 1
+
+        seqId1 = int(str(ctx.Integer_HB(0)))
+        seqId2 = int(str(ctx.Integer_HB(1)))
+        atomId1 = str(ctx.Simple_name_HB(0))
+        atomId2 = str(ctx.Simple_name_HB(1))
+
+        if not self.__hasPolySeq:
+            return
+
+        chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+        chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+
+        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            return
+
+        self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+        self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
+
+        if len(self.atomSelectionSet) < 2:
+            return
+
+        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                              self.atomSelectionSet[1]):
+            if self.__debug:
+                print(f"subtype={self.__cur_subtype} (CYANA macro: hydrogen bond linkage) id={self.hbondRestraints} "
+                      f"atom1={atom1} atom2={atom2}")
+
     # Enter a parse tree produced by CyanaMRParser#number.
     def enterNumber(self, ctx: CyanaMRParser.NumberContext):  # pylint: disable=unused-argument
         pass
@@ -3218,6 +3327,10 @@ class CyanaMRParserListener(ParseTreeListener):
             return f"[Check the {self.noepkRestraints}th row of NOESY volume restraints] "
         if self.__cur_subtype == 'jcoup':
             return f"[Check the {self.jcoupRestraints}th row of scalar coupling constant restraints] "
+        if self.__cur_subtype == 'geo':
+            return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "
+        if self.__cur_subtype == 'hbond':
+            return f"[Check the {self.geoRestraints}th row of hydrogen bond restraints] "
         return ''
 
     def getContentSubtype(self):
@@ -3229,7 +3342,9 @@ class CyanaMRParserListener(ParseTreeListener):
                           'rdc_restraint': self.rdcRestraints,
                           'pcs_restraint': self.pcsRestraints,
                           'noepk_restraint': self.noepkRestraints,
-                          'jcoup_restraint': self.jcoupRestraints
+                          'jcoup_restraint': self.jcoupRestraints,
+                          'geo_restraint': self.geoRestraints,
+                          'hbond_restraint': self.hbondRestraints
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}

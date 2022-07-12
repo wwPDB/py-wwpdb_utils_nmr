@@ -3589,6 +3589,50 @@ class CyanaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
+    # Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
+    def enterDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dist'
+
+        self.__col_order_of_dist_w_chain = {}
+
+        self.__cur_subtype_altered = False
+
+    # Exit a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
+    def exitDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraint.
+    def enterDistance_w_chain2_restraint(self, ctx: CyanaMRParser.Distance_w_chain2_restraintContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CyanaMRParser#distance_w_chain2_restraint.
+    def exitDistance_w_chain2_restraint(self, ctx: CyanaMRParser.Distance_w_chain2_restraintContext):
+        self.exitDistance_w_chain_restraint(ctx)
+
+    # Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraints.
+    def enterDistance_w_chain3_restraints(self, ctx: CyanaMRParser.Distance_w_chain3_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dist'
+
+        self.__col_order_of_dist_w_chain = {}
+
+        self.__cur_subtype_altered = False
+
+    # Exit a parse tree produced by CyanaMRParser#distance_w_chain3_restraints.
+    def exitDistance_w_chain3_restraints(self, ctx: CyanaMRParser.Distance_w_chain3_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraint.
+    def enterDistance_w_chain3_restraint(self, ctx: CyanaMRParser.Distance_w_chain3_restraintContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CyanaMRParser#distance_w_chain3_restraint.
+    def exitDistance_w_chain3_restraint(self, ctx: CyanaMRParser.Distance_w_chain3_restraintContext):
+        self.exitDistance_w_chain_restraint(ctx)
+
     # Enter a parse tree produced by CyanaMRParser#cco_restraints.
     def enterCco_restraints(self, ctx: CyanaMRParser.Cco_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'jcoup'

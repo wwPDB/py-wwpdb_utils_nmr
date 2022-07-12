@@ -17,7 +17,8 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (stripOnce,
+                                                       checkCoordinates,
                                                        translateToStdAtomName,
                                                        translateToStdResName,
                                                        isLongRangeRestraint,
@@ -49,7 +50,8 @@ try:
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberMRParser import AmberMRParser
-    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from nmr.mr.ParserListenerUtil import (stripOnce,
+                                           checkCoordinates,
                                            translateToStdAtomName,
                                            translateToStdResName,
                                            isLongRangeRestraint,
@@ -837,7 +839,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.iat = self.iat[0:self.numIatCol]  # trimming default zero integer
 
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-                if self.__atomNumberDict is not None:
+                if self.__atomNumberDict is not None or self.iresid == 1:
 
                     self.__hasComments = True
 
@@ -2314,7 +2316,7 @@ class AmberMRParserListener(ParseTreeListener):
                 cifSeqId = None if useDefault else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
                 if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                    authCompId = ps['auth_comp_id'][ps['seq_id'].index(seqId)]
+                    authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(seqId)]
                     _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId)
 
                 atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
@@ -2415,7 +2417,7 @@ class AmberMRParserListener(ParseTreeListener):
                         compId = ps['comp_id'][ps['seq_id'].index(seqId)]
 
                         if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                            authCompId = ps['auth_comp_id'][ps['seq_id'].index(seqId)]
+                            authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(seqId)]
                             _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId)
 
                         atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
@@ -2932,7 +2934,7 @@ class AmberMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IAT}.\n"
                     return
-                if self.numIatCol > 0:
+                if self.numIatCol > 0 and self.iresid == 0:
                     zeroCols = [col for col, val in enumerate(self.iat) if val == 0]
                     maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.iat) if val != 0 and col < maxCol])
@@ -2941,7 +2943,7 @@ class AmberMRParserListener(ParseTreeListener):
                         f"and '{varName}({decimal})={str(ctx.Integers())}', which will overwrite.\n"
                 if self.setIatCol is None:
                     self.setIatCol = []
-                if decimal in self.setIatCol:
+                if decimal in self.setIatCol and self.iresid == 0:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The argument value of '{varName}({decimal})' must be unique. "\
                         f"'{varName}({decimal})={str(ctx.Integers())}' will overwrite.\n"
@@ -2959,16 +2961,18 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.numIatCol >= decimal:
                         self.numIatCol = decimal - 1
                         self.__cur_subtype = ''
+                else:
+                    self.numIatCol = max(self.numIatCol, decimal)
 
             else:
                 if ctx.Integers():
-                    if self.setIatCol is not None and len(self.setIatCol) > 0:
+                    if self.setIatCol is not None and len(self.setIatCol) > 0 and self.iresid == 0:
                         valArray = ','.join([f"{varName}({valCol})={self.iat[valCol - 1]}"
                                              for valCol in self.setIatCol if self.iat[valCol - 1] != 0])
                         self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                             f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
                             f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
-                    if self.numIatCol > 0:
+                    if self.numIatCol > 0 and self.iresid == 0:
                         zeroCols = [col for col, val in enumerate(self.iat) if val == 0]
                         maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                         valArray = ','.join([str(val) for col, val in enumerate(self.iat) if val != 0 and col < maxCol])
@@ -2985,13 +2989,13 @@ class AmberMRParserListener(ParseTreeListener):
                         numIatCol += 1
                     self.numIatCol = numIatCol
                 elif ctx.MultiplicativeInt():
-                    if self.setIatCol is not None and len(self.setIatCol) > 0:
+                    if self.setIatCol is not None and len(self.setIatCol) > 0 and self.iresid == 0:
                         valArray = ','.join([f"{varName}({valCol})={self.iat[valCol - 1]}"
                                              for valCol in self.setIatCol if self.iat[valCol - 1] != 0])
                         self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                             f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
                             f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
-                    if self.numIatCol > 0:
+                    if self.numIatCol > 0 and self.iresid == 0:
                         zeroCols = [col for col, val in enumerate(self.iat) if val == 0]
                         maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                         valArray = ','.join([str(val) for col, val in enumerate(self.iat) if val != 0 and col < maxCol])
@@ -3249,7 +3253,7 @@ class AmberMRParserListener(ParseTreeListener):
                 rawStrArray = str(ctx.Qstrings()).split(',')
                 numAtnamCol = 0
                 for col, rawStr in enumerate(rawStrArray):
-                    val = rawStr.strip('\'').strip('"').rstrip()
+                    val = stripOnce(stripOnce(rawStr, '\''), '"').rstrip()
                     if len(val) == 0:
                         break
                     self.atnam[col] = val
@@ -3281,7 +3285,7 @@ class AmberMRParserListener(ParseTreeListener):
                 else:
                     self.setAtnamCol.append(decimal)
                 rawStrArray = str(ctx.Qstring_AP()).split(',')
-                val = rawStrArray[0].strip('\'').strip('"').rstrip()
+                val = stripOnce(stripOnce(rawStrArray[0], '\''), '"').rstrip()
                 if len(rawStrArray) > 1:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "\
@@ -3331,7 +3335,7 @@ class AmberMRParserListener(ParseTreeListener):
                 rawStrArray = str(ctx.Qstrings()).split(',')
                 numGrnamCol = 0
                 for col, rawStr in enumerate(rawStrArray):
-                    val = rawStr.strip('\'').strip('"').rstrip()
+                    val = stripOnce(stripOnce(rawStr, '\''), '"').rstrip()
                     if len(val) == 0:
                         break
                     self.grnam[varNum][col] = val
@@ -3392,7 +3396,7 @@ class AmberMRParserListener(ParseTreeListener):
                 else:
                     self.setGrnamCol[varNum].append(decimal)
                 rawStrArray = str(ctx.Qstring_AP()).split(',')
-                val = rawStrArray[0].strip('\'').strip('"').rstrip()
+                val = stripOnce(stripOnce(rawStrArray[0], '\''), '"').rstrip()
                 if len(rawStrArray) > 1:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "\

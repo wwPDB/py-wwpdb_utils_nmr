@@ -192,6 +192,11 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6d53/dangleT.tbl-corrected',
+                 '../../tests-nmr/mock-data-remediation/6d53/6d53.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2k2a/2k2a-corrected-div_src.mr',
                  '../../tests-nmr/mock-data-remediation/2k2a/2k2a.cif')
 

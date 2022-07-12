@@ -227,6 +227,16 @@ def toNefEx(string):
     return string
 
 
+def stripOnce(string, char):
+    """ Return stripped string with given chars on the both sides removed.
+    """
+
+    if len(string) < 3 or (not string.startswith(char) and not string.endswith(char)):
+        return string
+
+    return string[1:len(string) - 1]
+
+
 def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None):
     """ Translate software specific atom nomenclature for standard residues to the CCD one.
     """
@@ -342,6 +352,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                 return "HO2'"
             if "H2''" in refAtomIdList:
                 return "H2''"
+        if atomId.endswith("''") and atomId[:-1] in refAtomIdList:
+            return atomId[:-1]
         if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[2] in ('1', '2'):
             n = atomId[1]
             if atomId.endswith('1') and ('HN' + n) in refAtomIdList:

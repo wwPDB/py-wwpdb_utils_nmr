@@ -375,6 +375,12 @@ class CyanaMRParserListener(ParseTreeListener):
             compId2 = str(ctx.Simple_name(2)).upper()
             atomId2 = str(ctx.Simple_name(3)).upper()
 
+            if len(compId1) == 1 and len(compId2) == 1 and compId1.isalpha() and compId2.isalpha():
+                atom_like = self.__csStat.getAtomLikeNameSet(True, True, 1)
+                if atomId1 in atom_like and atomId2 in atom_like:
+                    self.exitDistance_wo_comp_restraint(ctx)
+                    return
+
             target_value = None
             lower_limit = None
             upper_limit = None
@@ -608,6 +614,317 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
                 self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                if len(self.atomSelectionSet) < 2:
+                    return
+
+                if not self.areUniqueCoordAtoms('a Scalar coupling'):
+                    return
+
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Non-magnetic susceptible spin appears in scalar coupling constant; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if chain_id_1 != chain_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain scalar coupling constant; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if abs(seq_id_1 - seq_id_2) > 1:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue scalar coupling constant; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                if abs(seq_id_1 - seq_id_2) == 1:
+
+                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        pass
+
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found inter-residue scalar coupling constant; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+                elif atom_id_1 == atom_id_2:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        "Found zero scalar coupling constant; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
+
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                      self.atomSelectionSet[1]):
+                    if isLongRangeRestraint([atom1, atom2]):
+                        continue
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.numberSelection.clear()
+
+    # Exit a parse tree produced by CyanaMRParser#distance_restraint.
+    def exitDistance_wo_comp_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
+
+        try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            chainId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+            seqId2 = int(str(ctx.Integer(1)))
+            chainId2 = str(ctx.Simple_name(2)).upper()
+            atomId2 = str(ctx.Simple_name(3)).upper()
+
+            target_value = None
+            lower_limit = None
+            upper_limit = None
+
+            if None in self.numberSelection:
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                elif self.__cur_subtype == 'jcoup':
+                    self.jcoupRestraints -= 1
+                return
+
+            if self.__cur_subtype == 'dist':
+
+                value = self.numberSelection[0]
+                weight = 1.0
+
+                has_square = False
+                if len(self.numberSelection) > 2:
+                    value2 = self.numberSelection[1]
+                    weight = self.numberSelection[2]
+
+                    has_square = True
+
+                elif len(self.numberSelection) > 1:
+                    value2 = self.numberSelection[1]
+
+                    if value2 <= 1.0 or value2 < value:
+                        weight = value2
+                    else:
+                        has_square = True
+
+                if weight <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                    return
+
+                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
+                    if self.__max_dist_value is None:
+                        self.__max_dist_value = value
+                    if value > self.__max_dist_value:
+                        self.__max_dist_value = value
+
+                if has_square:
+                    if value2 > DIST_RANGE_MAX:  # lol_only
+                        lower_limit = value
+
+                    elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
+                        upper_limit = value2
+                        lower_limit = value
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                    else:  # upl_only
+                        if value2 > 1.8:
+                            upper_limit = value2
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        else:
+                            upper_limit = value2
+
+                elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
+                    if value > 1.8:
+                        upper_limit = value
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    else:
+                        lower_limit = value
+
+                elif self.__upl_or_lol == 'upl_w_lol':
+                    upper_limit = value
+
+                elif self.__upl_or_lol == 'lol_only':
+                    lower_limit = value
+                    upper_limit = 5.5  # default value of PDBStat
+                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+
+                else:  # 'lol_w_upl'
+                    lower_limit = value
+
+                if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
+                    return
+
+                chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+                chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
+
+                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    return
+
+                self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+                self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
+
+                if len(self.atomSelectionSet) < 2:
+                    return
+
+                if len(self.atomSelectionSet[0]) == 1 and len(self.atomSelectionSet[1]) == 1:
+
+                    isRdc = True
+
+                    chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                    seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                    comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                    atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                    chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                    seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                    comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                    atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                    if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                        isRdc = False
+
+                    if chain_id_1 != chain_id_2:
+                        isRdc = False
+
+                    if abs(seq_id_1 - seq_id_2) > 1:
+                        isRdc = False
+
+                    if abs(seq_id_1 - seq_id_2) == 1:
+
+                        if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                            pass
+
+                        else:
+                            isRdc = False
+
+                    elif atom_id_1 == atom_id_2:
+                        isRdc = False
+
+                    elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                        if not any(b for b in self.__ccU.lastBonds
+                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                isRdc = False
+
+                    if not isRdc:
+                        self.__cur_subtype_altered = False
+
+                    else:
+
+                        isRdc = False
+
+                        if self.__cur_subtype_altered and atom_id_1 + atom_id_2 == self.auxAtomSelectionSet:
+                            isRdc = True
+
+                        elif value < 1.0 or value > 6.0:
+                            self.auxAtomSelectionSet = atom_id_1 + atom_id_2
+                            self.__cur_subtype_altered = True
+                            self.__cur_rdc_orientation += 1
+                            isRdc = True
+
+                        if isRdc:
+                            self.__cur_subtype = 'rdc'
+                            self.rdcRestraints += 1
+                            self.distRestraints -= 1
+
+                            target_value = value
+                            lower_limit = upper_limit = None
+
+                            if len(self.numberSelection) > 2:
+                                error = abs(self.numberSelection[1])
+                                lower_limit = target_value - error
+                                upper_limit = target_value + error
+
+                            dstFunc = self.validateRdcRange(weight, self.__cur_rdc_orientation, target_value, lower_limit, upper_limit)
+
+                            if dstFunc is None:
+                                return
+
+                            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                                  self.atomSelectionSet[1]):
+                                if isLongRangeRestraint([atom1, atom2]):
+                                    continue
+                                if self.__debug:
+                                    print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+                            self.__cur_subtype = 'dist'
+
+                            return
+
+                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
+
+                if dstFunc is None:
+                    return
+
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                      self.atomSelectionSet[1]):
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+            else:  # cco
+
+                target = self.numberSelection[0]
+                error = None
+
+                weight = 1.0
+                if len(self.numberSelection) > 2:
+                    error = abs(self.numberSelection[1])
+                    weight = self.numberSelection[2]
+
+                elif len(self.numberSelection) > 1:
+                    error = abs(self.numberSelection[1])
+
+                if weight <= 0.0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                    return
+
+                target_value = target
+                lower_limit = target - error if error is not None else None
+                upper_limit = target + error if error is not None else None
+
+                dstFunc = self.validateRdcRange(weight, None, target_value, lower_limit, upper_limit)
+
+                if dstFunc is None:
+                    return
+
+                if not self.__hasPolySeq:
+                    return
+
+                chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+                chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
+
+                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    return
+
+                self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+                self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
 
                 if len(self.atomSelectionSet) < 2:
                     return
@@ -1081,6 +1398,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
+                updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.append((chainId, seqId, cifCompId))
 
@@ -1090,6 +1408,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
+                    updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.append((chainId, seqId, cifCompId))
 
@@ -1101,6 +1420,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     _, seqId = self.__authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                        updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
                             if self.reasonsForReParsing is None:
@@ -1116,6 +1436,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         _, seqId = self.__authToLabelSeq[seqKey]
                         if seqId in np['seq_id']:
                             cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
+                            updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
                                 if self.reasonsForReParsing is None:
@@ -1128,6 +1449,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainId = ps['auth_chain_id']
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                     chainAssign.append(chainId, _seqId, cifCompId)
 
         if len(chainAssign) == 0:
@@ -1135,6 +1457,90 @@ class CyanaMRParserListener(ParseTreeListener):
                 return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                 f"{_seqId}:{atomId} is not present in the coordinates.\n"
+
+        return chainAssign
+
+    def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId, seqId, atomId):
+        """ Assign polymer sequences of the coordinates.
+        """
+
+        chainAssign = []
+        _seqId = seqId
+
+        for ps in self.__polySeq:
+            chainId, seqId = self.getRealChainSeqId(ps, _seqId, None)
+            if chainId != fixedChainId:
+                continue
+            if seqId in ps['auth_seq_id']:
+                idx = ps['auth_seq_id'].index(seqId)
+                cifCompId = ps['comp_id'][idx]
+                updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    chainAssign.append((chainId, seqId, cifCompId))
+
+        if self.__hasNonPoly:
+            for np in self.__nonPoly:
+                chainId, seqId = self.getRealChainSeqId(np, _seqId, None, False)
+                if chainId != fixedChainId:
+                    continue
+                if seqId in np['auth_seq_id']:
+                    idx = np['auth_seq_id'].index(seqId)
+                    cifCompId = np['comp_id'][idx]
+                    updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.append((chainId, seqId, cifCompId))
+
+        if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                if chainId != fixedChainId:
+                    continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__authToLabelSeq:
+                    _, seqId = self.__authToLabelSeq[seqKey]
+                    if seqId in ps['seq_id']:
+                        cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                        updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                        if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
+                            if self.reasonsForReParsing is None:
+                                self.reasonsForReParsing = {}
+                            if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['label_seq_scheme'] = True
+
+            if self.__hasNonPoly:
+                for np in self.__nonPoly:
+                    chainId = np['auth_chain_id']
+                    if chainId != fixedChainId:
+                        continue
+                    seqKey = (chainId, _seqId)
+                    if seqKey in self.__authToLabelSeq:
+                        _, seqId = self.__authToLabelSeq[seqKey]
+                        if seqId in np['seq_id']:
+                            cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
+                            updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
+                                if self.reasonsForReParsing is None:
+                                    self.reasonsForReParsing = {}
+                                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['label_seq_scheme'] = True
+
+        if len(chainAssign) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                chainId = ps['auth_chain_id']
+                if chainId != fixedChainId:
+                    continue
+                if _seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                    chainAssign.append(chainId, _seqId, cifCompId)
+
+        if len(chainAssign) == 0:
+            if seqId == 1 and atomId in ('H', 'HN'):
+                return self.assignCoordPolymerSequenceWithChainIdWithoutCompId(fixedChainId, seqId, 'H1')
+            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.\n"
 
         return chainAssign
 
@@ -2895,6 +3301,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.__col_order_of_dist_w_chain = {}
 
+        self.__cur_subtype_altered = False
+
     # Exit a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
     def exitDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext):  # pylint: disable=unused-argument
         pass
@@ -2969,19 +3377,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     f"Failed to identify columns for comp_id_1, atom_id_1, chain_id_1, comp_id_2, atom_id_2, chain_id_2.\n"
                 return
 
-            chainId1 = jVal[self.__col_order_of_dist_w_chain['chain_id_1']]
-            chainId2 = jVal[self.__col_order_of_dist_w_chain['chain_id_2']]
-            compId1 = jVal[self.__col_order_of_dist_w_chain['comp_id_1']]
-            compId2 = jVal[self.__col_order_of_dist_w_chain['comp_id_2']]
-            atomId1 = jVal[self.__col_order_of_dist_w_chain['atom_id_1']]
-            atomId2 = jVal[self.__col_order_of_dist_w_chain['atom_id_2']]
+            if None in self.numberSelection:
+                self.distRestraints -= 1
+                return
 
             target_value = None
             lower_limit = None
             upper_limit = None
-
-            if None in self.numberSelection:
-                return
 
             value = self.numberSelection[0]
             weight = 1.0
@@ -3048,12 +3450,122 @@ class CyanaMRParserListener(ParseTreeListener):
             else:  # 'lol_w_upl'
                 lower_limit = value
 
+            if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
+                return
+
+            chainId1 = jVal[self.__col_order_of_dist_w_chain['chain_id_1']]
+            chainId2 = jVal[self.__col_order_of_dist_w_chain['chain_id_2']]
+            compId1 = jVal[self.__col_order_of_dist_w_chain['comp_id_1']]
+            compId2 = jVal[self.__col_order_of_dist_w_chain['comp_id_2']]
+            atomId1 = jVal[self.__col_order_of_dist_w_chain['atom_id_1']]
+            atomId2 = jVal[self.__col_order_of_dist_w_chain['atom_id_2']]
+
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            if len(self.atomSelectionSet[0]) == 1 and len(self.atomSelectionSet[1]) == 1:
+
+                isRdc = True
+
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                    isRdc = False
+
+                if chain_id_1 != chain_id_2:
+                    isRdc = False
+
+                if abs(seq_id_1 - seq_id_2) > 1:
+                    isRdc = False
+
+                if abs(seq_id_1 - seq_id_2) == 1:
+
+                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        pass
+
+                    else:
+                        isRdc = False
+
+                elif atom_id_1 == atom_id_2:
+                    isRdc = False
+
+                elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                    if not any(b for b in self.__ccU.lastBonds
+                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            isRdc = False
+
+                if not isRdc:
+                    self.__cur_subtype_altered = False
+
+                else:
+
+                    isRdc = False
+
+                    if self.__cur_subtype_altered and atom_id_1 + atom_id_2 == self.auxAtomSelectionSet:
+                        isRdc = True
+
+                    elif value < 1.0 or value > 6.0:
+                        self.auxAtomSelectionSet = atom_id_1 + atom_id_2
+                        self.__cur_subtype_altered = True
+                        self.__cur_rdc_orientation += 1
+                        isRdc = True
+
+                    if isRdc:
+                        self.__cur_subtype = 'rdc'
+                        self.rdcRestraints += 1
+                        self.distRestraints -= 1
+
+                        target_value = value
+                        lower_limit = upper_limit = None
+
+                        if len(self.numberSelection) > 2:
+                            error = abs(self.numberSelection[1])
+                            lower_limit = target_value - error
+                            upper_limit = target_value + error
+
+                        dstFunc = self.validateRdcRange(weight, self.__cur_rdc_orientation, target_value, lower_limit, upper_limit)
+
+                        if dstFunc is None:
+                            return
+
+                        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                              self.atomSelectionSet[1]):
+                            if isLongRangeRestraint([atom1, atom2]):
+                                continue
+                            if self.__debug:
+                                print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+                        self.__cur_subtype = 'dist'
+
+                        return
+
             dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 
             if dstFunc is None:
-                return
-
-            if not self.__hasPolySeq:
                 return
 
             chainAssign1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)

@@ -231,7 +231,7 @@ def stripOnce(string, char):
     """ Return stripped string with given chars on the both sides removed.
     """
 
-    if len(string) < 3 or (not string.startswith(char) and not string.endswith(char)):
+    if len(string) < 3 or not string.startswith(char) or not string.endswith(char):
         return string
 
     return string[1:len(string) - 1]

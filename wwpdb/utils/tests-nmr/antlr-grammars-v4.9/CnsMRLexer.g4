@@ -136,7 +136,7 @@ Print_any:		'?';
 Plane:			P L A N (E | A)? R?;			// Plane { planar_statement } End
 
 // planar_statement
-Group:			G R O U P?;				// Group { group_statement } End
+Group:			G R O U P?;				// Group { planar_group_statement } End
 //Initialize:		I N I T I? A? L? I? Z? E?;
 //Print_any:		'?';
 
@@ -302,6 +302,20 @@ DerivFlag:		D E R I V? F? L? A? G?;			// On_or_Off
 
 //On_or_Off:		O N | O F F;
 //Angle_or_Dihedral:	A N G L E? | D I H E D? R? A? L?;
+
+/* CNS: NCS restraints - Syntax
+ See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
+*/
+Ncs:			N C S;
+//Restraints:		R E S T R? A? I? N? T? S?;		// Ncs
+
+//Group:		G R O U P?;				// Group { ncs_group_statement } End
+//Initialize:		I N I T I? A? L? I? Z? E?;
+//Print_any:		'?';
+
+Equivalence:		E Q U I V? A? L? E? N? C? E?;		// = selection
+Sigb:			S I G B;				// = Real
+//Weight:		W E I G H? T?;				// = Real
 
 /* CNS: Flags - Syntax
  See alos https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html (compatible with XPLOR-NIH)

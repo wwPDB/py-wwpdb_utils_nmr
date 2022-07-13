@@ -209,7 +209,7 @@ class XplorMRParserListener(ParseTreeListener):
     pangRestraints = 0      # XPLOR-NIH: Paramagnetic orientation restraints
     pccrRestraints = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate restraints
     hbondRestraints = 0     # XPLOR-NIH: Hydrogen bond geometry/database restraints
-    geoRestraints = 0       # XPLOR-NIH: Harmonic coordinate restraints
+    geoRestraints = 0       # XPLOR-NIH: Harmonic coordinate/NCS restraints
 
     distStatements = 0      # XPLOR-NIH: Distance statements
     dihedStatements = 0     # XPLOR-NIH: Dihedral angle statements
@@ -231,7 +231,7 @@ class XplorMRParserListener(ParseTreeListener):
     pangStatements = 0      # XPLOR-NIH: Paramagnetic orientation statements
     pccrStatements = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate statements
     hbondStatements = 0     # XPLOR-NIH: Hydrogen bond geometry/database statements
-    geoStatements = 0       # XPLOR-NIH: Harmonic coordinate restraints
+    geoStatements = 0       # XPLOR-NIH: Harmonic coordinate/NCS restraints
 
     # CCD accessing utility
     __ccU = None
@@ -340,6 +340,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     # CS
     csExpect = None
+
+    # NCS
+    bfactor = None
 
     # generic statements
     classification = None
@@ -2696,7 +2699,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.scale = self.evaluate[self.scale]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
+                        f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
                         f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
                     self.scale = 1.0
             if self.scale <= 0.0:
@@ -2713,7 +2716,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
-                print(f"subtype={self.__cur_subtype} (GROU) id={self.planeRestraints} "
+                print(f"subtype={self.__cur_subtype} (PLANAR/GROU) id={self.planeRestraints} "
                       f"atom={atom1} weight={self.scale}")
 
     # Enter a parse tree produced by XplorMRParser#harmonic_statement.
@@ -5929,6 +5932,74 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (HBDB) id={self.hbondRestraints} "
                       f"donor={atom1} acceptor={atom2}")
+
+    # Enter a parse tree produced by XplorMRParser#ncs_restraint.
+    def enterNcs_restraint(self, ctx: XplorMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
+        self.geoStatements += 1
+        self.__cur_subtype = 'geo'
+
+    # Exit a parse tree produced by XplorMRParser#ncs_restraint.
+    def exitNcs_restraint(self, ctx: XplorMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by XplorMRParser#ncs_statement.
+    def enterNcs_statement(self, ctx: XplorMRParser.Ncs_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XplorMRParser#ncs_statement.
+    def exitNcs_statement(self, ctx: XplorMRParser.Ncs_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by XplorMRParser#ncs_group_statement.
+    def enterNcs_group_statement(self, ctx: XplorMRParser.Ncs_group_statementContext):
+        self.geoRestraints += 1
+        if self.__cur_subtype != 'geo':
+            self.geoStatements += 1
+        self.__cur_subtype = 'geo'
+
+        self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
+
+        if ctx.Sigb():
+            self.bfactor = self.getNumber_s(ctx.number_s())
+            if isinstance(self.bfactor, str):
+                if self.bfactor in self.evaluate:
+                    self.bfactor = self.evaluate[self.bfactor]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.bfactor} END' "\
+                        f"where the symbol {self.bfactor!r} is not defined so that set the default value.\n"
+                    self.bfactor = 2.0
+            if self.bfactor <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.bfactor} END' must be a positive value.\n"
+
+        if ctx.Weight():
+            self.scale = self.getNumber_s(ctx.number_s())
+            if isinstance(self.scale, str):
+                if self.scale in self.evaluate:
+                    self.scale = self.evaluate[self.scale]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
+                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.scale = 1.0
+            if self.scale <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must be a positive value.\n"
+
+    # Exit a parse tree produced by XplorMRParser#ncs_group_statement.
+    def exitNcs_group_statement(self, ctx: XplorMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument
+        if not self.__hasPolySeq:
+            return
+
+        if len(self.atomSelectionSet) == 0:
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if self.__debug:
+                print(f"subtype={self.__cur_subtype} (NCS/GROU) id={self.geoRestraints} "
+                      f"atom={atom1} weight={self.scale}")
 
     # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
@@ -9286,7 +9357,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'hbond':
             return f"[Check the {self.hbondRestraints}th row of hydrogen bond geometry restraints] "
         if self.__cur_subtype == 'geo':
-            return f"[Check the {self.geoRestraints}th row of harmonic coordinate restraints] "
+            return f"[Check the {self.geoRestraints}th row of harmonic coordinate/NCS restraints] "
         return ''
 
     def getContentSubtype(self):

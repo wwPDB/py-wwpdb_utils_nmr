@@ -151,7 +151,7 @@ class CnsMRParserListener(ParseTreeListener):
     diffRestraints = 0      # CNS: Diffusion anisotropy restraints
     nbaseRestraints = 0     # CNS: Residue-residue position/orientation database restraints
     # angRestraints = 0       # CNS: Angle database restraints
-    geoRestraints = 0       # CNS: Harmonic coordinate restraints
+    geoRestraints = 0       # CNS: Harmonic coordinate/NCS restraints
 
     distStatements = 0      # CNS: Distance statements
     dihedStatements = 0     # CNS: Dihedral angle statements
@@ -164,7 +164,7 @@ class CnsMRParserListener(ParseTreeListener):
     diffStatements = 0      # CNS: Diffusion anisotropy statements
     nbaseStatements = 0     # CNS: Residue-residue position/orientation database statements
     # angStatements = 0       # CNS: Angle database statements
-    geoStatements = 0       # CNS: Harmonic coordinate restraints
+    geoStatements = 0       # CNS: Harmonic coordinate/NCS restraints
 
     # CCD accessing utility
     __ccU = None
@@ -263,6 +263,9 @@ class CnsMRParserListener(ParseTreeListener):
 
     # CS
     csExpect = None
+
+    # NCS
+    bfactor = None
 
     # generic statements
     classification = None
@@ -1213,7 +1216,7 @@ class CnsMRParserListener(ParseTreeListener):
                     self.scale = self.evaluate[self.scale]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
+                        f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
                         f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
                     self.scale = 1.0
             if self.scale <= 0.0:
@@ -1230,7 +1233,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
-                print(f"subtype={self.__cur_subtype} (GROU) id={self.planeRestraints} "
+                print(f"subtype={self.__cur_subtype} (PLANE/GROU) id={self.planeRestraints} "
                       f"atom={atom1} weight={self.scale}")
 
     # Enter a parse tree produced by CnsMRParser#harmonic_statement.
@@ -2841,6 +2844,74 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#angle_db_assign.
     def exitAngle_db_assign(self, ctx: CnsMRParser.Angle_db_assignContext):  # pylint: disable=unused-argument
         pass
+
+    # Enter a parse tree produced by CnsMRParser#ncs_restraint.
+    def enterNcs_restraint(self, ctx: CnsMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
+        self.geoStatements += 1
+        self.__cur_subtype = 'geo'
+
+    # Exit a parse tree produced by CnsMRParser#ncs_restraint.
+    def exitNcs_restraint(self, ctx: CnsMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CnsMRParser#ncs_statement.
+    def enterNcs_statement(self, ctx: CnsMRParser.Ncs_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#ncs_statement.
+    def exitNcs_statement(self, ctx: CnsMRParser.Ncs_statementContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CnsMRParser#ncs_group_statement.
+    def enterNcs_group_statement(self, ctx: CnsMRParser.Ncs_group_statementContext):
+        self.geoRestraints += 1
+        if self.__cur_subtype != 'geo':
+            self.geoStatements += 1
+        self.__cur_subtype = 'geo'
+
+        self.atomSelectionSet.clear()
+        self.__warningInAtomSelection = ''
+
+        if ctx.Sigb():
+            self.bfactor = self.getNumber_s(ctx.number_s())
+            if isinstance(self.bfactor, str):
+                if self.bfactor in self.evaluate:
+                    self.bfactor = self.evaluate[self.bfactor]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.bfactor} END' "\
+                        f"where the symbol {self.bfactor!r} is not defined so that set the default value.\n"
+                    self.bfactor = 2.0
+            if self.bfactor <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.bfactor} END' must be a positive value.\n"
+
+        if ctx.Weight():
+            self.scale = self.getNumber_s(ctx.number_s())
+            if isinstance(self.scale, str):
+                if self.scale in self.evaluate:
+                    self.scale = self.evaluate[self.scale]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
+                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.scale = 1.0
+            if self.scale <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must be a positive value.\n"
+
+    # Exit a parse tree produced by CnsMRParser#ncs_group_statement.
+    def exitNcs_group_statement(self, ctx: CnsMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument
+        if not self.__hasPolySeq:
+            return
+
+        if len(self.atomSelectionSet) == 0:
+            return
+
+        for atom1 in self.atomSelectionSet[0]:
+            if self.__debug:
+                print(f"subtype={self.__cur_subtype} (NCS/GROU) id={self.geoRestraints} "
+                      f"atom={atom1} weight={self.scale}")
 
     # Enter a parse tree produced by CnsMRParser#selection.
     def enterSelection(self, ctx: CnsMRParser.SelectionContext):  # pylint: disable=unused-argument
@@ -5974,7 +6045,7 @@ class CnsMRParserListener(ParseTreeListener):
         # if self.__cur_subtype == 'ang':
         #    return f"[Check the {self.angRestraints}th row of angle database restraints] "
         if self.__cur_subtype == 'geo':
-            return f"[Check the {self.geoRestraints}th row of harmonic coordinate restraints] "
+            return f"[Check the {self.geoRestraints}th row of harmonic coordinate/NCS restraints] "
         return ''
 
     def getContentSubtype(self):

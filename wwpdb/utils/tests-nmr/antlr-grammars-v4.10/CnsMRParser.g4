@@ -32,6 +32,7 @@ cns_mr:
 	diffusion_anisotropy_restraint |
 	one_bond_coupling_restraint |
 	angle_db_restraint |
+	ncs_restraint |
 	flag_statement |
 	vector_statement |
 	evaluate_statement |
@@ -364,6 +365,22 @@ angle_db_statement:
 
 angle_db_assign:
 	Assign selection selection selection selection selection selection selection selection selection selection selection selection?;
+
+/* CNS: NCS restraints - Syntax
+ See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
+*/
+ncs_restraint:
+	Ncs Restraints ncs_statement* End;
+
+ncs_statement:
+	Group ncs_group_statement* End |
+	Initialize |
+	Print_any;
+
+ncs_group_statement:
+	Equivalence Equ_op? selection |
+	Sigb Equ_op? number_s |
+	Weight Equ_op? number_s;
 
 /* Atom selection - Syntax - identity/atom-selection
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

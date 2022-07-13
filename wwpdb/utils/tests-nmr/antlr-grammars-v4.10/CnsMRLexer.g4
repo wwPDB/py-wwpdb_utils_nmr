@@ -108,7 +108,7 @@ Print_any:		'?';
 Plane:			'PLAN' ('E' | 'A')? 'R'?;		// Plane { planar_statement } End
 
 // planar_statement
-Group:			'GROU' 'P'?;				// Group { group_statement } End
+Group:			'GROU' 'P'?;				// Group { planar_group_statement } End
 //Initialize:		'INIT' 'I'? 'A'? 'L'? 'I'? 'Z'? 'E'?;
 //Print_any:		'?';
 
@@ -274,6 +274,21 @@ DerivFlag:		'DERI' 'V'? 'F'? 'L'? 'A'? 'G'?;	// On_or_Off
 
 //On_or_Off:		'ON' | 'OFF';
 //Angle_or_Dihedral:	'ANGL' 'E'? | 'DIHE' 'D'? 'R'? 'A'? 'L'?;
+
+/* CNS: NCS restraints - Syntax
+ See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
+*/
+Ncs:			'NCS';
+//Restraints:		'REST' 'R'? 'A'? 'I'? 'N'? 'T'? 'S'?;	// Ncs
+
+//Group:		'GROU' 'P'?;				// Group { ncs_group_statement } End
+//Initialize:		'INIT' 'I'? 'A'? 'L'? 'I'? 'Z'? 'E'?;
+//Print_any:		'?';
+
+Equivalence:		'EQUI' 'V'? 'A'? 'L'? 'E'? 'N'? 'C'? 'E'?;
+								// = selection
+Sigb:			'SIGB';					// = Real
+//Weight:		'WEIG' 'H'? 'T'?;			// = Real
 
 /* CNS: Flags - Syntax
  See alos https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html (compatible with XPLOR-NIH)

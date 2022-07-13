@@ -81,6 +81,7 @@ Dihedral:		'DIHE' 'D'? 'R'? 'A'? 'L'?;		// Dihedral { dihedral_statement } End
 Nassign:		'NASS' 'I'? 'G'? 'N'?;			// = Integer
 //Reset:		'RESE' 'T'?;
 //Scale:		'SCAL' 'E'?;				// Real
+Print_any:		'?';
 
 /* XPLOR-NIH: RDC - Syntax (SANI - Susceptibility anisotropy)
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node418.html
@@ -175,8 +176,9 @@ Anisotropy:		'ANIS' 'O'? 'T'? 'R'? 'O'? 'P'? 'Y'?;	// Anisotropy { anis_statemen
 Planar:			'PLAN' ('A' | 'E')? 'R'?;		// Planer { planar_statement } End
 
 // planar_statement
-Group:			'GROU' 'P'?;				// Group { group_statement } End
+Group:			'GROU' 'P'?;				// Group { planar_group_statement } End
 Initialize:		'INIT' 'I'? 'A'? 'L'? 'I'? 'Z'? 'E'?;
+//Print_any:		'?';
 
 // group_statement
 Selection:		'SELE' 'C'? 'T'? 'I'? 'O'? 'N'?;	// = selection
@@ -540,6 +542,21 @@ Prnfrq:			'PRNFRQ';				// = Integer
 Freemode:		'FREEMODE';				// = One_or_Zero
 Donor:			'DON' 'O'? 'R'?;
 Acceptor:		'ACC' 'E'? 'P'? 'T'? 'O'? 'R'?;
+
+/* XPLOR-NIH: NCS restraints - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/doc/current/xplor/node341.html
+*/
+Ncs:			'NCS';
+//Restraints:		'REST' 'R'? 'A'? 'I'? 'N'? 'T'? 'S'?;	// Ncs
+
+//Group:		'GROU' 'P'?;				// Group { ncs_group_statement } End
+//Initialize:		'INIT' 'I'? 'A'? 'L'? 'I'? 'Z'? 'E'?;
+//Print_any:		'?';
+
+Equivalence:		'EQUI' 'V'? 'A'? 'L'? 'E'? 'N'? 'C'? 'E'?;
+								// = selection
+Sigb:			'SIGB';					// = Real
+//Weight:		'WEIG' 'H'? 'T'?;			// = Real
 
 /* XPLOR-NIH: Flags - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html

@@ -44,6 +44,7 @@ xplor_nih_mr:
 	pccr_restraint |
 	hbond_restraint |
 	hbond_db_restraint |
+	ncs_restraint |
 	flag_statement |
 	vector_statement |
 	evaluate_statement |
@@ -208,7 +209,8 @@ dihedral_statement:
 	dihedral_assign_loop |
 	Nassign Equ_op? Integer |
 	Reset |
-	Scale Equ_op? number_s;
+	Scale Equ_op? number_s |
+	Print_any;
 
 dihedral_assign:
 	Assign selection selection selection selection number number number Integer;
@@ -304,7 +306,8 @@ anis_assign:
 planar_statement:
 	vector_statement |
 	Group group_statement* End |
-	Initialize;
+	Initialize |
+	Print_any;
 
 group_statement:
 	Selection Equ_op? selection |
@@ -716,6 +719,22 @@ hbond_db_statement:
 
 hbond_db_assign:
 	Assign selection selection;
+
+/* XPLOR-NIH: NCS restraints - Syntax
+ See also https://nmr.cit.nih.gov/xplor-nih/doc/current/xplor/node341.html
+*/
+ncs_restraint:
+	Ncs Restraints ncs_statement* End;
+
+ncs_statement:
+	Group ncs_group_statement* End |
+	Initialize |
+	Print_any;
+
+ncs_group_statement:
+	Equivalence Equ_op? selection |
+	Sigb Equ_op? number_s |
+	Weight Equ_op? number_s;
 
 /* Atom selection - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node39.html

@@ -8075,12 +8075,33 @@ class NmrDpUtility:
         if self.__cur_original_ar_file_name.endswith('.tbl'):
             self.__cur_original_ar_file_name = self.__cur_original_ar_file_name.replace('.tbl', '')
 
+        if self.__cur_original_ar_file_name.endswith('.dat'):
+            self.__cur_original_ar_file_name = self.__cur_original_ar_file_name.replace('.dat', '')
+
+        if self.__cur_original_ar_file_name.endswith('.10'):
+            self.__cur_original_ar_file_name = self.__cur_original_ar_file_name.replace('.10', '')
+
         split_ext = os.path.splitext(self.__cur_original_ar_file_name)
 
         if len(split_ext) != 2 or len(split_ext[1]) == 0:
+
+            file_ext = split_ext[0].lower()
+
+            if len(file_ext) > 3:
+
+                file_ext = file_ext[len(file_ext) - 3:]
+
+                if file_ext not in CYANA_MR_FILE_EXTS:
+                    return None
+
+                return file_ext
+
             return None
 
         file_ext = split_ext[1][1:].lower()
+
+        if len(file_ext) > 3:
+            file_ext = file_ext[:3]
 
         if file_ext not in CYANA_MR_FILE_EXTS:
             return None

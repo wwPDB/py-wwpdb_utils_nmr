@@ -2682,6 +2682,14 @@ class XplorMRParserListener(ParseTreeListener):
     def exitPlanar_statement(self, ctx: XplorMRParser.Planar_statementContext):  # pylint: disable=unused-argument
         pass
 
+    # Enter a parse tree produced by XplorMRParser#planar_group.
+    def enterPlanar_group(self, ctx: XplorMRParser.Planar_groupContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XplorMRParser#planar_group.
+    def exitPlanar_group(self, ctx: XplorMRParser.Planar_groupContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by XplorMRParser#group_statement.
     def enterGroup_statement(self, ctx: XplorMRParser.Group_statementContext):
         self.planeRestraints += 1
@@ -9310,6 +9318,55 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#hbond_db_assign_loop.
     def exitHbond_db_assign_loop(self, ctx: XplorMRParser.Hbond_db_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by XplorMRParser#planar_group_loop.
+    def enterPlanar_group_loop(self, ctx: XplorMRParser.Planar_group_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by XplorMRParser#planar_group_loop.
+    def exitPlanar_group_loop(self, ctx: XplorMRParser.Planar_group_loopContext):
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:

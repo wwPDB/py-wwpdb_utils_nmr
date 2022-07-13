@@ -1199,6 +1199,14 @@ class CnsMRParserListener(ParseTreeListener):
     def exitPlane_statement(self, ctx: CnsMRParser.Plane_statementContext):  # pylint: disable=unused-argument
         pass
 
+    # Enter a parse tree produced by CnsMRParser#plane_group.
+    def enterPlane_group(self, ctx: CnsMRParser.Plane_groupContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CnsMRParser#plane_group.
+    def exitPlane_group(self, ctx: CnsMRParser.Plane_groupContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by CnsMRParser#group_statement.
     def enterGroup_statement(self, ctx: CnsMRParser.Group_statementContext):
         self.planeRestraints += 1
@@ -6016,6 +6024,55 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#carbon_shift_assign_loop.
     def exitCarbon_shift_assign_loop(self, ctx: CnsMRParser.Carbon_shift_assign_loopContext):
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+    # Enter a parse tree produced by CnsMRParser#plane_group_loop.
+    def enterPlane_group_loop(self, ctx: CnsMRParser.Plane_group_loopContext):
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    # Exit a parse tree produced by CnsMRParser#plane_group_loop.
+    def exitPlane_group_loop(self, ctx: CnsMRParser.Plane_group_loopContext):
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:

@@ -305,9 +305,13 @@ anis_assign:
 */
 planar_statement:
 	vector_statement |
-	Group group_statement* End |
+	planar_group |
+	planar_group_loop |
 	Initialize |
 	Print_any;
+
+planar_group:
+	Group group_statement* End;
 
 group_statement:
 	Selection Equ_op? selection |
@@ -947,5 +951,11 @@ hbond_db_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
 	(evaluate_statement | hbond_db_assign)*
+	End Loop Simple_name_LL;
+
+planar_group_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | planar_group)*
 	End Loop Simple_name_LL;
 

@@ -167,9 +167,13 @@ dihedral_assign:
 */
 plane_statement:
 	vector_statement |
-	Group group_statement* End |
+	plane_group |
+	plane_group_loop |
 	Initialize |
 	Print_any;
+
+plane_group:
+	Group group_statement* End;
 
 group_statement:
 	Selection Equ_op? selection |
@@ -559,5 +563,11 @@ carbon_shift_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
 	(evaluate_statement | carbon_shift_assign)*
+	End Loop Simple_name_LL;
+
+plane_group_loop:
+	For Symbol_name_CF
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | plane_group)*
 	End Loop Simple_name_LL;
 

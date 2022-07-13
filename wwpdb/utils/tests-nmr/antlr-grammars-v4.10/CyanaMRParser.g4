@@ -20,6 +20,7 @@ options { tokenVocab=CyanaMRLexer; }
 
 cyana_mr:
 	(
+	ORI_HEADER |
 	distance_restraints |
 	fixres_distance_restraints |
 	fixresw_distance_restraints |

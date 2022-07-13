@@ -8069,6 +8069,12 @@ class NmrDpUtility:
         if self.__cur_original_ar_file_name.endswith('-corrected'):
             self.__cur_original_ar_file_name = self.__cur_original_ar_file_name.replace('-corrected', '')
 
+        if self.__cur_original_ar_file_name.endswith('.txt'):
+            self.__cur_original_ar_file_name = self.__cur_original_ar_file_name.replace('.txt', '')
+
+        if self.__cur_original_ar_file_name.endswith('.tbl'):
+            self.__cur_original_ar_file_name = self.__cur_original_ar_file_name.replace('.tbl', '')
+
         split_ext = os.path.splitext(self.__cur_original_ar_file_name)
 
         if len(split_ext) != 2 or len(split_ext[1]) == 0:

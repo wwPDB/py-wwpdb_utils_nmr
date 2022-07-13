@@ -28,6 +28,7 @@ fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
 ORI_HEADER:		'#' [ \t]* 'ORIENTATION' [ \t]+ 'MAGNITUDE' [ \t]+ 'RHOMBICITY' [ \t]+ 'ORI' [ \t]+ 'RESIDUE' [ \t]+ 'NUMBER' [ \t]* [\r\n]+;
+TEN_HEADER:		'#' [ \t]* 'TENSOR' [ \t]+ 'MAGNITUDE' [ \t]+ 'RHOMBICITY' [ \t]+ 'RESIDUE' [ \t]* [\r\n]+;
 
 SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);

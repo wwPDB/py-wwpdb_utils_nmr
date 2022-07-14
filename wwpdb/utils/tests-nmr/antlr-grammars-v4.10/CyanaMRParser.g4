@@ -182,7 +182,8 @@ cco_restraints:
 	cco_restraint+;
 
 cco_restraint:
-	Integer Simple_name Simple_name Simple_name number number? number?;
+	Integer Simple_name Simple_name Simple_name number number? number?
+	number? number? number?;	// A B C
 
 /* CYANA (macro) - ssbond
 */

@@ -3664,16 +3664,16 @@ class CyanaMRParserListener(ParseTreeListener):
             atomId1 = str(ctx.Simple_name(1)).upper()
             atomId2 = str(ctx.Simple_name(2)).upper()
 
+            if None in self.numberSelection:
+                self.jcoupRestraints -= 1
+                return
+
             if atomId2 in KNOWN_ANGLE_NAMES:
                 self.__cur_subtype_altered = True
                 self.__cur_subtype = 'dihed'
                 self.dihedRestraints += 1
                 self.jcoupRestraints -= 1
                 self.exitTorsion_angle_restraint(ctx)
-                return
-
-            if None in self.numberSelection:
-                self.jcoupRestraints -= 1
                 return
 
             target = self.numberSelection[0]

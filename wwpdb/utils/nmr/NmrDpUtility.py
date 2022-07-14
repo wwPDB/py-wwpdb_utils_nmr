@@ -1307,6 +1307,9 @@ class NmrDpUtility:
         # hardware limit of NMR prove design in Hz (DAOTHER-7389, issue #1)
         self.hard_probe_limit = 250000
 
+        # maximum number of lines as spacer for recognition of MR files
+        self.mr_max_spacer_lines = 20
+
         # loop index tags
         self.index_tags = {'nef': {'entry_info': None,
                                    'poly_seq': 'index',
@@ -8271,8 +8274,9 @@ class NmrDpUtility:
         err_input = err_desc['input'] if 'input' in err_desc else ''
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
-        amber_file_type = (file_type == 'nm-res-amb')
+        amber_file_type = file_type == 'nm-res-amb'
         gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
+        linear_mr_file_types = ['nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-syb']
 
         xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
@@ -8314,7 +8318,7 @@ class NmrDpUtility:
 
         concat_gromacs_tag = not gromacs_file_type and bool(gromacs_tag_pattern.search(err_input))
 
-        concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb')
+        concat_comment = (file_type in linear_mr_file_types
                           and err_message.startswith(no_viable_alt_err_msg)
                           and bool(comment_pattern.search(err_input)))
 
@@ -8424,7 +8428,7 @@ class NmrDpUtility:
                 open(div_try_file, 'w') as ofp2:
             for line in ifp:
                 i += 1
-                if i < err_line_number - 20:
+                if i < err_line_number - self.mr_max_spacer_lines:
                     if ws_or_comment:
                         if line.isspace() or comment_pattern.match(line)\
                            or (gromacs_file_type and gromacs_comment_pattern.match(line)):
@@ -8506,7 +8510,7 @@ class NmrDpUtility:
                             k += 1
                             if k <= err_line_number:
                                 continue
-                            if k < err_line_number + 20:
+                            if k < err_line_number + self.mr_max_spacer_lines:
                                 if xplor_assi_pattern.match(line) or comment_pattern.match(line) or line.isspace():
                                     k2 = k
                                     break
@@ -8987,6 +8991,88 @@ class NmrDpUtility:
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
                 if not has_lexer_error and (prev_input is None or not(prev_input.isspace() or bool(comment_pattern.match(prev_input)))):
+
+                    if err_column_position == 0 and file_type not in linear_mr_file_types:
+
+                        for test_file_type in linear_mr_file_types:
+
+                            test_reader = self.__getSimpleMRPTFileReader(test_file_type, False)
+
+                            listener, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
+
+                            has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                            has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                            if test_file_type == 'nm-res-ros':
+                                _content_subtype = listener.getEffectiveContentSubtype() if listener is not None else None
+                            else:
+                                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                            if _content_subtype is not None and len(_content_subtype) == 0:
+                                _content_subtype = None
+                            has_content = _content_subtype is not None
+
+                            if not has_lexer_error and not has_parser_error and has_content:
+
+                                if div_src:
+                                    os.remove(file_path)
+
+                                os.rename(div_try_file, div_dst_file)
+
+                                is_valid = True  # triggar for more split
+                                re_valid = False  # local lexer/parser errors should be handled by manual
+
+                                k = l = 0
+
+                                with open(div_dst_file, 'r') as ifp:
+                                    for line in ifp:
+                                        if k > 0 and not(line.isspace() or bool(comment_pattern.match(line))):
+                                            listener, parser_err_listener, lexer_err_listener = test_reader.parse(line, None, isFilePath=False)
+                                            has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                                            has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                                            if test_file_type == 'nm-res-ros':
+                                                _content_subtype = listener.getEffectiveContentSubtype() if listener is not None else None
+                                            else:
+                                                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                                            if _content_subtype is not None and len(_content_subtype) == 0:
+                                                _content_subtype = None
+                                            has_content = _content_subtype is not None
+                                            if has_lexer_error or has_parser_error or not has_content:
+                                                if is_valid:
+                                                    is_valid = False
+                                            elif not is_valid:
+                                                re_valid = True
+                                                break
+                                        if is_valid:
+                                            k += 1
+                                        else:
+                                            l += 1
+                                            if l >= self.mr_max_spacer_lines:
+                                                break
+
+                                if not is_valid and not re_valid:
+
+                                    _src_basename = os.path.splitext(div_dst_file)[0]
+                                    _div_src_file = _src_basename + '-div_src.mr'
+                                    _div_dst_file = _src_basename + '-div_dst.mr'
+
+                                    l = 0
+
+                                    with open(div_dst_file, 'r') as ifp,\
+                                            open(_div_src_file, 'w') as ofp,\
+                                            open(_div_dst_file, 'w') as ofp2:
+                                        for line in ifp:
+                                            if l < k:
+                                                ofp.write(line)
+                                            else:
+                                                ofp2.write(line)
+                                            l += 1
+
+                                    os.remove(div_dst_file)
+
+                                if self.__mr_debug:
+                                    print('DIV-MR-EXIT #6')
+
+                                return True
+
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
@@ -8997,16 +9083,17 @@ class NmrDpUtility:
                             err_desc['previous_input'] = prev_input
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #6')
+                        print('DIV-MR-EXIT #7')
 
                     return False  # not split MR file because of the lexer errors to be handled by manual
 
             if div_src:
                 os.remove(file_path)
+
             os.rename(div_try_file, div_ext_file)
 
             if self.__mr_debug:
-                print('DIV-MR-EXIT #7')
+                print('DIV-MR-EXIT #8')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -9021,7 +9108,7 @@ class NmrDpUtility:
                     err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:
-                print('DIV-MR-EXIT #8')
+                print('DIV-MR-EXIT #9')
 
             return False
 
@@ -9038,7 +9125,7 @@ class NmrDpUtility:
                     err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:
-                print('DIV-MR-EXIT #9')
+                print('DIV-MR-EXIT #10')
 
             return False  # actual issue in the line before the parser error should be handled by manual
 
@@ -9065,7 +9152,7 @@ class NmrDpUtility:
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #10')
+                        print('DIV-MR-EXIT #11')
 
                     return False  # actual issue in the line before the parser error should be handled by manual
 
@@ -9236,7 +9323,7 @@ class NmrDpUtility:
                 open(div_try_file, 'w') as ofp3:
             for line in ifp:
                 i += 1
-                if i < err_line_number - 20:
+                if i < err_line_number - self.mr_max_spacer_lines:
                     ofp.write(line)
                     j += 1
                     continue
@@ -9448,7 +9535,7 @@ class NmrDpUtility:
         err_column_position = err_desc['column_position']
         err_input = err_desc['input'] if 'input' in err_desc else ''
 
-        if not(err_column_position > 0 and len(err_input) > 0):
+        if err_column_position == 0 or len(err_input) == 0:
 
             if self.__mr_debug:
                 print('DO-DIV-MR-EXIT #1')
@@ -9456,8 +9543,9 @@ class NmrDpUtility:
             return False
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
-        amber_file_type = file_type = 'nm-res-amb'
+        amber_file_type = file_type == 'nm-res-amb'
         gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
+        linear_mr_file_types = ['nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-syb']
 
         xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
@@ -9494,7 +9582,7 @@ class NmrDpUtility:
                             and bool(amber_rst_pattern.search(err_input))
                             and not bool(amber_rst_pattern.match(err_input)))
 
-        concat_comment = (file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb')
+        concat_comment = (file_type in linear_mr_file_types
                           and err_message.startswith(no_viable_alt_err_msg)
                           and bool(comment_pattern.search(err_input)))
 

@@ -24821,7 +24821,7 @@ class NmrDpUtility:
 
                     warn = "Hydrogen bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close' if 'close' in data_type else 'far'} ({values[:-2]})."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({values[:-2]})."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
@@ -24847,7 +24847,7 @@ class NmrDpUtility:
 
                     warn = "Disulfide bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close' if 'close' in data_type else 'far'} ({values[:-2]})."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({values[:-2]})."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
@@ -24873,7 +24873,7 @@ class NmrDpUtility:
 
                     warn = "Diselenide bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close' if 'close' in data_type else 'far'} ({values[:-2]})."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({values[:-2]})."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
@@ -24899,7 +24899,7 @@ class NmrDpUtility:
 
                     warn = "Other bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close' if 'close' in data_type else 'far'} ({values[:-2]})."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({values[:-2]})."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
@@ -25579,7 +25579,7 @@ class NmrDpUtility:
 
                     warn = "Hydrogen bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close' if 'close' in data_type else 'far'} ({distance}Å)."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({distance}Å)."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -25593,7 +25593,7 @@ class NmrDpUtility:
 
                     warn = "Disulfide bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close' if 'close' in data_type else 'far'} ({distance}Å)."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({distance}Å)."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -25607,7 +25607,7 @@ class NmrDpUtility:
 
                     warn = "Diselenide bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close' if 'close' in data_type else 'far'} ({distance}Å)."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({distance}Å)."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -25621,7 +25621,7 @@ class NmrDpUtility:
 
                     warn = "Other bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close' if 'close' in data_type else 'far'} ({distance}Å)."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({distance}Å)."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,

@@ -67,12 +67,21 @@ Type:			T Y P E;		// = Integer
 Equ_op:			'=';
 Or:			O R;
 
-/* ssbond macro */
+/* CYANA 3.0 Reference Manual - ssbond macro
+ See also http://www.cyana.org/wiki/index.php/CYANA_Macro:_ssbond
+*/
 Ssbond:			S S B O N D;
 Ssbond_resids:		DECIMAL '-' DECIMAL;
 
-/* hbond macro */
+/* CYANA 3.0 Reference Manual - hbond macro
+ See also http://www.cyana.org/wiki/index.php/CYANA_Macro:_hbond
+*/
 Hbond:			H B O N D -> pushMode(HBOND_MODE);
+
+/* CYANA 3.0 Reference Manual - link statement
+ See also http://www.cyana.org/wiki/index.php/Sequence_file
+*/
+Link:			L I N K;
 
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;

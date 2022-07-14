@@ -11,7 +11,6 @@ import sys
 import re
 import itertools
 import copy
-
 import numpy
 
 from antlr4 import ParseTreeListener

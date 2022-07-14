@@ -11,7 +11,6 @@ import sys
 import re
 import itertools
 import copy
-
 import numpy
 
 from antlr4 import ParseTreeListener
@@ -5868,6 +5867,82 @@ class XplorMRParserListener(ParseTreeListener):
                         f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).\n"
                     return
 
+        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+        chain_id_3 = self.atomSelectionSet[2][0]['chain_id']
+        seq_id_3 = self.atomSelectionSet[2][0]['seq_id']
+        atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
+
+        try:
+
+            _donor =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                 ],
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            _hydrogen =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                 ],
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            _acceptor =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                 ],
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_3},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_3},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_3},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_donor) == 1 and len(_hydrogen) == 1 and len(_acceptor) == 1:
+                distance = numpy.linalg.norm(toNpArray(_hydrogen[0]) - toNpArray(_acceptor[0]))
+                if distance > 2.4:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
+                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+
+                distance = numpy.linalg.norm(toNpArray(_donor[0]) - toNpArray(_acceptor[0]))
+                if distance > 3.4:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
+                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+XplorMRParserListener.exitHbond_assign() ++ Error  - {str(e)}\n")
+
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
@@ -5934,6 +6009,57 @@ class XplorMRParserListener(ParseTreeListener):
                 "The acceptor atom type should be Hydrogen; "\
                 f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}.\n"
             return
+
+        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+        try:
+
+            _acceptor =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                 ],
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            _hydrogen =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                 ],
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_hydrogen) == 1 and len(_acceptor) == 1:
+                distance = numpy.linalg.norm(toNpArray(_hydrogen[0]) - toNpArray(_acceptor[0]))
+                if distance > 2.4:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
+                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+XplorMRParserListener.exitHbond_db_assign() ++ Error  - {str(e)}\n")
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[self.donor_columnSel],
                                               self.atomSelectionSet[self.acceptor_columnSel]):

@@ -6153,7 +6153,48 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__sel_expr_debug:
             print("  " * self.depth + "exit_selection")
 
-        atomSelection = self.stackSelections.pop() if self.stackSelections else []
+        if 'and' not in self.stackSelections:
+
+            atomSelection = self.stackSelections.pop() if self.stackSelections else []
+
+            while self.stackSelections:
+                _selection = self.stackSelections.pop()
+                if _selection is not None:
+                    for _atom in _selection:
+                        if _atom not in atomSelection:
+                            atomSelection.append(_atom)
+
+        else:
+
+            blockSelections = []
+            blockSelections.append(None)
+            blockId = 0
+
+            for _selection in self.stackSelections:
+
+                if _selection is None:
+                    continue
+
+                if isinstance(_selection, str) and _selection == 'and':
+                    blockSelections.append(None)
+                    blockId += 1
+                    continue
+
+                if blockSelections[blockId] is None:
+                    blockSelections[blockId] = _selection
+
+                else:
+                    for _atom in _selection:
+                        if _atom not in blockSelections[blockId]:
+                            blockSelections[blockId].append(_atom)
+
+            self.stackSelections.clear()
+
+            atomSelection = blockSelections.pop()
+
+            while blockSelections:
+                atomSelection = self.__intersectionAtom_selections(blockSelections.pop(), atomSelection)
+
         while self.stackSelections:
             _selection = self.stackSelections.pop()
             if _selection is not None:
@@ -6192,6 +6233,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.consumeFactor_expressions(cifCheck=False)
             if 'atom_selection' in self.factor:
                 self.stackSelections.append(self.factor['atom_selection'])
+                self.stackSelections.append('and')  # intersection
 
         self.factor = {}
 
@@ -6943,6 +6985,22 @@ class XplorMRParserListener(ParseTreeListener):
         _factor['atom_selection'] = _atomSelection
 
         return _factor
+
+    def __intersectionAtom_selections(self, _selection1, _selection2):  # pylint: disable=no-self-use
+        if _selection1 is None or len(_selection1) == 0 or _selection2 is None or len(_selection2) == 0:
+            return []
+
+        if isinstance(_selection2[0], str) and _selection2[0] == '*':
+            return _selection1
+
+        _atomSelection = []
+        for _atom in _selection1:
+            if isinstance(_atom, str) and _atom == '*':
+                return _selection2
+            if _atom in _selection2:
+                _atomSelection.append(_atom)
+
+        return _atomSelection
 
     # Enter a parse tree produced by XplorMRParser#factor.
     def enterFactor(self, ctx: XplorMRParser.FactorContext):

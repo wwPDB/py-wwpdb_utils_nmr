@@ -890,72 +890,72 @@ parameter_statement:
 noe_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | noe_assign)*
+	(evaluate_statement | noe_assign | distance_restraint)*
 	End Loop Simple_name_LL;
 
 dihedral_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | dihedral_assign)*
+	(evaluate_statement | dihedral_assign | dihedral_angle_restraint)*
 	End Loop Simple_name_LL;
 
 sani_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | sani_assign)*
+	(evaluate_statement | sani_assign | rdc_restraint)*
 	End Loop Simple_name_LL;
 
 xadc_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | xadc_assign)*
+	(evaluate_statement | xadc_assign | antidistance_restraint)*
 	End Loop Simple_name_LL;
 
 coup_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | coup_assign)*
+	(evaluate_statement | coup_assign | coupling_restraint)*
 	End Loop Simple_name_LL;
 
 coll_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | coll_assign)*
+	(evaluate_statement | coll_assign | radius_of_gyration_restraint)*
 	End Loop Simple_name_LL;
 
 csa_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | csa_assign)*
+	(evaluate_statement | csa_assign | csa_restraint)*
 	End Loop Simple_name_LL;
 
 pre_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | pre_assign)*
+	(evaluate_statement | pre_assign | pre_restraint)*
 	End Loop Simple_name_LL;
 
 pcs_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | pcs_assign)*
+	(evaluate_statement | pcs_assign | pcs_restraint | carbon_shift_restraint)*
 	End Loop Simple_name_LL;
 
 hbond_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | hbond_assign)*
+	(evaluate_statement | hbond_assign | hbond_restraint)*
 	End Loop Simple_name_LL;
 
 hbond_db_assign_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | hbond_db_assign)*
+	(evaluate_statement | hbond_db_assign | hbond_db_restraint)*
 	End Loop Simple_name_LL;
 
 planar_group_loop:
 	For Symbol_name_CF
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | planar_group)*
+	(evaluate_statement | planar_group | planar_restraint)*
 	End Loop Simple_name_LL;
 

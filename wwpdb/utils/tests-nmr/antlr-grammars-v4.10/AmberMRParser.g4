@@ -136,7 +136,7 @@ align_statement:
 align_factor:
 	(NDIP | DATASET | NUM_DATASETS) Equ_op_IP Integer Comma? |
 	(ID | JD | DATASET) L_paren_IP Decimal R_paren_AR Equ_op_IP Integer Comma? |
-	(DOBSL | DOBSU) L_paren_RP Decimal R_paren_AR Equ_op_RP Real Comma? |
+	(DOBSL | DOBSU | DOBS) L_paren_RP Decimal R_paren_AR Equ_op_RP Real Comma? |
 	(DWT | GIGJ | DIJ) L_paren_RA Decimal R_paren_AR Equ_op_RA Reals (Comma_RA | End_RA) |
 	(DWT | GIGJ | DIJ) Equ_op_RA (Reals | MultiplicativeReal) (Comma_RA | End_RA) |
 	(S11 | S12 | S13 | S22 | S23) Equ_op_RA Reals (Comma_RA | End_RA) |
@@ -153,7 +153,7 @@ csa_statement:
 csa_factor:
 	(NCSA | DATASETC) Equ_op_IP Integer Comma? |
 	(ICSA | JCSA | KCSA) L_paren_IP Decimal R_paren_AR Equ_op_IP Integer Comma? |
-	(COBSL | COBSU) L_paren_RP Decimal R_paren_AR Equ_op_RP Real Comma? |
+	(COBSL | COBSU | COBS) L_paren_RP Decimal R_paren_AR Equ_op_RP Real Comma? |
 	CWT Equ_op_RA (Reals | MultiplicativeReal) (Comma_RA | End_RA) |
 	(SIGMA11 | SIGMA12 | SIGMA13 | SIGMA22 | SIGMA23 | FIELD | CCUT) Equ_op_RP Real Comma? |
 	comment;

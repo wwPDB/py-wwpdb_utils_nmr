@@ -306,6 +306,9 @@ DOBSL:			D O B S L
 			-> pushMode(REAL_PARAM_MODE);		// = Real [ , Real ]*
 DOBSU:			D O B S U
 			-> pushMode(REAL_PARAM_MODE);		// = Real [ , Real ]*
+// note that 'dobs' is unauthorized item
+DOBS:			D O B S
+			-> pushMode(REAL_PARAM_MODE);		// = Real [ , Real ]*
 
 DWT:			D W T
 			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
@@ -354,6 +357,9 @@ KCSA:			K C S A
 COBSL:			C O B S L
 			-> pushMode(REAL_PARAM_MODE);		// = Real [ , Real ]*
 COBSU:			C O B S U
+			-> pushMode(REAL_PARAM_MODE);		// = Real [ , Real ]*
+// note that 'cobs' is unauthorized item
+COBS:			C O B S
 			-> pushMode(REAL_PARAM_MODE);		// = Real [ , Real ]*
 
 CWT:			C W T

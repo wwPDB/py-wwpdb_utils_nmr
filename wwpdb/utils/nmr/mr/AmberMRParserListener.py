@@ -4868,6 +4868,18 @@ class AmberMRParserListener(ParseTreeListener):
                     return
                 self.dobsu[decimal] = float(str(ctx.Real()))
 
+        elif ctx.DOBS():
+            varName = 'dobs'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ndip > 0 and decimal > self.ndip:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
+                        f"regulated by 'ndip={self.ndip}'.\n"
+                    return
+                self.dobsl[decimal] = self.dobsu[decimal] = float(str(ctx.Real()))
+
         elif ctx.DWT():
             varName = 'dwt'
 
@@ -5476,6 +5488,18 @@ class AmberMRParserListener(ParseTreeListener):
                         f"regulated by 'ncsa={self.ncsa}'.\n"
                     return
                 self.cobsu[decimal] = float(str(ctx.Real()))
+
+        elif ctx.COBS():
+            varName = 'cobs'
+
+            if ctx.Decimal():
+                decimal = int(str(ctx.Decimal()))
+                if self.ncsa > 0 and decimal > self.ncsa:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
+                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
+                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    return
+                self.cobsl[decimal] = self.cobsu[decimal] = float(str(ctx.Real()))
 
         elif ctx.CWT():
             varName = 'cwt'

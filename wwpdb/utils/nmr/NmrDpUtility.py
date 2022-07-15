@@ -7631,6 +7631,8 @@ class NmrDpUtility:
                                                                         str(file_path), 0)
                             div_test = True
 
+                    fixed_line_num = -1
+
                     if has_lexer_error:
                         messageList = lexer_err_listener.getMessageList()
 
@@ -7649,7 +7651,10 @@ class NmrDpUtility:
                                 if is_not_ascii:
                                     err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__remediation_mode:
-                                    corrected |= self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    fixed = self.__divideLegacyMRIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    corrected |= fixed
+                                    if fixed:
+                                        fixed_line_num = description['line_number']
                                     div_test = file_type != 'nm-res-amb'  # remediate missing comma issue in AMBER MR
 
                     if has_parser_error:
@@ -7659,6 +7664,8 @@ class NmrDpUtility:
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
                             len_err = len(err)
+                            if 0 < fixed_line_num <= description['line_number']:
+                                div_test = True
                             if 'input' in description:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
@@ -8415,6 +8422,11 @@ class NmrDpUtility:
 
                                 corrected = False
 
+                        else:
+
+                            if self.__mr_debug:
+                                print('DIV-MR-EXIT #2-3')
+
                         return corrected
 
         i = j = j_offset = 0
@@ -8973,10 +8985,14 @@ class NmrDpUtility:
                     os.remove(div_try_file)
 
                     if is_peak_list(err_input):
+
+                        if self.__mr_debug:
+                            print('DIV-MR-EXIT #5-1')
+
                         return self.__peelLegacyMRIfNecessary(file_path, file_type, err_desc, src_path, offset)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #5')
+                        print('DIV-MR-EXIT #5-2')
 
                     return False  # not split MR file because of the lexer errors to be handled by manual
 
@@ -10106,6 +10122,8 @@ class NmrDpUtility:
                                                    src_path, offset)
                     div_test = True
 
+            fixed_line_num = -1
+
             if has_lexer_error:
                 messageList = lexer_err_listener.getMessageList()
 
@@ -10115,13 +10133,17 @@ class NmrDpUtility:
                         if enc is not None and enc != 'ascii':
                             pass
                         elif not div_test and has_content:
-                            self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                            fixed = self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)
+                            if fixed:
+                                fixed_line_num = description['line_number']
                             div_test = file_type != 'nm-res-amb'  # remediate missing comma issue in AMBER MR
 
             if has_parser_error:
                 messageList = parser_err_listener.getMessageList()
 
                 for description in messageList:
+                    if 0 < fixed_line_num <= description['line_number']:
+                        div_test = True
                     if 'input' in description:
                         if not div_test and has_content:
                             self.__divideLegacyMRIfNecessary(file_path, file_type, description, src_path, offset)

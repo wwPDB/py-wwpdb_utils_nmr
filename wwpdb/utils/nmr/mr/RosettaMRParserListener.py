@@ -2028,6 +2028,10 @@ class RosettaMRParserListener(ParseTreeListener):
                         valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"{funcType} 'weight={weight}' must not be a negative value.\n"
+                    elif weight == 0.0:
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                            f"{funcType} 'weight={weight}' should be a positive value.\n"
+
                     if limit <= 0.0:
                         valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2094,6 +2098,9 @@ class RosettaMRParserListener(ParseTreeListener):
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} 'weight={weight}' must not be a negative value.\n"
+                elif weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'weight={weight}' should be a positive value.\n"
 
                 if len(self.numberFSelection) > 36:
                     func['energy'] = []
@@ -2128,6 +2135,9 @@ class RosettaMRParserListener(ParseTreeListener):
                         valid = False
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                             f"{funcType} 'weight={weight}' must not be a negative value.\n"
+                    elif weight == 0.0:
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                            f"{funcType} 'weight={weight}' should be a positive value.\n"
 
                 func['target_value'] = mean
                 func['lower_limit'] = mean - sd
@@ -2171,6 +2181,10 @@ class RosettaMRParserListener(ParseTreeListener):
                             valid = False
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
+                        elif weight == 0.0:
+                            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                                f"{funcType} 'weight={weight}' of {n+1}th function should be a positive value.\n"
+
                 else:
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2286,6 +2300,9 @@ class RosettaMRParserListener(ParseTreeListener):
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
+                elif weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'weight={weight}' of {n+1}th function should be a positive value.\n"
 
                 func['func_types'] = []
 
@@ -2326,6 +2343,10 @@ class RosettaMRParserListener(ParseTreeListener):
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} 'weight={weight}' must not be a negative value.\n"
+                elif weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'weight={weight}' should be a positive value.\n"
+
                 if bin_size <= 0.0:
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2375,6 +2396,9 @@ class RosettaMRParserListener(ParseTreeListener):
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"{funcType} 'weight={weight}' must not be a negative value.\n"
+                elif weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"{funcType} 'weight={weight}' should be a positive value.\n"
 
                 if ctx.DEGREES():
                     func['unit'] = 'degrees'
@@ -2480,6 +2504,9 @@ class RosettaMRParserListener(ParseTreeListener):
                             valid = False
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 f"{funcType} 'weight={weight}' of {n+1}th function must not be a negative value.\n"
+                        elif weight == 0.0:
+                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                                f"{funcType} 'weight={weight}' of {n+1}th function should be a positive value.\n"
                 else:
                     valid = False
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\

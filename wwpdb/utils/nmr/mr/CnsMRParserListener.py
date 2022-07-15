@@ -612,9 +612,12 @@ class CnsMRParserListener(ParseTreeListener):
                     self.warningMessage += "[Unsupported data] "\
                         f"The symbol {self.scale!r} in the 'NOE' statement is not defined so that set the default value.\n"
                     self.scale = 1.0
-            if self.scale is None or self.scale <= 0.0:
+            if self.scale is None or self.scale == 0.0:
+                self.warningMessage += "[Range value warning] "\
+                    f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' should be a positive value.\n"
+            elif self.scale < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' must be a positive value.\n"
+                    f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' must not be a negative value.\n"
 
         elif ctx.Reset():
             self.noePotential = 'biharmonic'  # default potential
@@ -668,9 +671,13 @@ class CnsMRParserListener(ParseTreeListener):
 
             scale = self.scale if self.scale_a is None else self.scale_a
 
-            if scale <= 0.0:
+            if scale < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The weight value '{scale}' must be a positive value.\n"
+                    f"The weight value '{scale}' must not be a negative value.\n"
+                return
+            if scale == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The weight value '{scale}' should be a positive value.\n"
 
             target_value = target
             lower_limit = None
@@ -965,12 +972,15 @@ class CnsMRParserListener(ParseTreeListener):
                     self.scale = self.evaluate[self.scale]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'RESTRAINT DIHEDRAL {str(ctx.Scale())}={self.scale} END' "\
+                        f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' "\
                         f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
                     self.scale = 1.0
-            if self.scale <= 0.0:
+            if self.scale < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'RESTRAINT DIHEDRAL {str(ctx.Scale())}={self.scale} END' must be a positive value.\n"
+                    f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' must not be a negative value.\n"
+            elif self.scale == 0.0:
+                self.warningMessage += "[Range value warning] "\
+                    f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' should be a positive value.\n"
 
         elif ctx.Reset():
             self.scale = 1.0
@@ -1226,9 +1236,12 @@ class CnsMRParserListener(ParseTreeListener):
                         f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
                         f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
                     self.scale = 1.0
-            if self.scale <= 0.0:
+            if self.scale < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must be a positive value.\n"
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must not be a negative value.\n"
+            elif self.scale == 0.0:
+                self.warningMessage += "[Range value warning] "\
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' should be a positive value.\n"
 
     # Exit a parse tree produced by CnsMRParser#group_statement.
     def exitGroup_statement(self, ctx: CnsMRParser.Group_statementContext):  # pylint: disable=unused-argument
@@ -2903,9 +2916,12 @@ class CnsMRParserListener(ParseTreeListener):
                         f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
                         f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
                     self.scale = 1.0
-            if self.scale <= 0.0:
+            if self.scale < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must be a positive value.\n"
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must not be a negative value.\n"
+            if self.scale == 0.0:
+                self.warningMessage += "[Range value warning] "\
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' should be a positive value.\n"
 
     # Exit a parse tree produced by CnsMRParser#ncs_group_statement.
     def exitNcs_group_statement(self, ctx: CnsMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument

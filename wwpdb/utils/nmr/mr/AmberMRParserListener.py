@@ -4067,10 +4067,13 @@ class AmberMRParserListener(ParseTreeListener):
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
-                if val <= 0.0:
+                if val < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' must be a positive value.\n"
+                        f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.\n"
                     return
+                if val == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=decimal)}"\
+                        f"The relative weight value '{varName}({decimal})={val}' should be a positive value.\n"
                 self.wt[decimal] = val
 
             else:
@@ -4082,10 +4085,13 @@ class AmberMRParserListener(ParseTreeListener):
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
-                        if val <= 0.0:
+                        if val < 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' must be a positive value.\n"
+                                f"The relative weight value '{varName}({col})={val}' must not be a negative value.\n"
                             return
+                        if val == 0.0:
+                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value '{varName}({col})={val}' should be a positive value.\n"
                         self.wt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
@@ -4099,11 +4105,15 @@ class AmberMRParserListener(ParseTreeListener):
                                 f"regulated by 'nprot={self.nprot}'.\n"
                             return
                         val = float(rawMultReal[1])
-                        if val <= 0.0:
+                        if val < 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be a positive value.\n"
+                                f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.\n"
                             return
+                        if val == 0.0:
+                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value '{varName}={val}' derived from "\
+                                f"'{str(ctx.MultiplicativeReal())}' should be a positive value.\n"
                         for col in range(0, numCol):
                             self.wt[offset + col + 1] = val
                         offset += numCol
@@ -4398,10 +4408,13 @@ class AmberMRParserListener(ParseTreeListener):
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
-                if val <= 0.0:
+                if val < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' must be a positive value.\n"
+                        f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.\n"
                     return
+                if val == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
+                        f"The relative weight value '{varName}({decimal})={val}' should be a positive value.\n"
                 self.wt[decimal] = val
 
             else:
@@ -4413,10 +4426,13 @@ class AmberMRParserListener(ParseTreeListener):
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
-                        if val <= 0.0:
+                        if val < 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' must be a positive value.\n"
+                                f"The relative weight value '{varName}({col})={val}' must not be a negative value.\n"
                             return
+                        if val == 0.0:
+                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value '{varName}({col})={val}' should be a positive value.\n"
                         self.wt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
@@ -4430,11 +4446,15 @@ class AmberMRParserListener(ParseTreeListener):
                                 f"regulated by 'nprot={self.nprot}'.\n"
                             return
                         val = float(rawMultReal[1])
-                        if val <= 0.0:
+                        if val < 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be a positive value.\n"
+                                f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.\n"
                             return
+                        if val == 0.0:
+                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value '{varName}={val}' derived from "\
+                                f"'{str(ctx.MultiplicativeReal())}' should be a positive value.\n"
                         for col in range(0, numCol):
                             self.wt[offset + col + 1] = val
                         offset += numCol
@@ -4892,10 +4912,13 @@ class AmberMRParserListener(ParseTreeListener):
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
-                if val <= 0.0:
+                if val < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' must be a positive value.\n"
+                        f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.\n"
                     return
+                if val == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.dataset,decimal)}"\
+                        f"The relative weight value '{varName}({decimal})={val}' should be a positive value.\n"
                 self.dwt[decimal] = val
 
             else:
@@ -4907,10 +4930,13 @@ class AmberMRParserListener(ParseTreeListener):
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
-                        if val <= 0.0:
+                        if val < 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' must be a positive value.\n"
+                                f"The relative weight value '{varName}({col})={val}' must not be a negative value.\n"
                             return
+                        if val == 0.0:
+                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value '{varName}({col})={val}' should be a positive value.\n"
                         self.dwt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
@@ -4924,11 +4950,15 @@ class AmberMRParserListener(ParseTreeListener):
                                 f"regulated by 'ndip={self.ndip}'.\n"
                             return
                         val = float(rawMultReal[1])
-                        if val <= 0.0:
+                        if val < 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be a positive value.\n"
+                                f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.\n"
                             return
+                        if val == 0.0:
+                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value '{varName}={val}' derived from "\
+                                f"'{str(ctx.MultiplicativeReal())}' should be a positive value.\n"
                         for col in range(0, numCol):
                             self.dwt[offset + col + 1] = val
                         offset += numCol
@@ -5513,10 +5543,13 @@ class AmberMRParserListener(ParseTreeListener):
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
-                if val <= 0.0:
+                if val < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' must be a positive value.\n"
+                        f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.\n"
                     return
+                if val == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
+                        f"The relative weight value '{varName}({decimal})={val}' should be a positive value.\n"
                 self.cwt[decimal] = val
 
             else:
@@ -5528,10 +5561,13 @@ class AmberMRParserListener(ParseTreeListener):
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
-                        if val <= 0.0:
+                        if val < 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' must be a positive value.\n"
+                                f"The relative weight value '{varName}({col})={val}' must not be a negative value.\n"
                             return
+                        if val == 0.0:
+                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value '{varName}({col})={val}' should be a positive value.\n"
                         self.cwt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
@@ -5545,11 +5581,15 @@ class AmberMRParserListener(ParseTreeListener):
                                 f"regulated by 'ncsa={self.ncsa}'.\n"
                             return
                         val = float(rawMultReal[1])
-                        if val <= 0.0:
+                        if val < 0.0:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be a positive value.\n"
+                                f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.\n"
                             return
+                        if val == 0.0:
+                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                                f"The relative weight value '{varName}={val}' derived from "\
+                                f"'{str(ctx.MultiplicativeReal())}' should be a positive value.\n"
                         for col in range(0, numCol):
                             self.cwt[offset + col + 1] = val
                         offset += numCol

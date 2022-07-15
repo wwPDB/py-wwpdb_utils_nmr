@@ -325,15 +325,21 @@ class DynamoMRParserListener(ParseTreeListener):
             weight = self.numberSelection[3]
             scale = self.numberSelection[4]
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
-            if scale <= 0.0:
+            if scale < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative scale value of '{scale}' must be a positive value.\n"
+                    f"The relative scale value of '{scale}' must not be a negative value.\n"
                 return
+            if scale == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
+                    f"The relative scale value of '{scale}' should be a positive value.\n"
 
             dstFunc = self.validateDistanceRange(index, group, weight, scale, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 
@@ -408,15 +414,21 @@ class DynamoMRParserListener(ParseTreeListener):
             weight = self.numberSelection[3]
             scale = self.numberSelection[4]
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
-            if scale <= 0.0:
+            if scale < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative scale value of '{scale}' must be a positive value.\n"
+                    f"The relative scale value of '{scale}' must not be a negative value.\n"
                 return
+            if scale == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
+                    f"The relative scale value of '{scale}' should be a positive value.\n"
 
             dstFunc = self.validateDistanceRange(index, group, weight, scale, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 
@@ -492,15 +504,21 @@ class DynamoMRParserListener(ParseTreeListener):
             weight = self.numberSelection[3]
             scale = self.numberSelection[4]
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
-            if scale <= 0.0:
+            if scale < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative scale value of '{scale}' must be a positive value.\n"
+                    f"The relative scale value of '{scale}' must not be a negative value.\n"
                 return
+            if scale == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
+                    f"The relative scale value of '{scale}' should be a positive value.\n"
 
             dstFunc = self.validateDistanceRange(index, group, weight, scale, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 
@@ -1313,10 +1331,13 @@ class DynamoMRParserListener(ParseTreeListener):
             error = abs(self.numberSelection[1])
             weight = self.numberSelection[2]
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             target_value = target
             lower_limit = target - error
@@ -1451,10 +1472,13 @@ class DynamoMRParserListener(ParseTreeListener):
             error = abs(self.numberSelection[1])
             weight = self.numberSelection[2]
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             target_value = target
             lower_limit = target - error
@@ -1591,10 +1615,13 @@ class DynamoMRParserListener(ParseTreeListener):
             error = abs(self.numberSelection[1])
             weight = self.numberSelection[2]
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             target_value = target
             lower_limit = target - error
@@ -1740,10 +1767,13 @@ class DynamoMRParserListener(ParseTreeListener):
             error = abs(self.numberSelection[4])
             weight = self.numberSelection[5]
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             target_value = target
             lower_limit = target - error

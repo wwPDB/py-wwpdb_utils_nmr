@@ -417,10 +417,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     else:
                         has_square = True
 
-                if weight <= 0.0:
+                if weight < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                        f"The relative weight value of '{weight}' must not be a negative value.\n"
                     return
+                if weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' should be a positive value.\n"
 
                 if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
                     if self.__max_dist_value is None:
@@ -594,10 +597,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif len(self.numberSelection) > 1:
                     error = abs(self.numberSelection[1])
 
-                if weight <= 0.0:
+                if weight < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                        f"The relative weight value of '{weight}' must not be a negative value.\n"
                     return
+                if weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' should be a positive value.\n"
 
                 target_value = target
                 lower_limit = target - error if error is not None else None
@@ -728,10 +734,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     else:
                         has_square = True
 
-                if weight <= 0.0:
+                if weight < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                        f"The relative weight value of '{weight}' must not be a negative value.\n"
                     return
+                if weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' should be a positive value.\n"
 
                 if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
                     if self.__max_dist_value is None:
@@ -905,10 +914,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif len(self.numberSelection) > 1:
                     error = abs(self.numberSelection[1])
 
-                if weight <= 0.0:
+                if weight < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                        f"The relative weight value of '{weight}' must not be a negative value.\n"
                     return
+                if weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' should be a positive value.\n"
 
                 target_value = target
                 lower_limit = target - error if error is not None else None
@@ -1728,10 +1740,13 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.numberSelection) > 2:
                 weight = self.numberSelection[2]
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
             """
             if lower_limit > upper_limit:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2086,10 +2101,13 @@ class CyanaMRParserListener(ParseTreeListener):
             weight = self.numberSelection[2]
             orientation = int(str(ctx.Integer(2)))
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             if orientation not in self.rdcParameterDict:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2354,10 +2372,13 @@ class CyanaMRParserListener(ParseTreeListener):
             weight = self.numberSelection[2]
             orientation = int(str(ctx.Integer(1)))
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             if orientation not in self.pcsParameterDict:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2651,10 +2672,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     weight = 1.0
                     has_square = True
 
-                if weight <= 0.0:
+                if weight < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                        f"The relative weight value of '{weight}' must not be a negative value.\n"
                     return
+                if weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' should be a positive value.\n"
 
                 target_value = None
                 lower_limit = None
@@ -2805,10 +2829,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 value2 = self.numberSelection[num_col + 1]
                 weight = self.numberSelection[num_col + 2]
 
-                if weight <= 0.0:
+                if weight < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                        f"The relative weight value of '{weight}' must not be a negative value.\n"
                     return
+                if weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' should be a positive value.\n"
 
                 target_value = None
                 lower_limit = None
@@ -3060,10 +3087,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 value2 = self.numberSelection[num_col + 1]
                 has_square = False
 
-                if value2 <= 0.0:
+                if value2 < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{value2}' must be a positive value.\n"
+                        f"The relative weight value of '{value2}' must not be a negative value.\n"
                     return
+                if value2 == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{value2}' should be a positive value.\n"
 
                 if value2 <= 1.0 or value2 < value:
                     weight = value2
@@ -3220,10 +3250,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 value2 = self.numberSelection[num_col + 1]
                 weight = self.numberSelection[num_col + 2]
 
-                if weight <= 0.0:
+                if weight < 0.0:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must be a positive value.\n"
+                        f"The relative weight value of '{weight}' must not be a negative value.\n"
                     return
+                if weight == 0.0:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                        f"The relative weight value of '{weight}' should be a positive value.\n"
 
                 target_value = None
                 lower_limit = None
@@ -3408,10 +3441,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 else:
                     has_square = True
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
                 if self.__max_dist_value is None:
@@ -3687,10 +3723,13 @@ class CyanaMRParserListener(ParseTreeListener):
             elif len(self.numberSelection) > 1:
                 error = abs(self.numberSelection[1])
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             target_value = target
             lower_limit = target - error if error is not None else None

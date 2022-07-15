@@ -805,10 +805,13 @@ class BiosymMRParserListener(ParseTreeListener):
             # weight_ub = self.numberSelection[3]
             # weught_max = self.numberSelection[4]
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             target_value = None
             lower_limit = self.numberSelection[5]
@@ -921,10 +924,13 @@ class BiosymMRParserListener(ParseTreeListener):
             # weight_ub = self.numberSelection[3]
             # weught_max = self.numberSelection[4]
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
 

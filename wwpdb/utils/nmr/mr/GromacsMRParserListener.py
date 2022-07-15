@@ -281,10 +281,13 @@ class GromacsMRParserListener(ParseTreeListener):
                     f"Unknown function type '{funct}' is set.\n"
                 return
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index)}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             dstFunc = self.validateDistanceRange(index, weight, lower_limit, upper_limit, upper_linear_limit, self.__omitDistLimitOutlier)
 
@@ -450,10 +453,13 @@ class GromacsMRParserListener(ParseTreeListener):
                     f"Unknown function type '{funct}' is set.\n"
                 return
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
 
@@ -633,10 +639,13 @@ class GromacsMRParserListener(ParseTreeListener):
                     f"The 'alpha={alpha}' must be 3.0 for RDC restraints.\n"
                 return
 
-            if weight <= 0.0:
+            if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The relative weight value of '{weight}' must be a positive value.\n"
+                    f"The relative weight value of '{weight}' must not be a negative value.\n"
                 return
+            if weight == 0.0:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
+                    f"The relative weight value of '{weight}' should be a positive value.\n"
 
             dstFunc = self.validateRdcRange(weight, exp, index, target_value, None, None)
 

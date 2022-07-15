@@ -199,6 +199,11 @@ class RosettaMRReader:
 if __name__ == "__main__":
     reader = RosettaMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6u3s/NOES_PRES.cst',
+                 '../../tests-nmr/mock-data-remediation/6u3s/6u3s.cif')
+
+    reader = RosettaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_rdc.test',
                  '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')
 

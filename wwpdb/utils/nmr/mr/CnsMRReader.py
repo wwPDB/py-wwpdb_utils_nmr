@@ -192,6 +192,11 @@ class CnsMRReader:
 if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lhz/2lhz-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2lhz/2lhz.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6th8/hbond_patches.tbl',
                  '../../tests-nmr/mock-data-remediation/6th8/6th8.cif')
 

@@ -11056,29 +11056,9 @@ class NmrDpUtility:
                             _ar['file_type'] = 'nm-res-xpl'
                             split_file_list.append(_ar)
 
-                        elif len_valid_types == 2 and 'nm-res-amb' in valid_types and 'nm-res-cya' in valid_types:
+                        elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                             _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-amb'
-                            split_file_list.append(_ar)
-
-                        elif len_valid_types == 2 and 'nm-res-bio' in valid_types and 'nm-res-cya' in valid_types:
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-bio'
-                            split_file_list.append(_ar)
-
-                        elif len_valid_types == 2 and 'nm-res-dyn' in valid_types and 'nm-res-cya' in valid_types:
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-dyn'
-                            split_file_list.append(_ar)
-
-                        elif len_valid_types == 2 and 'nm-res-ros' in valid_types and 'nm-res-cya' in valid_types:
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-ros'
-                            split_file_list.append(_ar)
-
-                        elif len_valid_types == 2 and 'nm-res-syb' in valid_types and 'nm-res-cya' in valid_types:
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-syb'
+                            _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nmr-res-cya')
                             split_file_list.append(_ar)
 
                         else:
@@ -11724,37 +11704,9 @@ class NmrDpUtility:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
 
-                            elif len_valid_types == 2 and 'nm-res-amb' in valid_types and 'nm-res-cya' in valid_types:
+                            elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                                 _ar['file_name'] = _dst_file
-                                _ar['file_type'] = 'nm-res-amb'
-                                if distict:
-                                    _ar['original_file_name'] = file_name
-                                split_file_list.append(_ar)
-
-                            elif len_valid_types == 2 and 'nm-res-bio' in valid_types and 'nm-res-cya' in valid_types:
-                                _ar['file_name'] = _dst_file
-                                _ar['file_type'] = 'nm-res-bio'
-                                if distict:
-                                    _ar['original_file_name'] = file_name
-                                split_file_list.append(_ar)
-
-                            elif len_valid_types == 2 and 'nm-res-dyn' in valid_types and 'nm-res-cya' in valid_types:
-                                _ar['file_name'] = _dst_file
-                                _ar['file_type'] = 'nm-res-dyn'
-                                if distict:
-                                    _ar['original_file_name'] = file_name
-                                split_file_list.append(_ar)
-
-                            elif len_valid_types == 2 and 'nm-res-ros' in valid_types and 'nm-res-cya' in valid_types:
-                                _ar['file_name'] = _dst_file
-                                _ar['file_type'] = 'nm-res-ros'
-                                if distict:
-                                    _ar['original_file_name'] = file_name
-                                split_file_list.append(_ar)
-
-                            elif len_valid_types == 2 and 'nm-res-syb' in valid_types and 'nm-res-cya' in valid_types:
-                                _ar['file_name'] = _dst_file
-                                _ar['file_type'] = 'nm-res-syb'
+                                _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nmr-res-cya')
                                 if distict:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)

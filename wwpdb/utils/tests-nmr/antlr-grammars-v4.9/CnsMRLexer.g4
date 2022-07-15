@@ -491,7 +491,7 @@ mode AVER_MODE; // Inside of Averaging tag
 
 Averaging_methods:	(R '-6' | R '-3' | S U M | C E N T E? R?) -> popMode;
 
-Simple_name_AM:		SIMPLE_NAME;
+Class_name_AM:		SIMPLE_NAME;
 
 SPACE_AM:		[ \t\r\n]+ -> skip;
 
@@ -501,7 +501,7 @@ Equ_op_PT:		'=';
 
 Potential_types:	(B I H A R? M? O? N? I? C? | L O G N O? R? M? A? L? | S Q U A R? E? '-'? W? E? L? L? | S O F T '-'? S? Q? U? A? R? E? | S Y M M E? T? R? Y? | H I G H | '3' D P O | H A R M O? N? I? C? | M U L T I? P? L? E?) -> popMode;
 
-Simple_name_PT:		SIMPLE_NAME;
+Class_name_PT:		SIMPLE_NAME;
 
 SPACE_PT:		[ \t\r\n]+ -> skip;
 

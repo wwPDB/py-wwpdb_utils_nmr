@@ -2033,11 +2033,11 @@ class CnsMRLexer(Lexer):
     Comparison_ops = 177
     SPACE_AP = 178
     Averaging_methods = 179
-    Simple_name_AM = 180
+    Class_name_AM = 180
     SPACE_AM = 181
     Equ_op_PT = 182
     Potential_types = 183
-    Simple_name_PT = 184
+    Class_name_PT = 184
     SPACE_PT = 185
     Noe_analysis = 186
     SPACE_NA = 187
@@ -2160,8 +2160,8 @@ class CnsMRLexer(Lexer):
             "Gt_op", "Leq_op", "Geq_op", "Neq_op", "Symbol_name", "SPACE", 
             "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
             "Abs", "Attr_properties", "Comparison_ops", "SPACE_AP", "Averaging_methods", 
-            "Simple_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
-            "Simple_name_PT", "SPACE_PT", "Noe_analysis", "SPACE_NA", "Exclude", 
+            "Class_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
+            "Class_name_PT", "SPACE_PT", "Noe_analysis", "SPACE_NA", "Exclude", 
             "Include", "End_FL", "Class_name", "Any_class", "SPACE_FL", 
             "R_paren_VE", "Equ_op_VE", "Add_op_VE", "Sub_op_VE", "Mul_op_VE", 
             "Div_op_VE", "Exp_op_VE", "Comma_VE", "Integer_VE", "Real_VE", 
@@ -2212,8 +2212,8 @@ class CnsMRLexer(Lexer):
                   "Lt_op", "Gt_op", "Leq_op", "Geq_op", "Neq_op", "Symbol_name", 
                   "SPACE", "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
                   "SET_VARIABLE", "Abs", "Attr_properties", "Comparison_ops", 
-                  "SPACE_AP", "Averaging_methods", "Simple_name_AM", "SPACE_AM", 
-                  "Equ_op_PT", "Potential_types", "Simple_name_PT", "SPACE_PT", 
+                  "SPACE_AP", "Averaging_methods", "Class_name_AM", "SPACE_AM", 
+                  "Equ_op_PT", "Potential_types", "Class_name_PT", "SPACE_PT", 
                   "Noe_analysis", "SPACE_NA", "Exclude", "Include", "End_FL", 
                   "Class_name", "Any_class", "SPACE_FL", "R_paren_VE", "Equ_op_VE", 
                   "Add_op_VE", "Sub_op_VE", "Mul_op_VE", "Div_op_VE", "Exp_op_VE", 

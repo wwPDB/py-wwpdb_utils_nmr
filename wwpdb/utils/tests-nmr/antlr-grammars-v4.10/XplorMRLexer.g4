@@ -732,7 +732,7 @@ mode AVER_MODE; // Inside of Average tag
 
 Averaging_methods:	('R-6' | 'R-3' | 'SUM' | 'CENT' 'E'? 'R'? | 'SUMD' 'I'? 'F'? | 'AVER' 'A'? 'G'? 'E'?) -> popMode;
 
-Simple_name_AM:		SIMPLE_NAME;
+Class_name_AM:		SIMPLE_NAME;
 
 SPACE_AM:		[ \t\r\n]+ -> skip;
 
@@ -742,7 +742,7 @@ Equ_op_PT:		'=';
 
 Potential_types:	('BIHA' 'R'? 'M'? 'O'? 'N'? 'I'? 'C'? | 'LOGN' 'O'? 'R'? 'M'? 'A'? 'L'? | 'SQUA' 'R'? 'E'? '-'? 'W'? 'E'? 'L'? 'L'? | 'SOFT' '-'? 'S'? 'Q'? 'U'? 'A'? 'R'? 'E'? | 'SYMM' 'E'? 'T'? 'R'? 'Y'? | 'HIGH' | '3DPO' | 'HARM' 'O'? 'N'? 'I'? 'C'?) -> popMode;
 
-Simple_name_PT:		SIMPLE_NAME;
+Class_name_PT:		SIMPLE_NAME;
 
 SPACE_PT:		[ \t\r\n]+ -> skip;
 

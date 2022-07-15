@@ -98,34 +98,34 @@ noe_statement:
 	Analysis Equ_op? Noe_analysis |
 	noe_assign |
 	noe_assign_loop |
-	Asymptote Simple_name number_s |
-	Average Simple_name_AM Averaging_methods |
-	Bhig Simple_name number_s |
+	Asymptote class_name number_s |
+	Average Class_name_AM Averaging_methods |
+	Bhig class_name number_s |
 	Ceiling Equ_op? number_s |
-	Classification Equ_op? Simple_name |
-	CountViol Simple_name |
+	Classification Equ_op? class_name |
+	CountViol class_name |
 	Cv Equ_op? Integer |
 	Den Initialize |
 	Den Update Gamma Equ_op? number_s Kappa Equ_op? number_s |
-	Distribute Simple_name Simple_name number_s |
+	Distribute class_name class_name number_s |
 	Ensemble *? End |
-	Monomers Simple_name Integer |
-	Ncount Simple_name Integer |
+	Monomers class_name Integer |
+	Ncount class_name Integer |
 	Nrestraints Equ_op? Integer |
 	Outd |
 	Partition Equ_op? Integer |
-	Potential Simple_name_PT Potential_types |
+	Potential Class_name_PT Potential_types |
 	Predict predict_statement End |
 	Print Threshold Equ_op? number_s |
-	Raverage Simple_name *? End |
+	Raverage class_name *? End |
 	Reset |
-	Rswitch Simple_name number_s |
-	Scale Simple_name number_s |
-	SoExponent Simple_name number_s |
-	SqConstant Simple_name number_s |
-	SqExponent Simple_name number_s |
-	SqOffset Simple_name number_s |
-	Taverage Simple_name *? End |
+	Rswitch class_name number_s |
+	Scale class_name number_s |
+	SoExponent class_name number_s |
+	SqConstant class_name number_s |
+	SqExponent class_name number_s |
+	SqOffset class_name number_s |
+	Taverage class_name *? End |
 	Temperature Equ_op? number_s;
 
 noe_assign:
@@ -196,7 +196,7 @@ harmonic_assign:
 sani_statement:
 	sani_assign |
 	sani_assign_loop |
-	Classification Equ_op? Simple_name |
+	Classification Equ_op? class_name |
 	Coefficients number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -213,14 +213,14 @@ sani_assign:
 coupling_statement:
 	coup_assign |
 	coup_assign_loop |
-	Classification Equ_op? Simple_name |
+	Classification Equ_op? class_name |
 	Coefficients number_s number_s number_s number_s |
 	Cv Equ_op? Integer |
 	ForceConstant number_s number_s? |
 	Nrestraints Equ_op? Integer |
 	Partition Equ_op? Integer |
 	Potential Equ_op_PT? Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
+	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
 	Reset;
 
 coup_assign:
@@ -232,7 +232,7 @@ coup_assign:
 carbon_shift_statement:
 	carbon_shift_assign |
 	carbon_shift_assign_loop |
-	Classification Equ_op? Simple_name |
+	Classification Equ_op? class_name |
 	Expectation Integer Integer number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -263,11 +263,11 @@ proton_shift_statement:
 	proton_shift_oxygens |
 	proton_shift_ring_atoms |
 	proton_shift_alphas_and_amides |
-	Classification Equ_op? Simple_name |
+	Classification Equ_op? class_name |
 	Error Equ_op? number_s |
 	ForceConstant number_s number_s? |
 	Potential Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) Simple_name |
+	Print Threshold number_s (All | (Classification Equ_op? class_name)) Simple_name |
 	Reset;
 
 observed:
@@ -302,7 +302,7 @@ proton_shift_alphas_and_amides:
 */
 conformation_statement:
 	conf_assign |
-	Classification Equ_op? Simple_name |
+	Classification Equ_op? class_name |
 	Compressed |
 	Expectation Integer Integer? Integer? Integer? number_s |
 	Error Equ_op? number_s |
@@ -310,7 +310,7 @@ conformation_statement:
 	Nrestraints Equ_op? Integer |
 	Phase Integer Integer Integer (Integer Integer Integer)? (Integer Integer Integer)? (Integer Integer Integer)? |
 	Potential Equ_op_PT? Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
+	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
 	Reset |
 	Size Dimensions Integer Integer? Integer? Integer? |
 	Zero;
@@ -323,7 +323,7 @@ conf_assign:
 */
 diffusion_statement:
 	dani_assign |
-	Classification Equ_op? Simple_name |
+	Classification Equ_op? class_name |
 	Coefficients number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -339,7 +339,7 @@ dani_assign:
 */
 one_bond_coupling_statement:
 	one_bond_assign |
-	Classification Equ_op? Simple_name |
+	Classification Equ_op? class_name |
 	Coefficients number_s number_s number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -355,14 +355,14 @@ one_bond_assign:
 */
 angle_db_statement:
 	angle_db_assign |
-	Classification Equ_op? Simple_name |
+	Classification Equ_op? class_name |
 	DerivFlag Equ_op? Simple_name |
 	Expectation Integer Integer number_s |
 	Error Equ_op? number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
 	Potential Equ_op_PT? Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? Simple_name)) |
+	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
 	Reset |
 	Size (AngleDb | Dihedral) Integer Integer |
 	Zero;
@@ -450,6 +450,10 @@ number_s:
 number_a:
 	Real | Integer;
 
+/* class name */
+class_name:
+	Simple_name | AngleDb | HBonded | Dihedral | Improper;
+
 /* XPLOR-NIH: Flags - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html (compatible with XPLOR-NIH)
 */
@@ -514,7 +518,7 @@ evaluate_operation:
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 patch_statement:
-	Patch (Simple_name | AngleDb | HBonded | Dihedral | Improper)? Reference Equ_op (Nil | Integer) Equ_op selection (Reference Equ_op (Nil | Integer) Equ_op selection)? End;
+	Patch class_name? Reference Equ_op (Nil | Integer) Equ_op selection (Reference Equ_op (Nil | Integer) Equ_op selection)? End;
 
 /* CNS: Parameter statement - Syntax (implement only type-based statement)
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

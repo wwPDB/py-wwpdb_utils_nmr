@@ -765,7 +765,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.squareExponent is None or self.squareExponent <= 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The exponent value of square-well or soft-square function "\
-                    f"'NOE {str(ctx.SqExponent())} {str(ctx.Simple_name())} {self.squareExponent} END' must be a positive value.\n"
+                    f"'NOE {str(ctx.SqExponent())} {self.getClass_name(ctx.class_name(0))} {self.squareExponent} END' must be a positive value.\n"
 
         elif ctx.SqOffset():
             self.squareOffset = self.getNumber_s(ctx.number_s())
@@ -779,7 +779,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.squareOffset is None or self.squareOffset < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The offset value of square-well or soft-square function "\
-                    f"'NOE {str(ctx.SqOffset())} {str(ctx.Simple_name())} {self.squareOffset} END' must not be a negative value.\n"
+                    f"'NOE {str(ctx.SqOffset())} {self.getClass_name(ctx.class_name(0))} {self.squareOffset} END' must not be a negative value.\n"
 
         elif ctx.Rswitch():
             self.rSwitch = self.getNumber_s(ctx.number_s())
@@ -793,7 +793,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.rSwitch is None or self.rSwitch < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     "The smoothing parameter of soft-square function "\
-                    f"'NOE {str(ctx.Rswitch())} {str(ctx.Simple_name())} {self.rSwitch} END' must not be a negative value.\n"
+                    f"'NOE {str(ctx.Rswitch())} {self.getClass_name(ctx.class_name(0))} {self.rSwitch} END' must not be a negative value.\n"
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s())
@@ -806,7 +806,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.scale = 1.0
             if self.scale is None or self.scale <= 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'NOE {str(ctx.Scale())} {str(ctx.Simple_name())} {self.scale} END' must be a positive value.\n"
+                    f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' must be a positive value.\n"
 
         elif ctx.Reset():
             self.noePotential = 'biharmonic'  # default potential
@@ -819,7 +819,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.symmDplus = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name(0))
+            self.classification = self.getClass_name(ctx.class_name(0))
 
     # Exit a parse tree produced by XplorMRParser#noe_statement.
     def exitNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):  # pylint: disable=unused-argument
@@ -1467,7 +1467,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.coefficients = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'DFS': self.getNumber_s(ctx.number_s(0)),
@@ -1874,7 +1874,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.coefficients = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'DFS': self.getNumber_s(ctx.number_s(0)),
@@ -2151,7 +2151,7 @@ class XplorMRParserListener(ParseTreeListener):
             pass
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
     # Exit a parse tree produced by XplorMRParser#vean_statement.
     def exitVean_statement(self, ctx: XplorMRParser.Vean_statementContext):  # pylint: disable=unused-argument
@@ -2392,7 +2392,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.coefficients = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'DFS': self.getNumber_s(ctx.number_s())
@@ -2539,7 +2539,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.coefficients = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'a0': self.getNumber_s(ctx.number_s(0)),
@@ -2807,7 +2807,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.adistExpect = -1.0
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Expectation():
             self.adistExpect = self.getNumber_s(ctx.number_s())
@@ -2872,7 +2872,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.coefficients = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'Karplus_coef_a': self.getNumber_s(ctx.number_s(0)),
@@ -3109,7 +3109,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.potential = 'square'
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Expectation():
             self.csExpect = {'psi_position': int(str(ctx.Integer(0))),
@@ -3278,7 +3278,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.coefficients = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_statement.
     def exitProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument
@@ -3603,7 +3603,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.scale = 1.0
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
     # Exit a parse tree produced by XplorMRParser#ramachandran_statement.
     def exitRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):  # pylint: disable=unused-argument
@@ -3788,7 +3788,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.coefficients = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'Tc': self.getNumber_s(ctx.number_s(0)),
@@ -4079,7 +4079,7 @@ class XplorMRParserListener(ParseTreeListener):
             pass
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
     # Exit a parse tree produced by XplorMRParser#orientation_statement.
     def exitOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):  # pylint: disable=unused-argument
@@ -4224,7 +4224,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.csaSigma = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'DFS': self.getNumber_s(ctx.number_s(0)),
@@ -4629,7 +4629,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.csaSigma = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'DFS': self.getNumber_s(ctx.number_s(0)),
@@ -4707,7 +4707,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.potential = 'square'
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
             self.preParameterDict[self.classification] = {}
 
         elif ctx.Kconst():
@@ -4963,7 +4963,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.coefficients = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'a1': self.getNumber_s(ctx.number_s(0)),
@@ -5232,7 +5232,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.coefficients = None
 
         elif ctx.Classification():
-            self.classification = str(ctx.Simple_name())
+            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'a1': self.getNumber_s(ctx.number_s(0)),
@@ -8743,6 +8743,35 @@ class XplorMRParserListener(ParseTreeListener):
 
         if ctx.Integer():
             return float(str(ctx.Integer()))
+
+        return None
+
+    # Enter a parse tree produced by XplorMRParser#class_name.
+    def enterClass_name(self, ctx: XplorMRParser.Class_nameContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XplorMRParser#class_name.
+    def exitClass_name(self, ctx: XplorMRParser.Class_nameContext):  # pylint: disable=unused-argument
+        pass
+
+    def getClass_name(self, ctx: XplorMRParser.Class_nameContext):  # pylint: disable=no-self-use
+        if ctx is None:
+            return None
+
+        if ctx.Simple_name():
+            return str(ctx.Simple_name())
+
+        if ctx.AngleDb():
+            return str(ctx.AngleDb())
+
+        if ctx.HBonded():
+            return str(ctx.HBonded())
+
+        if ctx.Dihedral():
+            return str(ctx.Dihedral())
+
+        if ctx.Improper():
+            return str(ctx.Improper())
 
         return None
 

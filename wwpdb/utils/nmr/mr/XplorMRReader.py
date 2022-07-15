@@ -192,6 +192,11 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5kqj/ANT2_hbond_restraint.tbl',
+                 '../../tests-nmr/mock-data-remediation/5kqj/5kqj.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2l1v/2l1v-corrected.mr',
                  '../../tests-nmr/mock-data-remediation/2l1v/2l1v.cif')
 

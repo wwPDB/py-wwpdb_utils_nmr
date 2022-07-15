@@ -2231,11 +2231,11 @@ class XplorMRLexer(Lexer):
     Comparison_ops = 221
     SPACE_AP = 222
     Averaging_methods = 223
-    Simple_name_AM = 224
+    Class_name_AM = 224
     SPACE_AM = 225
     Equ_op_PT = 226
     Potential_types = 227
-    Simple_name_PT = 228
+    Class_name_PT = 228
     SPACE_PT = 229
     Rdc_dist_fix_types = 230
     Rdc_or_Diff_anis_types = 231
@@ -2375,8 +2375,8 @@ class XplorMRLexer(Lexer):
             "Gt_op", "Leq_op", "Geq_op", "Neq_op", "Symbol_name", "SPACE", 
             "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", 
             "Abs", "Attr_properties", "Comparison_ops", "SPACE_AP", "Averaging_methods", 
-            "Simple_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
-            "Simple_name_PT", "SPACE_PT", "Rdc_dist_fix_types", "Rdc_or_Diff_anis_types", 
+            "Class_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
+            "Class_name_PT", "SPACE_PT", "Rdc_dist_fix_types", "Rdc_or_Diff_anis_types", 
             "Csa_types", "SPACE_TY", "Gauss_or_Quart", "SPACE_SH", "Exclude", 
             "Include", "End_FL", "Class_name", "Any_class", "SPACE_FL", 
             "R_paren_VE", "Equ_op_VE", "Add_op_VE", "Sub_op_VE", "Mul_op_VE", 
@@ -2435,8 +2435,8 @@ class XplorMRLexer(Lexer):
                   "Geq_op", "Neq_op", "Symbol_name", "SPACE", "COMMENT", 
                   "SECTION_COMMENT", "LINE_COMMENT", "SET_VARIABLE", "Abs", 
                   "Attr_properties", "Comparison_ops", "SPACE_AP", "Averaging_methods", 
-                  "Simple_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
-                  "Simple_name_PT", "SPACE_PT", "Rdc_dist_fix_types", "Rdc_or_Diff_anis_types", 
+                  "Class_name_AM", "SPACE_AM", "Equ_op_PT", "Potential_types", 
+                  "Class_name_PT", "SPACE_PT", "Rdc_dist_fix_types", "Rdc_or_Diff_anis_types", 
                   "Csa_types", "SPACE_TY", "Gauss_or_Quart", "SPACE_SH", 
                   "Exclude", "Include", "End_FL", "Class_name", "Any_class", 
                   "SPACE_FL", "R_paren_VE", "Equ_op_VE", "Add_op_VE", "Sub_op_VE", 

@@ -54,7 +54,9 @@ try:
                                                              ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                              PARAMAGNETIC_ELEMENTS,
                                                              FERROMAGNETIC_ELEMENTS)
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+    from wwpdb.utils.nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
+                                           MAJOR_ASYM_ID_SET,
+                                           monDict3,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -99,7 +101,9 @@ except ImportError:
                                                  ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                  PARAMAGNETIC_ELEMENTS,
                                                  FERROMAGNETIC_ELEMENTS)
-    from nmr.AlignUtil import (monDict3,
+    from nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
+                               MAJOR_ASYM_ID_SET,
+                               monDict3,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -279,6 +283,10 @@ class XplorMRParserListener(ParseTreeListener):
     __hasNonPoly = False
     __preferAuthSeq = True
 
+    # large model
+    __largeModel = False
+    __representativeAsymId = 'A'
+
     # polymer sequence of MR file
     __polySeqRst = None
 
@@ -415,6 +423,9 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
+        self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_MAJOR_ASYM_ID_SET
+        if self.__largeModel:
+            self.__representativeAsymId = next(c for c in MAJOR_ASYM_ID_SET if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == c))
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -6339,9 +6350,12 @@ class XplorMRParserListener(ParseTreeListener):
             return _factor
 
         if len(_factor) == 2 and 'chain_id' in _factor and len(_factor['chain_id']) == 0 and 'alt_chain_id' in _factor:
-            _factor['atom_selection'] = ['*']
-            del _factor['chain_id']
-            return _factor
+            if self.__largeModel:
+                _factor['chain_id'] = [self.__representativeAsymId]
+            else:
+                _factor['atom_selection'] = ['*']
+                del _factor['chain_id']
+                return _factor
 
         withPara = self.__cur_subtype in ('pcs', 'pre', 'prdc', 'pccr')
 
@@ -6355,12 +6369,15 @@ class XplorMRParserListener(ParseTreeListener):
             self.paramagCenter = copy.copy(_factor)
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
-            _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq]
-            if self.__hasNonPoly:
-                for np in self.__nonPoly:
-                    _chainId = np['auth_chain_id']
-                    if _chainId not in _factor['chain_id']:
-                        _factor['chain_id'].append(_chainId)
+            if self.__largeModel:
+                _factor['chain_id'] = [self.__representativeAsymId]
+            else:
+                _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq]
+                if self.__hasNonPoly:
+                    for np in self.__nonPoly:
+                        _chainId = np['auth_chain_id']
+                        if _chainId not in _factor['chain_id']:
+                            _factor['chain_id'].append(_chainId)
 
         if 'seq_id' not in _factor and 'seq_ids' not in _factor:
             if 'comp_ids' in _factor and len(_factor['comp_ids']) > 0\

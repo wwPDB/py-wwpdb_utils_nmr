@@ -232,7 +232,9 @@ try:
                                                        WEIGHT_RANGE,
                                                        SCALE_RANGE,
                                                        REPRESENTATIVE_MODEL_ID,
-                                                       CYANA_MR_FILE_EXTS)
+                                                       CYANA_MR_FILE_EXTS,
+                                                       MAJOR_ASYM_ID_SET,
+                                                       LEN_MAJOR_ASYM_ID_SET)
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.BiosymMRReader import BiosymMRReader
     from wwpdb.utils.nmr.mr.CnsMRReader import CnsMRReader
@@ -297,7 +299,9 @@ except ImportError:
                                            WEIGHT_RANGE,
                                            SCALE_RANGE,
                                            REPRESENTATIVE_MODEL_ID,
-                                           CYANA_MR_FILE_EXTS)
+                                           CYANA_MR_FILE_EXTS,
+                                           MAJOR_ASYM_ID_SET,
+                                           LEN_MAJOR_ASYM_ID_SET)
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.BiosymMRReader import BiosymMRReader
     from nmr.mr.CnsMRReader import CnsMRReader
@@ -29016,12 +29020,12 @@ class NmrDpUtility:
 
             try:
                 poly_seq = self.__cR.getPolymerSequence(lp_category, key_items,
-                                                        withStructConf=True, alias=alias, total_models=self.__total_models)
+                                                        withStructConf=True, withRmsd=True, alias=alias, total_models=self.__total_models)
             except KeyError:  # pdbx_PDB_ins_code throws KeyError
                 if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
                     key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
                     poly_seq = self.__cR.getPolymerSequence(lp_category, key_items,
-                                                            withStructConf=True, alias=alias, total_models=self.__total_models)
+                                                            withStructConf=True, withRmsd=True, alias=alias, total_models=self.__total_models)
                 else:
                     poly_seq = []
 
@@ -29243,31 +29247,63 @@ class NmrDpUtility:
             model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
             has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
 
-            if has_pdbx_auth_atom_name:
-                coord = self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                         {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
-                                                         ],
-                                                        [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                         ])
+            if len(polymer_sequence) > LEN_MAJOR_ASYM_ID_SET:
+
+                if has_pdbx_auth_atom_name:
+                    coord = self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                             {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                             {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
+                                                             ],
+                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
+                                                             {'name': 'auth_asym_id', 'type': 'enum', 'enum': MAJOR_ASYM_ID_SET, 'alt_name': 'chain_id'}
+                                                             ])
+                else:
+                    coord = self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                             {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                             ],
+                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
+                                                             {'name': 'auth_asym_id', 'type': 'enum', 'enum': MAJOR_ASYM_ID_SET, 'alt_name': 'chain_id'}
+                                                             ])
+
             else:
-                coord = self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
-                                                        [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                         ])
+
+                if has_pdbx_auth_atom_name:
+                    coord = self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                             {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
+                                                             ],
+                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                             ])
+                else:
+                    coord = self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                             ],
+                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                             ])
 
             if has_poly_seq:
                 label_to_auth_chain = {ps['chain_id']: ps['auth_chain_id'] for ps in polymer_sequence}
@@ -29751,8 +29787,11 @@ class NmrDpUtility:
 
                 seq_align_set = []
 
-                for s1 in polymer_sequence:
+                for i, s1 in enumerate(polymer_sequence):
                     chain_id = s1['chain_id']
+
+                    if i >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
+                        continue
 
                     for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                         ps2 = ps_in_loop['polymer_sequence']
@@ -29817,8 +29856,11 @@ class NmrDpUtility:
 
         seq_align_set = []
 
-        for s1 in polymer_sequence:
+        for i, s1 in enumerate(polymer_sequence):
             chain_id = s1['chain_id']
+
+            if i >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
+                continue
 
             for s2 in nmr_polymer_sequence:
                 chain_id2 = s2['chain_id']
@@ -29940,8 +29982,11 @@ class NmrDpUtility:
         for s1 in nmr_polymer_sequence:
             chain_id = s1['chain_id']
 
-            for s2 in polymer_sequence:
+            for i, s2 in enumerate(polymer_sequence):
                 chain_id2 = s2['chain_id']
+
+                if i >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
+                    continue
 
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
                 self.__pA.addTestSequence(s2['comp_id'], chain_id)
@@ -31517,7 +31562,7 @@ class NmrDpUtility:
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
 
                     if self.__nonblk_bad_nterm and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__coord_unobs_res) and atom_id_ in ('H', 'H1')\
-                       and (cyclic or comp_id == 'PRO' or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_)):  # DAOTHER-7665
+                       and (cyclic or comp_id == 'PRO' or (atom_id_ == 'H' or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
 
                         err += " However, it is acceptable if corresponding atom name, H1, is given during biocuration "
 

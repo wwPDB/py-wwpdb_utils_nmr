@@ -34,6 +34,7 @@ import itertools
 import hashlib
 import collections
 import re
+import copy
 
 import numpy as np
 
@@ -315,7 +316,7 @@ class CifReader:
 
         return dList
 
-    def getPolymerSequence(self, catName, keyItems, withStructConf=False, alias=False, total_models=1):
+    def getPolymerSequence(self, catName, keyItems, withStructConf=False, withRmsd=False, alias=False, total_models=1):
         """ Extracts sequence from a given loop in a CIF file
         """
 
@@ -430,113 +431,126 @@ class CifReader:
                     if c not in authChainDict:
                         authChainDict[c] = row[auth_chain_id_col]
 
-            for c in chains:
+            large_model = len(chains) >= 26
+
+            for i, c in enumerate(chains):
                 ent = {}  # entity
 
-                ent['chain_id'] = c
-                ent['seq_id'] = seqDict[c]
-                ent['comp_id'] = compDict[c]
-                if c in insCodeDict and any(s not in self.emptyValue for s in labelSeqDict[c]):
-                    ent['ins_code'] = insCodeDict[c]
-                    if c in labelSeqDict and all(s.isdigit() for s in labelSeqDict[c]):
-                        ent['auth_seq_id'] = seqDict[c]
-                        ent['label_seq_id'] = [int(s) for s in labelSeqDict[c]]
-                        ent['seq_id'] = ent['label_seq_id']
+                ident = False
+                if len(asm) > 0 and large_model:
+                    _ent = asm[-1]
+                    if 'identical_chain_id' in _ent and c in _ent['identical_chain_id']:
+                        ident = True
 
+                if ident:
+                    ent = copy.copy(asm[-1])
+
+                ent['chain_id'] = c
                 if auth_chain_id_col != -1:
                     ent['auth_chain_id'] = authChainDict[c]
 
-                if auth_seq_id_col != -1:
-                    ent['auth_seq_id'] = []
-                    for s in seqDict[c]:
-                        row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
-                        if row is not None:
-                            if row[auth_seq_id_col] not in self.emptyValue:
-                                try:
-                                    _s = int(row[auth_seq_id_col])
-                                except ValueError:
-                                    _s = None
-                                ent['auth_seq_id'].append(_s)
-                            else:
-                                ent['auth_seq_id'].append(None)
+                if not ident:
 
-                if auth_comp_id_col != -1:
-                    ent['auth_comp_id'] = []
-                    for s in seqDict[c]:
-                        row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
-                        if row is not None:
-                            comp_id = row[auth_comp_id_col]
-                            if comp_id not in self.emptyValue:
-                                ent['auth_comp_id'].append(comp_id)
-                            else:
-                                ent['auth_comp_id'].append('.')
+                    ent['seq_id'] = seqDict[c]
+                    ent['comp_id'] = compDict[c]
+                    if c in insCodeDict and any(s not in self.emptyValue for s in labelSeqDict[c]):
+                        ent['ins_code'] = insCodeDict[c]
+                        if c in labelSeqDict and all(s.isdigit() for s in labelSeqDict[c]):
+                            ent['auth_seq_id'] = seqDict[c]
+                            ent['label_seq_id'] = [int(s) for s in labelSeqDict[c]]
+                            ent['seq_id'] = ent['label_seq_id']
 
-                if withStructConf:
-                    ent['struct_conf'] = self.__extractStructConf(c, seqDict[c])
+                    if auth_seq_id_col != -1:
+                        ent['auth_seq_id'] = []
+                        for s in seqDict[c]:
+                            row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
+                            if row is not None:
+                                if row[auth_seq_id_col] not in self.emptyValue:
+                                    try:
+                                        _s = int(row[auth_seq_id_col])
+                                    except ValueError:
+                                        _s = None
+                                    ent['auth_seq_id'].append(_s)
+                                else:
+                                    ent['auth_seq_id'].append(None)
 
-                entity_poly = self.getDictList('entity_poly')
+                    if auth_comp_id_col != -1:
+                        ent['auth_comp_id'] = []
+                        for s in seqDict[c]:
+                            row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
+                            if row is not None:
+                                comp_id = row[auth_comp_id_col]
+                                if comp_id not in self.emptyValue:
+                                    ent['auth_comp_id'].append(comp_id)
+                                else:
+                                    ent['auth_comp_id'].append('.')
 
-                etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+                    if withStructConf and i < 26:  # save computing resource for large model
+                        ent['struct_conf'] = self.__extractStructConf(c, seqDict[c])
 
-                if etype is not None and total_models > 1:
-                    ent['type'] = etype
+                    entity_poly = self.getDictList('entity_poly')
 
-                    randomM = None
-                    if self.__random_rotaion_test:
-                        randomM = {}
-                        for model_id in range(1, total_models + 1):
-                            axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
-                            if self.__single_model_rotation_test:
-                                theta = 0.0 if model_id > 1 else np.pi / 4.0
-                            else:
-                                theta = random.uniform(-np.pi, np.pi)
-                            randomM[model_id] = M(axis, theta)
+                    etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
-                    if 'polypeptide' in etype:
+                    if withRmsd and etype is not None and total_models > 1 and i < 26:  # save computing resource for large model
+                        ent['type'] = etype
 
-                        ca_atom_sites = self.getDictListWithFilter('atom_site',
-                                                                   [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                    {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                    {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
-                                                                    {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
-                                                                    ],
-                                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                                    {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'},
-                                                                    {'name': 'label_alt_id', 'type': 'enum',
-                                                                     'enum': ('A')},
-                                                                    {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
+                        randomM = None
+                        if self.__random_rotaion_test:
+                            randomM = {}
+                            for model_id in range(1, total_models + 1):
+                                axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
+                                if self.__single_model_rotation_test:
+                                    theta = 0.0 if model_id > 1 else np.pi / 4.0
+                                else:
+                                    theta = random.uniform(-np.pi, np.pi)
+                                randomM[model_id] = M(axis, theta)
 
-                        ca_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, ca_atom_sites, randomM)
+                        if 'polypeptide' in etype:
 
-                        if ca_rmsd is not None:
-                            ent['ca_rmsd'] = ca_rmsd
-                        if well_defined_region is not None:
-                            ent['well_defined_region'] = well_defined_region
+                            ca_atom_sites = self.getDictListWithFilter('atom_site',
+                                                                       [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                                        {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
+                                                                        ],
+                                                                       [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                        {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'},
+                                                                        {'name': 'label_alt_id', 'type': 'enum',
+                                                                         'enum': ('A')},
+                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
 
-                    elif 'ribonucleotide' in etype:
+                            ca_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, ca_atom_sites, randomM)
 
-                        p_atom_sites = self.getDictListWithFilter('atom_site',
-                                                                  [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                   {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                   {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
-                                                                   {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
-                                                                   ],
-                                                                  [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                                   {'name': 'label_atom_id', 'type': 'str', 'value': 'P'},
-                                                                   {'name': 'label_alt_id', 'type': 'enum',
-                                                                    'enum': ('A')},
-                                                                   {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
+                            if ca_rmsd is not None:
+                                ent['ca_rmsd'] = ca_rmsd
+                            if well_defined_region is not None:
+                                ent['well_defined_region'] = well_defined_region
 
-                        p_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, p_atom_sites, randomM)
+                        elif 'ribonucleotide' in etype:
 
-                        if p_rmsd is not None:
-                            ent['p_rmsd'] = p_rmsd
-                        if well_defined_region is not None:
-                            ent['well_defined_region'] = well_defined_region
+                            p_atom_sites = self.getDictListWithFilter('atom_site',
+                                                                      [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                                       {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                       {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                       {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
+                                                                       ],
+                                                                      [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                       {'name': 'label_atom_id', 'type': 'str', 'value': 'P'},
+                                                                       {'name': 'label_alt_id', 'type': 'enum',
+                                                                        'enum': ('A')},
+                                                                       {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
+
+                            p_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, p_atom_sites, randomM)
+
+                            if p_rmsd is not None:
+                                ent['p_rmsd'] = p_rmsd
+                            if well_defined_region is not None:
+                                ent['well_defined_region'] = well_defined_region
 
                 if len(chains) > 1:
                     identity = []

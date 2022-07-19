@@ -189,6 +189,9 @@ LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND'
 
 CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
 
+MAJOR_ASYM_ID_SET = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
+LEN_MAJOR_ASYM_ID_SET = len(MAJOR_ASYM_ID_SET)
+
 
 def toNpArray(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
@@ -475,7 +478,8 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
             try:
                 polySeq = cR.getPolymerSequence(lpCategory, keyItems,
-                                                withStructConf=False)
+                                                withStructConf=False,
+                                                withRmsd=False)
             except KeyError:  # pdbx_PDB_ins_code throws KeyError
                 polySeq = []
 
@@ -487,7 +491,8 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
                 try:
                     polySeq = cR.getPolymerSequence(lpCategory, keyItems,
-                                                    withStructConf=False)
+                                                    withStructConf=False,
+                                                    withRmsd=False)
                 except KeyError:
                     polySeq = []
 
@@ -522,7 +527,8 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
             try:
                 nonPoly = cR.getPolymerSequence(lpCategory, keyItems,
-                                                withStructConf=False)
+                                                withStructConf=False,
+                                                withRmsd=False)
             except KeyError:
                 nonPoly = None
 
@@ -559,35 +565,71 @@ def checkCoordinates(verbose=True, log=sys.stdout,
         if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None:
             changed = True
 
-            if altAuthAtomId is not None:
-                coord = cR.getDictListWithFilter('atom_site',
-                                                 [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
-                                                  {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
-                                                  {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
-                                                  {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
-                                                  {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                  {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
-                                                  {'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'},
-                                                  {'name': 'type_symbol', 'type': 'str'}
-                                                  ],
-                                                 [{'name': modelNumName, 'type': 'int',
-                                                   'value': representativeModelId},
-                                                  {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                  ])
+            if len(polySeq) > LEN_MAJOR_ASYM_ID_SET:
+
+                if altAuthAtomId is not None:
+                    coord = cR.getDictListWithFilter('atom_site',
+                                                     [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
+                                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
+                                                      {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
+                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
+                                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                      {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
+                                                      {'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'},
+                                                      {'name': 'type_symbol', 'type': 'str'}
+                                                      ],
+                                                     [{'name': modelNumName, 'type': 'int',
+                                                       'value': representativeModelId},
+                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
+                                                      {'name': authAsymId, 'type': 'enum', 'enum': MAJOR_ASYM_ID_SET}
+                                                      ])
+                else:
+                    coord = cR.getDictListWithFilter('atom_site',
+                                                     [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
+                                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
+                                                      {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
+                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
+                                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                      {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
+                                                      {'name': 'type_symbol', 'type': 'str'}
+                                                      ],
+                                                     [{'name': modelNumName, 'type': 'int',
+                                                       'value': representativeModelId},
+                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
+                                                      {'name': authAsymId, 'type': 'enum', 'enum': MAJOR_ASYM_ID_SET}
+                                                      ])
+
             else:
-                coord = cR.getDictListWithFilter('atom_site',
-                                                 [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
-                                                  {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
-                                                  {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
-                                                  {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
-                                                  {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                  {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
-                                                  {'name': 'type_symbol', 'type': 'str'}
-                                                  ],
-                                                 [{'name': modelNumName, 'type': 'int',
-                                                   'value': representativeModelId},
-                                                  {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                  ])
+
+                if altAuthAtomId is not None:
+                    coord = cR.getDictListWithFilter('atom_site',
+                                                     [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
+                                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
+                                                      {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
+                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
+                                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                      {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
+                                                      {'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'},
+                                                      {'name': 'type_symbol', 'type': 'str'}
+                                                      ],
+                                                     [{'name': modelNumName, 'type': 'int',
+                                                       'value': representativeModelId},
+                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                      ])
+                else:
+                    coord = cR.getDictListWithFilter('atom_site',
+                                                     [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
+                                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
+                                                      {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
+                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
+                                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                      {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
+                                                      {'name': 'type_symbol', 'type': 'str'}
+                                                      ],
+                                                     [{'name': modelNumName, 'type': 'int',
+                                                       'value': representativeModelId},
+                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                      ])
 
             authToLabelChain = {ps['auth_chain_id']: ps['chain_id'] for ps in polySeq}
 

@@ -29856,6 +29856,8 @@ class NmrDpUtility:
 
         seq_align_set = []
 
+        has_conflict = False
+
         for i1, s1 in enumerate(polymer_sequence):
             chain_id = s1['chain_id']
 
@@ -29905,6 +29907,9 @@ class NmrDpUtility:
                         offset_2 = _offset_2
                         _s1 = __s1
                         _s2 = __s2
+
+                if conflict > 0:
+                    has_conflict = True
 
                 ref_length = len(s1['seq_id'])
 
@@ -29975,9 +29980,23 @@ class NmrDpUtility:
                 seq_align_set.append(seq_align)
 
         if len(seq_align_set) > 0:
+
+            if has_conflict:
+                err_seq_align = [seq_align for seq_align in seq_align_set
+                                 if seq_align['conflict'] > 0
+                                 and any(_seq_align for _seq_align in seq_align_set if _seq_align['conflict'] == 0
+                                         and (_seq_align['ref_chain_id'] == seq_align['ref_chain_id']
+                                              or _seq_align['test_chain_id'] == seq_align['test_chain_id']))]
+
+                if len(err_seq_align) > 0:
+                    for seq_align in err_seq_align:
+                        seq_align_set.remove(seq_align)
+
             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', seq_align_set)
 
         seq_align_set = []
+
+        has_conflict = False
 
         for s1 in nmr_polymer_sequence:
             chain_id = s1['chain_id']
@@ -30029,6 +30048,9 @@ class NmrDpUtility:
                         _s1 = __s1
                         _s2 = __s2
 
+                if conflict > 0:
+                    has_conflict = True
+
                 ref_length = len(s1['seq_id'])
 
                 ref_code = getOneLetterCodeSequence(_s1['comp_id'])
@@ -30098,6 +30120,18 @@ class NmrDpUtility:
                 seq_align_set.append(seq_align)
 
         if len(seq_align_set) > 0:
+
+            if has_conflict:
+                err_seq_align = [seq_align for seq_align in seq_align_set
+                                 if seq_align['conflict'] > 0
+                                 and any(_seq_align for _seq_align in seq_align_set if _seq_align['conflict'] == 0
+                                         and (_seq_align['ref_chain_id'] == seq_align['ref_chain_id']
+                                              or _seq_align['test_chain_id'] == seq_align['test_chain_id']))]
+
+                if len(err_seq_align) > 0:
+                    for seq_align in err_seq_align:
+                        seq_align_set.remove(seq_align)
+
             self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', seq_align_set)
 
         return True

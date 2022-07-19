@@ -61,6 +61,9 @@ monDict3 = {'ALA': 'A',
             'U': 'U'
             }
 
+MAJOR_ASYM_ID_SET = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
+LEN_MAJOR_ASYM_ID_SET = len(MAJOR_ASYM_ID_SET)
+
 
 def hasLargeSeqGap(polySeq1, polySeq2):
     """ Return whether large gap in combined sequence of polySeq1 and polySeq2.
@@ -441,11 +444,17 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, inhibitory=True):
     tabooList = []
     inhibitList = []
 
-    for s1 in polySeqModel:
+    for i1, s1 in enumerate(polySeqModel):
         chain_id = s1['auth_chain_id']
 
-        for s2 in polySeqRst:
+        if i1 >= LEN_MAJOR_ASYM_ID_SET:
+            continue
+
+        for i2, s2 in enumerate(polySeqRst):
             chain_id2 = s2['chain_id']
+
+            if i2 >= LEN_MAJOR_ASYM_ID_SET:
+                continue
 
             pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
             pA.addTestSequence(s2['comp_id'], chain_id)
@@ -650,18 +659,24 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
         _mr_format_name = 'MR'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
 
-    mr_chains = len(polySeqRst)
+    mr_chains = len(polySeqRst) if len(polySeqRst) < LEN_MAJOR_ASYM_ID_SET else LEN_MAJOR_ASYM_ID_SET
 
     mat = []
     indices = []
 
-    for s1 in polySeqModel:
+    for i1, s1 in enumerate(polySeqModel):
         chain_id = s1['auth_chain_id']
+
+        if i1 >= LEN_MAJOR_ASYM_ID_SET:
+            continue
 
         cost = [0 for i in range(mr_chains)]
 
-        for s2 in polySeqRst:
+        for i2, s2 in enumerate(polySeqRst):
             chain_id2 = s2['chain_id']
+
+            if i2 >= LEN_MAJOR_ASYM_ID_SET:
+                continue
 
             result = next((seq_align for seq_align in seqAlign
                            if seq_align['ref_chain_id'] == chain_id

@@ -198,6 +198,8 @@ try:
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
     from wwpdb.utils.nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                            MIN_SEQ_COVERAGE_W_CONFLICT,
+                                           MAJOR_ASYM_ID_SET,
+                                           LEN_MAJOR_ASYM_ID_SET,
                                            emptyValue, trueValue,
                                            monDict3, hasLargeSeqGap,
                                            fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
@@ -232,9 +234,7 @@ try:
                                                        WEIGHT_RANGE,
                                                        SCALE_RANGE,
                                                        REPRESENTATIVE_MODEL_ID,
-                                                       CYANA_MR_FILE_EXTS,
-                                                       MAJOR_ASYM_ID_SET,
-                                                       LEN_MAJOR_ASYM_ID_SET)
+                                                       CYANA_MR_FILE_EXTS)
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.BiosymMRReader import BiosymMRReader
     from wwpdb.utils.nmr.mr.CnsMRReader import CnsMRReader
@@ -265,6 +265,8 @@ except ImportError:
     from nmr.NmrDpReport import NmrDpReport
     from nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                MIN_SEQ_COVERAGE_W_CONFLICT,
+                               MAJOR_ASYM_ID_SET,
+                               LEN_MAJOR_ASYM_ID_SET,
                                emptyValue, trueValue,
                                monDict3, hasLargeSeqGap,
                                fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
@@ -299,9 +301,7 @@ except ImportError:
                                            WEIGHT_RANGE,
                                            SCALE_RANGE,
                                            REPRESENTATIVE_MODEL_ID,
-                                           CYANA_MR_FILE_EXTS,
-                                           MAJOR_ASYM_ID_SET,
-                                           LEN_MAJOR_ASYM_ID_SET)
+                                           CYANA_MR_FILE_EXTS)
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.BiosymMRReader import BiosymMRReader
     from nmr.mr.CnsMRReader import CnsMRReader
@@ -29787,10 +29787,10 @@ class NmrDpUtility:
 
                 seq_align_set = []
 
-                for i, s1 in enumerate(polymer_sequence):
+                for i1, s1 in enumerate(polymer_sequence):
                     chain_id = s1['chain_id']
 
-                    if i >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
+                    if i1 >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
                         continue
 
                     for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
@@ -29856,10 +29856,10 @@ class NmrDpUtility:
 
         seq_align_set = []
 
-        for i, s1 in enumerate(polymer_sequence):
+        for i1, s1 in enumerate(polymer_sequence):
             chain_id = s1['chain_id']
 
-            if i >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
+            if i1 >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
                 continue
 
             for s2 in nmr_polymer_sequence:
@@ -29982,10 +29982,10 @@ class NmrDpUtility:
         for s1 in nmr_polymer_sequence:
             chain_id = s1['chain_id']
 
-            for i, s2 in enumerate(polymer_sequence):
+            for i2, s2 in enumerate(polymer_sequence):
                 chain_id2 = s2['chain_id']
 
-                if i >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
+                if i2 >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
                     continue
 
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)

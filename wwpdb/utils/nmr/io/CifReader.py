@@ -431,7 +431,7 @@ class CifReader:
                     if c not in authChainDict:
                         authChainDict[c] = row[auth_chain_id_col]
 
-            large_model = len(chains) >= 26
+            large_model = len(chains) > 26
 
             for i, c in enumerate(chains):
                 ent = {}  # entity

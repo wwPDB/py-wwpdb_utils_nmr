@@ -194,7 +194,7 @@ if __name__ == "__main__":
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6x63/deposit_All_Unamb_MD_xplorFormat_fixNomen.txt',
                  '../../tests-nmr/mock-data-remediation/6x63/6x63.cif')
-    """
+
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2laj/2laj-corrected.mr',
@@ -344,4 +344,3 @@ if __name__ == "__main__":
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-pdbstat/atom_sel_expr_example.txt',
                  '../../tests-nmr/mock-data-pdbstat/6pvr.cif')
-    """

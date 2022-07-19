@@ -15,9 +15,13 @@ import itertools
 import numpy as np
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import monDict3
+    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+                                           MAJOR_ASYM_ID_SET,
+                                           LEN_MAJOR_ASYM_ID_SET)
 except ImportError:
-    from nmr.AlignUtil import monDict3
+    from nmr.AlignUtil import (monDict3,
+                               MAJOR_ASYM_ID_SET,
+                               LEN_MAJOR_ASYM_ID_SET)
 
 
 MAX_ERROR_REPORT = 1
@@ -188,9 +192,6 @@ LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND'
                       ]
 
 CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
-
-MAJOR_ASYM_ID_SET = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
-LEN_MAJOR_ASYM_ID_SET = len(MAJOR_ASYM_ID_SET)
 
 
 def toNpArray(atom):

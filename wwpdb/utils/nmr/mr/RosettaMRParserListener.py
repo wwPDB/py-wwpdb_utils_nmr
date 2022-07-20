@@ -23,6 +23,7 @@ try:
                                                        isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        translateToStdAtomName,
+                                                       isCyclicPolymer,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
@@ -40,7 +41,8 @@ try:
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
-                                           retrieveAtomIdentFromMRMap)
+                                           retrieveAtomIdentFromMRMap,
+                                           retrieveRemappedSeqId)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.RosettaMRParser import RosettaMRParser
@@ -49,6 +51,7 @@ except ImportError:
                                            isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            translateToStdAtomName,
+                                           isCyclicPolymer,
                                            REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
@@ -66,7 +69,8 @@ except ImportError:
                                alignPolymerSequence,
                                assignPolymerSequence,
                                trimSequenceAlignment,
-                               retrieveAtomIdentFromMRMap)
+                               retrieveAtomIdentFromMRMap,
+                               retrieveRemappedSeqId)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -276,6 +280,52 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
+
+                if 'Atom not found' in self.warningMessage:
+
+                    seqIdRemap = []
+
+                    for chain_assign in self.__chainAssign:
+                        ref_chain_id = chain_assign['ref_chain_id']
+                        test_chain_id = chain_assign['test_chain_id']
+
+                        seq_align = next(sa for sa in self.__seqAlign
+                                         if sa['ref_chain_id'] == ref_chain_id
+                                         and sa['test_chain_id'] == test_chain_id)
+
+                        poly_seq_rst = next(ps for ps in self.__polySeqRst
+                                            if ps['chain_id'] == test_chain_id)
+
+                        seq_id_mapping = {}
+                        for ref_seq_id, mid_code, test_seq_id in zip(seq_align['ref_seq_id'], seq_align['mid_code'], seq_align['test_seq_id']):
+                            if mid_code == '|':
+                                seq_id_mapping[test_seq_id] = ref_seq_id
+
+                        if isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName):
+
+                            poly_seq_model = next(ps for ps in self.__polySeq
+                                                  if ps['chain_id'] == ref_chain_id)
+
+                            for seq_id, comp_id in zip(poly_seq_rst['seq_id'], poly_seq_rst['comp_id']):
+                                if seq_id not in seq_id_mapping:
+                                    _seq_id = next((_seq_id for _seq_id, _comp_id in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
+                                                    if _seq_id not in seq_id_mapping.values() and _comp_id == comp_id), None)
+                                    if _seq_id is not None:
+                                        offset = seq_id - _seq_id
+                                        break
+
+                            for seq_id in poly_seq_rst['seq_id']:
+                                if seq_id not in seq_id_mapping:
+                                    seq_id_mapping[seq_id] = seq_id - offset
+
+                        if any(k for k, v in seq_id_mapping.items() if k != v):
+                            seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
+
+                    if len(seqIdRemap) > 0:
+                        if self.reasonsForReParsing is None:
+                            self.reasonsForReParsing = {}
+                        if 'seq_id_remap' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -594,6 +644,8 @@ class RosettaMRParserListener(ParseTreeListener):
             chainId, seqId = self.getRealChainSeqId(ps, _seqId)
             if fixedChainId is not None and chainId != fixedChainId:
                 continue
+            if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
+                seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
             if seqId in ps['auth_seq_id']:
                 cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -608,6 +660,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, False)
                 if fixedChainId is not None and chainId != fixedChainId:
                     continue
+                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
+                    seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                 if seqId in np['auth_seq_id']:
                     cifCompId = np['comp_id'][np['auth_seq_id'].index(seqId)]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -625,6 +679,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
+                    if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
+                        seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -646,6 +702,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
+                        if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
+                            seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                         if seqId in np['seq_id']:
                             cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
                             updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -664,6 +722,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 chainId = ps['auth_chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
                     continue
+                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
+                    _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)

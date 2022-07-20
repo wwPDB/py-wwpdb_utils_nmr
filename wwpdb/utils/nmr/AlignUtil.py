@@ -957,7 +957,7 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId):
 
 
 def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId):
-    """ Retrieve atom id from atom name mapping of public MR file.
+    """ Retrieve atom_id from atom name mapping of public MR file.
     """
 
     try:
@@ -968,3 +968,14 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId):
         return item['auth_atom_id']
     except StopIteration:
         return atomId
+
+
+def retrieveRemappedSeqId(seqIdRemap, chainId, seqId):
+    """ Retrieve seq_id from mapping dictionary based on sequence alignments.
+    """
+
+    try:
+        item = next(item for item in seqIdRemap if item['chain_id'] == chainId)
+        return item['seq_id_dict'][seqId]
+    except Exception:
+        return seqId

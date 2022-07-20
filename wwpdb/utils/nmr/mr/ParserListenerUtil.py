@@ -1078,3 +1078,137 @@ def startsWithPdbRecord(line):
         return True
 
     return any(line[:-1] == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))
+
+
+def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=1, modelNumName='PDB_model_num'):
+    """ Return whether a given chain is cyclic polymer based on coordinate annotation.
+    """
+
+    if cR is None or polySeq is None:
+        return False
+
+    ps = next((ps for ps in polySeq if ps['auth_chain_id'] == authAsymId), None)
+
+    if ps is None:
+        return False
+
+    labelAsymId = ps['chain_id']
+    begAuthSeqId = ps['auth_seq_id'][0]
+    endAuthSeqId = ps['auth_seq_id'][-1]
+    begLabelSeqId = ps['seq_id'][0]
+    endLabelSeqId = ps['seq_id'][-1]
+
+    try:
+
+        if cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
+            struct_conn = cR.getDictListWithFilter('struct_conn',
+                                                   [{'name': 'conn_type_id', 'type': 'str'}
+                                                    ],
+                                                   [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
+                                                    {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': labelAsymId},
+                                                    {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': labelAsymId},
+                                                    {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': begLabelSeqId},
+                                                    {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': endLabelSeqId},
+                                                    ])
+        else:
+            struct_conn = cR.getDictListWithFilter('struct_conn',
+                                                   [{'name': 'conn_type_id', 'type': 'str'}
+                                                    ],
+                                                   [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': labelAsymId},
+                                                    {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': labelAsymId},
+                                                    {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': begLabelSeqId},
+                                                    {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': endLabelSeqId},
+                                                    ])
+
+    except Exception:
+        return False
+
+    if len(struct_conn) == 0:
+
+        try:
+
+            close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                     [{'name': 'dist', 'type': 'float'}
+                                                      ],
+                                                     [{'name': modelNumName, 'type': 'int', 'value': representativeModelId},
+                                                      {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId},
+                                                      {'name': 'auth_seq_id_1', 'type': 'int', 'value': begAuthSeqId},
+                                                      {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
+                                                      {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId},
+                                                      {'name': 'auth_seq_id_2', 'type': 'int', 'value': endAuthSeqId},
+                                                      {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
+                                                      ])
+
+        except Exception:
+            return False
+
+        if len(close_contact) == 0:
+
+            bond = getCoordBondLength(cR, labelAsymId, begLabelSeqId, 'N', labelAsymId, endLabelSeqId, 'C', modelNumName)
+
+            if bond is None:
+                return False
+
+            distance = next((b['distance'] for b in bond if b['model_id'] == representativeModelId), None)
+
+            if distance is None:
+                return False
+
+            return 1.2 < distance < 1.4
+
+        return 1.2 < close_contact[0]['dist'] < 1.4
+
+    return struct_conn[0]['conn_type_id'] == 'covale'
+
+
+def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2, labelSeqId2, labelAtomId2, modelNumName='PDB_model_num'):
+    """ Return the bond length of given two CIF atoms.
+        @return: the bond length
+    """
+
+    try:
+
+        atom_site_1 = cR.getDictListWithFilter('atom_site',
+                                               [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                {'name': modelNumName, 'type': 'int', 'alt_name': 'model_id'}
+                                                ],
+                                               [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId1},
+                                                {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId1},
+                                                {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId1},
+                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                ])
+
+        atom_site_2 = cR.getDictListWithFilter('atom_site',
+                                               [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                {'name': modelNumName, 'type': 'int', 'alt_name': 'model_id'}
+                                                ],
+                                               [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId2},
+                                                {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId2},
+                                                {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId2},
+                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                ])
+
+    except Exception:
+        return None
+
+    model_ids = set(a['model_id'] for a in atom_site_1) | set(a['model_id'] for a in atom_site_2)
+
+    bond = []
+
+    for model_id in model_ids:
+        a_1 = next((a for a in atom_site_1 if a['model_id'] == model_id), None)
+        a_2 = next((a for a in atom_site_2 if a['model_id'] == model_id), None)
+
+        if a_1 is None or a_2 is None:
+            continue
+
+        bond.append({'model_id': model_id, 'distance': float(f"{np.linalg.norm(toNpArray(a_1) - toNpArray(a_2)):.3f}")})
+
+    if len(bond) > 0:
+        return bond
+
+    return None

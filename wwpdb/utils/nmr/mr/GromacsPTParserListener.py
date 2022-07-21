@@ -53,32 +53,6 @@ class GromacsPTParserListener(ParseTreeListener):
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
 
-    defaultStatements = 0
-    moleculetypeStatements = 0
-    atomtypesStatements = 0
-    pairtypesStatements = 0
-    bondtypesStatements = 0
-    angletypesStatements = 0
-    dihedraltypesStatements = 0
-    constrainttypesStatements = 0
-    nonbond_paramsStatements = 0
-    atomsStatements = 0
-    bondsStatements = 0
-    pairsStatements = 0
-    pairs_nbStatements = 0
-    anglesStatements = 0
-    dihedralsStatements = 0
-    exclusionsStatements = 0
-    constraintsStatements = 0
-    settlesStatements = 0
-    virtual_sites1Statements = 0
-    virtual_sites2Statements = 0
-    virtual_sites3Statements = 0
-    virtual_sites4Statements = 0
-    virtual_sitesnStatements = 0
-    systemStatements = 0
-    moleculesStatements = 0
-
     # CCD accessing utility
     __ccU = None
 
@@ -150,6 +124,32 @@ class GromacsPTParserListener(ParseTreeListener):
         if self.__hasPolySeqModel:
             self.__pA = PairwiseAlign()
             self.__pA.setVerbose(verbose)
+
+        self.defaultStatements = 0
+        self.moleculetypeStatements = 0
+        self.atomtypesStatements = 0
+        self.pairtypesStatements = 0
+        self.bondtypesStatements = 0
+        self.angletypesStatements = 0
+        self.dihedraltypesStatements = 0
+        self.constrainttypesStatements = 0
+        self.nonbond_paramsStatements = 0
+        self.atomsStatements = 0
+        self.bondsStatements = 0
+        self.pairsStatements = 0
+        self.pairs_nbStatements = 0
+        self.anglesStatements = 0
+        self.dihedralsStatements = 0
+        self.exclusionsStatements = 0
+        self.constraintsStatements = 0
+        self.settlesStatements = 0
+        self.virtual_sites1Statements = 0
+        self.virtual_sites2Statements = 0
+        self.virtual_sites3Statements = 0
+        self.virtual_sites4Statements = 0
+        self.virtual_sitesnStatements = 0
+        self.systemStatements = 0
+        self.moleculesStatements = 0
 
     # Enter a parse tree produced by GromacsPTParser#gromacs_pt.
     def enterGromacs_pt(self, ctx: GromacsPTParser.Gromacs_ptContext):  # pylint: disable=unused-argument

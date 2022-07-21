@@ -151,32 +151,6 @@ class CnsMRParserListener(ParseTreeListener):
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
 
-    distRestraints = 0      # CNS: Distance restraints
-    dihedRestraints = 0     # CNS: Dihedral angle restraints
-    rdcRestraints = 0       # CNS: Suscetibility anisotropy restraints
-    planeRestraints = 0     # CNS: Plane restraints
-    jcoupRestraints = 0     # CNS: Scalar J-coupling restraints
-    hvycsRestraints = 0     # CNS: Carbon chemical shift restraints
-    procsRestraints = 0     # CNS: Proton chemical shift restraints
-    ramaRestraints = 0      # CNS: Conformation database restraints
-    diffRestraints = 0      # CNS: Diffusion anisotropy restraints
-    nbaseRestraints = 0     # CNS: Residue-residue position/orientation database restraints
-    # angRestraints = 0       # CNS: Angle database restraints
-    geoRestraints = 0       # CNS: Harmonic coordinate/NCS restraints
-
-    distStatements = 0      # CNS: Distance statements
-    dihedStatements = 0     # CNS: Dihedral angle statements
-    rdcStatements = 0       # CNS: Suscetibility anisotropy statements
-    planeStatements = 0     # CNS: Plane statements
-    jcoupStatements = 0     # CNS: Scalar J-coupling statements
-    hvycsStatements = 0     # CNS: Carbon chemical shift statements
-    procsStatements = 0     # CNS: Proton chemical shift statements
-    ramaStatements = 0      # CNS: Conformation database statements
-    diffStatements = 0      # CNS: Diffusion anisotropy statements
-    nbaseStatements = 0     # CNS: Residue-residue position/orientation database statements
-    # angStatements = 0       # CNS: Angle database statements
-    geoStatements = 0       # CNS: Harmonic coordinate/NCS restraints
-
     # CCD accessing utility
     __ccU = None
 
@@ -368,6 +342,32 @@ class CnsMRParserListener(ParseTreeListener):
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
+        self.distRestraints = 0      # CNS: Distance restraints
+        self.dihedRestraints = 0     # CNS: Dihedral angle restraints
+        self.rdcRestraints = 0       # CNS: Suscetibility anisotropy restraints
+        self.planeRestraints = 0     # CNS: Plane restraints
+        self.jcoupRestraints = 0     # CNS: Scalar J-coupling restraints
+        self.hvycsRestraints = 0     # CNS: Carbon chemical shift restraints
+        self.procsRestraints = 0     # CNS: Proton chemical shift restraints
+        self.ramaRestraints = 0      # CNS: Conformation database restraints
+        self.diffRestraints = 0      # CNS: Diffusion anisotropy restraints
+        self.nbaseRestraints = 0     # CNS: Residue-residue position/orientation database restraints
+        # self.angRestraints = 0       # CNS: Angle database restraints
+        self.geoRestraints = 0       # CNS: Harmonic coordinate/NCS restraints
+
+        self.distStatements = 0      # CNS: Distance statements
+        self.dihedStatements = 0     # CNS: Dihedral angle statements
+        self.rdcStatements = 0       # CNS: Suscetibility anisotropy statements
+        self.planeStatements = 0     # CNS: Plane statements
+        self.jcoupStatements = 0     # CNS: Scalar J-coupling statements
+        self.hvycsStatements = 0     # CNS: Carbon chemical shift statements
+        self.procsStatements = 0     # CNS: Proton chemical shift statements
+        self.ramaStatements = 0      # CNS: Conformation database statements
+        self.diffStatements = 0      # CNS: Diffusion anisotropy statements
+        self.nbaseStatements = 0     # CNS: Residue-residue position/orientation database statements
+        # self.angStatements = 0       # CNS: Angle database statements
+        self.geoStatements = 0       # CNS: Harmonic coordinate/NCS restraints
+
     def setDebugMode(self, debug):
         self.__debug = debug
 
@@ -382,7 +382,8 @@ class CnsMRParserListener(ParseTreeListener):
 
             file_type = 'nm-res-cns'
 
-            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                      resolvedMultimer=(self.__reasons is not None))
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
@@ -405,7 +406,8 @@ class CnsMRParserListener(ParseTreeListener):
                         if ps['chain_id'] in chain_mapping:
                             ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                              resolvedMultimer=(self.__reasons is not None))
                     self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)

@@ -200,50 +200,6 @@ class XplorMRParserListener(ParseTreeListener):
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
 
-    distRestraints = 0      # XPLOR-NIH: Distance restraints
-    dihedRestraints = 0     # XPLOR-NIH: Dihedral angle restraints
-    rdcRestraints = 0       # XPLOR-NIH: Residual dipolar coupling restraints
-    planeRestraints = 0     # XPLOR-NIH: Planality restraints
-    adistRestraints = 0     # XPLOR-NIH: Antidiatance restraints
-    jcoupRestraints = 0     # XPLOR-NIH: Scalar J-coupling restraints
-    hvycsRestraints = 0     # XPLOR-NIH: Carbon chemical shift restraints
-    procsRestraints = 0     # XPLOR-NIH: Proton chemical shift restraints
-    ramaRestraints = 0      # XPLOR-NIH: Dihedral angle database restraints
-    radiRestraints = 0      # XPLOR-NIH: Radius of gyration restraints
-    diffRestraints = 0      # XPLOR-NIH: Diffusion anisotropy restraints
-    nbaseRestraints = 0     # XPLOR-NIH: Residue-residue position/orientation database restraints
-    csaRestraints = 0       # XPLOR-NIH: (Pseudo) Chemical shift anisotropy restraints
-    # angRestraints = 0       # XPLOR-NIH: Angle database restraints
-    preRestraints = 0       # XPLOR-NIH: Paramagnetic relaxation enhancement restraints
-    pcsRestraints = 0       # XPLOR-NIH: Paramagnetic pseudocontact shift restraints
-    prdcRestraints = 0      # XPLOR-NIH: Paramagnetic residual dipolar coupling restraints
-    pangRestraints = 0      # XPLOR-NIH: Paramagnetic orientation restraints
-    pccrRestraints = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate restraints
-    hbondRestraints = 0     # XPLOR-NIH: Hydrogen bond geometry/database restraints
-    geoRestraints = 0       # XPLOR-NIH: Harmonic coordinate/NCS restraints
-
-    distStatements = 0      # XPLOR-NIH: Distance statements
-    dihedStatements = 0     # XPLOR-NIH: Dihedral angle statements
-    rdcStatements = 0       # XPLOR-NIH: Residual dipolar coupling statements
-    planeStatements = 0     # XPLOR-NIH: Planality statements
-    adistStatements = 0     # XPLOR-NIH: Antidiatance statements
-    jcoupStatements = 0     # XPLOR-NIH: Scalar J-coupling statements
-    hvycsStatements = 0     # XPLOR-NIH: Carbon chemical shift statements
-    procsStatements = 0     # XPLOR-NIH: Proton chemical shift statements
-    ramaStatements = 0      # XPLOR-NIH: Dihedral angle database statements
-    radiStatements = 0      # XPLOR-NIH: Radius of gyration statements
-    diffStatements = 0      # XPLOR-NIH: Diffusion anisotropy statements
-    nbaseStatements = 0     # XPLOR-NIH: Residue-residue position/orientation database statements
-    csaStatements = 0       # XPLOR-NIH: (Pseudo) Chemical shift anisotropy statements
-    # angStatements = 0       # XPLOR-NIH: Angle database statements
-    preStatements = 0       # XPLOR-NIH: Paramagnetic relaxation enhancement statements
-    pcsStatements = 0       # XPLOR-NIH: Paramagnetic pseudocontact shift statements
-    prdcStatements = 0      # XPLOR-NIH: Paramagnetic residual dipolar coupling statements
-    pangStatements = 0      # XPLOR-NIH: Paramagnetic orientation statements
-    pccrStatements = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate statements
-    hbondStatements = 0     # XPLOR-NIH: Hydrogen bond geometry/database statements
-    geoStatements = 0       # XPLOR-NIH: Harmonic coordinate/NCS restraints
-
     # CCD accessing utility
     __ccU = None
 
@@ -452,6 +408,50 @@ class XplorMRParserListener(ParseTreeListener):
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
+        self.distRestraints = 0      # XPLOR-NIH: Distance restraints
+        self.dihedRestraints = 0     # XPLOR-NIH: Dihedral angle restraints
+        self.rdcRestraints = 0       # XPLOR-NIH: Residual dipolar coupling restraints
+        self.planeRestraints = 0     # XPLOR-NIH: Planality restraints
+        self.adistRestraints = 0     # XPLOR-NIH: Antidiatance restraints
+        self.jcoupRestraints = 0     # XPLOR-NIH: Scalar J-coupling restraints
+        self.hvycsRestraints = 0     # XPLOR-NIH: Carbon chemical shift restraints
+        self.procsRestraints = 0     # XPLOR-NIH: Proton chemical shift restraints
+        self.ramaRestraints = 0      # XPLOR-NIH: Dihedral angle database restraints
+        self.radiRestraints = 0      # XPLOR-NIH: Radius of gyration restraints
+        self.diffRestraints = 0      # XPLOR-NIH: Diffusion anisotropy restraints
+        self.nbaseRestraints = 0     # XPLOR-NIH: Residue-residue position/orientation database restraints
+        self.csaRestraints = 0       # XPLOR-NIH: (Pseudo) Chemical shift anisotropy restraints
+        # self.angRestraints = 0       # XPLOR-NIH: Angle database restraints
+        self.preRestraints = 0       # XPLOR-NIH: Paramagnetic relaxation enhancement restraints
+        self.pcsRestraints = 0       # XPLOR-NIH: Paramagnetic pseudocontact shift restraints
+        self.prdcRestraints = 0      # XPLOR-NIH: Paramagnetic residual dipolar coupling restraints
+        self.pangRestraints = 0      # XPLOR-NIH: Paramagnetic orientation restraints
+        self.pccrRestraints = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate restraints
+        self.hbondRestraints = 0     # XPLOR-NIH: Hydrogen bond geometry/database restraints
+        self.geoRestraints = 0       # XPLOR-NIH: Harmonic coordinate/NCS restraints
+
+        self.distStatements = 0      # XPLOR-NIH: Distance statements
+        self.dihedStatements = 0     # XPLOR-NIH: Dihedral angle statements
+        self.rdcStatements = 0       # XPLOR-NIH: Residual dipolar coupling statements
+        self.planeStatements = 0     # XPLOR-NIH: Planality statements
+        self.adistStatements = 0     # XPLOR-NIH: Antidiatance statements
+        self.jcoupStatements = 0     # XPLOR-NIH: Scalar J-coupling statements
+        self.hvycsStatements = 0     # XPLOR-NIH: Carbon chemical shift statements
+        self.procsStatements = 0     # XPLOR-NIH: Proton chemical shift statements
+        self.ramaStatements = 0      # XPLOR-NIH: Dihedral angle database statements
+        self.radiStatements = 0      # XPLOR-NIH: Radius of gyration statements
+        self.diffStatements = 0      # XPLOR-NIH: Diffusion anisotropy statements
+        self.nbaseStatements = 0     # XPLOR-NIH: Residue-residue position/orientation database statements
+        self.csaStatements = 0       # XPLOR-NIH: (Pseudo) Chemical shift anisotropy statements
+        # self.angStatements = 0       # XPLOR-NIH: Angle database statements
+        self.preStatements = 0       # XPLOR-NIH: Paramagnetic relaxation enhancement statements
+        self.pcsStatements = 0       # XPLOR-NIH: Paramagnetic pseudocontact shift statements
+        self.prdcStatements = 0      # XPLOR-NIH: Paramagnetic residual dipolar coupling statements
+        self.pangStatements = 0      # XPLOR-NIH: Paramagnetic orientation statements
+        self.pccrStatements = 0      # XPLOR-NIH: Paramagnetic cross-correlation rate statements
+        self.hbondStatements = 0     # XPLOR-NIH: Hydrogen bond geometry/database statements
+        self.geoStatements = 0       # XPLOR-NIH: Harmonic coordinate/NCS restraints
+
     def setDebugMode(self, debug):
         self.__debug = debug
 
@@ -466,7 +466,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             file_type = 'nm-res-xpl'
 
-            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                      resolvedMultimer=(self.__reasons is not None))
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
@@ -489,7 +490,8 @@ class XplorMRParserListener(ParseTreeListener):
                         if ps['chain_id'] in chain_mapping:
                             ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                              resolvedMultimer=(self.__reasons is not None))
                     self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
@@ -986,6 +988,8 @@ class XplorMRParserListener(ParseTreeListener):
                             self.__cur_subtype = 'rdc'
                             self.exitTenso_assign(ctx)
                             return
+
+            self.__cur_subtype = 'dist'  # to get consistent number of statement
 
             target = self.numberSelection[0]
 

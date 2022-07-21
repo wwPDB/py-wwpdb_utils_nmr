@@ -131,15 +131,6 @@ class CyanaMRParserListener(ParseTreeListener):
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
 
-    distRestraints = 0      # CYANA: Distance restraint file (.upl or .lol)
-    dihedRestraints = 0     # CYANA: Torsion angle restraint file (.aco)
-    rdcRestraints = 0       # CYANA: Residual dipolar coupling restraint file (.rdc)
-    pcsRestraints = 0       # CYANA: Pseudocontact shift restraint file (.pcs)
-    noepkRestraints = 0     # CYANA: NOESY volume restraint file (.upv or .lov)
-    jcoupRestraints = 0     # CYANA: Scalar coupling constant restraint file (.cco)
-    geoRestraints = 0       # CYANA: Coordinate geometry restraints
-    hbondRestraints = 0     # CYANA: Hydrogen bond geometry restraints
-
     # CCD accessing utility
     __ccU = None
 
@@ -298,6 +289,15 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__dihed_lb_greater_than_ub = False
         self.__dihed_ub_always_positive = True
 
+        self.distRestraints = 0      # CYANA: Distance restraint file (.upl or .lol)
+        self.dihedRestraints = 0     # CYANA: Torsion angle restraint file (.aco)
+        self.rdcRestraints = 0       # CYANA: Residual dipolar coupling restraint file (.rdc)
+        self.pcsRestraints = 0       # CYANA: Pseudocontact shift restraint file (.pcs)
+        self.noepkRestraints = 0     # CYANA: NOESY volume restraint file (.upv or .lov)
+        self.jcoupRestraints = 0     # CYANA: Scalar coupling constant restraint file (.cco)
+        self.geoRestraints = 0       # CYANA: Coordinate geometry restraints
+        self.hbondRestraints = 0     # CYANA: Hydrogen bond geometry restraints
+
     def setDebugMode(self, debug):
         self.__debug = debug
 
@@ -316,7 +316,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             file_type = 'nm-res-cya'
 
-            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                      resolvedMultimer=(self.__reasons is not None))
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
@@ -339,7 +340,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         if ps['chain_id'] in chain_mapping:
                             ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                              resolvedMultimer=(self.__reasons is not None))
                     self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)

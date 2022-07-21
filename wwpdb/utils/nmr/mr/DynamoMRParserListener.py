@@ -115,11 +115,6 @@ class DynamoMRParserListener(ParseTreeListener):
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
 
-    distRestraints = 0      # DYNAMO: Distance restraints
-    dihedRestraints = 0     # DYNAMO/TALOS: Torsion angle restraints
-    rdcRestraints = 0       # DYNAMO/PALES: Residual dipolar coupling restraints
-    jcoupRestraints = 0     # DYNAMO: Scalar coupling constant restraints
-
     # CCD accessing utility
     __ccU = None
 
@@ -236,6 +231,11 @@ class DynamoMRParserListener(ParseTreeListener):
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
+        self.distRestraints = 0      # DYNAMO: Distance restraints
+        self.dihedRestraints = 0     # DYNAMO/TALOS: Torsion angle restraints
+        self.rdcRestraints = 0       # DYNAMO/PALES: Residual dipolar coupling restraints
+        self.jcoupRestraints = 0     # DYNAMO: Scalar coupling constant restraints
+
     def setDebugMode(self, debug):
         self.__debug = debug
 
@@ -251,7 +251,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             file_type = 'nm-res-dyn'
 
-            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                      resolvedMultimer=(self.__reasons is not None))
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
@@ -274,7 +275,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         if ps['chain_id'] in chain_mapping:
                             ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                              resolvedMultimer=(self.__reasons is not None))
                     self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)

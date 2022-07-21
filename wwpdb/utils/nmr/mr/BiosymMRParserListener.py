@@ -91,10 +91,6 @@ class BiosymMRParserListener(ParseTreeListener):
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
 
-    distRestraints = 0      # BIOSYM: Distance restraints
-    dihedRestraints = 0     # BIOSYM: Dihedral angle restraints
-    geoRestraints = 0       # BIOSYM: Chirality/prochirality constraints
-
     # CCD accessing utility
     __ccU = None
 
@@ -208,6 +204,10 @@ class BiosymMRParserListener(ParseTreeListener):
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
+        self.distRestraints = 0      # BIOSYM: Distance restraints
+        self.dihedRestraints = 0     # BIOSYM: Dihedral angle restraints
+        self.geoRestraints = 0       # BIOSYM: Chirality/prochirality constraints
+
     def setDebugMode(self, debug):
         self.__debug = debug
 
@@ -223,7 +223,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
             file_type = 'nm-res-bio'
 
-            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                      resolvedMultimer=(self.__reasons is not None))
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
@@ -246,7 +247,8 @@ class BiosymMRParserListener(ParseTreeListener):
                         if ps['chain_id'] in chain_mapping:
                             ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                              resolvedMultimer=(self.__reasons is not None))
                     self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)

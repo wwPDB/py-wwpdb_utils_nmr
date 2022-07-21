@@ -179,17 +179,6 @@ class AmberMRParserListener(ParseTreeListener):
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
 
-    nmrRestraints = 0       # AMBER: NMR restraints
-    distRestraints = 0      # AMBER: Distance restraints
-    angRestraints = 0       # AMBER: Angle restraints
-    dihedRestraints = 0     # AMBER: Torsional angle restraints
-    planeRestraints = 0     # AMBER: Plane-point/plane angle restraints
-    noepkRestraints = 0     # AMBER: NOESY volume restraints
-    procsRestraints = 0     # AMBER: Chemical shift restraints
-    pcsRestraints = 0       # AMBER: Psuedocontact shift restraints
-    rdcRestraints = 0       # AMBER: Direct dipolar coupling restraints
-    csaRestraints = 0       # AMBER: Residual CSA or pseudo-CSA restraints
-
     # CCD accessing utility
     __ccU = None
 
@@ -432,6 +421,17 @@ class AmberMRParserListener(ParseTreeListener):
             self.__atomNumberDict = atomNumberDict
         else:
             self.__sanderAtomNumberDict = {}
+
+        self.nmrRestraints = 0       # AMBER: NMR restraints
+        self.distRestraints = 0      # AMBER: Distance restraints
+        self.angRestraints = 0       # AMBER: Angle restraints
+        self.dihedRestraints = 0     # AMBER: Torsional angle restraints
+        self.planeRestraints = 0     # AMBER: Plane-point/plane angle restraints
+        self.noepkRestraints = 0     # AMBER: NOESY volume restraints
+        self.procsRestraints = 0     # AMBER: Chemical shift restraints
+        self.pcsRestraints = 0       # AMBER: Psuedocontact shift restraints
+        self.rdcRestraints = 0       # AMBER: Direct dipolar coupling restraints
+        self.csaRestraints = 0       # AMBER: Residual CSA or pseudo-CSA restraints
 
         # last Sander comment
         self.lastComment = None

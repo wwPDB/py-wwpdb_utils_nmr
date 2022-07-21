@@ -89,12 +89,6 @@ class GromacsMRParserListener(ParseTreeListener):
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     # __mrAtomNameMapping = None
 
-    distRestraints = 0      # GROMACS: Distance restraints
-    angRestraints = 0       # GROMACS: Angle restraints
-    dihedRestraints = 0     # GROMACS: Dihedral angle restraints
-    rdcRestraints = 0       # GROMACS: Residual dipolar coupling restraints
-    geoRestraints = 0       # GROMACS: Coordinate geometry restraints
-
     # CCD accessing utility
     __ccU = None
 
@@ -195,6 +189,12 @@ class GromacsMRParserListener(ParseTreeListener):
             self.__pA.setVerbose(verbose)
 
         self.__atomNumberDict = atomNumberDict
+
+        self.distRestraints = 0      # GROMACS: Distance restraints
+        self.angRestraints = 0       # GROMACS: Angle restraints
+        self.dihedRestraints = 0     # GROMACS: Dihedral angle restraints
+        self.rdcRestraints = 0       # GROMACS: Residual dipolar coupling restraints
+        self.geoRestraints = 0       # GROMACS: Coordinate geometry restraints
 
     def setDebugMode(self, debug):
         self.__debug = debug

@@ -60,55 +60,6 @@ class AmberPTParserListener(ParseTreeListener):
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
 
-    versionStatements = 0
-    amberAtomTypeStatements = 0
-    angleEquilValueStatements = 0
-    angleForceConstantStatements = 0
-    anglesIncHydrogenStatements = 0
-    anglesWithoutHydrogenStatements = 0
-    atomicNumberStatements = 0
-    atomNameStatements = 0
-    atomTypeIndexStatements = 0
-    atomsPerMoleculeStatements = 0
-    bondEquilValueStatements = 0
-    bondForceConstantStatements = 0
-    bondsIncHydrogenStatements = 0
-    bondsWithoutHydrogenStatements = 0
-    boxDimensionsStatements = 0
-    capInfoStatements = 0
-    capInfo2Statements = 0
-    chargeStatements = 0
-    dihedralForceConstantStatements = 0
-    dihedralPeriodicityStatements = 0
-    dihedralPhaseStatements = 0
-    dihedralsIncHydrogenStatements = 0
-    dihedralsWithoutHydrogenStatements = 0
-    excludedAtomsListStatements = 0
-    hbcutStatements = 0
-    hbondAcoefStatements = 0
-    hbondBcoefStatements = 0
-    ipolStatements = 0
-    irotatStatements = 0
-    joinArrayStatements = 0
-    lennardJonesAcoefStatements = 0
-    lennardJonesBcoefStatements = 0
-    massStatements = 0
-    nonbondedParmIndexStatements = 0
-    numberExcludedAtomsStatements = 0
-    pointersStatements = 0
-    polarizabilityStatements = 0
-    radiiStatements = 0
-    radiusSetStatements = 0
-    residueLabelStatements = 0
-    residuePointerStatements = 0
-    sceeScaleFactorStatements = 0
-    scnbScaleFactorStatements = 0
-    screenStatements = 0
-    soltyStatements = 0
-    solventPointersStatements = 0
-    titleStatements = 0
-    treeChainClassificationStatements = 0
-
     # CCD accessing utility
     __ccU = None
 
@@ -196,6 +147,55 @@ class AmberPTParserListener(ParseTreeListener):
         if self.__hasPolySeqModel:
             self.__pA = PairwiseAlign()
             self.__pA.setVerbose(verbose)
+
+        self.versionStatements = 0
+        self.amberAtomTypeStatements = 0
+        self.angleEquilValueStatements = 0
+        self.angleForceConstantStatements = 0
+        self.anglesIncHydrogenStatements = 0
+        self.anglesWithoutHydrogenStatements = 0
+        self.atomicNumberStatements = 0
+        self.atomNameStatements = 0
+        self.atomTypeIndexStatements = 0
+        self.atomsPerMoleculeStatements = 0
+        self.bondEquilValueStatements = 0
+        self.bondForceConstantStatements = 0
+        self.bondsIncHydrogenStatements = 0
+        self.bondsWithoutHydrogenStatements = 0
+        self.boxDimensionsStatements = 0
+        self.capInfoStatements = 0
+        self.capInfo2Statements = 0
+        self.chargeStatements = 0
+        self.dihedralForceConstantStatements = 0
+        self.dihedralPeriodicityStatements = 0
+        self.dihedralPhaseStatements = 0
+        self.dihedralsIncHydrogenStatements = 0
+        self.dihedralsWithoutHydrogenStatements = 0
+        self.excludedAtomsListStatements = 0
+        self.hbcutStatements = 0
+        self.hbondAcoefStatements = 0
+        self.hbondBcoefStatements = 0
+        self.ipolStatements = 0
+        self.irotatStatements = 0
+        self.joinArrayStatements = 0
+        self.lennardJonesAcoefStatements = 0
+        self.lennardJonesBcoefStatements = 0
+        self.massStatements = 0
+        self.nonbondedParmIndexStatements = 0
+        self.numberExcludedAtomsStatements = 0
+        self.pointersStatements = 0
+        self.polarizabilityStatements = 0
+        self.radiiStatements = 0
+        self.radiusSetStatements = 0
+        self.residueLabelStatements = 0
+        self.residuePointerStatements = 0
+        self.sceeScaleFactorStatements = 0
+        self.scnbScaleFactorStatements = 0
+        self.screenStatements = 0
+        self.soltyStatements = 0
+        self.solventPointersStatements = 0
+        self.titleStatements = 0
+        self.treeChainClassificationStatements = 0
 
     # Enter a parse tree produced by AmberPTParser#amber_pt.
     def enterAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument

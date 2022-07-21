@@ -332,6 +332,8 @@ class GromacsMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}) "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.distRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -531,6 +533,8 @@ class GromacsMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+        except ValueError:
+            self.dihedRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -752,6 +756,8 @@ class GromacsMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} exp={exp} index={index} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.rdcRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -967,6 +973,8 @@ class GromacsMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+        except ValueError:
+            self.angRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1064,6 +1072,8 @@ class GromacsMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
                           f"atom1={atom1} atom2={atom2} z-axis {dstFunc}")
 
+        except ValueError:
+            self.angRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1133,6 +1143,8 @@ class GromacsMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
                               f"atom={atom1} (g, r, k)=({a}, {b}, {c})")
 
+        except ValueError:
+            self.geoRestraints -= 1
         finally:
             self.numberSelection.clear()
 

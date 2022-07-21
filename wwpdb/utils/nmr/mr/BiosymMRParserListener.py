@@ -35,7 +35,9 @@ try:
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            retrieveAtomIdentFromMRMap,
-                                           retrieveRemappedSeqId)
+                                           retrieveRemappedSeqId,
+                                           splitPolySeqRstForMultimers,
+                                           retrieveRemappedChainId)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.BiosymMRParser import BiosymMRParser
@@ -59,7 +61,9 @@ except ImportError:
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                retrieveAtomIdentFromMRMap,
-                               retrieveRemappedSeqId)
+                               retrieveRemappedSeqId,
+                               splitPolySeqRstForMultimers,
+                               retrieveRemappedChainId)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -293,6 +297,16 @@ class BiosymMRParserListener(ParseTreeListener):
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
+                    if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
+                        polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if self.reasonsForReParsing is None:
+                                self.reasonsForReParsing = {}
+                            if 'chain_id_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
+
         if len(self.warningMessage) == 0:
             self.warningMessage = None
         else:
@@ -426,19 +440,24 @@ class BiosymMRParserListener(ParseTreeListener):
         """ Split BIOSYM atom selection expression.
         """
 
-        atomSel = atomSelection.upper().split(':')
-
-        chainId = int(atomSel[0])
-        residue = atomSel[1].split('_')
-        compId = residue[0]
         try:
-            seqId = int(residue[1])
-        except ValueError:
-            seqId = int(''.join(c for c in residue[1] if c.isdigit()))
-            chainId = None
-        atomId = atomSel[2]
 
-        return chainId, seqId, compId, atomId
+            atomSel = atomSelection.upper().split(':')
+
+            chainId = int(atomSel[0])
+            residue = atomSel[1].split('_')
+            compId = residue[0]
+            try:
+                seqId = int(residue[1])
+            except ValueError:
+                seqId = int(''.join(c for c in residue[1] if c.isdigit()))
+                chainId = None
+            atomId = atomSel[2]
+
+            return chainId, seqId, compId, atomId
+
+        except ValueError:
+            return None, None, None, None
 
     def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):
         """ Validate distance value range.
@@ -559,19 +578,35 @@ class BiosymMRParserListener(ParseTreeListener):
         chainAssign = []
         _seqId = seqId
 
+        fixedChainId = None
+        fixedSeqId = None
+
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-            seqId, _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+        if self.__reasons is not None:
+            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                refChainId = fixedChainId
+            elif 'seq_id_remap' in self.__reasons:
+                fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+            if fixedSeqId is not None:
+                _seqId = fixedSeqId
 
         updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId))
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
-            if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+            if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                 if chainId != self.__chainNumberDict[refChainId]:
                     continue
+            if self.__reasons is not None:
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                    seqId = fixedSeqId
+                elif fixedSeqId is not None:
+                    seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -594,9 +629,16 @@ class BiosymMRParserListener(ParseTreeListener):
         if self.__hasNonPoly:
             for np in self.__nonPoly:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, compId, False)
-                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
+                if self.__reasons is not None:
+                    if fixedChainId is not None:
+                        if fixedChainId != chainId:
+                            continue
+                        seqId = fixedSeqId
+                    elif fixedSeqId is not None:
+                        seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]

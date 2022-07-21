@@ -64,7 +64,9 @@ try:
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            retrieveAtomIdFromMRMap,
-                                           retrieveRemappedSeqId)
+                                           retrieveRemappedSeqId,
+                                           splitPolySeqRstForMultimers,
+                                           retrieveRemappedChainId)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.XplorMRParser import XplorMRParser
@@ -113,7 +115,9 @@ except ImportError:
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                retrieveAtomIdFromMRMap,
-                               retrieveRemappedSeqId)
+                               retrieveRemappedSeqId,
+                               splitPolySeqRstForMultimers,
+                               retrieveRemappedChainId)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -535,6 +539,16 @@ class XplorMRParserListener(ParseTreeListener):
                             self.reasonsForReParsing = {}
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
+
+                    if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
+                        polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if self.reasonsForReParsing is None:
+                                self.reasonsForReParsing = {}
+                            if 'chain_id_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -6833,8 +6847,13 @@ class XplorMRParserListener(ParseTreeListener):
             for seqId in _factor['seq_id']:
                 seqId = self.getRealSeqId(ps, seqId, isPolySeq)
 
-                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                    seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                if self.__reasons is not None:
+                    if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                        fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                        if fixedChainId != chainId:
+                            continue
+                    elif 'seq_id_remap' in self.__reasons:
+                        seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
 
                 if ps is not None and seqId in ps['auth_seq_id']:
                     compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]

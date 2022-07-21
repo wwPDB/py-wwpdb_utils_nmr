@@ -48,7 +48,9 @@ try:
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            retrieveAtomIdentFromMRMap,
-                                           retrieveRemappedSeqId)
+                                           retrieveRemappedSeqId,
+                                           splitPolySeqRstForMultimers,
+                                           retrieveRemappedChainId)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.CyanaMRParser import CyanaMRParser
@@ -84,7 +86,9 @@ except ImportError:
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                retrieveAtomIdentFromMRMap,
-                               retrieveRemappedSeqId)
+                               retrieveRemappedSeqId,
+                               splitPolySeqRstForMultimers,
+                               retrieveRemappedChainId)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -385,6 +389,16 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.reasonsForReParsing = {}
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
+
+                    if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
+                        polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if self.reasonsForReParsing is None:
+                                self.reasonsForReParsing = {}
+                            if 'chain_id_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -738,6 +752,11 @@ class CyanaMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            if self.__cur_subtype == 'dist':
+                self.distRestraints -= 1
+            elif self.__cur_subtype == 'jcoup':
+                self.jcoupRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1055,6 +1074,11 @@ class CyanaMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            if self.__cur_subtype == 'dist':
+                self.distRestraints -= 1
+            elif self.__cur_subtype == 'jcoup':
+                self.jcoupRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1217,18 +1241,31 @@ class CyanaMRParserListener(ParseTreeListener):
         chainAssign = []
         _seqId = seqId
 
+        fixedChainId = None
+        fixedSeqId = None
+
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-            _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], self.__polySeq[0]['chain_id'], seqId)
+        if self.__reasons is not None:
+            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+            elif 'seq_id_remap' in self.__reasons:
+                fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], self.__polySeq[0]['chain_id'], seqId)
+            if fixedSeqId is not None:
+                _seqId = fixedSeqId
 
-        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'], _seqId, translateToStdResName(compId))
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, translateToStdResName(compId))
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
-            if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+            if self.__reasons is not None:
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                    seqId = fixedSeqId
+                elif fixedSeqId is not None:
+                    seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -1247,8 +1284,13 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__hasNonPoly:
             for np in self.__nonPoly:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, compId, False)
-                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                    seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                if self.__reasons is not None:
+                    if fixedChainId is not None:
+                        if fixedChainId != chainId:
+                            continue
+                        seqId = fixedSeqId
+                    elif fixedSeqId is not None:
+                        seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
@@ -1329,21 +1371,35 @@ class CyanaMRParserListener(ParseTreeListener):
         chainAssign = []
         _seqId = seqId
 
+        fixedChainId = None
+        fixedSeqId = None
+
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-            _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+        if self.__reasons is not None:
+            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                refChainId = fixedChainId
+            elif 'seq_id_remap' in self.__reasons:
+                fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+            if fixedSeqId is not None:
+                _seqId = fixedSeqId
 
         updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId))
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
-            if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+            if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                 if chainId != self.__chainNumberDict[refChainId]:
                     continue
-            if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+            if self.__reasons is not None:
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                    seqId = fixedSeqId
+                elif fixedSeqId is not None:
+                    seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -1366,11 +1422,16 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__hasNonPoly:
             for np in self.__nonPoly:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, compId, False)
-                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
-                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                    seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                if self.__reasons is not None:
+                    if fixedChainId is not None:
+                        if fixedChainId != chainId:
+                            continue
+                        seqId = fixedSeqId
+                    elif fixedSeqId is not None:
+                        seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
@@ -1445,11 +1506,16 @@ class CyanaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
                 chainId = ps['auth_chain_id']
-                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
-                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                    _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                if self.__reasons is not None:
+                    if fixedChainId is not None:
+                        if fixedChainId != chainId:
+                            continue
+                        _seqId = fixedSeqId
+                    elif fixedSeqId is not None:
+                        _seqId = fixedSeqId
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     chainAssign.append(chainId, _seqId, cifCompId)
@@ -1476,10 +1542,20 @@ class CyanaMRParserListener(ParseTreeListener):
         chainAssign = []
         _seqId = seqId
 
+        fixedChainId = None
+        fixedSeqId = None
+
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, None)
-            if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+            if self.__reasons is not None:
+                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                    if fixedChainId != chainId:
+                        continue
+                elif 'seq_id_remap' in self.__reasons:
+                    fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                if fixedSeqId is not None:
+                    seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -1490,8 +1566,15 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__hasNonPoly:
             for np in self.__nonPoly:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, None, False)
-                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                    seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                if self.__reasons is not None:
+                    if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                        if fixedChainId != chainId:
+                            continue
+                    elif 'seq_id_remap' in self.__reasons:
+                        fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                    if fixedSeqId is not None:
+                        seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
@@ -1505,8 +1588,6 @@ class CyanaMRParserListener(ParseTreeListener):
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
-                    if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                        seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -1523,8 +1604,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
-                        if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                            seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                         if seqId in np['seq_id']:
                             cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
                             updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -1538,8 +1617,6 @@ class CyanaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
                 chainId = ps['auth_chain_id']
-                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                    _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -1560,12 +1637,21 @@ class CyanaMRParserListener(ParseTreeListener):
         chainAssign = []
         _seqId = seqId
 
+        fixedSeqId = None
+
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, None)
             if chainId != fixedChainId:
                 continue
-            if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+            if self.__reasons is not None:
+                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                    if fixedChainId != chainId:
+                        continue
+                elif 'seq_id_remap' in self.__reasons:
+                    fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                if fixedSeqId is not None:
+                    seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -1578,8 +1664,15 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, None, False)
                 if chainId != fixedChainId:
                     continue
-                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                    seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                if self.__reasons is not None:
+                    if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                        if fixedChainId != chainId:
+                            continue
+                    elif 'seq_id_remap' in self.__reasons:
+                        fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                    if fixedSeqId is not None:
+                        seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
@@ -1595,8 +1688,6 @@ class CyanaMRParserListener(ParseTreeListener):
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
-                    if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                        seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
@@ -1615,8 +1706,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
-                        if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                            seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                         if seqId in np['seq_id']:
                             cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
                             updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
@@ -1632,8 +1721,6 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainId = ps['auth_chain_id']
                 if chainId != fixedChainId:
                     continue
-                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                    _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
@@ -2069,6 +2156,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
 
+        except ValueError:
+            self.dihedRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2305,6 +2394,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.rdcRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2503,6 +2594,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
                           f"atom={atom} {dstFunc}")
 
+        except ValueError:
+            self.pcsRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2698,6 +2791,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 int_col += 1
                 str_col += 3
 
+        except ValueError:
+            if self.__cur_subtype == 'dist':
+                self.distRestraints -= 1
+            else:
+                self.noepkRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2861,6 +2959,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 int_col += 1
                 str_col += 3
 
+        except ValueError:
+            if self.__cur_subtype == 'dist':
+                self.distRestraints -= 1
+            else:
+                self.noepkRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2995,6 +3098,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 int_col += 1
                 str_col += 3
 
+        except ValueError:
+            if self.__cur_subtype == 'dist':
+                self.distRestraints -= 1
+            else:
+                self.noepkRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -3119,6 +3227,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 int_col += 1
                 str_col += 2
 
+        except ValueError:
+            if self.__cur_subtype == 'dist':
+                self.distRestraints -= 1
+            else:
+                self.noepkRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -3282,6 +3395,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 int_col += 1
                 str_col += 2
 
+        except ValueError:
+            if self.__cur_subtype == 'dist':
+                self.distRestraints -= 1
+            else:
+                self.noepkRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -3416,6 +3534,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 int_col += 1
                 str_col += 2
 
+        except ValueError:
+            if self.__cur_subtype == 'dist':
+                self.distRestraints -= 1
+            else:
+                self.noepkRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -3713,6 +3836,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.distRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -3900,6 +4025,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.jcoupRestraints -= 1
         finally:
             self.numberSelection.clear()
 

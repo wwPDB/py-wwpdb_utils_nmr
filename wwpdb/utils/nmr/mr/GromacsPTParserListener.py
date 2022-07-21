@@ -704,6 +704,8 @@ class GromacsPTParserListener(ParseTreeListener):
             if atom not in self.__atoms:
                 self.__atoms.append(atom)
 
+        except ValueError:
+            pass
         finally:
             self.numberSelection.clear()
 

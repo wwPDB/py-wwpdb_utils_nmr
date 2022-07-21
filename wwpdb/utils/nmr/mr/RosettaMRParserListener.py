@@ -42,7 +42,9 @@ try:
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            retrieveAtomIdentFromMRMap,
-                                           retrieveRemappedSeqId)
+                                           retrieveRemappedSeqId,
+                                           splitPolySeqRstForMultimers,
+                                           retrieveRemappedChainId)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.RosettaMRParser import RosettaMRParser
@@ -70,7 +72,9 @@ except ImportError:
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                retrieveAtomIdentFromMRMap,
-                               retrieveRemappedSeqId)
+                               retrieveRemappedSeqId,
+                               splitPolySeqRstForMultimers,
+                               retrieveRemappedChainId)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -326,6 +330,16 @@ class RosettaMRParserListener(ParseTreeListener):
                             self.reasonsForReParsing = {}
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
+
+                    if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
+                        polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if self.reasonsForReParsing is None:
+                                self.reasonsForReParsing = {}
+                            if 'chain_id_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -640,12 +654,19 @@ class RosettaMRParserListener(ParseTreeListener):
         chainAssign = []
         _seqId = seqId
 
+        fixedSeqId = None
+
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId)
+            if self.__reasons is not None:
+                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                elif 'seq_id_remap' in self.__reasons:
+                    fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                if fixedSeqId is not None:
+                    seqId = _seqId = fixedSeqId
             if fixedChainId is not None and chainId != fixedChainId:
                 continue
-            if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
             if seqId in ps['auth_seq_id']:
                 cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -658,10 +679,15 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__hasNonPoly:
             for np in self.__nonPoly:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, False)
+                if self.__reasons is not None:
+                    if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                    elif 'seq_id_remap' in self.__reasons:
+                        fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                    if fixedSeqId is not None:
+                        seqId = _seqId = fixedSeqId
                 if fixedChainId is not None and chainId != fixedChainId:
                     continue
-                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                    seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                 if seqId in np['auth_seq_id']:
                     cifCompId = np['comp_id'][np['auth_seq_id'].index(seqId)]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -679,8 +705,6 @@ class RosettaMRParserListener(ParseTreeListener):
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
-                    if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                        seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -702,8 +726,6 @@ class RosettaMRParserListener(ParseTreeListener):
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
-                        if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                            seqId = _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                         if seqId in np['seq_id']:
                             cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
                             updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -722,8 +744,6 @@ class RosettaMRParserListener(ParseTreeListener):
                 chainId = ps['auth_chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
                     continue
-                if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-                    _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -1356,6 +1376,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} (Coordinate) id={self.geoRestraints} "
                           f"atom={atom1} refAtom={atom2} coord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
 
+        except ValueError:
+            self.geoRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1431,6 +1453,8 @@ class RosettaMRParserListener(ParseTreeListener):
                           f"atom={atom1} originAtom1={atom2} originAtom2={atom3} originAtom3={atom4} "
                           f"localCoord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
 
+        except ValueError:
+            self.geoRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1635,6 +1659,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} (MinResidueAtomicDistance) id={self.geoRestraints} "
                           f"resudue1={res1} residue2={res2} {dstFunc}")
 
+        except ValueError:
+            self.geoRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1712,6 +1738,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} (BigBin) id={self.geoRestraints} "
                           f"residue={res} binChar={binChar} {dstFunc}")
 
+        except ValueError:
+            self.dihedRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2575,6 +2603,8 @@ class RosettaMRParserListener(ParseTreeListener):
             if valid:
                 self.stackFuncs.append(func)
 
+        except ValueError:
+            pass
         finally:
             self.numberFSelection.clear()
 

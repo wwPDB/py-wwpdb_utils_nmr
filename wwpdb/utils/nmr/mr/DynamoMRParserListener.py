@@ -41,7 +41,9 @@ try:
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            retrieveAtomIdentFromMRMap,
-                                           retrieveRemappedSeqId)
+                                           retrieveRemappedSeqId,
+                                           splitPolySeqRstForMultimers,
+                                           retrieveRemappedChainId)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.DynamoMRParser import DynamoMRParser
@@ -71,7 +73,9 @@ except ImportError:
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                retrieveAtomIdentFromMRMap,
-                               retrieveRemappedSeqId)
+                               retrieveRemappedSeqId,
+                               splitPolySeqRstForMultimers,
+                               retrieveRemappedChainId)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -321,6 +325,16 @@ class DynamoMRParserListener(ParseTreeListener):
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
+                    if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
+                        polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if self.reasonsForReParsing is None:
+                                self.reasonsForReParsing = {}
+                            if 'chain_id_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
+
         if len(self.warningMessage) == 0:
             self.warningMessage = None
         else:
@@ -419,6 +433,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}, group={group}) "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.distRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -508,6 +524,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}, group={group}) "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.distRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -598,6 +616,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}, group={group}) "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.distRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -720,19 +740,35 @@ class DynamoMRParserListener(ParseTreeListener):
         chainAssign = []
         _seqId = seqId
 
+        fixedChainId = None
+        fixedSeqId = None
+
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        if self.__reasons is not None and 'seq_id_remap' in self.__reasons:
-            seqId, _seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, seqId)
+        if self.__reasons is not None:
+            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                refChainId = fixedChainId
+            elif 'seq_id_remap' in self.__reasons:
+                fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, seqId)
+            if fixedSeqId is not None:
+                _seqId = fixedSeqId
 
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, translateToStdResName(compId))
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
-            if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+            if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                 if chainId != self.__chainNumberDict[refChainId]:
                     continue
+            if self.__reasons is not None:
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                    seqId = fixedSeqId
+                elif fixedSeqId is not None:
+                    seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -755,9 +791,16 @@ class DynamoMRParserListener(ParseTreeListener):
         if self.__hasNonPoly:
             for np in self.__nonPoly:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, compId, False)
-                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
+                if self.__reasons is not None:
+                    if fixedChainId is not None:
+                        if fixedChainId != chainId:
+                            continue
+                        seqId = fixedSeqId
+                    elif fixedSeqId is not None:
+                        seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
@@ -1109,6 +1152,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+        except ValueError:
+            self.dihedRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1201,6 +1246,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+        except ValueError:
+            self.dihedRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1293,6 +1340,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+        except ValueError:
+            self.dihedRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1489,6 +1538,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.rdcRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1632,6 +1683,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.rdcRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1775,6 +1828,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.rdcRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -1925,6 +1980,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
 
+        except ValueError:
+            self.rdcRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2119,6 +2176,8 @@ class DynamoMRParserListener(ParseTreeListener):
                               f"A={A} B={B} C={C} phase={phase} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+        except ValueError:
+            self.jcoupRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2225,6 +2284,8 @@ class DynamoMRParserListener(ParseTreeListener):
                               f"A={A} B={B} C={C} phase={phase} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+        except ValueError:
+            self.jcoupRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2331,6 +2392,8 @@ class DynamoMRParserListener(ParseTreeListener):
                               f"A={A} B={B} C={C} phase={phase} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+        except ValueError:
+            self.jcoupRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2543,6 +2606,8 @@ class DynamoMRParserListener(ParseTreeListener):
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+        except ValueError:
+            self.dihedRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2682,6 +2747,8 @@ class DynamoMRParserListener(ParseTreeListener):
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
 
+        except ValueError:
+            self.dihedRestraints -= 1
         finally:
             self.numberSelection.clear()
 

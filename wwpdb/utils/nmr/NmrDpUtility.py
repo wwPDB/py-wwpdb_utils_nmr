@@ -11087,6 +11087,11 @@ class NmrDpUtility:
                             _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
                             split_file_list.append(_ar)
 
+                        elif len_valid_types == 3 and set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl']):
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-xpl'
+                            split_file_list.append(_ar)
+
                         else:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = valid_types[0]
@@ -11733,6 +11738,13 @@ class NmrDpUtility:
                             elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+                                if distict:
+                                    _ar['original_file_name'] = file_name
+                                split_file_list.append(_ar)
+
+                            elif len_valid_types == 3 and set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl']):
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = 'nm-res-xpl'
                                 if distict:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)

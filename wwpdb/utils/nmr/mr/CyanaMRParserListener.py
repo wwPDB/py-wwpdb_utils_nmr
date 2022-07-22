@@ -1418,7 +1418,6 @@ class CyanaMRParserListener(ParseTreeListener):
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         if self.__reasons is not None:
-            print(f"{compId=} {atomId=}")
             if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
                and atomId in self.__reasons['ambig_atom_id_remap'][compId]:
                 return self.atomIdListToChainAssign(self.__reasons['ambig_atom_id_remap'][compId][atomId])

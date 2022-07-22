@@ -209,6 +209,18 @@ class CyanaMRParserListener(ParseTreeListener):
     # collection of auxiliary atom selection
     auxAtomSelectionSet = ''
 
+    # current residue name for atom name mapping
+    __cur_resname_for_mapping = ''
+
+    # unambigous atom name mapping
+    unambigAtomNameMapping = {}
+
+    # ambigous atom name mapping
+    ambigAtomNameMapping = {}
+
+    # collection of general atom name extended with ambig code
+    genAtomNameSelection = []
+
     warningMessage = ''
 
     reasonsForReParsing = None
@@ -402,6 +414,18 @@ class CyanaMRParserListener(ParseTreeListener):
                             if 'chain_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
+            if 'Atom not found' in self.warningMessage:
+                if len(self.unambigAtomNameMapping) > 0:
+                    if self.reasonsForReParsing is None:
+                        self.reasonsForReParsing = {}
+                    if 'unambig_atom_id_remap' not in self.reasonsForReParsing:
+                        self.reasonsForReParsing['unambig_atom_id_remap'] = self.unambigAtomNameMapping
+                if len(self.ambigAtomNameMapping) > 0:
+                    if self.reasonsForReParsing is None:
+                        self.reasonsForReParsing = {}
+                    if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
+                        self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
+
         if len(self.warningMessage) == 0:
             self.warningMessage = None
         else:
@@ -439,12 +463,19 @@ class CyanaMRParserListener(ParseTreeListener):
 
         try:
 
+            if None in self.genAtomNameSelection:
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                elif self.__cur_subtype == 'jcoup':
+                    self.jcoupRestraints -= 1
+                return
+
             seqId1 = int(str(ctx.Integer(0)))
             compId1 = str(ctx.Simple_name(0)).upper()
-            atomId1 = str(ctx.Simple_name(1)).upper()
+            atomId1 = self.genAtomNameSelection[0]
             seqId2 = int(str(ctx.Integer(1)))
-            compId2 = str(ctx.Simple_name(2)).upper()
-            atomId2 = str(ctx.Simple_name(3)).upper()
+            compId2 = str(ctx.Simple_name(1)).upper()
+            atomId2 = self.genAtomNameSelection[1]
 
             if len(compId1) == 1 and len(compId2) == 1 and compId1.isalpha() and compId2.isalpha():
                 atom_like = self.__csStat.getAtomLikeNameSet(True, True, 1)
@@ -761,6 +792,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.jcoupRestraints -= 1
         finally:
             self.numberSelection.clear()
+            self.genAtomNameSelection.clear()
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
     def exitDistance_wo_comp_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
@@ -1250,6 +1282,12 @@ class CyanaMRParserListener(ParseTreeListener):
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         if self.__reasons is not None:
+            if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
+               and atomId in self.__reasons['ambig_atom_id_remap'][compId]:
+                return self.atomIdListToChainAssign(self.__reasons['ambig_atom_id_remap'][compId][atomId])
+            if 'unambig_atom_id_remap' in self.__reasons and compId in self.__reasons['unambig_atom_id_remap']\
+               and atomId in self.__reasons['unambig_atom_id_remap'][compId]:
+                atomId = self.__reasons['unambig_atom_id_remap'][compId][atomId][0]  # select representative one
             if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
             elif 'seq_id_remap' in self.__reasons:
@@ -1380,6 +1418,13 @@ class CyanaMRParserListener(ParseTreeListener):
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         if self.__reasons is not None:
+            print(f"{compId=} {atomId=}")
+            if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
+               and atomId in self.__reasons['ambig_atom_id_remap'][compId]:
+                return self.atomIdListToChainAssign(self.__reasons['ambig_atom_id_remap'][compId][atomId])
+            if 'unambig_atom_id_remap' in self.__reasons and compId in self.__reasons['unambig_atom_id_remap']\
+               and atomId in self.__reasons['unambig_atom_id_remap'][compId]:
+                atomId = self.__reasons['unambig_atom_id_remap'][compId][atomId][0]  # select representative one
             if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                 refChainId = fixedChainId
@@ -1387,6 +1432,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
+
+        if len(self.ambigAtomNameMapping) > 0:
+            if compId in self.ambigAtomNameMapping and atomId in self.ambigAtomNameMapping[compId]:
+                return self.atomIdListToChainAssign(self.ambigAtomNameMapping[compId][atomId])
+        if len(self.unambigAtomNameMapping) > 0:
+            if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
+                atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
         updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId))
 
@@ -1537,7 +1589,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return chainAssign
 
-    def assignCoordPolymerSequenceWithoutCompId(self, seqId, atomId):
+    def assignCoordPolymerSequenceWithoutCompId(self, seqId, atomId=None):
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -1562,7 +1614,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.append((chainId, seqId, cifCompId))
 
         if self.__hasNonPoly:
@@ -1581,7 +1633,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.append((chainId, seqId, cifCompId))
 
         if len(chainAssign) == 0:
@@ -1593,7 +1645,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                        if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
                             if self.reasonsForReParsing is None:
                                 self.reasonsForReParsing = {}
@@ -1609,7 +1661,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if seqId in np['seq_id']:
                             cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
                             updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
                                 if self.reasonsForReParsing is None:
                                     self.reasonsForReParsing = {}
@@ -1625,7 +1677,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign.append(chainId, _seqId, cifCompId)
 
         if len(chainAssign) == 0:
-            if seqId == 1 and atomId in ('H', 'HN'):
+            if seqId == 1 and atomId is not None and atomId in ('H', 'HN'):
                 return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                 f"{_seqId}:{atomId} is not present in the coordinates.\n"
@@ -1736,14 +1788,32 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return chainAssign
 
-    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True):
+    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True):
         """ Select atoms of the coordinates.
         """
 
         atomSelection = []
 
-        if compId is not None and self.__mrAtomNameMapping is not None and compId not in monDict3:
-            seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+        if compId is not None:
+            if self.__reasons is not None:
+                if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
+                   and atomId in self.__reasons['ambig_atom_id_remap'][compId]:
+                    self.atomSelectionSet.extend(self.atomIdListToAtomSelection(self.__reasons['ambig_atom_id_remap'][compId][atomId]))
+                    return
+                if 'unambig_atom_id_remap' in self.__reasons and compId in self.__reasons['unambig_atom_id_remap']\
+                   and atomId in self.__reasons['unambig_atom_id_remap'][compId]:
+                    atomId = self.__reasons['unambig_atom_id_remap'][compId][atomId][0]  # select representative one
+
+            if len(self.ambigAtomNameMapping) > 0:
+                if compId in self.ambigAtomNameMapping and atomId in self.ambigAtomNameMapping[compId]:
+                    self.atomSelectionSet.extend(self.atomIdListToAtomSelection(self.ambigAtomNameMapping[compId][atomId]))
+                    return
+            if len(self.unambigAtomNameMapping) > 0:
+                if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
+                    atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
+
+            if self.__mrAtomNameMapping is not None and compId not in monDict3:
+                seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         for chainId, cifSeqId, cifCompId in chainAssign:
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
@@ -1759,23 +1829,25 @@ class CyanaMRParserListener(ParseTreeListener):
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
+                if enableWarning:
+                    self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
+                        f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
                 continue
             if lenAtomId > 1 and not allowAmbig:
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
+                if enableWarning:
+                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                        f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
                 continue
 
             for cifAtomId in _atomId:
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
 
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
 
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
-    def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
+    def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite, enableWarning=True):
         if not self.__hasCoord:
             return
 
@@ -1850,8 +1922,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
                         if bondedTo[0] in ('N', 'O', 'S'):
                             return
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                if enableWarning:
+                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)
@@ -4309,6 +4382,155 @@ class CyanaMRParserListener(ParseTreeListener):
                 print(f"subtype={self.__cur_subtype} (CYANA statement: covalent bond linkage) id={self.geoRestraints} "
                       f"atom1={atom1} atom2={atom2}")
 
+    # Enter a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
+    def enterUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext):
+        self.__cur_resname_for_mapping = str(ctx.Simple_name()).upper()
+
+    # Exit a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
+    def exitUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#mapping_list.
+    def enterMapping_list(self, ctx: CyanaMRParser.Mapping_listContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#mapping_list.
+    def exitMapping_list(self, ctx: CyanaMRParser.Mapping_listContext):
+        atomName = str(ctx.Simple_name_MP(0)).upper()
+        iupacName = set()
+
+        i = 1
+        while ctx.Simple_name_MP(i):
+            iupacName.add(str(ctx.Simple_name_MP(i)).upper())
+            i += 1
+
+        if self.__cur_resname_for_mapping not in self.unambigAtomNameMapping:
+            self.unambigAtomNameMapping[self.__cur_resname_for_mapping] = {}
+        self.unambigAtomNameMapping[self.__cur_resname_for_mapping][atomName] = list(iupacName)
+
+    # Enter a parse tree produced by CyanaMRParser#ambig_atom_name_mapping.
+    def enterAmbig_atom_name_mapping(self, ctx: CyanaMRParser.Ambig_atom_name_mappingContext):
+        self.__cur_resname_for_mapping = str(ctx.Simple_name()).upper()
+
+    # Exit a parse tree produced by CyanaMRParser#ambig_atom_name_mapping.
+    def exitAmbig_atom_name_mapping(self, ctx: CyanaMRParser.Ambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+        self.updateAmbigAtomNameMapping()
+
+    # Enter a parse tree produced by CyanaMRParser#ambig_list.
+    def enterAmbig_list(self, ctx: CyanaMRParser.Ambig_listContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#ambig_list.
+    def exitAmbig_list(self, ctx: CyanaMRParser.Ambig_listContext):
+        if ctx.Ambig_code_MP():
+            ambigCode = str(ctx.Ambig_code_MP())
+            i = 0
+        else:
+            ambigCode = str(ctx.Simple_name_MP(0)).upper()
+            i = 1
+
+        mapName = []
+
+        j = 0
+        while ctx.Simple_name_MP(i):
+            mapName.append({'atom_name': str(ctx.Simple_name_MP(i)).upper(),
+                            'seq_id': int(str(ctx.Integer_MP(j)))})
+            i += 1
+            j += 1
+
+        if self.__cur_resname_for_mapping not in self.ambigAtomNameMapping:
+            self.ambigAtomNameMapping[self.__cur_resname_for_mapping] = {}
+        self.ambigAtomNameMapping[self.__cur_resname_for_mapping][ambigCode] = mapName
+
+    def updateAmbigAtomNameMapping(self):
+        if not self.__hasPolySeq or len(self.ambigAtomNameMapping) == 0:
+            return
+
+        unambigResidues = None
+        if len(self.unambigAtomNameMapping) > 0:
+            unambigResidues = [translateToStdResName(residue) for residue in self.unambigAtomNameMapping.keys()]
+
+        for ambigDict in self.ambigAtomNameMapping.values():
+            for ambigList in ambigDict.values():
+                for ambig in ambigList:
+
+                    if 'atom_id_list' in ambig:
+                        continue
+
+                    atomName = ambig['atom_name']
+                    seqId = ambig['seq_id']
+
+                    chainAssign = self.assignCoordPolymerSequenceWithoutCompId(seqId)
+
+                    if len(chainAssign) == 0:
+                        continue
+
+                    ambig['atom_id_list'] = []
+
+                    for cifChainId, cifSeqId, cifCompId in chainAssign:
+
+                        has_unambig = False
+
+                        if unambigResidues is not None and cifCompId in unambigResidues:
+
+                            unambigMap = next(v for k, v in self.unambigAtomNameMapping.items()
+                                              if translateToStdResName(k) == cifCompId)
+
+                            if atomName in unambigMap:
+
+                                for cifAtomId in unambigMap[atomName]:
+                                    ambig['atom_id_list'].append({'chain_id': cifChainId,
+                                                                  'seq_id': cifSeqId,
+                                                                  'comp_id': cifCompId,
+                                                                  'atom_id': cifAtomId})
+
+                                has_unambig = True
+
+                        if has_unambig:
+                            continue
+
+                        self.atomSelectionSet.clear()
+
+                        self.selectCoordAtoms(chainAssign, seqId, None, ambig['atom_name'].upper(), enableWarning=False)
+
+                        if len(self.atomSelectionSet[0]) > 0:
+                            ambig['atom_id_list'].extend(self.atomSelectionSet[0])
+                            continue
+
+                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomName, leave_unmatched=True)
+                        if details is not None and len(atomName) > 1:
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomName[:-1], leave_unmatched=True)
+
+                        if details is not None:
+                            _atomId_ = translateToStdAtomName(atomName, cifCompId, ccU=self.__ccU)
+                            if _atomId_ != atomName:
+                                _atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
+
+                        for cifAtomId in _atomId:
+                            ambig['atom_id_list'].append({'chain_id': cifChainId,
+                                                          'seq_id': cifSeqId,
+                                                          'comp_id': cifCompId,
+                                                          'atom_id': cifAtomId})
+
+                    ambig['atom_id_list'] = [dict(s) for s in set(frozenset(atom.items()) for atom in ambig['atom_id_list'])]
+
+    def atomIdListToChainAssign(self, atomIdList):  # pylint: disable=no-self-use
+        chainAssign = set()
+        for item in atomIdList:
+            if 'atom_id_list' in item:
+                for atom_id in item['atom_id_list']:
+                    chainAssign.add((atom_id['chain_id'], atom_id['seq_id'], atom_id['comp_id']))
+        return list(chainAssign)
+
+    def atomIdListToAtomSelection(self, atomIdList):  # pylint: disable=no-self-use
+        atomSelection = []
+        for item in atomIdList:
+            if 'atom_id_list' in item:
+                for atom_id in item['atom_id_list']:
+                    if atom_id not in atomSelection:
+                        atomSelection.append(atom_id)
+        return atomSelection
+
     # Enter a parse tree produced by CyanaMRParser#number.
     def enterNumber(self, ctx: CyanaMRParser.NumberContext):  # pylint: disable=unused-argument
         pass
@@ -4323,6 +4545,21 @@ class CyanaMRParserListener(ParseTreeListener):
 
         else:
             self.numberSelection.append(None)
+
+    # Enter a parse tree produced by CyanaMRParser#gen_atom_name.
+    def enterGen_atom_name(self, ctx: CyanaMRParser.Gen_atom_nameContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#gen_atom_name.
+    def exitGen_atom_name(self, ctx: CyanaMRParser.Gen_atom_nameContext):
+        if ctx.Simple_name():
+            self.genAtomNameSelection.append(str(ctx.Simple_name()))
+
+        elif ctx.Ambig_code():
+            self.genAtomNameSelection.append(str(ctx.Ambig_code()))
+
+        else:
+            self.genAtomNameSelection.append(None)
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

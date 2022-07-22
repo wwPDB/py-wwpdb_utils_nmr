@@ -394,8 +394,6 @@ xplor_expecting_symbol_pattern = re.compile("expecting \\{.*Symbol_name.*\\}")  
 xplor_expecting_equ_op_pattern = re.compile("expecting \\{.*Equ_op.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 xplor_expecting_seg_id_pattern = re.compile("expecting \\{.*SegIdentifier.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
-cyana_ambig_pattern = re.compile(r'0\s+AMB\s.*')
-
 gromacs_tag_pattern = re.compile(r'\s*[\s+[a-z0-9_]+\s+\]')
 
 mismatched_input_err_msg = "mismatched input"  # NOTICE: depends on ANTLR v4
@@ -8305,9 +8303,6 @@ class NmrDpUtility:
                                                        or (err_message.startswith(no_viable_alt_err_msg)
                                                            and amber_end_pattern.match(err_input)))
 
-        cyana_ambig_restraint = (file_type == 'nm-res-cya'
-                                 and bool(cyana_ambig_pattern.search(err_input)))
-
         concat_xplor_assi = (xplor_file_type
                              and (err_message.startswith(mismatched_input_err_msg)
                                   or err_message.startswith(extraneous_input_err_msg))
@@ -8345,7 +8340,6 @@ class NmrDpUtility:
         if not(xplor_missing_end or xplor_ends_wo_statement
                or xplor_l_paren_wo_assi or xplor_00_origin
                or amber_missing_end or amber_ends_wo_statement
-               or cyana_ambig_restraint
                or concat_xplor_assi or concat_xplor_rest or concat_xplor_set
                or concat_amber_rst
                or concat_gromacs_tag
@@ -8507,7 +8501,6 @@ class NmrDpUtility:
                 or xplor_missing_end_before
                 or amber_missing_end or amber_ends_wo_statement
                 or amber_missing_comma_before
-                or cyana_ambig_restraint
                 or concat_xplor_assi or concat_xplor_rest or concat_xplor_set
                 or concat_amber_rst
                 or concat_gromacs_tag
@@ -8638,47 +8631,6 @@ class NmrDpUtility:
 
                         corrected = True
 
-            if cyana_ambig_restraint:
-
-                has_amb_tag = False
-
-                k = 0
-
-                with open(src_path, 'r') as ifp:
-                    for line in ifp:
-                        if k == offset:
-                            if cyana_ambig_pattern.search(line):
-                                has_amb_tag = True
-                            break
-                        k += 1
-
-                if has_amb_tag:
-
-                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
-
-                    if cor_src_path is not None:
-
-                        k = 0
-
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
-                                if k < offset:
-                                    ofp.write(line)
-                                elif cyana_ambig_pattern.search(line) and not comment_pattern.match(line):
-                                    ofp.write('#' + line)
-                                else:
-                                    ofp.write(line)
-                                k += 1
-
-                        if cor_test:
-                            os.rename(cor_src_path, src_path)
-
-                        if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-5')
-
-                        corrected = True
-
             if concat_xplor_assi or concat_xplor_rest or concat_xplor_set or concat_amber_rst:
 
                 code_index = -1
@@ -8738,7 +8690,7 @@ class NmrDpUtility:
                                     os.rename(cor_src_path, src_path)
 
                                 if self.__mr_debug:
-                                    print('DIV-MR-EXIT #3-6')
+                                    print('DIV-MR-EXIT #3-5')
 
                                 corrected = True
 
@@ -8756,7 +8708,7 @@ class NmrDpUtility:
                     if not has_lexer_error:
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-7')
+                            print('DIV-MR-EXIT #3-6')
 
                         return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
@@ -8769,7 +8721,7 @@ class NmrDpUtility:
                     if not has_lexer_error:
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-8')
+                            print('DIV-MR-EXIT #3-7')
 
                         return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset)
 
@@ -8816,7 +8768,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DIV-MR-EXIT #3-9')
+                                print('DIV-MR-EXIT #3-8')
 
                             corrected = True
 
@@ -8851,7 +8803,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-10')
+                            print('DIV-MR-EXIT #3-9')
 
                         corrected = True
 
@@ -8876,7 +8828,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-11')
+                        print('DIV-MR-EXIT #3-10')
 
                     corrected = True
 
@@ -8896,7 +8848,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-12')
+                        print('DIV-MR-EXIT #3-11')
 
                     corrected = True
 
@@ -8933,7 +8885,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-13')
+                            print('DIV-MR-EXIT #3-12')
 
                         corrected = True
 
@@ -9580,9 +9532,6 @@ class NmrDpUtility:
                                                        or (err_message.startswith(no_viable_alt_err_msg)
                                                            and amber_end_pattern.match(err_input)))
 
-        cyana_ambig_restraint = (file_type == 'nm-res-cya'
-                                 and bool(cyana_ambig_pattern.search(err_input)))
-
         concat_xplor_assi = (xplor_file_type
                              and (err_message.startswith(mismatched_input_err_msg)
                                   or err_message.startswith(extraneous_input_err_msg))
@@ -9661,7 +9610,6 @@ class NmrDpUtility:
                 or xplor_missing_end_before
                 or amber_missing_end or amber_ends_wo_statement
                 or amber_missing_comma_before
-                or cyana_ambig_restraint
                 or concat_xplor_assi or concat_xplor_rest or concat_xplor_set
                 or concat_amber_rst
                 or concat_comment) or i <= err_line_number or j == 0:
@@ -9746,47 +9694,6 @@ class NmrDpUtility:
 
                         corrected = True
 
-            if cyana_ambig_restraint:
-
-                has_amb_tag = False
-
-                k = 0
-
-                with open(src_path, 'r') as ifp:
-                    for line in ifp:
-                        if k == offset:
-                            if cyana_ambig_pattern.search(line):
-                                has_amb_tag = True
-                            break
-                        k += 1
-
-                if has_amb_tag:
-
-                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
-
-                    if cor_src_path is not None:
-
-                        k = 0
-
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
-                                if k < offset:
-                                    ofp.write(line)
-                                elif cyana_ambig_pattern.search(line) and not comment_pattern.match(line):
-                                    ofp.write('#' + line)
-                                else:
-                                    ofp.write(line)
-                                k += 1
-
-                        if cor_test:
-                            os.rename(cor_src_path, src_path)
-
-                        if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-4')
-
-                        corrected = True
-
             if concat_xplor_assi or concat_xplor_rest or concat_xplor_set or concat_amber_rst:
 
                 code_index = -1
@@ -9846,7 +9753,7 @@ class NmrDpUtility:
                                     os.rename(cor_src_path, src_path)
 
                                 if self.__mr_debug:
-                                    print('DIV-MR-EXIT #2-5')
+                                    print('DIV-MR-EXIT #2-4')
 
                                 corrected = True
 
@@ -9893,7 +9800,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DO-DIV-MR-EXIT #2-6')
+                                print('DO-DIV-MR-EXIT #2-5')
 
                             corrected = True
 
@@ -9928,7 +9835,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-7')
+                            print('DO-DIV-MR-EXIT #2-6')
 
                         corrected = True
 
@@ -9953,7 +9860,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #2-8')
+                        print('DIV-MR-EXIT #2-7')
 
                     corrected = True
 
@@ -9973,7 +9880,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-9')
+                        print('DO-DIV-MR-EXIT #2-8')
 
                     corrected = True
 
@@ -10010,7 +9917,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-10')
+                            print('DO-DIV-MR-EXIT #2-9')
 
                         corrected = True
 

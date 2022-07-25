@@ -142,7 +142,7 @@ class XplorMRReader:
 
             stream = CommonTokenStream(lexer)
             parser = XplorMRParser(stream)
-            if cifFilePath is None or not isFilePath or 'selected-as-res' in mrFilePath:
+            if not isFilePath or 'selected-as-res' in mrFilePath:
                 parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, inputString=mrString, maxErrorReport=self.__maxParserErrorReport)

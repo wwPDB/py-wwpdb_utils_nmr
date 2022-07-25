@@ -6796,7 +6796,7 @@ class XplorMRParserListener(ParseTreeListener):
                         if fixedChainId != chainId:
                             continue
                     elif 'seq_id_remap' in self.__reasons:
-                        seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                        _, seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
 
                 if ps is not None and seqId in ps['auth_seq_id']:
                     compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]

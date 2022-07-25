@@ -499,7 +499,7 @@ class SybylMRParserListener(ParseTreeListener):
             if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
             elif 'seq_id_remap' in self.__reasons:
-                fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], self.__polySeq[0]['chain_id'], seqId)
+                fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -597,7 +597,7 @@ class SybylMRParserListener(ParseTreeListener):
                 chainId = ps['auth_chain_id']
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.append(chainId, _seqId, cifCompId)
+                    chainAssign.append((chainId, _seqId, cifCompId))
                     """ defer to sequence alignment error
                     if cifCompId != translateToStdResName(compId):
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\

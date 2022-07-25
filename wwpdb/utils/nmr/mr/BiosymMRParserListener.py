@@ -591,7 +591,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                 refChainId = fixedChainId
             elif 'seq_id_remap' in self.__reasons:
-                fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+                _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -720,7 +720,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.append(chainId, _seqId, cifCompId)
+                    chainAssign.append((chainId, _seqId, cifCompId))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     """ defer to sequence alignment error

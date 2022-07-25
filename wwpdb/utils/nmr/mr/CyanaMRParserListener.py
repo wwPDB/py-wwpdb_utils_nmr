@@ -425,6 +425,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing = {}
                     if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
+                print(self.reasonsForReParsing)
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -1291,7 +1292,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
             elif 'seq_id_remap' in self.__reasons:
-                fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], self.__polySeq[0]['chain_id'], seqId)
+                fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -1389,7 +1390,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainId = ps['auth_chain_id']
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.append(chainId, _seqId, cifCompId)
+                    chainAssign.append((chainId, _seqId, cifCompId))
                     """ defer to sequence alignment error
                     if cifCompId != translateToStdResName(compId):
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
@@ -1428,7 +1429,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                 refChainId = fixedChainId
             elif 'seq_id_remap' in self.__reasons:
-                fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+                _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -1571,7 +1572,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         _seqId = fixedSeqId
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.append(chainId, _seqId, cifCompId)
+                    chainAssign.append((chainId, _seqId, cifCompId))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     """ defer to sequence alignment error
@@ -1611,7 +1612,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if fixedChainId != chainId:
                         continue
                 elif 'seq_id_remap' in self.__reasons:
-                    fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                 if fixedSeqId is not None:
                     seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
@@ -1630,7 +1631,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if fixedChainId != chainId:
                             continue
                     elif 'seq_id_remap' in self.__reasons:
-                        fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                     if fixedSeqId is not None:
                         seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
@@ -1678,7 +1679,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                    chainAssign.append(chainId, _seqId, cifCompId)
+                    chainAssign.append((chainId, _seqId, cifCompId))
 
         if len(chainAssign) == 0:
             if seqId == 1 and atomId is not None and atomId in ('H', 'HN'):
@@ -1712,7 +1713,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if fixedChainId != chainId:
                         continue
                 elif 'seq_id_remap' in self.__reasons:
-                    fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                 if fixedSeqId is not None:
                     seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
@@ -1733,7 +1734,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if fixedChainId != chainId:
                             continue
                     elif 'seq_id_remap' in self.__reasons:
-                        fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                     if fixedSeqId is not None:
                         seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
@@ -1787,7 +1788,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
-                    chainAssign.append(chainId, _seqId, cifCompId)
+                    chainAssign.append((chainId, _seqId, cifCompId))
 
         if len(chainAssign) == 0:
             if seqId == 1 and atomId in ('H', 'HN'):

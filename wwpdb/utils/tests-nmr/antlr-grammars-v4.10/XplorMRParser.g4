@@ -45,6 +45,7 @@ xplor_nih_mr:
 	hbond_restraint |
 	hbond_db_restraint |
 	ncs_restraint |
+	classification |
 	flag_statement |
 	vector_statement |
 	evaluate_statement |
@@ -165,7 +166,7 @@ noe_statement:
 	Average Class_name_AM Averaging_methods |
 	Bhig class_name number_s |
 	Ceiling Equ_op? number_s |
-	Classification Equ_op? class_name |
+	classification |
 	CountViol class_name |
 	Distribute class_name class_name number_s |
 	Monomers class_name Integer |
@@ -221,7 +222,7 @@ dihedral_assign:
 sani_statement:
 	sani_assign |
 	sani_assign_loop |
-	Classification Equ_op? class_name |
+	classification |
 	Coefficients number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -237,7 +238,7 @@ sani_assign:
 */
 xdip_statement:
 	xdip_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Type Rdc_dist_fix_types |
 	Scale Equ_op? number_s |
 	Sign Logical |
@@ -258,7 +259,7 @@ xdip_assign:
 vean_statement:
 	vean_assign |
 	Cv Equ_op? Integer |
-	Classification Equ_op? class_name |
+	classification |
 	ForceConstant Equ_op? number_s number_s |
 	Nrestraints Equ_op? Integer |
 	Partition Equ_op? Integer |
@@ -273,7 +274,7 @@ vean_assign:
 */
 tenso_statement:
 	tenso_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Coefficients number_s |
 	Nrestraints Equ_op? Integer |
 	Potential Potential_types |
@@ -288,7 +289,7 @@ tenso_assign:
 */
 anis_statement:
 	anis_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Coefficients number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -334,11 +335,11 @@ harmonic_assign:
 antidistance_statement:
 	xadc_assign |
 	xadc_assign_loop |
-	Classification Equ_op? class_name |
+	classification |
 	Expectation Integer number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
+	Print Threshold number_s (All | classification) |
 	Reset |
 	Size number_s Integer |
 	Zero;
@@ -352,7 +353,7 @@ xadc_assign:
 coupling_statement:
 	coup_assign |
 	coup_assign_loop |
-	Classification Equ_op? class_name |
+	classification |
 	Coefficients number_s number_s number_s number_s |
 	Cv Equ_op? Integer |
 	DegEnergy Integer |
@@ -360,7 +361,7 @@ coupling_statement:
 	Nrestraints Equ_op? Integer |
 	Partition Equ_op? Integer |
 	Potential Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
+	Print Threshold number_s (All | classification) |
 	Reset;
 
 coup_assign:
@@ -371,7 +372,7 @@ coup_assign:
 */
 carbon_shift_statement:
 	carbon_shift_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Expectation Integer Integer number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -402,12 +403,12 @@ proton_shift_statement:
 	proton_shift_oxygens |
 	proton_shift_ring_atoms |
 	proton_shift_alphas_and_amides |
-	Classification Equ_op? class_name |
+	classification |
 	Error number_s |
 	DegEnergy Integer |
 	ForceConstant number_s number_s? |
 	Potential Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) Simple_name |
+	Print Threshold number_s (All | classification) Simple_name |
 	Reset;
 
 observed:
@@ -442,13 +443,13 @@ proton_shift_alphas_and_amides:
 */
 ramachandran_statement:
 	rama_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Cutoff number_s |
 	ForceConstant Equ_op? number_s |
 	Gaussian number_s number_s number_s (number_s number_s number_s)? (number_s number_s number_s)? (number_s number_s number_s)? |
 	Nrestraints Equ_op? Integer |
 	Phase number_s number_s number_s (number_s number_s number_s)? (number_s number_s number_s)? (number_s number_s number_s)? |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
+	Print Threshold number_s (All | classification) |
 	Quartic number_s number_s number_s (number_s number_s number_s)? (number_s number_s number_s)? (number_s number_s number_s)? |
 	Reset |
 	Scale Equ_op? number_s |
@@ -478,7 +479,7 @@ coll_assign:
 */
 diffusion_statement:
 	dani_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Coefficients number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -495,7 +496,7 @@ dani_assign:
 */
 orientation_statement:
 	orie_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Cutoff number_s |
 	Height number_s |
 	ForceConstant Equ_op? number_s |
@@ -503,7 +504,7 @@ orientation_statement:
 	MaxGaussians Integer |
 	NewGaussian number_s number_s number_s number_s number_s number_s number_s number_s |
 	Nrestraints Equ_op? Integer |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
+	Print Threshold number_s (All | classification) |
 	Quartic number_s number_s number_s number_s number_s number_s number_s |
 	Reset |
 	Residue Integer |
@@ -519,7 +520,7 @@ orie_assign:
 csa_statement:
 	csa_assign |
 	csa_assign_loop |
-	Classification Equ_op? class_name |
+	classification |
 	Scale Equ_op? number_s |
 	Type Csa_types |
 	Coefficients number_s number_s number_s |
@@ -538,7 +539,7 @@ csa_assign:
 */
 pcsa_statement:
 	csa_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Scale Equ_op? number_s |
 	Coefficients number_s number_s number_s |
 	Sigma number_s number_s number_s number_s |
@@ -553,7 +554,7 @@ pcsa_statement:
 */
 one_bond_coupling_statement:
 	one_bond_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Coefficients number_s number_s number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -569,14 +570,14 @@ one_bond_assign:
 */
 angle_db_statement:
 	angle_db_assign |
-	Classification Equ_op? class_name |
+	classification |
 	DerivFlag Simple_name |
 	Expectation Integer Integer number_s |
 	Error number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
 	Potential Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
+	Print Threshold number_s (All | classification) |
 	Reset |
 	Size (AngleDb | Dihedral) Integer Integer |
 	Zero;
@@ -590,14 +591,14 @@ angle_db_assign:
 pre_statement:
 	pre_assign |
 	pre_assign_loop |
-	Classification Equ_op? class_name |
+	classification |
 	ForceConstant Equ_op? class_name number_s |
 	Nrestraints Equ_op? Integer |
 	Potential Equ_op_PT? Class_name_PT Potential_types |
 	Kconst Equ_op? class_name number_s |
 	Omega Equ_op? class_name number_s |
 	Tauc Equ_op? class_name number_s number_s |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
+	Print Threshold number_s (All | classification) |
 	Reset |
 	Debug;
 
@@ -610,12 +611,12 @@ pre_assign:
 pcs_statement:
 	pcs_assign |
 	pcs_assign_loop |
-	Classification Equ_op? class_name |
+	classification |
 	Tolerance Integer |
 	Coefficients number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
+	Print Threshold number_s (All | classification) |
 	Reset |
 	Save Simple_name |
 	Fmed number_s Integer |
@@ -635,7 +636,7 @@ pcs_assign:
 */
 prdc_statement:
 	prdc_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Tolerance Integer |
 	Coefficients number_s number_s |
 	ForceConstant Equ_op? number_s |
@@ -660,7 +661,7 @@ prdc_assign:
 */
 porientation_statement:
 	porientation_assign |
-	Classification Equ_op? class_name |
+	classification |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
 	Print Threshold number_s |
@@ -674,7 +675,7 @@ porientation_assign:
 */
 pccr_statement:
 	pccr_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Weip Integer |
 	Coefficients number_s |
 	ForceConstant Equ_op? number_s |
@@ -692,7 +693,7 @@ pccr_assign:
 hbond_statement:
 	hbond_assign |
 	hbond_assign_loop |
-	Classification Equ_op? class_name |
+	classification |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
 	Print Threshold number_s |
@@ -801,6 +802,10 @@ number_s:
 /* number expression in annotation */
 number_a:
 	Real | Integer;
+
+/* classification */
+classification:
+	Classification Equ_op? class_name;
 
 /* class name */
 class_name:

@@ -33,6 +33,7 @@ cns_mr:
 	one_bond_coupling_restraint |
 	angle_db_restraint |
 	ncs_restraint |
+	classification |
 	flag_statement |
 	vector_statement |
 	evaluate_statement |
@@ -102,7 +103,7 @@ noe_statement:
 	Average Class_name_AM Averaging_methods |
 	Bhig class_name number_s |
 	Ceiling Equ_op? number_s |
-	Classification Equ_op? class_name |
+	classification |
 	CountViol class_name |
 	Cv Equ_op? Integer |
 	Den Initialize |
@@ -196,7 +197,7 @@ harmonic_assign:
 sani_statement:
 	sani_assign |
 	sani_assign_loop |
-	Classification Equ_op? class_name |
+	classification |
 	Coefficients number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -213,14 +214,14 @@ sani_assign:
 coupling_statement:
 	coup_assign |
 	coup_assign_loop |
-	Classification Equ_op? class_name |
+	classification |
 	Coefficients number_s number_s number_s number_s |
 	Cv Equ_op? Integer |
 	ForceConstant number_s number_s? |
 	Nrestraints Equ_op? Integer |
 	Partition Equ_op? Integer |
 	Potential Equ_op_PT? Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
+	Print Threshold number_s (All | classification) |
 	Reset;
 
 coup_assign:
@@ -232,7 +233,7 @@ coup_assign:
 carbon_shift_statement:
 	carbon_shift_assign |
 	carbon_shift_assign_loop |
-	Classification Equ_op? class_name |
+	classification |
 	Expectation Integer Integer number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -263,11 +264,11 @@ proton_shift_statement:
 	proton_shift_oxygens |
 	proton_shift_ring_atoms |
 	proton_shift_alphas_and_amides |
-	Classification Equ_op? class_name |
+	classification |
 	Error Equ_op? number_s |
 	ForceConstant number_s number_s? |
 	Potential Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) Simple_name |
+	Print Threshold number_s (All | classification) Simple_name |
 	Reset;
 
 observed:
@@ -302,7 +303,7 @@ proton_shift_alphas_and_amides:
 */
 conformation_statement:
 	conf_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Compressed |
 	Expectation Integer Integer? Integer? Integer? number_s |
 	Error Equ_op? number_s |
@@ -310,7 +311,7 @@ conformation_statement:
 	Nrestraints Equ_op? Integer |
 	Phase Integer Integer Integer (Integer Integer Integer)? (Integer Integer Integer)? (Integer Integer Integer)? |
 	Potential Equ_op_PT? Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
+	Print Threshold number_s (All | classification) |
 	Reset |
 	Size Dimensions Integer Integer? Integer? Integer? |
 	Zero;
@@ -323,7 +324,7 @@ conf_assign:
 */
 diffusion_statement:
 	dani_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Coefficients number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -339,7 +340,7 @@ dani_assign:
 */
 one_bond_coupling_statement:
 	one_bond_assign |
-	Classification Equ_op? class_name |
+	classification |
 	Coefficients number_s number_s number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
@@ -355,14 +356,14 @@ one_bond_assign:
 */
 angle_db_statement:
 	angle_db_assign |
-	Classification Equ_op? class_name |
+	classification |
 	DerivFlag Equ_op? Simple_name |
 	Expectation Integer Integer number_s |
 	Error Equ_op? number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
 	Potential Equ_op_PT? Potential_types |
-	Print Threshold number_s (All | (Classification Equ_op? class_name)) |
+	Print Threshold number_s (All | classification) |
 	Reset |
 	Size (AngleDb | Dihedral) Integer Integer |
 	Zero;
@@ -449,6 +450,10 @@ number_s:
 /* number expression in annotation */
 number_a:
 	Real | Integer;
+
+/* classification */
+classification:
+	Classification Equ_op? class_name;
 
 /* class name */
 class_name:

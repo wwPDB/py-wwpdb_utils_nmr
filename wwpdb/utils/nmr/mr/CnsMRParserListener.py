@@ -706,9 +706,6 @@ class CnsMRParserListener(ParseTreeListener):
             self.symmDminus = None
             self.symmDplus = None
 
-        elif ctx.Classification():
-            self.classification = self.getClass_name(ctx.class_name(0))
-
     # Exit a parse tree produced by CnsMRParser#noe_statement.
     def exitNoe_statement(self, ctx: CnsMRParser.Noe_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
@@ -1426,9 +1423,6 @@ class CnsMRParserListener(ParseTreeListener):
             self.potential = 'square'
             self.coefficients = None
 
-        elif ctx.Classification():
-            self.classification = self.getClass_name(ctx.class_name())
-
         elif ctx.Coefficients():
             self.coefficients = {'DFS': self.getNumber_s(ctx.number_s(0)),
                                  'anisotropy': self.getNumber_s(ctx.number_s(1)),
@@ -1806,9 +1800,6 @@ class CnsMRParserListener(ParseTreeListener):
             self.potential = 'square'
             self.coefficients = None
 
-        elif ctx.Classification():
-            self.classification = self.getClass_name(ctx.class_name())
-
         elif ctx.Coefficients():
             self.coefficients = {'Karplus_coef_a': self.getNumber_s(ctx.number_s(0)),
                                  'Karplus_coef_b': self.getNumber_s(ctx.number_s(1)),
@@ -2010,9 +2001,6 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Reset():
             self.potential = 'square'
 
-        elif ctx.Classification():
-            self.classification = self.getClass_name(ctx.class_name())
-
         elif ctx.Expectation():
             self.csExpect = {'psi_position': int(str(ctx.Integer(0))),
                              'phi_poistion': int(str(ctx.Integer(1))),
@@ -2180,9 +2168,6 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Reset():
             self.potential = 'square'
             self.coefficients = None
-
-        elif ctx.Classification():
-            self.classification = self.getClass_name(ctx.class_name())
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_statement.
     def exitProton_shift_statement(self, ctx: CnsMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument
@@ -2504,9 +2489,6 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Reset():
             self.potential = 'square'
 
-        elif ctx.Classification():
-            self.classification = self.getClass_name(ctx.class_name())
-
     # Exit a parse tree produced by CnsMRParser#conformation_statement.
     def exitConformation_statement(self, ctx: CnsMRParser.Conformation_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
@@ -2619,9 +2601,6 @@ class CnsMRParserListener(ParseTreeListener):
         elif ctx.Reset():
             self.potential = 'square'
             self.coefficients = None
-
-        elif ctx.Classification():
-            self.classification = self.getClass_name(ctx.class_name())
 
         elif ctx.Coefficients():
             self.coefficients = {'Tc': self.getNumber_s(ctx.number_s(0)),
@@ -5725,6 +5704,14 @@ class CnsMRParserListener(ParseTreeListener):
             return float(str(ctx.Integer()))
 
         return None
+
+    # Enter a parse tree produced by CnsMRParser#classification.
+    def enterClassification(self, ctx: CnsMRParser.ClassificationContext):
+        self.classification = self.getClass_name(ctx.class_name())
+
+    # Exit a parse tree produced by CnsMRParser#classification.
+    def exitClassification(self, ctx: CnsMRParser.ClassificationContext):  # pylint: disable=unused-argument
+        pass
 
     # Enter a parse tree produced by CnsMRParser#class_name.
     def enterClass_name(self, ctx: CnsMRParser.Class_nameContext):  # pylint: disable=unused-argument

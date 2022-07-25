@@ -3711,6 +3711,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.__col_order_of_dist_w_chain) != 6:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Failed to identify columns for comp_id_1, atom_id_1, chain_id_1, comp_id_2, atom_id_2, chain_id_2.\n"
+                self.distRestraints -= 1
                 return
 
             if None in self.numberSelection:
@@ -4155,12 +4156,14 @@ class CyanaMRParserListener(ParseTreeListener):
             if atom1['comp_id'] != 'CYS':
                 self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
                     f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+                self.geoRestraints -= 1
                 return
 
         for atom2 in self.atomSelectionSet[1]:
             if atom2['comp_id'] != 'CYS':
                 self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
                     f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+                self.geoRestraints -= 1
                 return
 
         chain_id_1 = self.atomSelectionSet[0][0]['chain_id']

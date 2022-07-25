@@ -337,24 +337,26 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if self.__chainAssign is not None:
 
-                chain_mapping = {}
+                if len(self.__polySeq) == len(self.__polySeqRst):
 
-                for chain_assign in self.__chainAssign:
-                    ref_chain_id = chain_assign['ref_chain_id']
-                    test_chain_id = chain_assign['test_chain_id']
+                    chain_mapping = {}
 
-                    if ref_chain_id != test_chain_id:
-                        chain_mapping[test_chain_id] = ref_chain_id
+                    for chain_assign in self.__chainAssign:
+                        ref_chain_id = chain_assign['ref_chain_id']
+                        test_chain_id = chain_assign['test_chain_id']
 
-                if len(chain_mapping) > 0:
+                        if ref_chain_id != test_chain_id:
+                            chain_mapping[test_chain_id] = ref_chain_id
 
-                    for ps in self.__polySeqRst:
-                        if ps['chain_id'] in chain_mapping:
-                            ps['chain_id'] = chain_mapping[ps['chain_id']]
+                    if len(chain_mapping) > 0:
 
-                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
-                                                              resolvedMultimer=(self.__reasons is not None))
-                    self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                        for ps in self.__polySeqRst:
+                            if ps['chain_id'] in chain_mapping:
+                                ps['chain_id'] = chain_mapping[ps['chain_id']]
+
+                        self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                                  resolvedMultimer=(self.__reasons is not None))
+                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 

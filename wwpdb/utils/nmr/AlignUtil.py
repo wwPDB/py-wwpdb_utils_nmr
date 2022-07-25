@@ -1024,94 +1024,112 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssignSet):
     _chainIdMapping = {}
 
     for test_chain_id, ref_chain_ids in target_test_chain_id.items():
-        repeats = len(ref_chain_ids)
-        if repeats > 1:
-            ref_ps = next(ps for ps in polySeqModel if ps['auth_chain_id'] == ref_chain_ids[0])
-            test_ps = next(ps for ps in _polySeqRst if ps['chain_id'] == test_chain_id)
-            len_ref_ps = len(ref_ps['auth_seq_id'])
-            len_test_ps = len(test_ps['seq_id'])
-            if len_ref_ps * repeats < len_test_ps:
-                _len_test_ps = len_test_ps // repeats
 
-                _test_ps = copy.copy(test_ps)
+        ref_seq_lengths = []
 
-                _polySeqRst.remove(test_ps)
+        for ref_seq_id in ref_chain_ids:
+            ref_ps = next(ps for ps in polySeqModel if ps['auth_chain_id'] == ref_chain_id)
+            ref_seq_lengths.append(len(ref_ps['seq_id']))
 
-                for seg_id, ref_chain_id in enumerate(ref_chain_ids):
-                    beg = seg_id * _len_test_ps
-                    end = min((seg_id + 1) * _len_test_ps, len_test_ps)
+        sum_ref_seq_lengths = sum(ref_seq_lengths)
 
-                    if len_test_ps - end < len_ref_ps:
-                        end = len_test_ps
+        test_ps = next(ps for ps in _polySeqRst if ps['chain_id'] == test_chain_id)
+        len_test_ps = len(test_ps['seq_id'])
 
-                    while True:
-                        if _test_ps['comp_id'][beg] != '.':
-                            break
-                        beg += 1
-                        if beg == end:
-                            return None, None
+        if sum_ref_seq_lengths < len_test_ps:
+            half_gap = (len_test_ps - sum_ref_seq_lengths) // ((len(ref_chain_ids) - 1) * 2)
 
-                    while True:
-                        if _test_ps['comp_id'][end - 1] != '.':
-                            break
-                        end -= 1
-                        if end == beg:
-                            return None, None
+            _test_ps = copy.copy(test_ps)
 
-                    _test_ps_ = {'chain_id': ref_chain_id,
-                                 'seq_id': _test_ps['seq_id'][beg:end],
-                                 'comp_id': _test_ps['comp_id'][beg:end]}
+            _polySeqRst.remove(test_ps)
 
-                    pA.setReferenceSequence(ref_ps['comp_id'], 'REF' + ref_chain_id)
-                    pA.addTestSequence(_test_ps_['comp_id'], ref_chain_id)
-                    pA.doAlign()
+            offset = 0
 
-                    myAlign = pA.getAlignment(ref_chain_id)
+            for ref_chain_id in ref_chain_ids:
+                ref_ps = next(ps for ps in polySeqModel if ps['auth_chain_id'] == ref_chain_id)
+                half_len_ref_ps = len(ref_ps['seq_id']) // 2
 
-                    length = len(myAlign)
+                beg = offset
+                end = offset + len(ref_ps['seq_id'])
 
-                    if length == 0:
+                if len_test_ps - end < half_len_ref_ps:
+                    end = len_test_ps
+
+                while True:
+                    if _test_ps['comp_id'][beg] != '.':
+                        break
+                    beg += 1
+                    if beg == end:
                         return None, None
 
-                    _, _, conflict, _, _ = getScoreOfSeqAlign(myAlign)
+                end = beg + len(ref_ps['seq_id']) + half_gap
 
-                    if conflict > 0:
+                if len_test_ps - end < half_len_ref_ps:
+                    end = len_test_ps
+
+                while True:
+                    if _test_ps['comp_id'][end - 1] != '.':
+                        break
+                    end -= 1
+                    if end == beg:
                         return None, None
 
-                    _polySeqRst.append(_test_ps_)
+                _test_ps_ = {'chain_id': ref_chain_id,
+                             'seq_id': _test_ps['seq_id'][beg:end],
+                             'comp_id': _test_ps['comp_id'][beg:end]}
 
-                    ref_seq_ids = []
-                    test_seq_ids = []
-                    idx1 = 0
-                    idx2 = 0
-                    for i in range(length):
-                        myPr = myAlign[i]
-                        myPr0 = str(myPr[0])
-                        myPr1 = str(myPr[1])
-                        if myPr0 != '.':
-                            while idx1 < len(ref_ps['auth_seq_id']):
-                                if ref_ps['comp_id'][idx1] == myPr0:
-                                    ref_seq_ids.append(ref_ps['auth_seq_id'][idx1])
-                                    idx1 += 1
-                                    break
+                pA.setReferenceSequence(ref_ps['comp_id'], 'REF' + ref_chain_id)
+                pA.addTestSequence(_test_ps_['comp_id'], ref_chain_id)
+                pA.doAlign()
+
+                myAlign = pA.getAlignment(ref_chain_id)
+
+                length = len(myAlign)
+
+                if length == 0:
+                    return None, None
+
+                _, _, conflict, _, _ = getScoreOfSeqAlign(myAlign)
+
+                if conflict > 0:
+                    return None, None
+
+                _polySeqRst.append(_test_ps_)
+
+                ref_seq_ids = []
+                test_seq_ids = []
+                idx1 = 0
+                idx2 = 0
+                for i in range(length):
+                    myPr = myAlign[i]
+                    myPr0 = str(myPr[0])
+                    myPr1 = str(myPr[1])
+                    if myPr0 != '.':
+                        while idx1 < len(ref_ps['auth_seq_id']):
+                            if ref_ps['comp_id'][idx1] == myPr0:
+                                ref_seq_ids.append(ref_ps['auth_seq_id'][idx1])
                                 idx1 += 1
-                        else:
-                            ref_seq_ids.append(None)
-                        if myPr1 != '.':
-                            while idx2 < len(_test_ps_['seq_id']):
-                                if _test_ps_['comp_id'][idx2] == myPr1:
-                                    test_seq_ids.append(_test_ps_['seq_id'][idx2])
-                                    idx2 += 1
-                                    break
+                                break
+                            idx1 += 1
+                    else:
+                        ref_seq_ids.append(None)
+                    if myPr1 != '.':
+                        while idx2 < len(_test_ps_['seq_id']):
+                            if _test_ps_['comp_id'][idx2] == myPr1:
+                                test_seq_ids.append(_test_ps_['seq_id'][idx2])
                                 idx2 += 1
-                        else:
-                            test_seq_ids.append(None)
+                                break
+                            idx2 += 1
+                    else:
+                        test_seq_ids.append(None)
 
-                    for ref_seq_id, test_seq_id in zip(ref_seq_ids, test_seq_ids):
-                        if ref_seq_id is not None and test_seq_id is not None:
-                            _chainIdMapping[test_seq_id] = {'chain_id': ref_chain_id, 'seq_id': ref_seq_id}
+                for ref_seq_id, test_seq_id in zip(ref_seq_ids, test_seq_ids):
+                    if ref_seq_id is not None and test_seq_id is not None:
+                        _chainIdMapping[test_seq_id] = {'chain_id': ref_chain_id, 'seq_id': ref_seq_id}
 
-                    split = True
+                split = True
+
+                offset = end + half_gap
 
     if not split:
         return None, None

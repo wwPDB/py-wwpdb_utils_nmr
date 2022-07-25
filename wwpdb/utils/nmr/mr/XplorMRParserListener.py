@@ -6355,7 +6355,7 @@ class XplorMRParserListener(ParseTreeListener):
             _factor = {'atom_selection': []}
             return _factor
 
-        if not any(key for key in _factor if key != 'atom_selection'):
+        if not any(key for key in _factor if key not in ('auth_chain_id', 'atom_selection')):
             return _factor
 
         if len(_factor) == 2 and 'chain_id' in _factor and len(_factor['chain_id']) == 0 and 'alt_chain_id' in _factor:

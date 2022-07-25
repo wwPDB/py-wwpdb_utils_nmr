@@ -10444,21 +10444,31 @@ class NmrDpUtility:
             if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
                 _ar = ar.copy()
 
-                _ar['file_name'] = src_basename + '.mr'
+                _ar['file_name'] = ign_pk_file
                 _ar['file_type'] = 'nm-pea-any'
                 peak_file_list.append(_ar)
 
                 continue
 
-            sel_ros_file = src_basename + '-selected-as-res-ros.mr'
+            designated = False
 
-            if os.path.exists(sel_ros_file):  # in case the MR file is ROSETTA MR file
-                _ar = ar.copy()
+            for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
+                               'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn', 'nm-res-syb'):
 
-                _ar['file_name'] = src_basename + '.mr'
-                _ar['file_type'] = 'nm-res-ros'
-                split_file_list.append(_ar)
+                sel_res_file = src_basename + f'-selected-as-res-{_file_type[-3:]}.mr'
 
+                if os.path.exists(sel_res_file):
+                    _ar = ar.copy()
+
+                    _ar['file_name'] = sel_res_file
+                    _ar['file_type'] = _file_type
+                    split_file_list.append(_ar)
+
+                    designated = True
+
+                    break
+
+            if designated:
                 continue
 
             has_mr_header = False
@@ -10921,17 +10931,6 @@ class NmrDpUtility:
 
                             continue
 
-                        sel_ros_file = dst_file + '-selected-as-res-ros'
-
-                        if os.path.exists(sel_ros_file):  # in case the MR file is ROSETTA MR file
-                            _ar = ar.copy()
-
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-ros'
-                            split_file_list.append(_ar)
-
-                            continue
-
                         _ar = ar.copy()
 
                         _ar['file_name'] = dst_file
@@ -11255,15 +11254,25 @@ class NmrDpUtility:
 
                             continue
 
-                    sel_ros_file = dst_file + '-selected-as-res-ros'
+                    designated = False
 
-                    if os.path.exists(sel_ros_file):  # in case the MR file is ROSETTA MR file
-                        _ar = ar.copy()
+                    for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
+                                       'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn', 'nm-res-syb'):
 
-                        _ar['file_name'] = dst_file
-                        _ar['file_type'] = 'nm-res-ros'
-                        split_file_list.append(_ar)
+                        sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
+                        if os.path.exists(sel_res_file):
+                            _ar = ar.copy()
+
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = _file_type
+                            split_file_list.append(_ar)
+
+                            designated = True
+
+                            break
+
+                    if designated:
                         continue
 
                     has_peaks = False
@@ -11575,15 +11584,25 @@ class NmrDpUtility:
 
                             continue
 
-                        sel_ros_file = _dst_file + '-selected-as-res-ros'
+                        designated = False
 
-                        if os.path.exists(sel_ros_file):  # in case the MR file is ROSETTA MR file
-                            _ar = ar.copy()
+                        for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
+                                           'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn', 'nm-res-syb'):
 
-                            _ar['file_name'] = _dst_file
-                            _ar['file_type'] = 'nm-res-ros'
-                            split_file_list.append(_ar)
+                            sel_res_file = _dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
+                            if os.path.exists(sel_res_file):
+                                _ar = ar.copy()
+
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = _file_type
+                                split_file_list.append(_ar)
+
+                                designated = True
+
+                                break
+
+                        if designated:
                             continue
 
                         if _dst_file.endswith('-div_ext.mr'):

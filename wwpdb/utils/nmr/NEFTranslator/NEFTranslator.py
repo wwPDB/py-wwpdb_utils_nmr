@@ -4311,7 +4311,9 @@ class NEFTranslator:
             return atom_list, ambiguity_code, details
 
         if atom_id.startswith('Q') or atom_id.startswith('M'):
-            return self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched)
+            if atom_id[-1].isalnum():
+                return self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched)
+            return self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched)
 
         if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
             return self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
@@ -4515,7 +4517,10 @@ class NEFTranslator:
                             star_atom_list.remove(a)
                             return self.get_nef_atom(comp_id, star_atom_list, details, leave_unmatched)
                     elif atom_id.startswith('Q') or atom_id.startswith('M'):
-                        _atom_id = 'H' + atom_id[1:] + '%'
+                        if atom_id[-1].isalnum():
+                            _atom_id = 'H' + atom_id[1:] + '%'
+                        else:
+                            _atom_id = 'H' + atom_id[1:-1] + '*'
                     elif atom_id + '2' in self.__csStat.getAllAtoms(comp_id):
                         _atom_id = atom_id + '%'
 

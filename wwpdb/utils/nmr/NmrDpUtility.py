@@ -9137,7 +9137,18 @@ class NmrDpUtility:
         os.rename(div_try_file, div_dst_file)
 
         file_path = div_dst_file
-        file_type = valid_types[0]
+
+        if len_valid_types == 1:
+            file_type = valid_types[0]
+
+        elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+            file_type = 'nm-res-xpl'
+
+        elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
+            file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+
+        elif len_valid_types == 3 and set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl']):
+            file_type = 'nm-res-xpl'
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
@@ -9446,7 +9457,18 @@ class NmrDpUtility:
         os.rename(div_try_file, div_dst_file)
 
         file_path = div_dst_file
-        file_type = valid_types[0]
+
+        if len_valid_types == 1:
+            file_type = valid_types[0]
+
+        elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+            file_type = 'nm-res-xpl'
+
+        elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
+            file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+
+        elif len_valid_types == 3 and set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl']):
+            file_type = 'nm-res-xpl'
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
@@ -9991,7 +10013,18 @@ class NmrDpUtility:
         os.rename(div_try_file, div_dst_file)
 
         file_path = div_dst_file
-        file_type = valid_types[0]
+
+        if len_valid_types == 1:
+            file_type = valid_types[0]
+
+        elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+            file_type = 'nm-res-xpl'
+
+        elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
+            file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+
+        elif len_valid_types == 3 and set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl']):
+            file_type = 'nm-res-xpl'
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 

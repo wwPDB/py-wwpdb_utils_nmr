@@ -6622,7 +6622,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type == ('nm-res-mr', 'nm-pea-any'):
+            if file_type in ('nm-res-mr', 'nm-pea-any'):
                 md5_list.append(None)
                 continue
 

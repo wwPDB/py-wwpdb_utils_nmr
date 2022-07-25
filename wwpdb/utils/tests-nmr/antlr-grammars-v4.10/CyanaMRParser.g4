@@ -185,7 +185,7 @@ cco_restraints:
 
 cco_restraint:
 	Integer Simple_name Simple_name Simple_name number number? number?
-	number? number? number?;	// A B C
+	number? number? number?;	// Karplus coefficients, A B C
 
 /* CYANA (macro) - ssbond
 */

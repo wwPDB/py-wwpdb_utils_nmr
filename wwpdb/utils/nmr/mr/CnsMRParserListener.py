@@ -1270,7 +1270,7 @@ class CnsMRParserListener(ParseTreeListener):
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['atom_id']} or "\
+                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
                     f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
                 return False
 

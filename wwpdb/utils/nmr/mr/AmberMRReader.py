@@ -170,7 +170,7 @@ class AmberMRReader:
                                                  self.__mrAtomNameMapping,
                                                  self.__cR, self.__cC,
                                                  self.__ccU, self.__csStat, self.__nefT,
-                                                 self.__atomNumberDict)
+                                                 self.__atomNumberDict, None)
                 listener.setDebugMode(self.__debug)
                 walker.walk(listener, tree)
 
@@ -192,6 +192,66 @@ class AmberMRReader:
                         if isFilePath:
                             print(listener.getContentSubtype())
                     break
+
+                reasons = listener.getReasonsForReparsing()
+
+                if reasons is not None:
+
+                    if isFilePath and ifp is not None:
+                        ifp.close()
+
+                    if isFilePath:
+                        ifp = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
+                        input = InputStream(ifp.read())
+                    else:
+                        input = InputStream(mrString)
+
+                    lexer = AmberMRLexer(input)
+                    lexer.removeErrorListeners()
+
+                    lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
+                    lexer.addErrorListener(lexer_error_listener)
+
+                    messageList = lexer_error_listener.getMessageList()
+
+                    if messageList is not None and self.__verbose:
+                        for description in messageList:
+                            self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                            if 'input' in description:
+                                self.__lfh.write(f"{description['input']}\n")
+                                self.__lfh.write(f"{description['marker']}\n")
+
+                    stream = CommonTokenStream(lexer)
+                    parser = AmberMRParser(stream)
+                    # try with simpler/faster SLL prediction mode
+                    parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
+                    parser.removeErrorListeners()
+                    parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
+                    parser.addErrorListener(parser_error_listener)
+                    tree = parser.amber_mr()
+
+                    walker = ParseTreeWalker()
+                    listener = AmberMRParserListener(self.__verbose, self.__lfh,
+                                                     self.__representativeModelId,
+                                                     self.__mrAtomNameMapping,
+                                                     self.__cR, self.__cC,
+                                                     self.__ccU, self.__csStat, self.__nefT,
+                                                     self.__atomNumberDict, reasons)
+                    listener.setDebugMode(self.__debug)
+                    walker.walk(listener, tree)
+
+                    messageList = parser_error_listener.getMessageList()
+
+                    if messageList is not None and self.__verbose:
+                        for description in messageList:
+                            self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                            if 'input' in description:
+                                self.__lfh.write(f"{description['input']}\n")
+                                self.__lfh.write(f"{description['marker']}\n")
+
+                    if self.__verbose:
+                        if listener.warningMessage is not None:
+                            print(listener.warningMessage)
 
                 sanderAtomNumberDict = listener.getSanderAtomNumberDict()
                 if len(sanderAtomNumberDict) > 0:
@@ -220,6 +280,12 @@ class AmberMRReader:
 
 
 if __name__ == "__main__":
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2jsn/2jsn-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2jsn/2jsn.cif',
+                 None)
+
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2m1g/test_dihed.mr',

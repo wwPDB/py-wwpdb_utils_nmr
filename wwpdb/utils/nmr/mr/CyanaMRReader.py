@@ -150,8 +150,8 @@ class CyanaMRReader:
 
             stream = CommonTokenStream(lexer)
             parser = CyanaMRParser(stream)
-            #if not isFilePath or 'selected-as-res' in mrFilePath:
-            #    parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
+            if not isFilePath or 'selected-as-res' in mrFilePath:
+                parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)

@@ -169,6 +169,12 @@ class DynamoMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = ''
 
+    __first_resid = 1
+    __cur_sequence = ''
+    __open_sequence = False
+    __has_sequence = False
+    __has_seq_align_err = False
+
     # collection of atom selection
     atomSelectionSet = []
 
@@ -346,16 +352,41 @@ class DynamoMRParserListener(ParseTreeListener):
             self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
 
     # Enter a parse tree produced by DynamoMRParser#sequence.
-    def enterSequence(self, ctx: DynamoMRParser.SequenceContext):  # pylint: disable=unused-argument
-        pass
+    def enterSequence(self, ctx: DynamoMRParser.SequenceContext):
+        if self.__has_sequence and not self.__open_sequence:
+            self.__first_resid = 1
+            self.__cur_sequence = ''
+
+        if ctx.First_resid():
+            self.__first_resid = int(str(ctx.Integer_DA()))
+
+        if ctx.Sequence():
+            i = 0
+            while ctx.One_letter_code(i):
+                self.__cur_sequence += str(ctx.One_letter_code(i))
+                i += 1
+
+        self.__open_sequence = True
 
     # Exit a parse tree produced by DynamoMRParser#sequence.
     def exitSequence(self, ctx: DynamoMRParser.SequenceContext):  # pylint: disable=unused-argument
         pass
 
+    def closeSequqnce(self):
+        self.__has_seq_align_err = False
+
+        if not self.__open_sequence:
+            return
+
+        self.__has_sequence = len(self.__cur_sequence) > 0
+
+        self.__open_sequence = False
+
     # Enter a parse tree produced by DynamoMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: DynamoMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
+
+        self.closeSequqnce()
 
     # Exit a parse tree produced by DynamoMRParser#distance_restraints.
     def exitDistance_restraints(self, ctx: DynamoMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
@@ -445,6 +476,8 @@ class DynamoMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by DynamoMRParser#distance_restraints_sw_segid.
     def enterDistance_restraints_sw_segid(self, ctx: DynamoMRParser.Distance_restraints_sw_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
+
+        self.closeSequqnce()
 
     # Exit a parse tree produced by DynamoMRParser#distance_restraints_sw_segid.
     def exitDistance_restraints_sw_segid(self, ctx: DynamoMRParser.Distance_restraints_sw_segidContext):  # pylint: disable=unused-argument
@@ -536,6 +569,8 @@ class DynamoMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by DynamoMRParser#distance_restraints_ew_segid.
     def enterDistance_restraints_ew_segid(self, ctx: DynamoMRParser.Distance_restraints_ew_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
+
+        self.closeSequqnce()
 
     # Exit a parse tree produced by DynamoMRParser#distance_restraints_ew_segid.
     def exitDistance_restraints_ew_segid(self, ctx: DynamoMRParser.Distance_restraints_ew_segidContext):  # pylint: disable=unused-argument
@@ -742,6 +777,31 @@ class DynamoMRParserListener(ParseTreeListener):
         """
 
         chainAssign = []
+
+        if self.__has_sequence and self.__reasons is None:
+            # """
+            # if seqId < self.__first_resid:
+            #     self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+            #         f"The residue number '{seqId}' must be grater than or equal to the internally defined first residue number {self.__first_resid}.\n"
+            #     return chainAssign
+            # if seqId - self.__first_resid >= len(self.__cur_sequence):
+            #     self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+            #         f"The residue number '{seqId}' must be less than {len(self.__cur_sequence)}, total number of the internally defined sequence.\n"
+            #     return chainAssign
+            # """
+            if self.__first_resid <= seqId < self.__first_resid + len(self.__cur_sequence):
+                oneLetterCode = self.__cur_sequence[seqId - self.__first_resid].upper()
+
+                _compId = next(k for k, v in monDict3.items() if v == oneLetterCode)
+
+                if _compId != translateToStdResName(compId) and _compId != 'X':
+                    self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+                        f"Sequence alignment error between the sequence ({seqId}:{_compId}) "\
+                        f"and data ({seqId}:{compId}). "\
+                        "Please verify the consistency between the internally defined sequence and restraints and re-upload the restraint file(s).\n"
+                    self.__has_seq_align_err = True
+                    return chainAssign
+
         _seqId = seqId
 
         fixedChainId = None
@@ -1076,6 +1136,8 @@ class DynamoMRParserListener(ParseTreeListener):
     def enterTorsion_angle_restraints(self, ctx: DynamoMRParser.Torsion_angle_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dihed'
 
+        self.closeSequqnce()
+
     # Exit a parse tree produced by DynamoMRParser#torsion_angle_restraints.
     def exitTorsion_angle_restraints(self, ctx: DynamoMRParser.Torsion_angle_restraintsContext):  # pylint: disable=unused-argument
         pass
@@ -1165,6 +1227,8 @@ class DynamoMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by DynamoMRParser#torsion_angle_restraints_sw_segid.
     def enterTorsion_angle_restraints_sw_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_sw_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dihed'
+
+        self.closeSequqnce()
 
     # Exit a parse tree produced by DynamoMRParser#torsion_angle_restraints_sw_segid.
     def exitTorsion_angle_restraints_sw_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_sw_segidContext):  # pylint: disable=unused-argument
@@ -1259,6 +1323,8 @@ class DynamoMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by DynamoMRParser#torsion_angle_restraints_ew_segid.
     def enterTorsion_angle_restraints_ew_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_ew_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dihed'
+
+        self.closeSequqnce()
 
     # Exit a parse tree produced by DynamoMRParser#torsion_angle_restraints_ew_segid.
     def exitTorsion_angle_restraints_ew_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_ew_segidContext):  # pylint: disable=unused-argument
@@ -1411,6 +1477,8 @@ class DynamoMRParserListener(ParseTreeListener):
     def enterRdc_restraints(self, ctx: DynamoMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'rdc'
 
+        self.closeSequqnce()
+
     # Exit a parse tree produced by DynamoMRParser#rdc_restraints.
     def exitRdc_restraints(self, ctx: DynamoMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
         pass
@@ -1460,6 +1528,8 @@ class DynamoMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            diffSeqId = seqId1 - seqId2
+
             chainAssign1 = self.assignCoordPolymerSequence(None, seqId1, compId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(None, seqId2, compId2, atomId2)
 
@@ -1484,6 +1554,9 @@ class DynamoMRParserListener(ParseTreeListener):
             seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
             comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            if self.__has_seq_align_err and seq_id_1 - seq_id_2 != diffSeqId:
+                return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1552,6 +1625,8 @@ class DynamoMRParserListener(ParseTreeListener):
     def enterRdc_restraints_sw_segid(self, ctx: DynamoMRParser.Rdc_restraints_sw_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'rdc'
 
+        self.closeSequqnce()
+
     # Exit a parse tree produced by DynamoMRParser#rdc_restraints_sw_segid.
     def exitRdc_restraints_sw_segid(self, ctx: DynamoMRParser.Rdc_restraints_sw_segidContext):  # pylint: disable=unused-argument
         pass
@@ -1603,6 +1678,8 @@ class DynamoMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            diffSeqId = seqId1 - seqId2
+
             chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
 
@@ -1627,6 +1704,9 @@ class DynamoMRParserListener(ParseTreeListener):
             seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
             comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            if self.__has_seq_align_err and seq_id_1 - seq_id_2 != diffSeqId:
+                return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1697,6 +1777,8 @@ class DynamoMRParserListener(ParseTreeListener):
     def enterRdc_restraints_ew_segid(self, ctx: DynamoMRParser.Rdc_restraints_ew_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'rdc'
 
+        self.closeSequqnce()
+
     # Exit a parse tree produced by DynamoMRParser#rdc_restraints_ew_segid.
     def exitRdc_restraints_ew_segid(self, ctx: DynamoMRParser.Rdc_restraints_ew_segidContext):  # pylint: disable=unused-argument
         pass
@@ -1748,6 +1830,8 @@ class DynamoMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            diffSeqId = seqId1 - seqId2
+
             chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
 
@@ -1772,6 +1856,9 @@ class DynamoMRParserListener(ParseTreeListener):
             seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
             comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            if self.__has_seq_align_err and seq_id_1 - seq_id_2 != diffSeqId:
+                return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -1850,6 +1937,8 @@ class DynamoMRParserListener(ParseTreeListener):
     def enterPales_rdc_outputs(self, ctx: DynamoMRParser.Pales_rdc_outputsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'rdc'
 
+        self.closeSequqnce()
+
     # Exit a parse tree produced by DynamoMRParser#pales_rdc_outputs.
     def exitPales_rdc_outputs(self, ctx: DynamoMRParser.Pales_rdc_outputsContext):  # pylint: disable=unused-argument
         pass
@@ -1902,6 +1991,8 @@ class DynamoMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            diffSeqId = seqId1 - seqId2
+
             chainAssign1 = self.assignCoordPolymerSequence(None, seqId1, compId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(None, seqId2, compId2, atomId2)
 
@@ -1926,6 +2017,9 @@ class DynamoMRParserListener(ParseTreeListener):
             seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
             comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            if self.__has_seq_align_err and seq_id_1 - seq_id_2 != diffSeqId:
+                return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2076,7 +2170,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
                 self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['atom_id']} or "\
+                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
                     f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
                 return False
 
@@ -2085,6 +2179,8 @@ class DynamoMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by DynamoMRParser#coupling_restraints.
     def enterCoupling_restraints(self, ctx: DynamoMRParser.Coupling_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'jcoup'
+
+        self.closeSequqnce()
 
     # Exit a parse tree produced by DynamoMRParser#coupling_restraints.
     def exitCoupling_restraints(self, ctx: DynamoMRParser.Coupling_restraintsContext):  # pylint: disable=unused-argument
@@ -2189,6 +2285,8 @@ class DynamoMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by DynamoMRParser#coupling_restraints_sw_segid.
     def enterCoupling_restraints_sw_segid(self, ctx: DynamoMRParser.Coupling_restraints_sw_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'jcoup'
+
+        self.closeSequqnce()
 
     # Exit a parse tree produced by DynamoMRParser#coupling_restraints_sw_segid.
     def exitCoupling_restraints_sw_segid(self, ctx: DynamoMRParser.Coupling_restraints_sw_segidContext):  # pylint: disable=unused-argument
@@ -2297,6 +2395,8 @@ class DynamoMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by DynamoMRParser#coupling_restraints_ew_segid.
     def enterCoupling_restraints_ew_segid(self, ctx: DynamoMRParser.Coupling_restraints_ew_segidContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'jcoup'
+
+        self.closeSequqnce()
 
     # Exit a parse tree produced by DynamoMRParser#coupling_restraints_ew_segid.
     def exitCoupling_restraints_ew_segid(self, ctx: DynamoMRParser.Coupling_restraints_ew_segidContext):  # pylint: disable=unused-argument
@@ -2477,6 +2577,8 @@ class DynamoMRParserListener(ParseTreeListener):
     def enterTalos_restraints(self, ctx: DynamoMRParser.Talos_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dihed'
 
+        self.closeSequqnce()
+
     # Exit a parse tree produced by DynamoMRParser#talos_restraints.
     def exitTalos_restraints(self, ctx: DynamoMRParser.Talos_restraintsContext):  # pylint: disable=unused-argument
         pass
@@ -2619,6 +2721,8 @@ class DynamoMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by DynamoMRParser#talos_restraints_wo_s2.
     def enterTalos_restraints_wo_s2(self, ctx: DynamoMRParser.Talos_restraints_wo_s2Context):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dihed'
+
+        self.closeSequqnce()
 
     # Exit a parse tree produced by DynamoMRParser#talos_restraints_wo_s2.
     def exitTalos_restraints_wo_s2(self, ctx: DynamoMRParser.Talos_restraints_wo_s2Context):  # pylint: disable=unused-argument

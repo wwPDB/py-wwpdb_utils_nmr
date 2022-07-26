@@ -365,8 +365,6 @@ Residue:		'RESIDUE';
 Mapping:		'MAPPING' -> pushMode(MAP_MODE);
 Ambig:			'AMBIG' -> pushMode(MAP_MODE);
 
-Simple_name:		SIMPLE_NAME;
-
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
 COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
@@ -396,6 +394,9 @@ R_brakt:		']';
 Equ_op:			'=';
 
 L_quot:			'"' -> pushMode(FUNC_CALL_MODE);
+
+Simple_name:		SIMPLE_NAME;
+
 SPACE:			[ \t\r\n]+ -> skip;
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+) ' '* [\r\n]+ -> channel(HIDDEN);
 

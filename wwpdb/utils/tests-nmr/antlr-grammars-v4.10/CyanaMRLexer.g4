@@ -21,7 +21,7 @@ options { caseInsensitive=true; }
 /* CYANA 3.0 Reference Manual
  See also http://www.cyana.org/wiki/index.php/CYANA_3.0_Reference_Manual
 */
-Ambig_code:		(DECIMAL '-' DECIMAL ':' DECIMAL | SIMPLE_NAME '.' DECIMAL);
+Ambig_code:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME '.' DECIMAL);
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
@@ -100,7 +100,7 @@ LINE_COMMENT_HB:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ 
 
 mode MAP_MODE;
 
-Ambig_code_MP:		(DECIMAL '-' DECIMAL ':' DECIMAL | SIMPLE_NAME '.' DECIMAL);
+Ambig_code_MP:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME '.' DECIMAL);
 Integer_MP:		('+' | '-')? DECIMAL;
 Simple_name_MP:		SIMPLE_NAME;
 

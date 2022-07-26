@@ -150,8 +150,8 @@ class CyanaMRReader:
 
             stream = CommonTokenStream(lexer)
             parser = CyanaMRParser(stream)
-            if not isFilePath or 'selected-as-res' in mrFilePath:
-                parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
+            #if not isFilePath or 'selected-as-res' in mrFilePath:
+            #    parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
@@ -201,6 +201,11 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mls/2mls-corrected-div_dst-div_dst.mr',
+                 '../../tests-nmr/mock-data-remediation/2mls/2mls.cif')
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7f7n/dis.upl_map',

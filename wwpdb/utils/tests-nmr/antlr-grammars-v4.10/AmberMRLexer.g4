@@ -555,7 +555,7 @@ SPACE_F:		[ \t\r\n]+ -> skip;
 
 mode MAP_MODE;
 
-Ambig_code_MP:		DECIMAL '-' DECIMAL ':' DECIMAL;
+Ambig_code_MP:		(DECIMAL '-' DECIMAL ':' DECIMAL | SIMPLE_NAME '.' DECIMAL);
 Integer_MP:		INTEGER;
 Simple_name_MP:		SIMPLE_NAME;
 

@@ -8834,6 +8834,12 @@ class XplorMRParserListener(ParseTreeListener):
         if ctx.Simple_name():
             return str(ctx.Simple_name())
 
+        if ctx.Noe():
+            return str(ctx.Noe())
+
+        if ctx.Restraints():
+            return str(ctx.Restraints())
+
         if ctx.AngleDb():
             return str(ctx.AngleDb())
 

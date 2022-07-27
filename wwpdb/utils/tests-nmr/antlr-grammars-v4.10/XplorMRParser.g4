@@ -809,7 +809,7 @@ classification:
 
 /* class name */
 class_name:
-	Simple_name | AngleDb | HBonded | Dihedral | Improper;
+	Simple_name | Noe | Restraints | AngleDb | HBonded | Dihedral | Improper;
 
 /* XPLOR-NIH: Flags - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node125.html

@@ -226,7 +226,7 @@ sani_statement:
 	Coefficients number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -246,7 +246,7 @@ xdip_statement:
 	Coefficients number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -277,7 +277,7 @@ tenso_statement:
 	classification |
 	Coefficients number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -293,7 +293,7 @@ anis_statement:
 	Coefficients number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset |
 	Type Rdc_or_Diff_anis_types;
@@ -360,7 +360,7 @@ coupling_statement:
 	ForceConstant number_s number_s? |
 	Nrestraints Equ_op? Integer |
 	Partition Equ_op? Integer |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s (All | classification) |
 	Reset;
 
@@ -378,7 +378,7 @@ carbon_shift_statement:
 	Nrestraints Equ_op? Integer |
 	PhiStep number_s |
 	PsiStep number_s |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	carbon_shift_rcoil |
 	Reset |
@@ -407,7 +407,7 @@ proton_shift_statement:
 	Error number_s |
 	DegEnergy Integer |
 	ForceConstant number_s number_s? |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s (All | classification) Simple_name |
 	Reset;
 
@@ -483,7 +483,7 @@ diffusion_statement:
 	Coefficients number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset |
 	Type Rdc_or_Diff_anis_types;
@@ -527,7 +527,7 @@ csa_statement:
 	Sigma number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -545,7 +545,7 @@ pcsa_statement:
 	Sigma number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -558,7 +558,7 @@ one_bond_coupling_statement:
 	Coefficients number_s number_s number_s number_s number_s number_s number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s |
 	Reset;
 
@@ -576,7 +576,7 @@ angle_db_statement:
 	Error number_s |
 	ForceConstant Equ_op? number_s |
 	Nrestraints Equ_op? Integer |
-	Potential Potential_types |
+	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s (All | classification) |
 	Reset |
 	Size (AngleDb | Dihedral) Integer Integer |

@@ -682,47 +682,50 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
         if coordUnobsRes is None:
             coordUnobsRes = {}
-            unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                             [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                              {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                              {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                              ],
-                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}
-                                              ])
 
-            if len(unobs) > 0:
-                chainIds = set(u['chain_id'] for u in unobs)
-                for chainId in chainIds:
-                    seqIds = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chainId and u['seq_id'] is not None)
-                    for seqId in seqIds:
-                        seqKey = (chainId, seqId)
-                        compId = next(u['comp_id'] for u in unobs
-                                      if u['chain_id'] == chainId and u['seq_id'] is not None and int(u['seq_id']) == seqId)
-                        coordUnobsRes[seqKey] = {'comp_id': compId}
+            if cR.hasCategory('pdbx_unobs_or_zero_occ_residues'):
 
-                if any(seqKey for seqKey in coordUnobsRes.keys() if seqKey not in authToLabelSeq):
+                unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                  {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                  {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                  ],
+                                                 [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}
+                                                  ])
 
-                    if cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_asym_id') and cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_seq_id'):
+                if len(unobs) > 0:
+                    chainIds = set(u['chain_id'] for u in unobs)
+                    for chainId in chainIds:
+                        seqIds = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chainId and u['seq_id'] is not None)
+                        for seqId in seqIds:
+                            seqKey = (chainId, seqId)
+                            compId = next(u['comp_id'] for u in unobs
+                                          if u['chain_id'] == chainId and u['seq_id'] is not None and int(u['seq_id']) == seqId)
+                            coordUnobsRes[seqKey] = {'comp_id': compId}
 
-                        unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                         [{'name': 'auth_asym_id', 'type': 'str'},
-                                                          {'name': 'auth_seq_id', 'type': 'str'},
-                                                          {'name': 'label_asym_id', 'type': 'str'},
-                                                          {'name': 'label_seq_id', 'type': 'str'}
-                                                          ],
-                                                         [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}
-                                                          ])
+                    if any(seqKey for seqKey in coordUnobsRes.keys() if seqKey not in authToLabelSeq):
 
-                        if len(unobs) > 0:
-                            for u in unobs:
-                                if u['auth_asym_id'] is not None and u['auth_seq_id'] is not None and u['label_asym_id'] is not None and u['label_seq_id'] is not None:
-                                    authSeqKey = (u['auth_asym_id'], int(u['auth_seq_id']))
-                                    labelSeqKey = (u['label_asym_id'], int(u['label_seq_id']))
+                        if cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_asym_id') and cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_seq_id'):
 
-                                    if authSeqKey not in authToLabelSeq:
-                                        authToLabelSeq[authSeqKey] = labelSeqKey
-                                    if labelSeqKey not in labelToAuthSeq:
-                                        labelToAuthSeq[labelSeqKey] = authSeqKey
+                            unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                                                             [{'name': 'auth_asym_id', 'type': 'str'},
+                                                              {'name': 'auth_seq_id', 'type': 'str'},
+                                                              {'name': 'label_asym_id', 'type': 'str'},
+                                                              {'name': 'label_seq_id', 'type': 'str'}
+                                                              ],
+                                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}
+                                                              ])
+
+                            if len(unobs) > 0:
+                                for u in unobs:
+                                    if u['auth_asym_id'] is not None and u['auth_seq_id'] is not None and u['label_asym_id'] is not None and u['label_seq_id'] is not None:
+                                        authSeqKey = (u['auth_asym_id'], int(u['auth_seq_id']))
+                                        labelSeqKey = (u['label_asym_id'], int(u['label_seq_id']))
+
+                                        if authSeqKey not in authToLabelSeq:
+                                            authToLabelSeq[authSeqKey] = labelSeqKey
+                                        if labelSeqKey not in labelToAuthSeq:
+                                            labelToAuthSeq[labelSeqKey] = authSeqKey
 
     except Exception as e:
         if verbose:

@@ -29320,36 +29320,64 @@ class NmrDpUtility:
             # DAOTHER-7665
             self.__coord_unobs_res = []
 
-            if self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_asym_id') and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_seq_id'):
-                unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+            if self.__cR.hasCategory('pdbx_unobs_or_zero_occ_residues'):
+
+                unobs_has_label_seq = self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_asym_id') and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_seq_id')
+                unobs_has_auth_seq = self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_asym_id') and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_seq_id')
+
+                if unobs_has_auth_seq and unobs_has_label_seq:
+                    unobs = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                                                            [{'name': 'auth_asym_id', 'type': 'str'},
+                                                             {'name': 'auth_seq_id', 'type': 'str'},
+                                                             {'name': 'label_asym_id', 'type': 'str'},
+                                                             {'name': 'label_seq_id', 'type': 'str'}
+                                                             ],
+                                                            [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
+                                                             ])
+
+                    if len(unobs) > 0:
+                        for u in unobs:
+                            if u['auth_asym_id'] is not None and u['auth_seq_id'] is not None and u['label_asym_id'] is not None and u['label_seq_id'] is not None:
+                                auth_seq_key = (u['auth_asym_id'], int(u['auth_seq_id']))
+                                label_seq_key = (u['label_asym_id'], int(u['label_seq_id']))
+
+                                if auth_seq_key not in self.__auth_to_label_seq:
+                                    self.__auth_to_label_seq[auth_seq_key] = label_seq_key
+                                if label_seq_key not in self.__label_to_auth_seq:
+                                    self.__label_to_auth_seq[label_seq_key] = auth_seq_key
+
+                if unobs_has_label_seq:
+                    unobs = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
                                                             [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                              {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'}
                                                              ],
                                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
                                                              ])
 
-                if len(unobs_res) > 0:
-                    for chain_id in chain_ids:
-                        seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
-                        for seq_id in seq_ids:
-                            seq_key = (chain_id, seq_id)
-                            self.__coord_unobs_res.append(seq_key)
+                    if len(unobs) > 0:
+                        for chain_id in chain_ids:
+                            seq_ids = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chain_id and u['seq_id'] is not None)
+                            for seq_id in seq_ids:
+                                seq_key = (chain_id, seq_id)
+                                self.__coord_unobs_res.append(seq_key)
 
-            elif self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_asym_id') and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_seq_id'):
-                unobs_res = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                if unobs_has_auth_seq:
+                    unobs = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
                                                             [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                              {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'}
                                                              ],
                                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
                                                              ])
 
-                if len(unobs_res) > 0:
-                    for chain_id in chain_ids:
-                        seq_ids = set(int(u['seq_id']) for u in unobs_res if u['chain_id'] == chain_id and u['seq_id'] is not None)
-                        for seq_id in seq_ids:
-                            seq_key = (chain_id, seq_id)
-                            if seq_key in self.__auth_to_label_seq:
-                                self.__coord_unobs_res.append(self.__auth_to_label_seq[seq_key])
+                    if len(unobs) > 0:
+                        for chain_id in chain_ids:
+                            seq_ids = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chain_id and u['seq_id'] is not None)
+                            for seq_id in seq_ids:
+                                seq_key = (chain_id, seq_id)
+                                if seq_key in self.__auth_to_label_seq:
+                                    _seq_key = self.__auth_to_label_seq[seq_key]
+                                    if _seq_key not in self.__coord_unobs_res:
+                                        self.__coord_unobs_res.append(_seq_key)
 
             return True
 

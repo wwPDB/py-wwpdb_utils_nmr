@@ -354,6 +354,8 @@ cif_stop_pattern = re.compile(r'#\s*')
 ws_pattern = re.compile(r'\s+')
 comment_pattern = re.compile(r'\s*[#!]+(.*)')
 gromacs_comment_pattern = re.compile(r'\s*;+[^0-9]?(.*)')
+cyana_unset_info_pattern = re.compile(r'\s*unset\s+info.*')
+cyana_print_pattern = re.compile(r'\s*print\s+\".*\".*')
 
 category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
 tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
@@ -9357,6 +9359,10 @@ class NmrDpUtility:
                         ofp2.write(line)
                         j2 += 1
                         continue
+                if cyana_unset_info_pattern.match(line) or cyana_print_pattern.match(line):
+                    ofp2.write(line)
+                    j2 += 1
+                    continue
                 ws_or_comment = False
                 ofp3.write(line)
                 j3 += 1

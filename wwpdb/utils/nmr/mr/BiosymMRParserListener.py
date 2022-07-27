@@ -243,7 +243,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         if ref_chain_id != test_chain_id:
                             chain_mapping[test_chain_id] = ref_chain_id
 
-                    if len(chain_mapping) > 0:
+                    if len(chain_mapping) == len(self.__polySeq):
 
                         for ps in self.__polySeqRst:
                             if ps['chain_id'] in chain_mapping:

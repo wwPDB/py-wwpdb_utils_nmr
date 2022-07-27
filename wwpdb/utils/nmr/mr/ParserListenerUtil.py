@@ -700,6 +700,30 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                       if u['chain_id'] == chainId and u['seq_id'] is not None and int(u['seq_id']) == seqId)
                         coordUnobsRes[seqKey] = {'comp_id': compId}
 
+                if any(seqKey for seqKey in coordUnobsRes.keys() if seqKey not in authToLabelSeq):
+
+                    if cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_asym_id') and cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_seq_id'):
+
+                        unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
+                                                         [{'name': 'auth_asym_id', 'type': 'str'},
+                                                          {'name': 'auth_seq_id', 'type': 'str'},
+                                                          {'name': 'label_asym_id', 'type': 'str'},
+                                                          {'name': 'label_seq_id', 'type': 'str'}
+                                                          ],
+                                                         [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}
+                                                          ])
+
+                        if len(unobs) > 0:
+                            for u in unobs:
+                                if u['auth_asym_id'] is not None and u['auth_seq_id'] is not None and u['label_asym_id'] is not None and u['label_seq_id'] is not None:
+                                    authSeqKey = (u['auth_asym_id'], int(u['auth_seq_id']))
+                                    labelSeqKey = (u['label_asym_id'], int(u['label_seq_id']))
+
+                                    if authSeqKey not in authToLabelSeq:
+                                        authToLabelSeq[authSeqKey] = labelSeqKey
+                                    if labelSeqKey not in labelToAuthSeq:
+                                        labelToAuthSeq[labelSeqKey] = authSeqKey
+
     except Exception as e:
         if verbose:
             log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error  - {str(e)}\n")

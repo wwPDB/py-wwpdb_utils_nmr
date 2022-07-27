@@ -993,7 +993,7 @@ def retrieveRemappedSeqId(seqIdRemap, chainId, seqId):
         if chainId is None:
             item = next(item for item in seqIdRemap if seqId in item['seq_id_dict'])
         else:
-            item = next(item for item in seqIdRemap if item['chain_id'] == chainId)
+            item = next(item for item in seqIdRemap if seqId in item['seq_id_dict'] and item['chain_id'] == chainId)
         return item['chain_id'], item['seq_id_dict'][seqId]
     except StopIteration:
         return chainId, seqId
@@ -1026,6 +1026,9 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssignSet):
     for test_chain_id, ref_chain_ids in target_test_chain_id.items():
 
         total_gaps = len(ref_chain_ids) - 1
+
+        if total_gaps == 0:
+            continue
 
         ref_seq_lengths = []
 

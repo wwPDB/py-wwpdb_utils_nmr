@@ -203,6 +203,11 @@ class CyanaMRReader:
 if __name__ == "__main__":
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5knw/hbond_nmrstar.txt-corrected',
+                 '../../tests-nmr/mock-data-remediation/5knw/5knw.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mls/2mls-corrected-div_dst-div_dst.mr',
                  '../../tests-nmr/mock-data-remediation/2mls/2mls.cif')
 

@@ -501,7 +501,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 value = self.numberSelection[0]
                 weight = 1.0
 
+                delta = None
                 has_square = False
+
                 if len(self.numberSelection) > 2:
                     value2 = self.numberSelection[1]
                     weight = self.numberSelection[2]
@@ -512,7 +514,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     value2 = self.numberSelection[1]
 
                     if value2 <= 1.0 or value2 < value:
-                        weight = value2
+                        delta = abs(value2)
                     else:
                         has_square = True
 
@@ -546,6 +548,11 @@ class CyanaMRParserListener(ParseTreeListener):
                             target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             upper_limit = value2
+
+                elif delta is not None:
+                    target_value = value
+                    lower_limit = value - delta
+                    upper_limit = value + delta
 
                 elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
                     if value > 1.8:
@@ -824,7 +831,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 value = self.numberSelection[0]
                 weight = 1.0
 
+                delta = None
                 has_square = False
+
                 if len(self.numberSelection) > 2:
                     value2 = self.numberSelection[1]
                     weight = self.numberSelection[2]
@@ -835,7 +844,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     value2 = self.numberSelection[1]
 
                     if value2 <= 1.0 or value2 < value:
-                        weight = value2
+                        delta = abs(value2)
                     else:
                         has_square = True
 
@@ -869,6 +878,11 @@ class CyanaMRParserListener(ParseTreeListener):
                             target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             upper_limit = value2
+
+                elif delta is not None:
+                    target_value = value
+                    lower_limit = value - delta
+                    upper_limit = value + delta
 
                 elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
                     if value > 1.8:
@@ -2982,10 +2996,12 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 value = self.numberSelection[num_col]
                 value2 = self.numberSelection[num_col + 1]
+
+                delta = None
                 has_square = False
 
                 if value2 <= 1.0 or value2 < value:
-                    weight = value2
+                    delta = abs(value2)
                 else:
                     weight = 1.0
                     has_square = True
@@ -3026,6 +3042,11 @@ class CyanaMRParserListener(ParseTreeListener):
                                 target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                             else:
                                 upper_limit = value2
+
+                    elif delta is not None:
+                        target_value = value
+                        lower_limit = value - delta
+                        upper_limit = value + delta
 
                     elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
                         if value > 1.8:
@@ -3418,6 +3439,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 value = self.numberSelection[num_col]
                 value2 = self.numberSelection[num_col + 1]
+
+                delta = None
                 has_square = False
 
                 if value2 < 0.0:
@@ -3429,7 +3452,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         f"The relative weight value of '{value2}' should be a positive value.\n"
 
                 if value2 <= 1.0 or value2 < value:
-                    weight = value2
+                    delta = abs(value2)
                 else:
                     weight = 1.0
                     has_square = True
@@ -3462,6 +3485,11 @@ class CyanaMRParserListener(ParseTreeListener):
                                 target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                             else:
                                 upper_limit = value2
+
+                    elif delta is not None:
+                        target_value = value
+                        lower_limit = value - delta
+                        upper_limit = value + delta
 
                     elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
                         if value > 1.8:
@@ -3770,7 +3798,9 @@ class CyanaMRParserListener(ParseTreeListener):
             value = self.numberSelection[0]
             weight = 1.0
 
+            delta = None
             has_square = False
+
             if len(self.numberSelection) > 2:
                 value2 = self.numberSelection[1]
                 weight = self.numberSelection[2]
@@ -3781,7 +3811,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 value2 = self.numberSelection[1]
 
                 if value2 <= 1.0 or value2 < value:
-                    weight = value2
+                    delta = abs(value2)
                 else:
                     has_square = True
 
@@ -3815,6 +3845,11 @@ class CyanaMRParserListener(ParseTreeListener):
                         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     else:
                         upper_limit = value2
+
+            elif delta is not None:
+                target_value = value
+                lower_limit = value - delta
+                upper_limit = value + delta
 
             elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
                 if value > 1.8:

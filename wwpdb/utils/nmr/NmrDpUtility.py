@@ -9328,26 +9328,53 @@ class NmrDpUtility:
                         break
 
             if prev_input is not None:
-
-                test_reader = self.__getSimpleMRPTFileReader('nm-res-xpl', False)
-
-                _, _, lexer_err_listener = test_reader.parse(prev_input, None, isFilePath=False)
+                listener, parser_err_listener, lexer_err_listener = reader.parse(prev_input, None, isFilePath=False)
 
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                has_content = bool(listener is not None and len(listener.getContentSubtype()) > 0)
 
-                if not has_lexer_error:
-                    err_line_number -= 1
+                if has_lexer_error or has_parser_error or not has_content:
+                    test_reader = self.__getSimpleMRPTFileReader('nm-res-xpl', False)
 
-                    for _interval in reversed(interval):
-                        if _interval['ws_or_comment']:
-                            err_line_number -= 1
-                        else:
-                            break
+                    _, _, lexer_err_listener = test_reader.parse(prev_input, None, isFilePath=False)
 
-                    i = 0
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                    if not has_lexer_error:
+                        err_line_number -= 1
+
+                        for _interval in reversed(interval):
+                            if _interval['ws_or_comment']:
+                                err_line_number -= 1
+                            else:
+                                break
+
+                        i = 0
+
+                        with open(file_path, 'r') as ifp,\
+                                open(div_src_file, 'w') as ofp,\
+                                open(div_try_file, 'w') as ofp3:
+                            for line in ifp:
+                                i += 1
+                                if i < err_line_number:
+                                    ofp.write(line)
+                                    j += 1
+                                    continue
+                                ofp3.write(line)
+                                j3 += 1
+
+                        is_done = True
+
+                if not is_done and err_input.startswith('var info echo'):
+
+                    i = j = j2 = 0
+
+                    dst_has_content = False
 
                     with open(file_path, 'r') as ifp,\
                             open(div_src_file, 'w') as ofp,\
+                            open(div_ext_file, 'w') as ofp2,\
                             open(div_try_file, 'w') as ofp3:
                         for line in ifp:
                             i += 1
@@ -9355,12 +9382,40 @@ class NmrDpUtility:
                                 ofp.write(line)
                                 j += 1
                                 continue
+                            if line.startswith('var info echo')\
+                               or line.startswith('echo:')\
+                               or line.startswith('info:')\
+                               or line.startswith('atom stereo')\
+                               or cyana_unset_info_pattern.match(line) or cyana_print_pattern.match(line):
+                                ofp2.write(line)
+                                j2 += 1
+                                continue
+                            if not (line.isspace() or comment_pattern.match(line)
+                                    or (gromacs_file_type and gromacs_comment_pattern.match(line))):
+                                dst_has_content = True
                             ofp3.write(line)
                             j3 += 1
 
-                    is_done = True
+                    if dst_has_content:
+                        is_done = True
+
+                    else:
+
+                        if div_src:
+                            os.remove(file_path)
+                        if os.path.exists(div_try_file):
+                            os.remove(div_try_file)
+
+                        if self.__mr_debug:
+                            print('PEEL-MR-EXIT #4')
+
+                        return True
 
         if not is_done:
+
+            i = j = j2 = j3 = 0
+
+            interval.clear()
 
             is_valid = False
             ws_or_comment = True
@@ -9440,7 +9495,7 @@ class NmrDpUtility:
 
             if j3 > 0:
                 if self.__mr_debug:
-                    print('PEEL-MR-EXIT #4')
+                    print('PEEL-MR-EXIT #5')
 
                 return False | corrected
 
@@ -9451,7 +9506,7 @@ class NmrDpUtility:
                 os.rename(div_ext_file, div_ext_file.replace('dst-div_ext.mr', '_ext.mr'))  # shrink div_ext file name
 
                 if self.__mr_debug:
-                    print('PEEL-MR-EXIT #5')
+                    print('PEEL-MR-EXIT #6')
 
                 return True
 
@@ -9491,7 +9546,7 @@ class NmrDpUtility:
                         os.remove(div_try_file)
 
                     if self.__mr_debug:
-                        print('PEEL-MR-EXIT #6')
+                        print('PEEL-MR-EXIT #7')
 
                     return False | corrected  # not split MR file because of the lexer errors to be handled by manual
 
@@ -9504,7 +9559,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('PEEL-MR-EXIT #7')
+                print('PEEL-MR-EXIT #8')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -9514,7 +9569,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('PEEL-MR-EXIT #8')
+                print('PEEL-MR-EXIT #9')
 
             return False | corrected
 

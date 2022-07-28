@@ -9295,6 +9295,45 @@ class NmrDpUtility:
 
                 return False | corrected
 
+        if not xplor_file_type:
+
+            prev_input = None
+
+            i = 0
+
+            interval = []
+
+            with open(file_path, 'r') as ifp:
+                for line in ifp:
+                    i += 1
+                    if i < err_line_number - self.mr_max_spacer_lines:
+                        continue
+                    if i < err_line_number - 1:
+                        interval.append({'line': line,
+                                         'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))
+                                         or (gromacs_file_type and bool(gromacs_comment_pattern.match(line)))})
+                        continue
+                    if i == err_line_number - 1:
+                        prev_input = line
+                        break
+
+            if prev_input is not None:
+
+                test_reader = self.__getSimpleMRPTFileReader('nm-res-xpl', False)
+
+                _, _, lexer_err_listener = test_reader.parse(prev_input, None, isFilePath=False)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+
+                if not has_lexer_error:
+                    err_line_number -= 1
+
+                    for _interval in reversed(interval):
+                        if _interval['ws_or_comment']:
+                            err_line_number -= 1
+                        else:
+                            break
+
         i = j = j2 = j3 = 0
 
         is_valid = False

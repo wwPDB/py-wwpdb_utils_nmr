@@ -9295,13 +9295,15 @@ class NmrDpUtility:
 
                 return False | corrected
 
+        i = j = j2 = j3 = 0
+
+        interval = []
+
+        is_done = False
+
         if not xplor_file_type:
 
             prev_input = None
-
-            i = 0
-
-            interval = []
 
             with open(file_path, 'r') as ifp:
                 for line in ifp:
@@ -9334,77 +9336,91 @@ class NmrDpUtility:
                         else:
                             break
 
-        i = j = j2 = j3 = 0
+                    i = 0
 
-        is_valid = False
-        ws_or_comment = True
+                    with open(file_path, 'r') as ifp,\
+                            open(div_src_file, 'w') as ofp,\
+                            open(div_try_file, 'w') as ofp3:
+                        for line in ifp:
+                            i += 1
+                            if i < err_line_number:
+                                ofp.write(line)
+                                j += 1
+                                continue
+                            ofp3.write(line)
+                            j3 += 1
 
-        interval = []
+                    is_done = True
 
-        with open(file_path, 'r') as ifp,\
-                open(div_src_file, 'w') as ofp,\
-                open(div_ext_file, 'w') as ofp2,\
-                open(div_try_file, 'w') as ofp3:
-            for line in ifp:
-                i += 1
-                if i < err_line_number - self.mr_max_spacer_lines:
-                    ofp.write(line)
-                    j += 1
-                    continue
-                if i < err_line_number:
-                    interval.append({'line': line,
-                                     'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))
-                                     or (gromacs_file_type and bool(gromacs_comment_pattern.match(line)))})
-                    if i < err_line_number - 1:
+        if not is_done:
+
+            is_valid = False
+            ws_or_comment = True
+
+            with open(file_path, 'r') as ifp,\
+                    open(div_src_file, 'w') as ofp,\
+                    open(div_ext_file, 'w') as ofp2,\
+                    open(div_try_file, 'w') as ofp3:
+                for line in ifp:
+                    i += 1
+                    if i < err_line_number - self.mr_max_spacer_lines:
+                        ofp.write(line)
+                        j += 1
                         continue
-                    _k = len(interval) - 1
-                    _c = interval[-1]['line'][0]
-                    for _interval in reversed(interval):
-                        c = _interval['line'][0]
-                        if _interval['ws_or_comment'] and {c, _c} != comment_code_mixed_set:
-                            _c = c
-                            _k -= 1
+                    if i < err_line_number:
+                        interval.append({'line': line,
+                                         'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))
+                                         or (gromacs_file_type and bool(gromacs_comment_pattern.match(line)))})
+                        if i < err_line_number - 1:
                             continue
-                        break
-                    for k, _interval in enumerate(interval):
-                        if k <= _k:
-                            ofp.write(_interval['line'])
-                            j += 1
-                        else:
-                            ofp2.write(_interval['line'])
-                            j2 += 1
-                    continue
-                if not is_valid:
-                    if line.isspace() or comment_pattern.match(line)\
-                       or (gromacs_file_type and gromacs_comment_pattern.match(line)):
-                        ofp2.write(line)
-                        j2 += 1
+                        _k = len(interval) - 1
+                        _c = interval[-1]['line'][0]
+                        for _interval in reversed(interval):
+                            c = _interval['line'][0]
+                            if _interval['ws_or_comment'] and {c, _c} != comment_code_mixed_set:
+                                _c = c
+                                _k -= 1
+                                continue
+                            break
+                        for k, _interval in enumerate(interval):
+                            if k <= _k:
+                                ofp.write(_interval['line'])
+                                j += 1
+                            else:
+                                ofp2.write(_interval['line'])
+                                j2 += 1
                         continue
-                    _, parser_err_listener, lexer_err_listener = reader.parse(line, None, isFilePath=False)
-                    if lexer_err_listener is None or lexer_err_listener.getMessageList() is not None:
-                        ofp2.write(line)
-                        j2 += 1
-                        continue
-                    if parser_err_listener is not None:
-                        messageList = parser_err_listener.getMessageList()
-                        if messageList is not None and messageList[0]['line_number'] == 1:
+                    if not is_valid:
+                        if line.isspace() or comment_pattern.match(line)\
+                           or (gromacs_file_type and gromacs_comment_pattern.match(line)):
                             ofp2.write(line)
                             j2 += 1
                             continue
-                    is_valid = True
-                if ws_or_comment:
-                    if line.isspace() or comment_pattern.match(line)\
-                       or (gromacs_file_type and gromacs_comment_pattern.match(line)):
+                        _, parser_err_listener, lexer_err_listener = reader.parse(line, None, isFilePath=False)
+                        if lexer_err_listener is None or lexer_err_listener.getMessageList() is not None:
+                            ofp2.write(line)
+                            j2 += 1
+                            continue
+                        if parser_err_listener is not None:
+                            messageList = parser_err_listener.getMessageList()
+                            if messageList is not None and messageList[0]['line_number'] == 1:
+                                ofp2.write(line)
+                                j2 += 1
+                                continue
+                        is_valid = True
+                    if ws_or_comment:
+                        if line.isspace() or comment_pattern.match(line)\
+                           or (gromacs_file_type and gromacs_comment_pattern.match(line)):
+                            ofp2.write(line)
+                            j2 += 1
+                            continue
+                    if cyana_unset_info_pattern.match(line) or cyana_print_pattern.match(line):
                         ofp2.write(line)
                         j2 += 1
                         continue
-                if cyana_unset_info_pattern.match(line) or cyana_print_pattern.match(line):
-                    ofp2.write(line)
-                    j2 += 1
-                    continue
-                ws_or_comment = False
-                ofp3.write(line)
-                j3 += 1
+                    ws_or_comment = False
+                    ofp3.write(line)
+                    j3 += 1
 
         offset += j + j2
 

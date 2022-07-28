@@ -11,6 +11,7 @@
 """
 import sys
 import os
+import re
 import pynmrstar
 import pickle
 
@@ -314,9 +315,36 @@ class CifToNmrStar:
 
             strObj.write_to_file(strPath, skip_empty_tags=False)
 
-        except Exception as e:
+            return True
+
+        except ValueError as e:
+            sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
+            save_pattern = re.compile(r'\s*save_\s*')
+
+            split_ext = os.path.splitext(cifPath)
+            _cifPath = split_ext[0] + '-corrected' + ('' if len(split_ext) == 1 else split_ext[1])
+
+            changed = False
+
+            with open(cifPath, 'r') as ifp,\
+                    open(_cifPath, 'w') as ofp:
+                for line in ifp:
+                    if sf_anonymous_pattern.match(line) or save_pattern.match(line):
+                        ofp.write('#' + line)
+                        changed = True
+                    else:
+                        ofp.write(line)
+
+            if changed:
+                return self.convert(_cifPath, strPath)
+
+            os.remove(_cifPath)
+
             self.__lfh.write(f"+ERROR- CifToNmrStar.convert() {str(e)}\n")
 
             return False
 
-        return True
+        except Exception as e:
+            self.__lfh.write(f"+ERROR- CifToNmrStar.convert() {str(e)}\n")
+
+            return False

@@ -179,7 +179,7 @@ class NmrStarToCif:
         except Exception as e:
             self.__lfh.write(f"+ERROR- NmrStarToCif.clean() {str(e)}\n")
 
-        return False
+            return False
 
     def convert(self, strPath=None, cifPath=None, originalFileName=None, fileType='nm-uni-nef'):
         """ Convert NMR-STAR to CIF for NMR unified deposition

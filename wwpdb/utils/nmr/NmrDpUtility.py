@@ -894,18 +894,18 @@ def concat_nmr_restraint_names(content_subtype):
     return '' if len(subtype_name) == 0 else subtype_name[:-2]
 
 
-def is_peak_list(input, has_header=True):
+def is_peak_list(input_l, has_header=True):
     """ Return whether a given input is derived from peak list in any native format.
     """
 
-    if has_header and input.count('E') + input.count('e') >= 2:  # CYANA peak list
-        s = filter(None, re.split(r'[\t ]', input))
+    if has_header and input_l.count('E') + input_l.count('e') >= 2:  # CYANA peak list
+        s = filter(None, re.split(r'[\t ]', input_l))
         return 'U' in s or 'T' in s
 
-    if 'Data Height' in input and 'w1' in input and 'w2' in input:  # SPARKY peak list
+    if 'Data Height' in input_l and 'w1' in input_l and 'w2' in input_l:  # SPARKY peak list
         return True
 
-    if 'label' in input and 'dataset' in input and 'sw' in input and 'sf' in input:  # NMRView peak list
+    if 'label' in input_l and 'dataset' in input_l and 'sw' in input_l and 'sf' in input_l:  # NMRView peak list
         return True
 
     return False

@@ -6376,112 +6376,111 @@ class NmrDpUtility:
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
-            input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
-            file_type = input_source_dic['file_type']
-            content_type = input_source_dic['content_type']
+            self.__detectContentSubType__(fileListId, input_source)
 
-            if input_source_dic['content_subtype'] is not None:
-                continue
+        return not self.report.isError()
 
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[fileListId], self.__star_data_type[fileListId])
+    def __detectContentSubType__(self, file_list_id, input_source):
+        """ Detect content subtype of NMR data file in any STAR format.
+        """
 
-            is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[fileListId], self.__star_data_type[fileListId])  # DAOTHER-7389, issue #4
-            self.__sf_name_corr.append(corrections)
+        input_source_dic = input_source.get()
 
-            if not is_valid:
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+        content_type = input_source_dic['content_type']
 
-                for warn in messages:
-                    self.report.warning.appendDescription('corrected_saveframe_name',
-                                                          {'file_name': file_name, 'description': warn})
-                    self.report.setWarning()
+        if input_source_dic['content_subtype'] is not None:
+            return
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
 
-            tags_with_null_str = []
+        is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[file_list_id], self.__star_data_type[file_list_id])  # DAOTHER-7389, issue #4
+        self.__sf_name_corr.append(corrections)
 
-            for sf_category in self.__sf_category_list:  # DAOTHER-5896
+        if not is_valid:
 
-                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
-                    for tag in sf_data.tags:
-                        if isinstance(tag[1], str) and len(tag[1]) == 0:
-                            tags_with_null_str.append('_' + sf_category + '.' + tag[0])
-                            tag[1] = '.'
-
-            if len(tags_with_null_str) > 0:
-
-                warn = f"Empty strings for {tags_with_null_str} are not allowed as values. Use a '.' or a '?' if needed."
-
-                self.report.warning.appendDescription('corrected_format_issue',
+            for warn in messages:
+                self.report.warning.appendDescription('corrected_saveframe_name',
                                                       {'file_name': file_name, 'description': warn})
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
 
-            for sf_category in self.__sf_category_list:
+        tags_with_null_str = []
 
-                if file_type == 'nmr-star' and sf_category == 'entity':
-                    self.__has_star_entity = True
+        for sf_category in self.__sf_category_list:  # DAOTHER-5896
 
-                if sf_category is not None and sf_category not in self.sf_categories[file_type].values():
+            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                    if not self.__bmrb_only:
+                for tag in sf_data.tags:
+                    if isinstance(tag[1], str) and len(tag[1]) == 0:
+                        tags_with_null_str.append('_' + sf_category + '.' + tag[0])
+                        tag[1] = '.'
 
-                        if file_type == 'nef':
-                            warn = f"Ignored third party software's saveframe {sf_category!r}."
-                        else:
-                            warn = f"Ignored saveframe category {sf_category!r}."
+        if len(tags_with_null_str) > 0:
 
-                        self.report.warning.appendDescription('skipped_saveframe_category',
-                                                              {'file_name': file_name, 'sf_category': sf_category,
-                                                               'description': warn})
-                        self.report.setWarning()
+            warn = f"Empty strings for {tags_with_null_str} are not allowed as values. Use a '.' or a '?' if needed."
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+            self.report.warning.appendDescription('corrected_format_issue',
+                                                  {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
 
-            # initialize loop counter
-            lp_counts = {t: 0 for t in self.nmr_content_subtypes}
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
 
-            # increment loop counter of each content subtype
-            for lp_category in self.__lp_category_list:
+        for sf_category in self.__sf_category_list:
 
-                if lp_category in self.lp_categories[file_type].values():
-                    lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
+            if file_type == 'nmr-star' and sf_category == 'entity':
+                self.__has_star_entity = True
 
-            content_subtype = 'poly_seq'
+            if sf_category is not None and sf_category not in self.sf_categories[file_type].values():
 
-            lp_category = self.lp_categories[file_type][content_subtype]
+                if not self.__bmrb_only:
 
-            if lp_counts[content_subtype] == 0:
-
-                if not self.__has_star_entity and self.__combined_mode:
-
-                    if self.__resolve_conflict and self.__update_poly_seq:  # DAOTHER-6694
-                        warn = f"A saveframe with a category {lp_category!r} is missing in the NMR data."
-
-                        self.report.warning.appendDescription('missing_saveframe',
-                                                              {'file_name': file_name, 'description': warn})
-                        self.report.setWarning()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
-
+                    if file_type == 'nef':
+                        warn = f"Ignored third party software's saveframe {sf_category!r}."
                     else:
-                        err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
+                        warn = f"Ignored saveframe category {sf_category!r}."
 
-                        self.report.error.appendDescription('missing_mandatory_content',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                    self.report.warning.appendDescription('skipped_saveframe_category',
+                                                          {'file_name': file_name, 'sf_category': sf_category,
+                                                           'description': warn})
+                    self.report.setWarning()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
 
-                elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0 and content_type != 'nmr-restraints':
+        # initialize loop counter
+        lp_counts = {t: 0 for t in self.nmr_content_subtypes}
+
+        # increment loop counter of each content subtype
+        for lp_category in self.__lp_category_list:
+
+            if lp_category in self.lp_categories[file_type].values():
+                lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
+
+        content_subtype = 'poly_seq'
+
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        if lp_counts[content_subtype] == 0:
+
+            if not self.__has_star_entity and self.__combined_mode:
+
+                if self.__resolve_conflict and self.__update_poly_seq:  # DAOTHER-6694
+                    warn = f"A saveframe with a category {lp_category!r} is missing in the NMR data."
+
+                    self.report.warning.appendDescription('missing_saveframe',
+                                                          {'file_name': file_name, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+
+                else:
                     err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
 
                     self.report.error.appendDescription('missing_mandatory_content',
@@ -6489,109 +6488,117 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
 
-            elif lp_counts[content_subtype] > 1:
-
-                err = f"Unexpectedly, multiple saveframes having {lp_category!r} category exist."
-
-                self.report.error.appendDescription('format_issue',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
-
-            content_subtype = 'chem_shift'
-
-            if lp_counts[content_subtype] == 0 and self.__combined_mode:
-
-                sf_category = self.sf_categories[file_type][content_subtype]
-                lp_category = self.lp_categories[file_type][content_subtype]
-
-                err = f"The mandatory saveframe with a category {sf_category!r} is missing, "\
-                    f"Deposition of assigned chemical shifts is mandatory. Please re-upload the {file_type.upper()} file."
+            elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0 and content_type != 'nmr-restraints':
+                err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
 
                 self.report.error.appendDescription('missing_mandatory_content',
                                                     {'file_name': file_name, 'description': err})
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
 
-            if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints' and not self.__bmrb_only:
+        elif lp_counts[content_subtype] > 1:
 
-                err = "NMR restraint file includes assigned chemical shifts. "\
-                    f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+            err = f"Unexpectedly, multiple saveframes having {lp_category!r} category exist."
 
-                self.report.error.appendDescription('content_mismatch',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+            self.report.error.appendDescription('format_issue',
+                                                {'file_name': file_name, 'description': err})
+            self.report.setError()
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
 
-            content_subtype = 'dist_restraint'
+        content_subtype = 'chem_shift'
 
-            if lp_counts[content_subtype] == 0 and self.__combined_mode:
+        if lp_counts[content_subtype] == 0 and self.__combined_mode:
 
-                sf_category = self.sf_categories[file_type][content_subtype]
-                lp_category = self.lp_categories[file_type][content_subtype]
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-                err = f"The mandatory saveframe with a category {sf_category!r} is missing, "\
-                    f"Deposition of distance restraints is mandatory. Please re-upload the {file_type.upper()} file."
+            err = f"The mandatory saveframe with a category {sf_category!r} is missing, "\
+                f"Deposition of assigned chemical shifts is mandatory. Please re-upload the {file_type.upper()} file."
 
-                self.report.error.appendDescription('missing_mandatory_content',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+            self.report.error.appendDescription('missing_mandatory_content',
+                                                {'file_name': file_name, 'description': err})
+            self.report.setError()
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
 
-            if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint'])\
-               and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
+        if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints' and not self.__bmrb_only:
 
-                err = "The assigned chemical shift file includes NMR restraints. "\
-                    f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+            err = "NMR restraint file includes assigned chemical shifts. "\
+                f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
 
-                self.report.error.appendDescription('content_mismatch',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+            self.report.error.appendDescription('content_mismatch',
+                                                {'file_name': file_name, 'description': err})
+            self.report.setError()
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
 
-            has_spectral_peak = lp_counts['spectral_peak'] + lp_counts['spectral_peak_alt'] > 0
+        content_subtype = 'dist_restraint'
 
-            if not has_spectral_peak and self.__combined_mode:
+        if lp_counts[content_subtype] == 0 and self.__combined_mode:
 
-                warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, "\
-                    "in particular those generated from NOESY spectra."
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-                self.report.warning.appendDescription('encouragement',
-                                                      {'file_name': file_name, 'description': warn})
-                self.report.setWarning()
+            err = f"The mandatory saveframe with a category {sf_category!r} is missing, "\
+                f"Deposition of distance restraints is mandatory. Please re-upload the {file_type.upper()} file."
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+            self.report.error.appendDescription('missing_mandatory_content',
+                                                {'file_name': file_name, 'description': err})
+            self.report.setError()
 
-            if has_spectral_peak and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
 
-                err = "The assigned chemical shift file includes spectral peak lists. "\
-                    f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+        if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint'])\
+           and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
 
-                self.report.error.appendDescription('content_mismatch',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+            err = "The assigned chemical shift file includes NMR restraints. "\
+                f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+            self.report.error.appendDescription('content_mismatch',
+                                                {'file_name': file_name, 'description': err})
+            self.report.setError()
 
-            content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
 
-            input_source.setItemValue('content_subtype', content_subtypes)
+        has_spectral_peak = lp_counts['spectral_peak'] + lp_counts['spectral_peak_alt'] > 0
 
-        return not self.report.isError()
+        if not has_spectral_peak and self.__combined_mode:
+
+            warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, "\
+                "in particular those generated from NOESY spectra."
+
+            self.report.warning.appendDescription('encouragement',
+                                                  {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+
+        if has_spectral_peak and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
+
+            err = "The assigned chemical shift file includes spectral peak lists. "\
+                f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+
+            self.report.error.appendDescription('content_mismatch',
+                                                {'file_name': file_name, 'description': err})
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+
+        content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
+
+        input_source.setItemValue('content_subtype', content_subtypes)
 
     def __detectContentSubTypeOfLegacyMR(self):
         """ Detect content subtype of legacy NMR restraint files.
@@ -6687,7 +6694,7 @@ class NmrDpUtility:
             has_plane_restraint = False
             has_hbond_restraint = False
             has_rdc_origins = False
-            has_peaks = False
+            has_spectral_peak = False
 
             has_coordinate = False
             has_amb_coord = False
@@ -7484,7 +7491,7 @@ class NmrDpUtility:
                                     has_header = True
                                 continue
                             if is_peak_list(line, has_header):
-                                has_peaks = True
+                                has_spectral_peak = True
                             break
 
                     with open(file_path, 'r', encoding='utf-8') as ifp:
@@ -7816,7 +7823,7 @@ class NmrDpUtility:
             elif has_chem_shift:
                 has_chem_shift = False
 
-            if has_peaks:
+            if has_spectral_peak:
 
                 err = f"The {mr_format_name} restraint file includes spectral peak list. "\
                     "Did you accidentally select the wrong format? Please re-upload the file as spectral peak list file."
@@ -8062,8 +8069,9 @@ class NmrDpUtility:
 
             self.__remediation_loop_count += 1
 
-            if self.__remediation_loop_count > 5:
-                print(self.__inputParamDictCopy)
+            if self.__mr_debug:
+                if self.__remediation_loop_count > 5:
+                    print(self.__inputParamDictCopy)
 
         return not self.report.isError()
 
@@ -10716,6 +10724,10 @@ class NmrDpUtility:
 
                         insert_index = self.__file_path_list_len
 
+                        if insert_index > len(self.__star_data):
+                            self.__star_data.append(None)
+                            self.__star_data_type.append(None)
+
                         self.report.insertInputSource(insert_index)
 
                         self.__file_path_list_len += 1
@@ -10800,7 +10812,7 @@ class NmrDpUtility:
                                     self.__rescueImmatureStr(insert_index)
 
                                 if _is_done:
-                                    self.__detectContentSubType()
+                                    self.__detectContentSubType__(insert_index, input_source)
 
                         elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                             pass
@@ -10874,6 +10886,10 @@ class NmrDpUtility:
                         self.__inputParamDict[mr_file_path_list].append(mrPath)
 
                     insert_index = self.__file_path_list_len
+
+                    if insert_index > len(self.__star_data):
+                        self.__star_data.append(None)
+                        self.__star_data_type.append(None)
 
                     self.report.insertInputSource(insert_index)
 
@@ -10959,7 +10975,7 @@ class NmrDpUtility:
                                 self.__rescueImmatureStr(insert_index)
 
                             if _is_done:
-                                self.__detectContentSubType()
+                                self.__detectContentSubType__(insert_index, input_source)
 
                     elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                         pass
@@ -11369,7 +11385,7 @@ class NmrDpUtility:
                     if designated:
                         continue
 
-                    has_peaks = False
+                    has_spectral_peak = False
 
                     with open(dst_file, 'r') as ifp:
                         has_header = False
@@ -11379,7 +11395,7 @@ class NmrDpUtility:
                                     has_header = True
                                 continue
                             if is_peak_list(line, has_header):
-                                has_peaks = True
+                                has_spectral_peak = True
 
                                 shutil.copyfile(dst_file, ign_pk_file)
 
@@ -11391,7 +11407,7 @@ class NmrDpUtility:
 
                             break
 
-                    if has_peaks:
+                    if has_spectral_peak:
                         continue
 
                     if has_str_format or has_cif_format:
@@ -11437,6 +11453,10 @@ class NmrDpUtility:
                                 self.__inputParamDict[mr_file_path_list].append(mrPath)
 
                             insert_index = self.__file_path_list_len
+
+                            if insert_index > len(self.__star_data):
+                                self.__star_data.append(None)
+                                self.__star_data_type.append(None)
 
                             self.report.insertInputSource(insert_index)
 
@@ -11522,7 +11542,7 @@ class NmrDpUtility:
                                         self.__rescueImmatureStr(insert_index)
 
                                     if _is_done:
-                                        self.__detectContentSubType()
+                                        self.__detectContentSubType__(insert_index, input_source)
 
                             elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                                 pass
@@ -11555,6 +11575,10 @@ class NmrDpUtility:
                                 self.__inputParamDict[mr_file_path_list].append(mrPath)
 
                             insert_index = self.__file_path_list_len
+
+                            if insert_index > len(self.__star_data):
+                                self.__star_data.append(None)
+                                self.__star_data_type.append(None)
 
                             self.report.insertInputSource(insert_index)
 
@@ -11819,6 +11843,7 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
 
         len_peak_file_list = len(peak_file_list)
+        has_spectral_peak = len_peak_file_list > 0
 
         if len(split_file_list) > 0:
             self.__inputParamDict[ar_file_path_list].extend(split_file_list)
@@ -11837,44 +11862,73 @@ class NmrDpUtility:
 
         else:
 
-            touch_file = os.path.join(dir_path, '.entry_without_mr')
-            if not os.path.exists(touch_file):
-                with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
-                    ofp.write('')
+            has_restraint = False
 
-            hint = ' or is not recognized properly'
+            for fileListId in range(self.__file_path_list_len):
+
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
+
+                file_name = input_source_dic['file_name']
+                file_type = input_source_dic['file_type']
+                content_type = input_source_dic['content_type']
+
+                if content_type != 'nmr-restraints':
+                    continue
+
+                content_subtype = input_source_dic['content_subtype']
+
+                if content_subtype is None:
+                    continue
+
+                if 'dist_restraint' in content_subtype or 'dihed_restraint' in content_subtype or 'rdc_restraint' in content_subtype:
+                    has_restraint = True
+
+                if 'spectral_peak' in content_subtype or 'spectral_peak_alt' in content_subtype:
+                    has_spectral_peak = True
+
+            if not has_restraint:
+
+                touch_file = os.path.join(dir_path, '.entry_without_mr')
+                if not os.path.exists(touch_file):
+                    with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
+                        ofp.write('')
+
+                hint = ' or is not recognized properly'
+
+                if len_peak_file_list > 0:
+                    hint = f', except for {len_peak_file_list} peak list file(s)'
+
+                err = f"NMR restraint file contains no restraints{hint}. "\
+                    "Please re-upload the NMR restraint file."
+
+                self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                             {'file_name': mr_file_name, 'description': err}})
+
+                # self.report.error.appendDescription('content_mismatch',
+                #                                     {'file_name': file_name, 'description': err})
+                # self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+
+        if has_spectral_peak:
 
             if len_peak_file_list > 0:
-                hint = f', except for {len_peak_file_list} peak list file(s)'
 
-            err = f"NMR restraint file contains no restraints{hint}. "\
-                "Please re-upload the NMR restraint file."
+                self.__inputParamDict[ar_file_path_list].extend(peak_file_list)
 
-            self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                         {'file_name': mr_file_name, 'description': err}})
+                for _ar in peak_file_list:
 
-            # self.report.error.appendDescription('content_mismatch',
-            #                                     {'file_name': file_name, 'description': err})
-            # self.report.setError()
+                    self.report.appendInputSource()
 
-            if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractPublicMRFileIntoLegacyMR() ++ Error  - {err}\n")
+                    input_source = self.report.input_sources[-1]
 
-        if len_peak_file_list > 0:
-
-            self.__inputParamDict[ar_file_path_list].extend(peak_file_list)
-
-            for _ar in peak_file_list:
-
-                self.report.appendInputSource()
-
-                input_source = self.report.input_sources[-1]
-
-                input_source.setItemValue('file_name', os.path.basename(_ar['file_name']))
-                input_source.setItemValue('file_type', _ar['file_type'])
-                input_source.setItemValue('content_type', 'nmr-peaks')
-                if 'original_file_name' in _ar:
-                    input_source.setItemValue('original_file_name', os.path.basename(_ar['original_file_name']))
+                    input_source.setItemValue('file_name', os.path.basename(_ar['file_name']))
+                    input_source.setItemValue('file_type', _ar['file_type'])
+                    input_source.setItemValue('content_type', 'nmr-peaks')
+                    if 'original_file_name' in _ar:
+                        input_source.setItemValue('original_file_name', os.path.basename(_ar['original_file_name']))
 
             touch_file = os.path.join(dir_path, '.entry_with_pk')
             if not os.path.exists(touch_file):

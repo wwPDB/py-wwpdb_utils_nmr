@@ -33363,7 +33363,7 @@ class NmrDpUtility:
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return none
 
-        seq_key = (nmr_chain_id, nmr_seq_id)
+        seq_key = (nmr_chain_id, nmr_seq_id, 'VAL')
 
         if seq_key in self.__coord_rotamer:
             return self.__coord_rotamer[seq_key]
@@ -33472,7 +33472,7 @@ class NmrDpUtility:
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return none
 
-        seq_key = (nmr_chain_id, nmr_seq_id)
+        seq_key = (nmr_chain_id, nmr_seq_id, 'LEU')
 
         if seq_key in self.__coord_rotamer:
             return self.__coord_rotamer[seq_key]
@@ -33602,7 +33602,7 @@ class NmrDpUtility:
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return none
 
-        seq_key = (nmr_chain_id, nmr_seq_id)
+        seq_key = (nmr_chain_id, nmr_seq_id, 'ILE')
 
         if seq_key in self.__coord_rotamer:
             return self.__coord_rotamer[seq_key]

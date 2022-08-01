@@ -9542,7 +9542,8 @@ class NmrDpUtility:
 
                     else:
                         os.remove(div_src_file)
-                        os.remove(div_ext_file)
+                        if os.path.exists(div_ext_file):
+                            os.remove(div_ext_file)
                         os.remove(div_try_file)
 
                     if self.__mr_debug:

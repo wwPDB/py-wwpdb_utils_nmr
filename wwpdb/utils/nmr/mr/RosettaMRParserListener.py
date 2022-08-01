@@ -289,7 +289,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                if 'Atom not found' in self.warningMessage:
+                if 'Atom not found' in self.warningMessage and self.__reasons is None:
 
                     seqIdRemap = []
 

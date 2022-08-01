@@ -1275,7 +1275,7 @@ class NmrDpReport:
             return None
 
         if not (cif_beg_seq_id in poly_seq['seq_id'] and cif_end_seq_id in poly_seq['seq_id'] and label_scheme)\
-           and not('auth_seq_id' in poly_seq and cif_beg_seq_id in poly_seq['auth_seq_id'] and cif_end_seq_id in poly_seq['auth_seq_id'] and not label_scheme):
+           and not ('auth_seq_id' in poly_seq and cif_beg_seq_id in poly_seq['auth_seq_id'] and cif_end_seq_id in poly_seq['auth_seq_id'] and not label_scheme):
             return None
 
         if label_scheme:

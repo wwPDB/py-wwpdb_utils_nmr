@@ -7753,7 +7753,7 @@ class NmrDpUtility:
                                 ar['is_valid'] = True
 
                 elif file_type == 'nm-res-oth':
-                    if not(self.__remediation_mode and file_path.endswith('-div_ext.mr')):
+                    if not (self.__remediation_mode and file_path.endswith('-div_ext.mr')):
                         ar['format_mismatch'], _, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMR(file_path, file_name, file_type, [])
 
             except ValueError as e:
@@ -8347,13 +8347,13 @@ class NmrDpUtility:
 
         reader = prev_input = next_input = None
 
-        if not(xplor_missing_end or xplor_ends_wo_statement
-               or xplor_l_paren_wo_assi or xplor_00_origin
-               or amber_missing_end or amber_ends_wo_statement
-               or concat_xplor_assi or concat_xplor_rest or concat_xplor_set
-               or concat_amber_rst
-               or concat_gromacs_tag
-               or concat_comment):
+        if not (xplor_missing_end or xplor_ends_wo_statement
+                or xplor_l_paren_wo_assi or xplor_00_origin
+                or amber_missing_end or amber_ends_wo_statement
+                or concat_xplor_assi or concat_xplor_rest or concat_xplor_set
+                or concat_amber_rst
+                or concat_gromacs_tag
+                or concat_comment):
 
             if err_column_position > 0 and not err_input[0:err_column_position].isspace():
                 test_line = err_input[0:err_column_position]
@@ -8972,7 +8972,7 @@ class NmrDpUtility:
 
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
-                if not has_lexer_error and (prev_input is None or not(prev_input.isspace() or bool(comment_pattern.match(prev_input)))):
+                if not has_lexer_error and (prev_input is None or not (prev_input.isspace() or bool(comment_pattern.match(prev_input)))):
 
                     if err_column_position == 0 and file_type not in linear_mr_file_types:
 
@@ -9006,7 +9006,7 @@ class NmrDpUtility:
 
                                 with open(div_dst_file, 'r') as ifp:
                                     for line in ifp:
-                                        if k > 0 and not(line.isspace() or bool(comment_pattern.match(line))):
+                                        if k > 0 and not (line.isspace() or bool(comment_pattern.match(line))):
                                             listener, parser_err_listener, lexer_err_listener = test_reader.parse(line, None, isFilePath=False)
                                             has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                                             has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
@@ -29747,7 +29747,7 @@ class NmrDpUtility:
 
             except ValueError as e:
 
-                if not(content_subtype == 'non_poly' and alias):
+                if not (content_subtype == 'non_poly' and alias):
                     self.report.error.appendDescription('invalid_data',
                                                         {'file_name': file_name, 'category': lp_category,
                                                          'description': str(e).strip("'")})

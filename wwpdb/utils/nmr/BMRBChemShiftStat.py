@@ -295,7 +295,7 @@ class BMRBChemShiftStat:
             max_score = 0
             for _comp_id in self.__all_comp_ids:
                 peptide_like, nucleotide_like, carbohydrate_like = self.getTypeOfCompId(_comp_id)
-                if not(peptide_like or nucleotide_like or carbohydrate_like):
+                if not (peptide_like or nucleotide_like or carbohydrate_like):
                     _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
                     conflict = len(atom_id_set - _atom_id_set)
                     unmapped = len(_atom_id_set - atom_id_set)
@@ -875,9 +875,9 @@ class BMRBChemShiftStat:
 
                         atm_list.append(_row)
 
-                elif not((comp_id == 'HEM' and re.match(r'^HM[A-D][AB]$', _atom_id) is not None)
-                         or (comp_id == 'HEB' and (re.match(r'^HM[A-D][23]$', _atom_id) is not None or re.match(r'^HBB[23]', _atom_id) is not None))
-                         or (comp_id == 'HEC' and (re.match(r'^HM[A-D][123]$', _atom_id) is not None or re.match(r'^HB[BC][123]$', _atom_id) is not None))):
+                elif not ((comp_id == 'HEM' and re.match(r'^HM[A-D][AB]$', _atom_id) is not None)
+                          or (comp_id == 'HEB' and (re.match(r'^HM[A-D][23]$', _atom_id) is not None or re.match(r'^HBB[23]', _atom_id) is not None))
+                          or (comp_id == 'HEC' and (re.match(r'^HM[A-D][123]$', _atom_id) is not None or re.match(r'^HB[BC][123]$', _atom_id) is not None))):
                     _row = {}
                     _row['comp_id'] = comp_id
                     _row['atom_id'] = _atom_id

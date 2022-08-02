@@ -78,7 +78,7 @@ rdc_parameter:
 rdc_restraint:
 	Integer Simple_name Simple_name
 	Integer Simple_name Simple_name
-	number number number Integer;
+	number number number Integer number?;
 
 /* CYANA 3.0 Reference Manual - Pseudocontact shift restraint file
  See also http://www.cyana.org/wiki/index.php/Pseudocontact_shift_restraint_file

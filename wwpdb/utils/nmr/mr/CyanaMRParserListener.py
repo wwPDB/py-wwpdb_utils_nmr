@@ -2423,6 +2423,8 @@ class CyanaMRParserListener(ParseTreeListener):
             error = abs(self.numberSelection[1])
             weight = self.numberSelection[2]
             orientation = int(str(ctx.Integer(2)))
+            # if len(self.numberSelection) > 3:
+            #    scale = self.numberSelection[3]
 
             if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\

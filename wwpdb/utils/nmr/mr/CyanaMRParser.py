@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,42,460,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,42,462,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
         7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
@@ -23,49 +23,49 @@ def serializedATN():
         8,2,1,3,4,3,137,8,3,11,3,12,3,138,1,4,1,4,1,4,1,4,1,4,1,4,3,4,147,
         8,4,1,4,1,4,1,4,3,4,152,8,4,1,4,3,4,155,8,4,1,5,4,5,158,8,5,11,5,
         12,5,159,1,5,4,5,163,8,5,11,5,12,5,164,1,6,1,6,1,6,1,6,1,6,1,7,1,
-        7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,8,4,8,184,8,8,11,8,12,8,
-        185,1,8,4,8,189,8,8,11,8,12,8,190,1,9,1,9,1,9,1,9,1,9,1,10,1,10,
-        1,10,1,10,1,10,1,10,1,10,1,10,1,11,4,11,207,8,11,11,11,12,11,208,
-        1,12,1,12,1,12,1,12,1,12,1,12,1,12,4,12,218,8,12,11,12,12,12,219,
-        1,13,4,13,223,8,13,11,13,12,13,224,1,14,1,14,1,14,1,14,1,14,1,14,
-        1,14,1,14,1,14,4,14,236,8,14,11,14,12,14,237,1,15,4,15,241,8,15,
-        11,15,12,15,242,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,
-        4,16,255,8,16,11,16,12,16,256,1,17,4,17,260,8,17,11,17,12,17,261,
-        1,18,1,18,1,18,1,18,1,18,1,18,1,18,4,18,271,8,18,11,18,12,18,272,
-        1,19,4,19,276,8,19,11,19,12,19,277,1,20,1,20,1,20,1,20,1,20,1,20,
-        1,20,1,20,1,20,4,20,289,8,20,11,20,12,20,290,1,21,4,21,294,8,21,
-        11,21,12,21,295,1,22,1,22,1,22,1,22,1,22,1,22,1,22,1,22,1,22,1,22,
-        4,22,308,8,22,11,22,12,22,309,1,23,4,23,313,8,23,11,23,12,23,314,
-        1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,3,24,327,8,24,
-        1,24,3,24,330,8,24,1,25,4,25,333,8,25,11,25,12,25,334,1,26,1,26,
-        1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,3,26,347,8,26,1,26,3,26,
-        350,8,26,1,27,4,27,353,8,27,11,27,12,27,354,1,28,1,28,1,28,1,28,
-        1,28,1,28,1,28,1,28,1,28,1,28,3,28,367,8,28,1,28,3,28,370,8,28,1,
-        29,4,29,373,8,29,11,29,12,29,374,1,30,1,30,1,30,1,30,1,30,1,30,3,
-        30,383,8,30,1,30,3,30,386,8,30,1,30,3,30,389,8,30,1,30,3,30,392,
-        8,30,1,30,3,30,395,8,30,1,31,1,31,1,31,1,32,1,32,1,32,1,32,1,32,
-        1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,33,1,33,1,33,
-        1,33,1,33,1,33,1,34,1,34,1,34,4,34,424,8,34,11,34,12,34,425,1,35,
-        1,35,1,35,1,35,4,35,432,8,35,11,35,12,35,433,1,35,1,35,1,36,1,36,
-        1,36,4,36,441,8,36,11,36,12,36,442,1,37,1,37,1,37,1,37,1,37,4,37,
-        450,8,37,11,37,12,37,451,1,37,1,37,1,38,1,38,1,39,1,39,1,39,0,0,
-        40,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,
-        44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,0,3,2,0,35,
-        35,37,37,1,0,2,3,2,0,1,1,19,19,485,0,103,1,0,0,0,2,109,1,0,0,0,4,
-        113,1,0,0,0,6,136,1,0,0,0,8,140,1,0,0,0,10,157,1,0,0,0,12,166,1,
-        0,0,0,14,171,1,0,0,0,16,183,1,0,0,0,18,192,1,0,0,0,20,197,1,0,0,
-        0,22,206,1,0,0,0,24,210,1,0,0,0,26,222,1,0,0,0,28,226,1,0,0,0,30,
-        240,1,0,0,0,32,244,1,0,0,0,34,259,1,0,0,0,36,263,1,0,0,0,38,275,
-        1,0,0,0,40,279,1,0,0,0,42,293,1,0,0,0,44,297,1,0,0,0,46,312,1,0,
-        0,0,48,316,1,0,0,0,50,332,1,0,0,0,52,336,1,0,0,0,54,352,1,0,0,0,
-        56,356,1,0,0,0,58,372,1,0,0,0,60,376,1,0,0,0,62,396,1,0,0,0,64,399,
-        1,0,0,0,66,414,1,0,0,0,68,420,1,0,0,0,70,427,1,0,0,0,72,437,1,0,
-        0,0,74,444,1,0,0,0,76,455,1,0,0,0,78,457,1,0,0,0,80,102,5,4,0,0,
-        81,102,5,5,0,0,82,102,3,2,1,0,83,102,3,22,11,0,84,102,3,26,13,0,
-        85,102,3,30,15,0,86,102,3,34,17,0,87,102,3,38,19,0,88,102,3,42,21,
-        0,89,102,3,46,23,0,90,102,3,50,25,0,91,102,3,54,27,0,92,102,3,6,
-        3,0,93,102,3,10,5,0,94,102,3,16,8,0,95,102,3,58,29,0,96,102,3,62,
-        31,0,97,102,3,64,32,0,98,102,3,66,33,0,99,102,3,68,34,0,100,102,
+        7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,3,7,183,8,7,1,8,4,8,186,8,
+        8,11,8,12,8,187,1,8,4,8,191,8,8,11,8,12,8,192,1,9,1,9,1,9,1,9,1,
+        9,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,11,4,11,209,8,11,11,
+        11,12,11,210,1,12,1,12,1,12,1,12,1,12,1,12,1,12,4,12,220,8,12,11,
+        12,12,12,221,1,13,4,13,225,8,13,11,13,12,13,226,1,14,1,14,1,14,1,
+        14,1,14,1,14,1,14,1,14,1,14,4,14,238,8,14,11,14,12,14,239,1,15,4,
+        15,243,8,15,11,15,12,15,244,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,
+        16,1,16,1,16,4,16,257,8,16,11,16,12,16,258,1,17,4,17,262,8,17,11,
+        17,12,17,263,1,18,1,18,1,18,1,18,1,18,1,18,1,18,4,18,273,8,18,11,
+        18,12,18,274,1,19,4,19,278,8,19,11,19,12,19,279,1,20,1,20,1,20,1,
+        20,1,20,1,20,1,20,1,20,1,20,4,20,291,8,20,11,20,12,20,292,1,21,4,
+        21,296,8,21,11,21,12,21,297,1,22,1,22,1,22,1,22,1,22,1,22,1,22,1,
+        22,1,22,1,22,4,22,310,8,22,11,22,12,22,311,1,23,4,23,315,8,23,11,
+        23,12,23,316,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,3,
+        24,329,8,24,1,24,3,24,332,8,24,1,25,4,25,335,8,25,11,25,12,25,336,
+        1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,3,26,349,8,26,
+        1,26,3,26,352,8,26,1,27,4,27,355,8,27,11,27,12,27,356,1,28,1,28,
+        1,28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,3,28,369,8,28,1,28,3,28,
+        372,8,28,1,29,4,29,375,8,29,11,29,12,29,376,1,30,1,30,1,30,1,30,
+        1,30,1,30,3,30,385,8,30,1,30,3,30,388,8,30,1,30,3,30,391,8,30,1,
+        30,3,30,394,8,30,1,30,3,30,397,8,30,1,31,1,31,1,31,1,32,1,32,1,32,
+        1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,33,
+        1,33,1,33,1,33,1,33,1,33,1,34,1,34,1,34,4,34,426,8,34,11,34,12,34,
+        427,1,35,1,35,1,35,1,35,4,35,434,8,35,11,35,12,35,435,1,35,1,35,
+        1,36,1,36,1,36,4,36,443,8,36,11,36,12,36,444,1,37,1,37,1,37,1,37,
+        1,37,4,37,452,8,37,11,37,12,37,453,1,37,1,37,1,38,1,38,1,39,1,39,
+        1,39,0,0,40,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,
+        38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,0,
+        3,2,0,35,35,37,37,1,0,2,3,2,0,1,1,19,19,488,0,103,1,0,0,0,2,109,
+        1,0,0,0,4,113,1,0,0,0,6,136,1,0,0,0,8,140,1,0,0,0,10,157,1,0,0,0,
+        12,166,1,0,0,0,14,171,1,0,0,0,16,185,1,0,0,0,18,194,1,0,0,0,20,199,
+        1,0,0,0,22,208,1,0,0,0,24,212,1,0,0,0,26,224,1,0,0,0,28,228,1,0,
+        0,0,30,242,1,0,0,0,32,246,1,0,0,0,34,261,1,0,0,0,36,265,1,0,0,0,
+        38,277,1,0,0,0,40,281,1,0,0,0,42,295,1,0,0,0,44,299,1,0,0,0,46,314,
+        1,0,0,0,48,318,1,0,0,0,50,334,1,0,0,0,52,338,1,0,0,0,54,354,1,0,
+        0,0,56,358,1,0,0,0,58,374,1,0,0,0,60,378,1,0,0,0,62,398,1,0,0,0,
+        64,401,1,0,0,0,66,416,1,0,0,0,68,422,1,0,0,0,70,429,1,0,0,0,72,439,
+        1,0,0,0,74,446,1,0,0,0,76,457,1,0,0,0,78,459,1,0,0,0,80,102,5,4,
+        0,0,81,102,5,5,0,0,82,102,3,2,1,0,83,102,3,22,11,0,84,102,3,26,13,
+        0,85,102,3,30,15,0,86,102,3,34,17,0,87,102,3,38,19,0,88,102,3,42,
+        21,0,89,102,3,46,23,0,90,102,3,50,25,0,91,102,3,54,27,0,92,102,3,
+        6,3,0,93,102,3,10,5,0,94,102,3,16,8,0,95,102,3,58,29,0,96,102,3,
+        62,31,0,97,102,3,64,32,0,98,102,3,66,33,0,99,102,3,68,34,0,100,102,
         3,72,36,0,101,80,1,0,0,0,101,81,1,0,0,0,101,82,1,0,0,0,101,83,1,
         0,0,0,101,84,1,0,0,0,101,85,1,0,0,0,101,86,1,0,0,0,101,87,1,0,0,
         0,101,88,1,0,0,0,101,89,1,0,0,0,101,90,1,0,0,0,101,91,1,0,0,0,101,
@@ -94,88 +94,89 @@ def serializedATN():
         3,0,0,169,170,5,2,0,0,170,13,1,0,0,0,171,172,5,2,0,0,172,173,5,19,
         0,0,173,174,5,19,0,0,174,175,5,2,0,0,175,176,5,19,0,0,176,177,5,
         19,0,0,177,178,3,76,38,0,178,179,3,76,38,0,179,180,3,76,38,0,180,
-        181,5,2,0,0,181,15,1,0,0,0,182,184,3,18,9,0,183,182,1,0,0,0,184,
-        185,1,0,0,0,185,183,1,0,0,0,185,186,1,0,0,0,186,188,1,0,0,0,187,
-        189,3,20,10,0,188,187,1,0,0,0,189,190,1,0,0,0,190,188,1,0,0,0,190,
-        191,1,0,0,0,191,17,1,0,0,0,192,193,5,2,0,0,193,194,5,3,0,0,194,195,
-        5,3,0,0,195,196,5,2,0,0,196,19,1,0,0,0,197,198,5,2,0,0,198,199,5,
-        19,0,0,199,200,5,19,0,0,200,201,3,76,38,0,201,202,3,76,38,0,202,
-        203,3,76,38,0,203,204,5,2,0,0,204,21,1,0,0,0,205,207,3,24,12,0,206,
-        205,1,0,0,0,207,208,1,0,0,0,208,206,1,0,0,0,208,209,1,0,0,0,209,
-        23,1,0,0,0,210,211,5,2,0,0,211,217,5,19,0,0,212,213,5,19,0,0,213,
-        214,5,2,0,0,214,215,5,19,0,0,215,216,5,19,0,0,216,218,3,76,38,0,
-        217,212,1,0,0,0,218,219,1,0,0,0,219,217,1,0,0,0,219,220,1,0,0,0,
-        220,25,1,0,0,0,221,223,3,28,14,0,222,221,1,0,0,0,223,224,1,0,0,0,
-        224,222,1,0,0,0,224,225,1,0,0,0,225,27,1,0,0,0,226,227,5,2,0,0,227,
-        235,5,19,0,0,228,229,5,19,0,0,229,230,5,2,0,0,230,231,5,19,0,0,231,
-        232,5,19,0,0,232,233,3,76,38,0,233,234,3,76,38,0,234,236,1,0,0,0,
-        235,228,1,0,0,0,236,237,1,0,0,0,237,235,1,0,0,0,237,238,1,0,0,0,
-        238,29,1,0,0,0,239,241,3,32,16,0,240,239,1,0,0,0,241,242,1,0,0,0,
-        242,240,1,0,0,0,242,243,1,0,0,0,243,31,1,0,0,0,244,245,5,2,0,0,245,
-        254,5,19,0,0,246,247,5,19,0,0,247,248,5,2,0,0,248,249,5,19,0,0,249,
-        250,5,19,0,0,250,251,3,76,38,0,251,252,3,76,38,0,252,253,3,76,38,
-        0,253,255,1,0,0,0,254,246,1,0,0,0,255,256,1,0,0,0,256,254,1,0,0,
-        0,256,257,1,0,0,0,257,33,1,0,0,0,258,260,3,36,18,0,259,258,1,0,0,
-        0,260,261,1,0,0,0,261,259,1,0,0,0,261,262,1,0,0,0,262,35,1,0,0,0,
-        263,264,5,2,0,0,264,265,5,19,0,0,265,270,5,19,0,0,266,267,5,2,0,
-        0,267,268,5,19,0,0,268,269,5,19,0,0,269,271,3,76,38,0,270,266,1,
-        0,0,0,271,272,1,0,0,0,272,270,1,0,0,0,272,273,1,0,0,0,273,37,1,0,
-        0,0,274,276,3,40,20,0,275,274,1,0,0,0,276,277,1,0,0,0,277,275,1,
-        0,0,0,277,278,1,0,0,0,278,39,1,0,0,0,279,280,5,2,0,0,280,281,5,19,
-        0,0,281,288,5,19,0,0,282,283,5,2,0,0,283,284,5,19,0,0,284,285,5,
-        19,0,0,285,286,3,76,38,0,286,287,3,76,38,0,287,289,1,0,0,0,288,282,
-        1,0,0,0,289,290,1,0,0,0,290,288,1,0,0,0,290,291,1,0,0,0,291,41,1,
-        0,0,0,292,294,3,44,22,0,293,292,1,0,0,0,294,295,1,0,0,0,295,293,
-        1,0,0,0,295,296,1,0,0,0,296,43,1,0,0,0,297,298,5,2,0,0,298,299,5,
-        19,0,0,299,307,5,19,0,0,300,301,5,2,0,0,301,302,5,19,0,0,302,303,
-        5,19,0,0,303,304,3,76,38,0,304,305,3,76,38,0,305,306,3,76,38,0,306,
-        308,1,0,0,0,307,300,1,0,0,0,308,309,1,0,0,0,309,307,1,0,0,0,309,
-        310,1,0,0,0,310,45,1,0,0,0,311,313,3,48,24,0,312,311,1,0,0,0,313,
-        314,1,0,0,0,314,312,1,0,0,0,314,315,1,0,0,0,315,47,1,0,0,0,316,317,
-        5,2,0,0,317,318,5,19,0,0,318,319,5,19,0,0,319,320,5,19,0,0,320,321,
-        5,2,0,0,321,322,5,19,0,0,322,323,5,19,0,0,323,324,5,19,0,0,324,326,
-        3,76,38,0,325,327,3,76,38,0,326,325,1,0,0,0,326,327,1,0,0,0,327,
-        329,1,0,0,0,328,330,3,76,38,0,329,328,1,0,0,0,329,330,1,0,0,0,330,
-        49,1,0,0,0,331,333,3,52,26,0,332,331,1,0,0,0,333,334,1,0,0,0,334,
-        332,1,0,0,0,334,335,1,0,0,0,335,51,1,0,0,0,336,337,5,19,0,0,337,
-        338,5,2,0,0,338,339,5,19,0,0,339,340,5,19,0,0,340,341,5,19,0,0,341,
-        342,5,2,0,0,342,343,5,19,0,0,343,344,5,19,0,0,344,346,3,76,38,0,
-        345,347,3,76,38,0,346,345,1,0,0,0,346,347,1,0,0,0,347,349,1,0,0,
-        0,348,350,3,76,38,0,349,348,1,0,0,0,349,350,1,0,0,0,350,53,1,0,0,
-        0,351,353,3,56,28,0,352,351,1,0,0,0,353,354,1,0,0,0,354,352,1,0,
-        0,0,354,355,1,0,0,0,355,55,1,0,0,0,356,357,5,19,0,0,357,358,5,19,
-        0,0,358,359,5,2,0,0,359,360,5,19,0,0,360,361,5,19,0,0,361,362,5,
-        19,0,0,362,363,5,2,0,0,363,364,5,19,0,0,364,366,3,76,38,0,365,367,
-        3,76,38,0,366,365,1,0,0,0,366,367,1,0,0,0,367,369,1,0,0,0,368,370,
-        3,76,38,0,369,368,1,0,0,0,369,370,1,0,0,0,370,57,1,0,0,0,371,373,
-        3,60,30,0,372,371,1,0,0,0,373,374,1,0,0,0,374,372,1,0,0,0,374,375,
-        1,0,0,0,375,59,1,0,0,0,376,377,5,2,0,0,377,378,5,19,0,0,378,379,
-        5,19,0,0,379,380,5,19,0,0,380,382,3,76,38,0,381,383,3,76,38,0,382,
-        381,1,0,0,0,382,383,1,0,0,0,383,385,1,0,0,0,384,386,3,76,38,0,385,
-        384,1,0,0,0,385,386,1,0,0,0,386,388,1,0,0,0,387,389,3,76,38,0,388,
-        387,1,0,0,0,388,389,1,0,0,0,389,391,1,0,0,0,390,392,3,76,38,0,391,
-        390,1,0,0,0,391,392,1,0,0,0,392,394,1,0,0,0,393,395,3,76,38,0,394,
-        393,1,0,0,0,394,395,1,0,0,0,395,61,1,0,0,0,396,397,5,12,0,0,397,
-        398,5,13,0,0,398,63,1,0,0,0,399,400,5,14,0,0,400,401,5,24,0,0,401,
-        402,5,28,0,0,402,403,5,30,0,0,403,404,5,26,0,0,404,405,5,28,0,0,
-        405,406,5,29,0,0,406,407,5,25,0,0,407,408,5,28,0,0,408,409,5,30,
-        0,0,409,410,5,27,0,0,410,411,5,28,0,0,411,412,5,29,0,0,412,413,5,
-        32,0,0,413,65,1,0,0,0,414,415,5,15,0,0,415,416,5,19,0,0,416,417,
-        5,2,0,0,417,418,5,19,0,0,418,419,5,2,0,0,419,67,1,0,0,0,420,421,
-        5,16,0,0,421,423,5,19,0,0,422,424,3,70,35,0,423,422,1,0,0,0,424,
-        425,1,0,0,0,425,423,1,0,0,0,425,426,1,0,0,0,426,69,1,0,0,0,427,428,
-        5,17,0,0,428,429,5,37,0,0,429,431,5,38,0,0,430,432,5,37,0,0,431,
-        430,1,0,0,0,432,433,1,0,0,0,433,431,1,0,0,0,433,434,1,0,0,0,434,
-        435,1,0,0,0,435,436,5,40,0,0,436,71,1,0,0,0,437,438,5,16,0,0,438,
-        440,5,19,0,0,439,441,3,74,37,0,440,439,1,0,0,0,441,442,1,0,0,0,442,
-        440,1,0,0,0,442,443,1,0,0,0,443,73,1,0,0,0,444,445,5,18,0,0,445,
-        446,7,0,0,0,446,449,5,38,0,0,447,448,5,37,0,0,448,450,5,36,0,0,449,
-        447,1,0,0,0,450,451,1,0,0,0,451,449,1,0,0,0,451,452,1,0,0,0,452,
-        453,1,0,0,0,453,454,5,40,0,0,454,75,1,0,0,0,455,456,7,1,0,0,456,
-        77,1,0,0,0,457,458,7,2,0,0,458,79,1,0,0,0,47,101,103,111,121,124,
-        127,130,133,138,146,151,154,159,164,185,190,208,219,224,237,242,
-        256,261,272,277,290,295,309,314,326,329,334,346,349,354,366,369,
-        374,382,385,388,391,394,425,433,442,451
+        182,5,2,0,0,181,183,3,76,38,0,182,181,1,0,0,0,182,183,1,0,0,0,183,
+        15,1,0,0,0,184,186,3,18,9,0,185,184,1,0,0,0,186,187,1,0,0,0,187,
+        185,1,0,0,0,187,188,1,0,0,0,188,190,1,0,0,0,189,191,3,20,10,0,190,
+        189,1,0,0,0,191,192,1,0,0,0,192,190,1,0,0,0,192,193,1,0,0,0,193,
+        17,1,0,0,0,194,195,5,2,0,0,195,196,5,3,0,0,196,197,5,3,0,0,197,198,
+        5,2,0,0,198,19,1,0,0,0,199,200,5,2,0,0,200,201,5,19,0,0,201,202,
+        5,19,0,0,202,203,3,76,38,0,203,204,3,76,38,0,204,205,3,76,38,0,205,
+        206,5,2,0,0,206,21,1,0,0,0,207,209,3,24,12,0,208,207,1,0,0,0,209,
+        210,1,0,0,0,210,208,1,0,0,0,210,211,1,0,0,0,211,23,1,0,0,0,212,213,
+        5,2,0,0,213,219,5,19,0,0,214,215,5,19,0,0,215,216,5,2,0,0,216,217,
+        5,19,0,0,217,218,5,19,0,0,218,220,3,76,38,0,219,214,1,0,0,0,220,
+        221,1,0,0,0,221,219,1,0,0,0,221,222,1,0,0,0,222,25,1,0,0,0,223,225,
+        3,28,14,0,224,223,1,0,0,0,225,226,1,0,0,0,226,224,1,0,0,0,226,227,
+        1,0,0,0,227,27,1,0,0,0,228,229,5,2,0,0,229,237,5,19,0,0,230,231,
+        5,19,0,0,231,232,5,2,0,0,232,233,5,19,0,0,233,234,5,19,0,0,234,235,
+        3,76,38,0,235,236,3,76,38,0,236,238,1,0,0,0,237,230,1,0,0,0,238,
+        239,1,0,0,0,239,237,1,0,0,0,239,240,1,0,0,0,240,29,1,0,0,0,241,243,
+        3,32,16,0,242,241,1,0,0,0,243,244,1,0,0,0,244,242,1,0,0,0,244,245,
+        1,0,0,0,245,31,1,0,0,0,246,247,5,2,0,0,247,256,5,19,0,0,248,249,
+        5,19,0,0,249,250,5,2,0,0,250,251,5,19,0,0,251,252,5,19,0,0,252,253,
+        3,76,38,0,253,254,3,76,38,0,254,255,3,76,38,0,255,257,1,0,0,0,256,
+        248,1,0,0,0,257,258,1,0,0,0,258,256,1,0,0,0,258,259,1,0,0,0,259,
+        33,1,0,0,0,260,262,3,36,18,0,261,260,1,0,0,0,262,263,1,0,0,0,263,
+        261,1,0,0,0,263,264,1,0,0,0,264,35,1,0,0,0,265,266,5,2,0,0,266,267,
+        5,19,0,0,267,272,5,19,0,0,268,269,5,2,0,0,269,270,5,19,0,0,270,271,
+        5,19,0,0,271,273,3,76,38,0,272,268,1,0,0,0,273,274,1,0,0,0,274,272,
+        1,0,0,0,274,275,1,0,0,0,275,37,1,0,0,0,276,278,3,40,20,0,277,276,
+        1,0,0,0,278,279,1,0,0,0,279,277,1,0,0,0,279,280,1,0,0,0,280,39,1,
+        0,0,0,281,282,5,2,0,0,282,283,5,19,0,0,283,290,5,19,0,0,284,285,
+        5,2,0,0,285,286,5,19,0,0,286,287,5,19,0,0,287,288,3,76,38,0,288,
+        289,3,76,38,0,289,291,1,0,0,0,290,284,1,0,0,0,291,292,1,0,0,0,292,
+        290,1,0,0,0,292,293,1,0,0,0,293,41,1,0,0,0,294,296,3,44,22,0,295,
+        294,1,0,0,0,296,297,1,0,0,0,297,295,1,0,0,0,297,298,1,0,0,0,298,
+        43,1,0,0,0,299,300,5,2,0,0,300,301,5,19,0,0,301,309,5,19,0,0,302,
+        303,5,2,0,0,303,304,5,19,0,0,304,305,5,19,0,0,305,306,3,76,38,0,
+        306,307,3,76,38,0,307,308,3,76,38,0,308,310,1,0,0,0,309,302,1,0,
+        0,0,310,311,1,0,0,0,311,309,1,0,0,0,311,312,1,0,0,0,312,45,1,0,0,
+        0,313,315,3,48,24,0,314,313,1,0,0,0,315,316,1,0,0,0,316,314,1,0,
+        0,0,316,317,1,0,0,0,317,47,1,0,0,0,318,319,5,2,0,0,319,320,5,19,
+        0,0,320,321,5,19,0,0,321,322,5,19,0,0,322,323,5,2,0,0,323,324,5,
+        19,0,0,324,325,5,19,0,0,325,326,5,19,0,0,326,328,3,76,38,0,327,329,
+        3,76,38,0,328,327,1,0,0,0,328,329,1,0,0,0,329,331,1,0,0,0,330,332,
+        3,76,38,0,331,330,1,0,0,0,331,332,1,0,0,0,332,49,1,0,0,0,333,335,
+        3,52,26,0,334,333,1,0,0,0,335,336,1,0,0,0,336,334,1,0,0,0,336,337,
+        1,0,0,0,337,51,1,0,0,0,338,339,5,19,0,0,339,340,5,2,0,0,340,341,
+        5,19,0,0,341,342,5,19,0,0,342,343,5,19,0,0,343,344,5,2,0,0,344,345,
+        5,19,0,0,345,346,5,19,0,0,346,348,3,76,38,0,347,349,3,76,38,0,348,
+        347,1,0,0,0,348,349,1,0,0,0,349,351,1,0,0,0,350,352,3,76,38,0,351,
+        350,1,0,0,0,351,352,1,0,0,0,352,53,1,0,0,0,353,355,3,56,28,0,354,
+        353,1,0,0,0,355,356,1,0,0,0,356,354,1,0,0,0,356,357,1,0,0,0,357,
+        55,1,0,0,0,358,359,5,19,0,0,359,360,5,19,0,0,360,361,5,2,0,0,361,
+        362,5,19,0,0,362,363,5,19,0,0,363,364,5,19,0,0,364,365,5,2,0,0,365,
+        366,5,19,0,0,366,368,3,76,38,0,367,369,3,76,38,0,368,367,1,0,0,0,
+        368,369,1,0,0,0,369,371,1,0,0,0,370,372,3,76,38,0,371,370,1,0,0,
+        0,371,372,1,0,0,0,372,57,1,0,0,0,373,375,3,60,30,0,374,373,1,0,0,
+        0,375,376,1,0,0,0,376,374,1,0,0,0,376,377,1,0,0,0,377,59,1,0,0,0,
+        378,379,5,2,0,0,379,380,5,19,0,0,380,381,5,19,0,0,381,382,5,19,0,
+        0,382,384,3,76,38,0,383,385,3,76,38,0,384,383,1,0,0,0,384,385,1,
+        0,0,0,385,387,1,0,0,0,386,388,3,76,38,0,387,386,1,0,0,0,387,388,
+        1,0,0,0,388,390,1,0,0,0,389,391,3,76,38,0,390,389,1,0,0,0,390,391,
+        1,0,0,0,391,393,1,0,0,0,392,394,3,76,38,0,393,392,1,0,0,0,393,394,
+        1,0,0,0,394,396,1,0,0,0,395,397,3,76,38,0,396,395,1,0,0,0,396,397,
+        1,0,0,0,397,61,1,0,0,0,398,399,5,12,0,0,399,400,5,13,0,0,400,63,
+        1,0,0,0,401,402,5,14,0,0,402,403,5,24,0,0,403,404,5,28,0,0,404,405,
+        5,30,0,0,405,406,5,26,0,0,406,407,5,28,0,0,407,408,5,29,0,0,408,
+        409,5,25,0,0,409,410,5,28,0,0,410,411,5,30,0,0,411,412,5,27,0,0,
+        412,413,5,28,0,0,413,414,5,29,0,0,414,415,5,32,0,0,415,65,1,0,0,
+        0,416,417,5,15,0,0,417,418,5,19,0,0,418,419,5,2,0,0,419,420,5,19,
+        0,0,420,421,5,2,0,0,421,67,1,0,0,0,422,423,5,16,0,0,423,425,5,19,
+        0,0,424,426,3,70,35,0,425,424,1,0,0,0,426,427,1,0,0,0,427,425,1,
+        0,0,0,427,428,1,0,0,0,428,69,1,0,0,0,429,430,5,17,0,0,430,431,5,
+        37,0,0,431,433,5,38,0,0,432,434,5,37,0,0,433,432,1,0,0,0,434,435,
+        1,0,0,0,435,433,1,0,0,0,435,436,1,0,0,0,436,437,1,0,0,0,437,438,
+        5,40,0,0,438,71,1,0,0,0,439,440,5,16,0,0,440,442,5,19,0,0,441,443,
+        3,74,37,0,442,441,1,0,0,0,443,444,1,0,0,0,444,442,1,0,0,0,444,445,
+        1,0,0,0,445,73,1,0,0,0,446,447,5,18,0,0,447,448,7,0,0,0,448,451,
+        5,38,0,0,449,450,5,37,0,0,450,452,5,36,0,0,451,449,1,0,0,0,452,453,
+        1,0,0,0,453,451,1,0,0,0,453,454,1,0,0,0,454,455,1,0,0,0,455,456,
+        5,40,0,0,456,75,1,0,0,0,457,458,7,1,0,0,458,77,1,0,0,0,459,460,7,
+        2,0,0,460,79,1,0,0,0,48,101,103,111,121,124,127,130,133,138,146,
+        151,154,159,164,182,187,192,210,221,226,239,244,258,263,274,279,
+        292,297,311,316,328,331,336,348,351,356,368,371,376,384,387,390,
+        393,396,427,435,444,453
     ]
 
 class CyanaMRParser ( Parser ):
@@ -1154,6 +1155,14 @@ class CyanaMRParser ( Parser ):
             self.number()
             self.state = 180
             self.match(CyanaMRParser.Integer)
+            self.state = 182
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,14,self._ctx)
+            if la_ == 1:
+                self.state = 181
+                self.number()
+
+
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1204,33 +1213,33 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 16, self.RULE_pcs_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 183 
+            self.state = 185 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 182
+                    self.state = 184
                     self.pcs_parameter()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 185 
+                self.state = 187 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,14,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
 
-            self.state = 188 
+            self.state = 190 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 187
+                    self.state = 189
                     self.pcs_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 190 
+                self.state = 192 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,16,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1280,13 +1289,13 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 18, self.RULE_pcs_parameter)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 192
-            self.match(CyanaMRParser.Integer)
-            self.state = 193
-            self.match(CyanaMRParser.Float)
             self.state = 194
-            self.match(CyanaMRParser.Float)
+            self.match(CyanaMRParser.Integer)
             self.state = 195
+            self.match(CyanaMRParser.Float)
+            self.state = 196
+            self.match(CyanaMRParser.Float)
+            self.state = 197
             self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
@@ -1343,19 +1352,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 20, self.RULE_pcs_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 197
-            self.match(CyanaMRParser.Integer)
-            self.state = 198
-            self.match(CyanaMRParser.Simple_name)
             self.state = 199
-            self.match(CyanaMRParser.Simple_name)
+            self.match(CyanaMRParser.Integer)
             self.state = 200
-            self.number()
+            self.match(CyanaMRParser.Simple_name)
             self.state = 201
-            self.number()
+            self.match(CyanaMRParser.Simple_name)
             self.state = 202
             self.number()
             self.state = 203
+            self.number()
+            self.state = 204
+            self.number()
+            self.state = 205
             self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
@@ -1400,19 +1409,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 22, self.RULE_fixres_distance_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 206 
+            self.state = 208 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 205
+                    self.state = 207
                     self.fixres_distance_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 208 
+                self.state = 210 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,16,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,17,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1469,31 +1478,31 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 24, self.RULE_fixres_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 210
+            self.state = 212
             self.match(CyanaMRParser.Integer)
-            self.state = 211
+            self.state = 213
             self.match(CyanaMRParser.Simple_name)
-            self.state = 217 
+            self.state = 219 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 212
-                    self.match(CyanaMRParser.Simple_name)
-                    self.state = 213
-                    self.match(CyanaMRParser.Integer)
                     self.state = 214
                     self.match(CyanaMRParser.Simple_name)
                     self.state = 215
-                    self.match(CyanaMRParser.Simple_name)
+                    self.match(CyanaMRParser.Integer)
                     self.state = 216
+                    self.match(CyanaMRParser.Simple_name)
+                    self.state = 217
+                    self.match(CyanaMRParser.Simple_name)
+                    self.state = 218
                     self.number()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 219 
+                self.state = 221 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,17,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,18,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1538,19 +1547,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 26, self.RULE_fixresw_distance_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 222 
+            self.state = 224 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 221
+                    self.state = 223
                     self.fixresw_distance_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 224 
+                self.state = 226 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,18,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,19,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1607,33 +1616,33 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 28, self.RULE_fixresw_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 226
+            self.state = 228
             self.match(CyanaMRParser.Integer)
-            self.state = 227
+            self.state = 229
             self.match(CyanaMRParser.Simple_name)
-            self.state = 235 
+            self.state = 237 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 228
-                    self.match(CyanaMRParser.Simple_name)
-                    self.state = 229
-                    self.match(CyanaMRParser.Integer)
                     self.state = 230
                     self.match(CyanaMRParser.Simple_name)
                     self.state = 231
-                    self.match(CyanaMRParser.Simple_name)
+                    self.match(CyanaMRParser.Integer)
                     self.state = 232
-                    self.number()
+                    self.match(CyanaMRParser.Simple_name)
                     self.state = 233
+                    self.match(CyanaMRParser.Simple_name)
+                    self.state = 234
+                    self.number()
+                    self.state = 235
                     self.number()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 237 
+                self.state = 239 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,19,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,20,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1678,19 +1687,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 30, self.RULE_fixresw2_distance_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 240 
+            self.state = 242 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 239
+                    self.state = 241
                     self.fixresw2_distance_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 242 
+                self.state = 244 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,20,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,21,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1747,35 +1756,35 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 32, self.RULE_fixresw2_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 244
+            self.state = 246
             self.match(CyanaMRParser.Integer)
-            self.state = 245
+            self.state = 247
             self.match(CyanaMRParser.Simple_name)
-            self.state = 254 
+            self.state = 256 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 246
-                    self.match(CyanaMRParser.Simple_name)
-                    self.state = 247
-                    self.match(CyanaMRParser.Integer)
                     self.state = 248
                     self.match(CyanaMRParser.Simple_name)
                     self.state = 249
-                    self.match(CyanaMRParser.Simple_name)
+                    self.match(CyanaMRParser.Integer)
                     self.state = 250
-                    self.number()
+                    self.match(CyanaMRParser.Simple_name)
                     self.state = 251
-                    self.number()
+                    self.match(CyanaMRParser.Simple_name)
                     self.state = 252
+                    self.number()
+                    self.state = 253
+                    self.number()
+                    self.state = 254
                     self.number()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 256 
+                self.state = 258 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,21,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,22,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1820,19 +1829,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 34, self.RULE_fixatm_distance_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 259 
+            self.state = 261 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 258
+                    self.state = 260
                     self.fixatm_distance_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 261 
+                self.state = 263 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,22,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,23,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1889,31 +1898,31 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 36, self.RULE_fixatm_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 263
-            self.match(CyanaMRParser.Integer)
-            self.state = 264
-            self.match(CyanaMRParser.Simple_name)
             self.state = 265
+            self.match(CyanaMRParser.Integer)
+            self.state = 266
             self.match(CyanaMRParser.Simple_name)
-            self.state = 270 
+            self.state = 267
+            self.match(CyanaMRParser.Simple_name)
+            self.state = 272 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 266
-                    self.match(CyanaMRParser.Integer)
-                    self.state = 267
-                    self.match(CyanaMRParser.Simple_name)
                     self.state = 268
-                    self.match(CyanaMRParser.Simple_name)
+                    self.match(CyanaMRParser.Integer)
                     self.state = 269
+                    self.match(CyanaMRParser.Simple_name)
+                    self.state = 270
+                    self.match(CyanaMRParser.Simple_name)
+                    self.state = 271
                     self.number()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 272 
+                self.state = 274 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,23,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,24,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1958,19 +1967,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 38, self.RULE_fixatmw_distance_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 275 
+            self.state = 277 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 274
+                    self.state = 276
                     self.fixatmw_distance_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 277 
+                self.state = 279 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,24,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,25,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2027,33 +2036,33 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 40, self.RULE_fixatmw_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 279
-            self.match(CyanaMRParser.Integer)
-            self.state = 280
-            self.match(CyanaMRParser.Simple_name)
             self.state = 281
+            self.match(CyanaMRParser.Integer)
+            self.state = 282
             self.match(CyanaMRParser.Simple_name)
-            self.state = 288 
+            self.state = 283
+            self.match(CyanaMRParser.Simple_name)
+            self.state = 290 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 282
-                    self.match(CyanaMRParser.Integer)
-                    self.state = 283
-                    self.match(CyanaMRParser.Simple_name)
                     self.state = 284
-                    self.match(CyanaMRParser.Simple_name)
+                    self.match(CyanaMRParser.Integer)
                     self.state = 285
-                    self.number()
+                    self.match(CyanaMRParser.Simple_name)
                     self.state = 286
+                    self.match(CyanaMRParser.Simple_name)
+                    self.state = 287
+                    self.number()
+                    self.state = 288
                     self.number()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 290 
+                self.state = 292 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,25,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,26,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2098,19 +2107,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 42, self.RULE_fixatmw2_distance_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 293 
+            self.state = 295 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 292
+                    self.state = 294
                     self.fixatmw2_distance_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 295 
+                self.state = 297 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,26,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,27,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2167,35 +2176,35 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 44, self.RULE_fixatmw2_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 297
-            self.match(CyanaMRParser.Integer)
-            self.state = 298
-            self.match(CyanaMRParser.Simple_name)
             self.state = 299
+            self.match(CyanaMRParser.Integer)
+            self.state = 300
             self.match(CyanaMRParser.Simple_name)
-            self.state = 307 
+            self.state = 301
+            self.match(CyanaMRParser.Simple_name)
+            self.state = 309 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 300
-                    self.match(CyanaMRParser.Integer)
-                    self.state = 301
-                    self.match(CyanaMRParser.Simple_name)
                     self.state = 302
-                    self.match(CyanaMRParser.Simple_name)
+                    self.match(CyanaMRParser.Integer)
                     self.state = 303
-                    self.number()
+                    self.match(CyanaMRParser.Simple_name)
                     self.state = 304
-                    self.number()
+                    self.match(CyanaMRParser.Simple_name)
                     self.state = 305
+                    self.number()
+                    self.state = 306
+                    self.number()
+                    self.state = 307
                     self.number()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 309 
+                self.state = 311 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,27,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,28,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2240,19 +2249,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 46, self.RULE_distance_w_chain_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 312 
+            self.state = 314 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 311
+                    self.state = 313
                     self.distance_w_chain_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 314 
+                self.state = 316 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,28,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2309,37 +2318,37 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 48, self.RULE_distance_w_chain_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 316
-            self.match(CyanaMRParser.Integer)
-            self.state = 317
-            self.match(CyanaMRParser.Simple_name)
             self.state = 318
-            self.match(CyanaMRParser.Simple_name)
+            self.match(CyanaMRParser.Integer)
             self.state = 319
             self.match(CyanaMRParser.Simple_name)
             self.state = 320
-            self.match(CyanaMRParser.Integer)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 321
             self.match(CyanaMRParser.Simple_name)
             self.state = 322
-            self.match(CyanaMRParser.Simple_name)
+            self.match(CyanaMRParser.Integer)
             self.state = 323
             self.match(CyanaMRParser.Simple_name)
             self.state = 324
-            self.number()
+            self.match(CyanaMRParser.Simple_name)
+            self.state = 325
+            self.match(CyanaMRParser.Simple_name)
             self.state = 326
-            self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,29,self._ctx)
-            if la_ == 1:
-                self.state = 325
-                self.number()
-
-
-            self.state = 329
+            self.number()
+            self.state = 328
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,30,self._ctx)
             if la_ == 1:
-                self.state = 328
+                self.state = 327
+                self.number()
+
+
+            self.state = 331
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,31,self._ctx)
+            if la_ == 1:
+                self.state = 330
                 self.number()
 
 
@@ -2386,19 +2395,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 50, self.RULE_distance_w_chain2_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 332 
+            self.state = 334 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 331
+                    self.state = 333
                     self.distance_w_chain2_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 334 
+                self.state = 336 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,31,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,32,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2455,37 +2464,37 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 52, self.RULE_distance_w_chain2_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 336
-            self.match(CyanaMRParser.Simple_name)
-            self.state = 337
-            self.match(CyanaMRParser.Integer)
             self.state = 338
             self.match(CyanaMRParser.Simple_name)
             self.state = 339
-            self.match(CyanaMRParser.Simple_name)
+            self.match(CyanaMRParser.Integer)
             self.state = 340
             self.match(CyanaMRParser.Simple_name)
             self.state = 341
-            self.match(CyanaMRParser.Integer)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 342
             self.match(CyanaMRParser.Simple_name)
             self.state = 343
-            self.match(CyanaMRParser.Simple_name)
+            self.match(CyanaMRParser.Integer)
             self.state = 344
-            self.number()
+            self.match(CyanaMRParser.Simple_name)
+            self.state = 345
+            self.match(CyanaMRParser.Simple_name)
             self.state = 346
-            self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,32,self._ctx)
-            if la_ == 1:
-                self.state = 345
-                self.number()
-
-
-            self.state = 349
+            self.number()
+            self.state = 348
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,33,self._ctx)
             if la_ == 1:
-                self.state = 348
+                self.state = 347
+                self.number()
+
+
+            self.state = 351
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,34,self._ctx)
+            if la_ == 1:
+                self.state = 350
                 self.number()
 
 
@@ -2532,19 +2541,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 54, self.RULE_distance_w_chain3_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 352 
+            self.state = 354 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 351
+                    self.state = 353
                     self.distance_w_chain3_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 354 
+                self.state = 356 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,34,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2601,37 +2610,37 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 56, self.RULE_distance_w_chain3_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 356
-            self.match(CyanaMRParser.Simple_name)
-            self.state = 357
-            self.match(CyanaMRParser.Simple_name)
             self.state = 358
-            self.match(CyanaMRParser.Integer)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 359
             self.match(CyanaMRParser.Simple_name)
             self.state = 360
-            self.match(CyanaMRParser.Simple_name)
+            self.match(CyanaMRParser.Integer)
             self.state = 361
             self.match(CyanaMRParser.Simple_name)
             self.state = 362
-            self.match(CyanaMRParser.Integer)
+            self.match(CyanaMRParser.Simple_name)
             self.state = 363
             self.match(CyanaMRParser.Simple_name)
             self.state = 364
-            self.number()
+            self.match(CyanaMRParser.Integer)
+            self.state = 365
+            self.match(CyanaMRParser.Simple_name)
             self.state = 366
-            self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,35,self._ctx)
-            if la_ == 1:
-                self.state = 365
-                self.number()
-
-
-            self.state = 369
+            self.number()
+            self.state = 368
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,36,self._ctx)
             if la_ == 1:
-                self.state = 368
+                self.state = 367
+                self.number()
+
+
+            self.state = 371
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,37,self._ctx)
+            if la_ == 1:
+                self.state = 370
                 self.number()
 
 
@@ -2678,19 +2687,19 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 58, self.RULE_cco_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 372 
+            self.state = 374 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 371
+                    self.state = 373
                     self.cco_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 374 
+                self.state = 376 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,37,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,38,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2744,53 +2753,53 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 60, self.RULE_cco_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 376
-            self.match(CyanaMRParser.Integer)
-            self.state = 377
-            self.match(CyanaMRParser.Simple_name)
             self.state = 378
-            self.match(CyanaMRParser.Simple_name)
+            self.match(CyanaMRParser.Integer)
             self.state = 379
             self.match(CyanaMRParser.Simple_name)
             self.state = 380
-            self.number()
+            self.match(CyanaMRParser.Simple_name)
+            self.state = 381
+            self.match(CyanaMRParser.Simple_name)
             self.state = 382
-            self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,38,self._ctx)
-            if la_ == 1:
-                self.state = 381
-                self.number()
-
-
-            self.state = 385
+            self.number()
+            self.state = 384
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,39,self._ctx)
             if la_ == 1:
-                self.state = 384
+                self.state = 383
                 self.number()
 
 
-            self.state = 388
+            self.state = 387
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,40,self._ctx)
             if la_ == 1:
-                self.state = 387
+                self.state = 386
                 self.number()
 
 
-            self.state = 391
+            self.state = 390
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,41,self._ctx)
             if la_ == 1:
-                self.state = 390
+                self.state = 389
                 self.number()
 
 
-            self.state = 394
+            self.state = 393
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,42,self._ctx)
             if la_ == 1:
-                self.state = 393
+                self.state = 392
+                self.number()
+
+
+            self.state = 396
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,43,self._ctx)
+            if la_ == 1:
+                self.state = 395
                 self.number()
 
 
@@ -2836,9 +2845,9 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 62, self.RULE_ssbond_macro)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 396
+            self.state = 398
             self.match(CyanaMRParser.Ssbond)
-            self.state = 397
+            self.state = 399
             self.match(CyanaMRParser.Ssbond_resids)
         except RecognitionException as re:
             localctx.exception = re
@@ -2912,33 +2921,33 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 64, self.RULE_hbond_macro)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 399
-            self.match(CyanaMRParser.Hbond)
-            self.state = 400
-            self.match(CyanaMRParser.Atom1)
             self.state = 401
-            self.match(CyanaMRParser.Equ_op_HB)
+            self.match(CyanaMRParser.Hbond)
             self.state = 402
-            self.match(CyanaMRParser.Simple_name_HB)
+            self.match(CyanaMRParser.Atom1)
             self.state = 403
-            self.match(CyanaMRParser.Residue1)
+            self.match(CyanaMRParser.Equ_op_HB)
             self.state = 404
-            self.match(CyanaMRParser.Equ_op_HB)
-            self.state = 405
-            self.match(CyanaMRParser.Integer_HB)
-            self.state = 406
-            self.match(CyanaMRParser.Atom2)
-            self.state = 407
-            self.match(CyanaMRParser.Equ_op_HB)
-            self.state = 408
             self.match(CyanaMRParser.Simple_name_HB)
-            self.state = 409
-            self.match(CyanaMRParser.Residue2)
-            self.state = 410
+            self.state = 405
+            self.match(CyanaMRParser.Residue1)
+            self.state = 406
             self.match(CyanaMRParser.Equ_op_HB)
-            self.state = 411
+            self.state = 407
             self.match(CyanaMRParser.Integer_HB)
+            self.state = 408
+            self.match(CyanaMRParser.Atom2)
+            self.state = 409
+            self.match(CyanaMRParser.Equ_op_HB)
+            self.state = 410
+            self.match(CyanaMRParser.Simple_name_HB)
+            self.state = 411
+            self.match(CyanaMRParser.Residue2)
             self.state = 412
+            self.match(CyanaMRParser.Equ_op_HB)
+            self.state = 413
+            self.match(CyanaMRParser.Integer_HB)
+            self.state = 414
             self.match(CyanaMRParser.RETURN_HB)
         except RecognitionException as re:
             localctx.exception = re
@@ -2991,15 +3000,15 @@ class CyanaMRParser ( Parser ):
         self.enterRule(localctx, 66, self.RULE_link_statement)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 414
-            self.match(CyanaMRParser.Link)
-            self.state = 415
-            self.match(CyanaMRParser.Simple_name)
             self.state = 416
-            self.match(CyanaMRParser.Integer)
+            self.match(CyanaMRParser.Link)
             self.state = 417
             self.match(CyanaMRParser.Simple_name)
             self.state = 418
+            self.match(CyanaMRParser.Integer)
+            self.state = 419
+            self.match(CyanaMRParser.Simple_name)
+            self.state = 420
             self.match(CyanaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
@@ -3051,17 +3060,17 @@ class CyanaMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 420
+            self.state = 422
             self.match(CyanaMRParser.Residue)
-            self.state = 421
+            self.state = 423
             self.match(CyanaMRParser.Simple_name)
-            self.state = 423 
+            self.state = 425 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 422
+                self.state = 424
                 self.mapping_list()
-                self.state = 425 
+                self.state = 427 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==CyanaMRParser.Mapping):
@@ -3119,25 +3128,25 @@ class CyanaMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 427
-            self.match(CyanaMRParser.Mapping)
-            self.state = 428
-            self.match(CyanaMRParser.Simple_name_MP)
             self.state = 429
+            self.match(CyanaMRParser.Mapping)
+            self.state = 430
+            self.match(CyanaMRParser.Simple_name_MP)
+            self.state = 431
             self.match(CyanaMRParser.Equ_op_MP)
-            self.state = 431 
+            self.state = 433 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 430
+                self.state = 432
                 self.match(CyanaMRParser.Simple_name_MP)
-                self.state = 433 
+                self.state = 435 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==CyanaMRParser.Simple_name_MP):
                     break
 
-            self.state = 435
+            self.state = 437
             self.match(CyanaMRParser.RETURN_MP)
         except RecognitionException as re:
             localctx.exception = re
@@ -3189,17 +3198,17 @@ class CyanaMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 437
+            self.state = 439
             self.match(CyanaMRParser.Residue)
-            self.state = 438
+            self.state = 440
             self.match(CyanaMRParser.Simple_name)
-            self.state = 440 
+            self.state = 442 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 439
+                self.state = 441
                 self.ambig_list()
-                self.state = 442 
+                self.state = 444 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==CyanaMRParser.Ambig):
@@ -3266,32 +3275,32 @@ class CyanaMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 444
+            self.state = 446
             self.match(CyanaMRParser.Ambig)
-            self.state = 445
+            self.state = 447
             _la = self._input.LA(1)
             if not(_la==CyanaMRParser.Ambig_code_MP or _la==CyanaMRParser.Simple_name_MP):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
-            self.state = 446
+            self.state = 448
             self.match(CyanaMRParser.Equ_op_MP)
-            self.state = 449 
+            self.state = 451 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 447
+                self.state = 449
                 self.match(CyanaMRParser.Simple_name_MP)
-                self.state = 448
+                self.state = 450
                 self.match(CyanaMRParser.Integer_MP)
-                self.state = 451 
+                self.state = 453 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==CyanaMRParser.Simple_name_MP):
                     break
 
-            self.state = 453
+            self.state = 455
             self.match(CyanaMRParser.RETURN_MP)
         except RecognitionException as re:
             localctx.exception = re
@@ -3336,7 +3345,7 @@ class CyanaMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 455
+            self.state = 457
             _la = self._input.LA(1)
             if not(_la==CyanaMRParser.Integer or _la==CyanaMRParser.Float):
                 self._errHandler.recoverInline(self)
@@ -3386,7 +3395,7 @@ class CyanaMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 457
+            self.state = 459
             _la = self._input.LA(1)
             if not(_la==CyanaMRParser.Ambig_code or _la==CyanaMRParser.Simple_name):
                 self._errHandler.recoverInline(self)

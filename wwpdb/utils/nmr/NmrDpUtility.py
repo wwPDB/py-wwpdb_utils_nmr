@@ -7691,8 +7691,8 @@ class NmrDpUtility:
                             if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 s = '. ' if _err.startswith('Do you') else ':\n'
                                 err = err[:len_err] +\
-                                    (f"However, the error may be due to missing statement (i.e. 'noe', 'restraint dihedral', 'sanisotropy') at the beginning of {_err.strip().split(' ')[0]!r} "\
-                                     "and the statement should be ended with 'end' tag "
+                                    ("However, the error may be due to missing statement (i.e. 'noe', 'restraint dihedral', 'sanisotropy') "
+                                     f"at the beginning of {_err.strip().split(' ')[0]!r} and note that the statement should be ended with 'end' tag "
                                      if _err.lower().strip().startswith('class')
                                      else "However, the error may be due to the previous input ") +\
                                     f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]

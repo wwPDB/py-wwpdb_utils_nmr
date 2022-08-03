@@ -236,9 +236,9 @@ class BiosymMRParserListener(ParseTreeListener):
 
                     chain_mapping = {}
 
-                    for chain_assign in self.__chainAssign:
-                        ref_chain_id = chain_assign['ref_chain_id']
-                        test_chain_id = chain_assign['test_chain_id']
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
                         if ref_chain_id != test_chain_id:
                             chain_mapping[test_chain_id] = ref_chain_id
@@ -259,9 +259,9 @@ class BiosymMRParserListener(ParseTreeListener):
 
                     seqIdRemap = []
 
-                    for chain_assign in self.__chainAssign:
-                        ref_chain_id = chain_assign['ref_chain_id']
-                        test_chain_id = chain_assign['test_chain_id']
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
                         seq_align = next(sa for sa in self.__seqAlign
                                          if sa['ref_chain_id'] == ref_chain_id

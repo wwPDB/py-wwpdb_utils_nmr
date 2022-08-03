@@ -500,9 +500,6 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                                 compIdMapping.append({'chain_id': chain_id2, 'seq_id': s2_seq_id,
                                                       'comp_id': myPr0, 'auth_comp_id': s2_auth_comp_id})
 
-                if conflict > 0:
-                    tabooList.append({chain_id, chain_id2})
-
             if length == unmapped + conflict or _matched <= conflict:
                 inhibitList.append({chain_id, chain_id2})
                 continue
@@ -531,6 +528,9 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                     offset_2 = _offset_2
                     _s1 = __s1
                     _s2 = __s2
+
+            if conflict > 0 and not hasLargeSeqGap(_s1, _s2):
+                tabooList.append({chain_id, chain_id2})
 
             ref_length = len(s1['seq_id'])
 
@@ -704,7 +704,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
 
         mat.append(cost)
 
-    chainAssignSet = []
+    chainAssign = []
 
     for row, column in indices:
 
@@ -726,9 +726,9 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
         result = next(seq_align for seq_align in seqAlign
                       if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
 
-        chainAssign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
-                       'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
-                       'sequence_coverage': result['sequence_coverage']}
+        ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
+              'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
+              'sequence_coverage': result['sequence_coverage']}
 
         s1 = next(s for s in polySeqModel if s['auth_chain_id'] == chain_id)
         s2 = next(s for s in polySeqRst if s['chain_id'] == chain_id2)
@@ -825,10 +825,10 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                 elif mr_comp_id != cif_comp_id and aligned[i]:
                     _conflicts += 1
 
-            if fileType.startswith('nm-aux') and _conflicts > chainAssign['unmapped'] and chainAssign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
+            if fileType.startswith('nm-aux') and _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                 continue
 
-            if _conflicts + offset_1 > _matched and chainAssign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
                 continue
 
             unmapped = []
@@ -887,33 +887,33 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                         "Please verify the two sequences and re-upload the correct file(s) if required.\n"
 
             if len(unmapped) > 0:
-                chainAssign['unmapped_sequence'] = unmapped
+                ca['unmapped_sequence'] = unmapped
 
             if len(conflict) > 0:
-                chainAssign['conflict_sequence'] = conflict
-                chainAssign['conflict'] = len(conflict)
-                chainAssign['unmapped'] = chainAssign['unmapped'] - len(conflict)
-                if chainAssign['unmapped'] < 0:
-                    chainAssign['conflict'] -= chainAssign['unmapped']
-                    chainAssign['unmapped'] = 0
+                ca['conflict_sequence'] = conflict
+                ca['conflict'] = len(conflict)
+                ca['unmapped'] = ca['unmapped'] - len(conflict)
+                if ca['unmapped'] < 0:
+                    ca['conflict'] -= ca['unmapped']
+                    ca['unmapped'] = 0
 
-                result['conflict'] = chainAssign['conflict']
-                result['unmapped'] = chainAssign['unmapped']
+                result['conflict'] = ca['conflict']
+                result['unmapped'] = ca['unmapped']
 
-        chainAssignSet.append(chainAssign)
+        chainAssign.append(ca)
 
-    if len(chainAssignSet) > 0 and len(polySeqModel) > 1:
+    if len(chainAssign) > 0 and len(polySeqModel) > 1:
 
         if any(s for s in polySeqModel if 'identical_chain_id' in s):
 
-            _chainAssignSet = copy.copy(chainAssignSet)
+            _chainAssign = copy.copy(chainAssign)
 
-            for chainAssign in _chainAssignSet:
+            for ca in _chainAssign:
 
-                if chainAssign['conflict'] > 0:
+                if ca['conflict'] > 0:
                     continue
 
-                chain_id = chainAssign['ref_chain_id']
+                chain_id = ca['ref_chain_id']
 
                 try:
                     identity = next(s['identical_chain_id'] for s in polySeqModel
@@ -921,29 +921,29 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
 
                     for chain_id in identity:
 
-                        if not any(_chainAssign for _chainAssign in chainAssignSet if _chainAssign['ref_chain_id'] == chain_id):
-                            _chainAssign = copy.copy(chainAssign)
-                            _chainAssign['ref_chain_id'] = chain_id
-                            chainAssignSet.append(_chainAssign)
+                        if not any(_ca for _ca in chainAssign if _ca['ref_chain_id'] == chain_id):
+                            _ca = copy.copy(ca)
+                            _ca['ref_chain_id'] = chain_id
+                            chainAssign.append(_ca)
 
                 except StopIteration:
                     pass
 
-    return chainAssignSet, warningMessage
+    return chainAssign, warningMessage
 
 
-def trimSequenceAlignment(seqAlign, chainAssignSet):
+def trimSequenceAlignment(seqAlign, chainAssign):
     """ Trim ineffective sequence alignments.
     """
 
-    if seqAlign is None or chainAssignSet is None:
+    if seqAlign is None or chainAssign is None:
         return
 
     ineffSeqAlignIdx = list(range(len(seqAlign) - 1, -1, -1))
 
-    for chainAssign in chainAssignSet:
-        ref_chain_id = chainAssign['ref_chain_id']
-        test_chain_id = chainAssign['test_chain_id']
+    for ca in chainAssign:
+        ref_chain_id = ca['ref_chain_id']
+        test_chain_id = ca['test_chain_id']
 
         effSeqAlignIdx = next((idx for idx, seq_align in enumerate(seqAlign)
                               if seq_align['ref_chain_id'] == ref_chain_id
@@ -999,18 +999,18 @@ def retrieveRemappedSeqId(seqIdRemap, chainId, seqId):
         return chainId, seqId
 
 
-def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssignSet):
+def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
     """ Split polymer sequence of the current MR file for multimers.
     """
 
-    if polySeqModel is None or polySeqRst is None or chainAssignSet is None:
+    if polySeqModel is None or polySeqRst is None or chainAssign is None:
         return None, None
 
     target_test_chain_id = {}
-    for chainAssign in chainAssignSet:
-        if chainAssign['conflict'] == 0 and chainAssign['unmapped'] > 0:
-            ref_chain_id = chainAssign['ref_chain_id']
-            test_chain_id = chainAssign['test_chain_id']
+    for ca in chainAssign:
+        if ca['conflict'] == 0 and ca['unmapped'] > 0:
+            ref_chain_id = ca['ref_chain_id']
+            test_chain_id = ca['test_chain_id']
             if test_chain_id not in target_test_chain_id:
                 target_test_chain_id[test_chain_id] = []
             target_test_chain_id[test_chain_id].append(ref_chain_id)
@@ -1094,10 +1094,10 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssignSet):
                 if length == 0:
                     return None, None
 
-                _, _, conflict, _, _ = getScoreOfSeqAlign(myAlign)
+                # _, _, conflict, _, _ = getScoreOfSeqAlign(myAlign)
 
-                if conflict > 0:
-                    return None, None
+                # if conflict > 0:
+                #     return None, None
 
                 _polySeqRst.append(_test_ps_)
 

@@ -894,18 +894,18 @@ def concat_nmr_restraint_names(content_subtype):
     return '' if len(subtype_name) == 0 else subtype_name[:-2]
 
 
-def is_peak_list(input_l, has_header=True):
+def is_peak_list(line, has_header=True):
     """ Return whether a given input is derived from peak list in any native format.
     """
 
-    if has_header and input_l.count('E') + input_l.count('e') >= 2:  # CYANA peak list
-        s = filter(None, re.split(r'[\t ]', input_l))
+    if has_header and line.count('E') + line.count('e') >= 2:  # CYANA peak list
+        s = filter(None, re.split(r'[\t ]', line))
         return 'U' in s or 'T' in s
 
-    if 'Data Height' in input_l and 'w1' in input_l and 'w2' in input_l:  # SPARKY peak list
+    if 'Data Height' in line and 'w1' in line and 'w2' in line:  # SPARKY peak list
         return True
 
-    if 'label' in input_l and 'dataset' in input_l and 'sw' in input_l and 'sf' in input_l:  # NMRView peak list
+    if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
         return True
 
     return False
@@ -21531,10 +21531,10 @@ class NmrDpUtility:
 
             nmr2ca = {}
 
-            for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+            for ca in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
 
-                ref_chain_id = chain_assign['ref_chain_id']
-                test_chain_id = chain_assign['test_chain_id']
+                ref_chain_id = ca['ref_chain_id']
+                test_chain_id = ca['test_chain_id']
 
                 result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
@@ -21544,8 +21544,8 @@ class NmrDpUtility:
 
                 complex = {'seq_align': result}  # DAOTHER-7465  # pylint: disable=redefined-builtin
 
-                if 'unmapped_sequence' in chain_assign:
-                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in chain_assign['unmapped_sequence']]
+                if 'unmapped_sequence' in ca:
+                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in ca['unmapped_sequence']]
 
                 nmr2ca[ref_chain_id].append(complex)
 
@@ -30445,14 +30445,14 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
-                                    'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
-                                    'sequence_coverage': result['sequence_coverage']}
+                    ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
+                          'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
+                          'sequence_coverage': result['sequence_coverage']}
 
                     auth_chain_id = chain_id
                     if 'auth_chain_id' in cif_polymer_sequence[row]:
                         auth_chain_id = cif_polymer_sequence[row]['auth_chain_id']
-                        chain_assign['ref_auth_chain_id'] = auth_chain_id
+                        ca['ref_auth_chain_id'] = auth_chain_id
 
                     s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
@@ -30559,10 +30559,10 @@ class NmrDpUtility:
                                 elif nmr_comp_id != cif_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
+                            if _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
                                 continue
 
                         unmapped = []
@@ -30620,22 +30620,22 @@ class NmrDpUtility:
                                         pass
 
                         if len(unmapped) > 0:
-                            chain_assign['unmapped_sequence'] = unmapped
+                            ca['unmapped_sequence'] = unmapped
 
                         if len(conflict) > 0:
-                            chain_assign['conflict_sequence'] = conflict
-                            chain_assign['conflict'] = len(conflict)
-                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
-                            if chain_assign['unmapped'] < 0:
-                                chain_assign['conflict'] -= chain_assign['unmapped']
-                                chain_assign['unmapped'] = 0
+                            ca['conflict_sequence'] = conflict
+                            ca['conflict'] = len(conflict)
+                            ca['unmapped'] = ca['unmapped'] - len(conflict)
+                            if ca['unmapped'] < 0:
+                                ca['conflict'] -= ca['unmapped']
+                                ca['unmapped'] = 0
 
-                            result['conflict'] = chain_assign['conflict']
-                            result['unmapped'] = chain_assign['unmapped']
+                            result['conflict'] = ca['conflict']
+                            result['unmapped'] = ca['unmapped']
 
                             if _result is not None:
-                                _result['conflict'] = chain_assign['conflict']
-                                _result['unmapped'] = chain_assign['unmapped']
+                                _result['conflict'] = ca['conflict']
+                                _result['unmapped'] = ca['unmapped']
 
                 # from nmr to model
 
@@ -30663,7 +30663,7 @@ class NmrDpUtility:
                 if self.__combined_mode:
                     indices = m.compute(mat)
 
-                chain_assign_set = []
+                chain_assign = []
 
                 for row, column in indices:
 
@@ -30678,14 +30678,14 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
-                                    'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
-                                    'sequence_coverage': result['sequence_coverage']}
+                    ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
+                          'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
+                          'sequence_coverage': result['sequence_coverage']}
 
                     auth_chain_id2 = chain_id2
                     if 'auth_chain_id' in cif_polymer_sequence[column]:
                         auth_chain_id2 = cif_polymer_sequence[column]['auth_chain_id']
-                        chain_assign['test_auth_chain_id'] = auth_chain_id2
+                        ca['test_auth_chain_id'] = auth_chain_id2
 
                     s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
@@ -30794,10 +30794,10 @@ class NmrDpUtility:
                                 elif cif_comp_id != nmr_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
+                            if _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
                                 continue
 
                         unmapped = []
@@ -30974,40 +30974,40 @@ class NmrDpUtility:
                                 #     offset_2 += 1
                                 # """
                         if len(unmapped) > 0:
-                            chain_assign['unmapped_sequence'] = unmapped
+                            ca['unmapped_sequence'] = unmapped
 
                         if len(conflict) > 0:
-                            chain_assign['conflict_sequence'] = conflict
-                            chain_assign['conflict'] = len(conflict)
-                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
-                            if chain_assign['unmapped'] < 0:
-                                chain_assign['conflict'] -= chain_assign['unmapped']
-                                chain_assign['unmapped'] = 0
+                            ca['conflict_sequence'] = conflict
+                            ca['conflict'] = len(conflict)
+                            ca['unmapped'] = ca['unmapped'] - len(conflict)
+                            if ca['unmapped'] < 0:
+                                ca['conflict'] -= ca['unmapped']
+                                ca['unmapped'] = 0
 
-                            result['conflict'] = chain_assign['conflict']
-                            result['unmapped'] = chain_assign['unmapped']
+                            result['conflict'] = ca['conflict']
+                            result['unmapped'] = ca['unmapped']
 
                             if _result is not None:
-                                _result['conflict'] = chain_assign['conflict']
-                                _result['unmapped'] = chain_assign['unmapped']
+                                _result['conflict'] = ca['conflict']
+                                _result['unmapped'] = ca['unmapped']
 
-                    chain_assign_set.append(chain_assign)
+                    chain_assign.append(ca)
 
-                if len(chain_assign_set) > 0 and fileListId == 0:
+                if len(chain_assign) > 0 and fileListId == 0:
 
                     if len(cif_polymer_sequence) > 1:
 
                         if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
-                            _chain_assign_set = chain_assign_set.copy()
+                            _chain_assign = chain_assign.copy()
 
-                            for chain_assign in _chain_assign_set:
+                            for ca in _chain_assign:
 
-                                if chain_assign['conflict'] > 0:
+                                if ca['conflict'] > 0:
                                     continue
 
-                                _chain_id = chain_assign['test_chain_id']
-                                _auth_chain_id = None if 'test_auth_chain_id' not in chain_assign else chain_assign['test_auth_chain_id']
+                                _chain_id = ca['test_chain_id']
+                                _auth_chain_id = None if 'test_auth_chain_id' not in ca else ca['test_auth_chain_id']
 
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
@@ -31015,17 +31015,17 @@ class NmrDpUtility:
 
                                     for _chain_id in identity:
 
-                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id):
-                                            _chain_assign = chain_assign.copy()
-                                            _chain_assign['test_chain_id'] = _chain_id
+                                        if not any(_ca for _ca in chain_assign if _ca['test_chain_id'] == _chain_id):
+                                            _ca = ca.copy()
+                                            _ca['test_chain_id'] = _chain_id
                                             if _auth_chain_id is not None:
-                                                _chain_assign['test_auth_chain_id'] = _auth_chain_id
-                                            chain_assign_set.append(_chain_assign)
+                                                _ca['test_auth_chain_id'] = _auth_chain_id
+                                            chain_assign.append(_ca)
 
                                 except StopIteration:
                                     pass
 
-                    self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign_set)
+                    self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign)
 
                 # from model to nmr (final)
 
@@ -31054,7 +31054,7 @@ class NmrDpUtility:
                 if self.__combined_mode:
                     indices = m.compute(mat)
 
-                chain_assign_set = []
+                chain_assign = []
 
                 concatenated_nmr_chain = {}
 
@@ -31091,14 +31091,14 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
-                                    'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
-                                    'sequence_coverage': result['sequence_coverage']}
+                    ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
+                          'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
+                          'sequence_coverage': result['sequence_coverage']}
 
                     auth_chain_id = chain_id
                     if 'auth_chain_id' in cif_polymer_sequence[row]:
                         auth_chain_id = cif_polymer_sequence[row]['auth_chain_id']
-                        chain_assign['ref_auth_chain_id'] = auth_chain_id
+                        ca['ref_auth_chain_id'] = auth_chain_id
 
                     s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
@@ -31205,10 +31205,10 @@ class NmrDpUtility:
                                 elif nmr_comp_id != cif_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
+                            if _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
                                 continue
 
                         unmapped = []
@@ -31368,40 +31368,40 @@ class NmrDpUtility:
                                 #     offset_2 += 1
                                 # """
                         if len(unmapped) > 0:
-                            chain_assign['unmapped_sequence'] = unmapped
+                            ca['unmapped_sequence'] = unmapped
 
                         if len(conflict) > 0:
-                            chain_assign['conflict_sequence'] = conflict
-                            chain_assign['conflict'] = len(conflict)
-                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
-                            if chain_assign['unmapped'] < 0:
-                                chain_assign['conflict'] -= chain_assign['unmapped']
-                                chain_assign['unmapped'] = 0
+                            ca['conflict_sequence'] = conflict
+                            ca['conflict'] = len(conflict)
+                            ca['unmapped'] = ca['unmapped'] - len(conflict)
+                            if ca['unmapped'] < 0:
+                                ca['conflict'] -= ca['unmapped']
+                                ca['unmapped'] = 0
 
-                            result['conflict'] = chain_assign['conflict']
-                            result['unmapped'] = chain_assign['unmapped']
+                            result['conflict'] = ca['conflict']
+                            result['unmapped'] = ca['unmapped']
 
                             if _result is not None:
-                                _result['conflict'] = chain_assign['conflict']
-                                _result['unmapped'] = chain_assign['unmapped']
+                                _result['conflict'] = ca['conflict']
+                                _result['unmapped'] = ca['unmapped']
 
-                    chain_assign_set.append(chain_assign)
+                    chain_assign.append(ca)
 
-                if len(chain_assign_set) > 0 and fileListId == 0:
+                if len(chain_assign) > 0 and fileListId == 0:
 
                     if len(cif_polymer_sequence) > 1:
 
                         if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
-                            _chain_assign_set = chain_assign_set.copy()
+                            _chain_assign = chain_assign.copy()
 
-                            for chain_assign in _chain_assign_set:
+                            for ca in _chain_assign:
 
-                                if chain_assign['conflict'] > 0:
+                                if ca['conflict'] > 0:
                                     continue
 
-                                chain_id = chain_assign['ref_chain_id']
-                                auth_chain_id = None if 'ref_auth_chain_id' not in chain_assign else chain_assign['ref_auth_chain_id']
+                                chain_id = ca['ref_chain_id']
+                                auth_chain_id = None if 'ref_auth_chain_id' not in ca else ca['ref_auth_chain_id']
 
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
@@ -31409,17 +31409,17 @@ class NmrDpUtility:
 
                                     for chain_id in identity:
 
-                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['ref_chain_id'] == chain_id):
-                                            _chain_assign = chain_assign.copy()
-                                            _chain_assign['ref_chain_id'] = chain_id
+                                        if not any(_ca for _ca in chain_assign if _ca['ref_chain_id'] == chain_id):
+                                            _ca = ca.copy()
+                                            _ca['ref_chain_id'] = chain_id
                                             if auth_chain_id is not None:
-                                                _chain_assign['ref_auth_chain_id'] = auth_chain_id
-                                            chain_assign_set.append(_chain_assign)
+                                                _ca['ref_auth_chain_id'] = auth_chain_id
+                                            chain_assign.append(_ca)
 
                                 except StopIteration:
                                     pass
 
-                    self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', chain_assign_set)
+                    self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', chain_assign)
 
             else:
 
@@ -31483,10 +31483,10 @@ class NmrDpUtility:
 
             nmr2ca = {}
 
-            for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+            for ca in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
 
-                ref_chain_id = chain_assign['ref_chain_id']
-                test_chain_id = chain_assign['test_chain_id']
+                ref_chain_id = ca['ref_chain_id']
+                test_chain_id = ca['test_chain_id']
 
                 result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
@@ -31496,8 +31496,8 @@ class NmrDpUtility:
 
                 complex = {'seq_align': result}  # DAOTHER-7465  # pylint: disable=redefined-builtin
 
-                if 'unmapped_sequence' in chain_assign:
-                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in chain_assign['unmapped_sequence']]
+                if 'unmapped_sequence' in ca:
+                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in ca['unmapped_sequence']]
 
                 nmr2ca[ref_chain_id].append(complex)
 
@@ -32570,20 +32570,20 @@ class NmrDpUtility:
                     #     chain_assign_dic = self.report.chain_assignment.get()
                     #     if 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
                     #         try:
-                    #             chain_assign = next(chain_assign for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']
-                    #                                 if chain_assign['test_chain_id'] == chain_id)
-                    #             if 'unmapped_sequence' in chain_assign:
-                    #                 ref_seq = next(ref_seq for ref_seq in chain_assign['unmapped_sequence'] if ref_seq['ref_seq_id'] == seq_id)
+                    #             ca = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']
+                    #                       if ca['test_chain_id'] == chain_id)
+                    #             if 'unmapped_sequence' in ca:
+                    #                 ref_seq = next(ref_seq for ref_seq in ca['unmapped_sequence'] if ref_seq['ref_seq_id'] == seq_id)
                     #                 auth_comp_id = ref_seq['ref_comp_id']
                     #                 comp_id = auth_comp_id.upper()
                     #         except StopIteration:
                     #             if 'identical_chain_id' in s:
                     #                 for chain_id_ in s['identical_chain_id']:
                     #                     try:
-                    #                         chain_assign_ = next(chain_assign for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']
-                    #                                              if chain_assign['test_chain_id'] == chain_id_)
-                    #                         if 'unmapped_sequence' in chain_assign_:
-                    #                             ref_seq = next(ref_seq for ref_seq in chain_assign_['unmapped_sequence'] if ref_seq['ref_seq_id'] == seq_id)
+                    #                         ca_ = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']
+                    #                                    if ca['test_chain_id'] == chain_id_)
+                    #                         if 'unmapped_sequence' in ca_:
+                    #                             ref_seq = next(ref_seq for ref_seq in ca_['unmapped_sequence'] if ref_seq['ref_seq_id'] == seq_id)
                     #                             auth_comp_id = ref_seq['ref_comp_id']
                     #                             comp_id = auth_comp_id.upper()
                     #                             break

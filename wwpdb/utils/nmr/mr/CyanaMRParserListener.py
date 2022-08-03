@@ -149,6 +149,8 @@ class CyanaMRParserListener(ParseTreeListener):
     __upl_or_lol = None  # must be one of (None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')
 
     __file_ext = None  # must be one of (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
+    __cur_dist_type = ''
+    __local_dist_types = []  # list items must be one of ('upl', 'lol')
 
     # CIF reader
     __cR = None
@@ -297,6 +299,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__upl_or_lol = 'lol_w_upl'
 
         self.__max_dist_value = None
+        self.__min_dist_value = None
 
         self.__dihed_lb_greater_than_ub = False
         self.__dihed_ub_always_positive = True
@@ -441,6 +444,22 @@ class CyanaMRParserListener(ParseTreeListener):
                 if 'dihed_unusual_order' not in self.reasonsForReParsing:
                     self.reasonsForReParsing['dihed_unusual_order'] = True
 
+    # Enter a parse tree produced by CyanaMRParser#comment.
+    def enterComment(self, ctx: CyanaMRParser.CommentContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#comment.
+    def exitComment(self, ctx: CyanaMRParser.CommentContext):
+        for col in range(20):
+            if ctx.Any_name(col):
+                text = str(ctx.Any_name(col)).lower()
+                if 'upl' in text or 'upper' in text:
+                    self.__cur_dist_type = 'upl'
+                elif 'lol' in text or 'lower' in text:
+                    self.__cur_dist_type = 'lol'
+            else:
+                break
+
     # Enter a parse tree produced by CyanaMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext != 'cco' else 'jcoup'
@@ -531,6 +550,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.__max_dist_value = value
                     if value > self.__max_dist_value:
                         self.__max_dist_value = value
+                    if self.__min_dist_value is None:
+                        self.__min_dist_value = value
+                    if value < self.__min_dist_value:
+                        self.__min_dist_value = value
 
                 if has_square:
                     if value2 > DIST_RANGE_MAX:  # lol_only
@@ -554,8 +577,24 @@ class CyanaMRParserListener(ParseTreeListener):
                     lower_limit = value - delta
                     upper_limit = value + delta
 
-                elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                    if value > 1.8:
+                elif self.__upl_or_lol is None:
+                    if self.__cur_dist_type == 'upl':
+                        upper_limit = value
+                    elif self.__cur_dist_type == 'lol':
+                        lower_limit = value
+                    elif value > 1.8:
+                        upper_limit = value
+                    else:
+                        lower_limit = value
+
+                elif self.__upl_or_lol == 'upl_only':
+                    if self.__cur_dist_type == 'upl':
+                        upper_limit = value
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    elif self.__cur_dist_type == 'lol':
+                        lower_limit = value
+                    elif value > 1.8:
                         upper_limit = value
                         lower_limit = 1.8  # default value of PDBStat
                         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
@@ -572,6 +611,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 else:  # 'lol_w_upl'
                     lower_limit = value
+
+                if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
+                    self.__local_dist_types.append(self.__cur_dist_type)
 
                 if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
                     return
@@ -861,6 +903,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.__max_dist_value = value
                     if value > self.__max_dist_value:
                         self.__max_dist_value = value
+                    if self.__min_dist_value is None:
+                        self.__min_dist_value = value
+                    if value < self.__min_dist_value:
+                        self.__min_dist_value = value
 
                 if has_square:
                     if value2 > DIST_RANGE_MAX:  # lol_only
@@ -884,8 +930,24 @@ class CyanaMRParserListener(ParseTreeListener):
                     lower_limit = value - delta
                     upper_limit = value + delta
 
-                elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                    if value > 1.8:
+                elif self.__upl_or_lol is None:
+                    if self.__cur_dist_type == 'upl':
+                        upper_limit = value
+                    elif self.__cur_dist_type == 'lol':
+                        lower_limit = value
+                    elif value > 1.8:
+                        upper_limit = value
+                    else:
+                        lower_limit = value
+
+                elif self.__upl_or_lol == 'upl_only':
+                    if self.__cur_dist_type == 'upl':
+                        upper_limit = value
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    elif self.__cur_dist_type == 'lol':
+                        lower_limit = value
+                    elif value > 1.8:
                         upper_limit = value
                         lower_limit = 1.8  # default value of PDBStat
                         target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
@@ -902,6 +964,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 else:  # 'lol_w_upl'
                     lower_limit = value
+
+                if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
+                    self.__local_dist_types.append(self.__cur_dist_type)
 
                 if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
                     return
@@ -2878,9 +2943,29 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
+                        if self.__min_dist_value is None:
+                            self.__min_dist_value = value
+                        if value < self.__min_dist_value:
+                            self.__min_dist_value = value
 
-                    if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                        if value > 1.8:
+                    if self.__upl_or_lol is None:
+                        if self.__cur_dist_type == 'upl':
+                            upper_limit = value
+                        elif self.__cur_dist_type == 'lol':
+                            lower_limit = value
+                        elif value > 1.8:
+                            upper_limit = value
+                        else:
+                            lower_limit = value
+
+                    if self.__upl_or_lol == 'upl_only':
+                        if self.__cur_dist_type == 'upl':
+                            upper_limit = value
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        elif self.__cur_dist_type == 'lol':
+                            lower_limit = value
+                        elif value > 1.8:
                             upper_limit = value
                             lower_limit = 1.8  # default value of PDBStat
                             target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
@@ -2897,6 +2982,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
+
+                    if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
+                        self.__local_dist_types.append(self.__cur_dist_type)
 
                     dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
@@ -3027,6 +3115,10 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
+                        if self.__min_dist_value is None:
+                            self.__min_dist_value = value
+                        if value < self.__min_dist_value:
+                            self.__min_dist_value = value
 
                     if has_square:
                         if value2 > DIST_RANGE_MAX:  # lol_only
@@ -3050,8 +3142,24 @@ class CyanaMRParserListener(ParseTreeListener):
                         lower_limit = value - delta
                         upper_limit = value + delta
 
-                    elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                        if value > 1.8:
+                    elif self.__upl_or_lol is None:
+                        if self.__cur_dist_type == 'upl':
+                            upper_limit = value
+                        elif self.__cur_dist_type == 'lol':
+                            lower_limit = value
+                        elif value > 1.8:
+                            upper_limit = value
+                        else:
+                            lower_limit = value
+
+                    elif self.__upl_or_lol == 'upl_only':
+                        if self.__cur_dist_type == 'upl':
+                            upper_limit = value
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        elif self.__cur_dist_type == 'lol':
+                            lower_limit = value
+                        elif value > 1.8:
                             upper_limit = value
                             lower_limit = 1.8  # default value of PDBStat
                             target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
@@ -3068,6 +3176,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
+
+                    if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
+                        self.__local_dist_types.append(self.__cur_dist_type)
 
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
@@ -3194,6 +3305,10 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
+                        if self.__min_dist_value is None:
+                            self.__min_dist_value = value
+                        if value < self.__min_dist_value:
+                            self.__min_dist_value = value
 
                     if value2 > DIST_RANGE_MAX:  # lol_only
                         lower_limit = value
@@ -3321,9 +3436,29 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
+                        if self.__min_dist_value is None:
+                            self.__min_dist_value = value
+                        if value < self.__min_dist_value:
+                            self.__min_dist_value = value
 
-                    if self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                        if value > 1.8:
+                    if self.__upl_or_lol is None:
+                        if self.__cur_dist_type == 'upl':
+                            upper_limit = value
+                        elif self.__cur_dist_type == 'lol':
+                            lower_limit = value
+                        elif value > 1.8:
+                            upper_limit = value
+                        else:
+                            lower_limit = value
+
+                    if self.__upl_or_lol == 'upl_only':
+                        if self.__cur_dist_type == 'upl':
+                            upper_limit = value
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        elif self.__cur_dist_type == 'lol':
+                            lower_limit = value
+                        elif value > 1.8:
                             upper_limit = value
                             lower_limit = 1.8  # default value of PDBStat
                             target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
@@ -3340,6 +3475,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
+
+                    if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
+                        self.__local_dist_types.append(self.__cur_dist_type)
 
                     dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
@@ -3470,6 +3608,10 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
+                        if self.__min_dist_value is None:
+                            self.__min_dist_value = value
+                        if value < self.__min_dist_value:
+                            self.__min_dist_value = value
 
                     if has_square:
                         if value2 > DIST_RANGE_MAX:  # lol_only
@@ -3493,8 +3635,24 @@ class CyanaMRParserListener(ParseTreeListener):
                         lower_limit = value - delta
                         upper_limit = value + delta
 
-                    elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                        if value > 1.8:
+                    elif self.__upl_or_lol is None:
+                        if self.__cur_dist_type == 'upl':
+                            upper_limit = value
+                        elif self.__cur_dist_type == 'lol':
+                            lower_limit = value
+                        elif value > 1.8:
+                            upper_limit = value
+                        else:
+                            lower_limit = value
+
+                    elif self.__upl_or_lol == 'upl_only':
+                        if self.__cur_dist_type == 'upl':
+                            upper_limit = value
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        elif self.__cur_dist_type == 'lol':
+                            lower_limit = value
+                        elif value > 1.8:
                             upper_limit = value
                             lower_limit = 1.8  # default value of PDBStat
                             target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
@@ -3511,6 +3669,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
+
+                    if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
+                        self.__local_dist_types.append(self.__cur_dist_type)
 
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
@@ -3637,6 +3798,10 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
+                        if self.__min_dist_value is None:
+                            self.__min_dist_value = value
+                        if value < self.__min_dist_value:
+                            self.__min_dist_value = value
 
                     if value2 > DIST_RANGE_MAX:  # lol_only
                         lower_limit = value
@@ -3830,6 +3995,10 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.__max_dist_value = value
                 if value > self.__max_dist_value:
                     self.__max_dist_value = value
+                if self.__min_dist_value is None:
+                    self.__min_dist_value = value
+                if value < self.__min_dist_value:
+                    self.__min_dist_value = value
 
             if has_square:
                 if value2 > DIST_RANGE_MAX:  # lol_only
@@ -3853,8 +4022,24 @@ class CyanaMRParserListener(ParseTreeListener):
                 lower_limit = value - delta
                 upper_limit = value + delta
 
-            elif self.__upl_or_lol is None or self.__upl_or_lol == 'upl_only':
-                if value > 1.8:
+            elif self.__upl_or_lol is None:
+                if self.__cur_dist_type == 'upl':
+                    upper_limit = value
+                elif self.__cur_dist_type == 'lol':
+                    lower_limit = value
+                elif value > 1.8:
+                    upper_limit = value
+                else:
+                    lower_limit = value
+
+            elif self.__upl_or_lol == 'upl_only':
+                if self.__cur_dist_type == 'upl':
+                    upper_limit = value
+                    lower_limit = 1.8  # default value of PDBStat
+                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                elif self.__cur_dist_type == 'lol':
+                    lower_limit = value
+                elif value > 1.8:
                     upper_limit = value
                     lower_limit = 1.8  # default value of PDBStat
                     target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
@@ -3871,6 +4056,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
             else:  # 'lol_w_upl'
                 lower_limit = value
+
+            if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
+                self.__local_dist_types.append(self.__cur_dist_type)
 
             if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
                 return
@@ -4727,11 +4915,29 @@ class CyanaMRParserListener(ParseTreeListener):
         """
         return self.reasonsForReParsing
 
-    def isUplDistanceRestraint(self):
-        """ Return whether CYANA MR file contains upper limit distance restraints.
+    def getTypeOfDistanceRestraints(self):
+        """ Return type of distance restraints of the CYANA MR file.
         """
-        if self.__max_dist_value is None:
-            return None
-        return self.__max_dist_value > 3.5
+        if self.__file_ext is not None:
+            if self.__file_ext in ('upl', 'lol'):
+                return self.__file_ext
+
+        if len(self.__local_dist_types) > 0:
+            if 'upl' in self.__local_dist_types and 'lol' not in self.__local_dist_types:
+                return 'upl'
+            if 'lol' in self.__local_dist_types and 'upl' not in self.__local_dist_types:
+                return 'lol'
+            return 'both'
+
+        if self.__max_dist_value is None or self.__min_dist_value is None:
+            return ''
+
+        if self.__max_dist_value > 3.5 and self.__min_dist_value > 2.7:
+            return 'upl'
+        if self.__max_dist_value < 2.7:
+            return 'lol'
+
+        return 'both'
+
 
 # del CyanaMRParser

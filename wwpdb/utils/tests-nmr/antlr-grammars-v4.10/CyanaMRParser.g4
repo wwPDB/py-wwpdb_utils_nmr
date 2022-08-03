@@ -20,8 +20,9 @@ options { tokenVocab=CyanaMRLexer; }
 
 cyana_mr:
 	(
-	ORI_HEADER |
-	TEN_HEADER |
+	Orientation_header |
+	Tensor_header |
+	comment |
 	distance_restraints |
 	fixres_distance_restraints |
 	fixresw_distance_restraints |
@@ -43,6 +44,9 @@ cyana_mr:
 	ambig_atom_name_mapping
 	)*
 	EOF;
+
+comment:
+	COMMENT Any_name* RETURN_CM;
 
 /* CYANA 3.0 Reference Manual - Distance restraint file
  See also http://www.cyana.org/wiki/index.php/Distance_restraint_file

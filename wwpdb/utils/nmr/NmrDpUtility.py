@@ -7750,7 +7750,7 @@ class NmrDpUtility:
                                 has_hbond_restraint = 'hbond_restraint' in content_subtype
 
                                 if file_type == 'nm-res-cya' and has_dist_restraint:
-                                    ar['is_upl'] = listener.isUplDistanceRestraint()
+                                    ar['dist_type'] = listener.getTypeOfDistanceRestraints()
                                 if file_type == 'nm-res-amb':
                                     ar['has_comments'] = listener.hasComments()
 
@@ -22088,9 +22088,9 @@ class NmrDpUtility:
                             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
                 elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
-                    if ar['is_upl']:
+                    if ar['dist_type'] in ('upl', 'both'):
                         cyanaUplDistRest += 1
-                    else:
+                    if ar['dist_type'] in ('lol', 'both'):
                         cyanaLolDistRest += 1
 
         poly_seq_set = []
@@ -22507,17 +22507,17 @@ class NmrDpUtility:
 
                 upl_or_lol = None
                 if has_dist_restraint:
-                    is_upl = ar['is_upl']
-                    if cyanaUplDistRest + cyanaLolDistRest == 1:
-                        upl_or_lol = 'upl_only' if is_upl else 'lol_only'
-                    elif cyanaLolDistRest == 0:
+                    dist_type = ar['dist_type']
+                    if cyanaLolDistRest == 0 and dist_type == 'upl':
                         upl_or_lol = 'upl_only'
-                    elif cyanaUplDistRest == 0:
+                    elif cyanaUplDistRest == 0 and dist_type == 'lol':
                         upl_or_lol = 'lol_only'
-                    elif is_upl:
+                    elif dist_type == 'upl':
                         upl_or_lol = 'upl_w_lol'
-                    else:
+                    elif dist_type == 'lol':
                         upl_or_lol = 'lol_w_upl'
+                    else:
+                        upl_or_lol = None
 
                 cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMRFile()
 

@@ -752,7 +752,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} exp={exp} index={index} "
@@ -957,7 +957,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[atom_order[0]],
                                                              self.atomSelectionSet[atom_order[1]],
                                                              self.atomSelectionSet[atom_order[2]]):
-                    if isLongRangeRestraint([atom1, atom2, atom3]):
+                    if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
@@ -969,7 +969,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
-                    if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                    if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
@@ -1068,7 +1068,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "

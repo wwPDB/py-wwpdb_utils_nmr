@@ -748,7 +748,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'auth_to_label_seq': authToLabelSeq}
 
 
-def isLongRangeRestraint(atoms):
+def isLongRangeRestraint(atoms, polySeq):
     """ Return whether restraint is neither an intra residue nor sequential residues.
     """
 
@@ -766,7 +766,21 @@ def isLongRangeRestraint(atoms):
 
     for s1, s2 in itertools.combinations(commonSeqId, 2):
         if abs(s1[0] - s2[0]) > 1:
-            return True
+
+            # verify with label_seq_id scheme
+
+            try:
+
+                ps = next(ps for ps in polySeq if ps['auth_chain_id'] == chainIds[0])
+
+                _seqIds = [ps['seq_id'][ps['auth_seq_id'].index(a['seq_id'])] for a in atoms]
+                _commonSeqId = collections.Counter(_seqIds).most_common()
+                for _s1, _s2 in itertools.combinations(_commonSeqId, 2):
+                    if abs(_s1[0] - _s2[0]) > 1:
+                        return True
+
+            except Exception:
+                return True
 
     return False
 

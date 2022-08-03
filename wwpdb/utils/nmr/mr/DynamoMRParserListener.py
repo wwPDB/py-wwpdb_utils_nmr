@@ -1610,7 +1610,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -1762,7 +1762,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -1914,7 +1914,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -2073,7 +2073,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -2676,10 +2676,15 @@ class DynamoMRParserListener(ParseTreeListener):
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None:
-                            self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                "Please update the sequence in the Macromolecules page.\n"
-                            _cifCompId = '.'
+                            try:
+                                _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
+                            except IndexError:
+                                pass
+                            if _cifCompId is None:
+                                self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
+                                    f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                    "Please update the sequence in the Macromolecules page.\n"
+                                _cifCompId = '.'
                             cifAtomId = atomId
 
                         else:
@@ -2707,7 +2712,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "
@@ -2819,10 +2824,15 @@ class DynamoMRParserListener(ParseTreeListener):
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None:
-                            self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                "Please update the sequence in the Macromolecules page.\n"
-                            _cifCompId = '.'
+                            try:
+                                _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
+                            except IndexError:
+                                pass
+                            if _cifCompId is None:
+                                self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
+                                    f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                    "Please update the sequence in the Macromolecules page.\n"
+                                _cifCompId = '.'
                             cifAtomId = atomId
 
                         else:
@@ -2850,7 +2860,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "

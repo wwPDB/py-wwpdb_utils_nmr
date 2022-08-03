@@ -1606,7 +1606,7 @@ class CnsMRParserListener(ParseTreeListener):
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
                 if self.__symmetric == 'no':
-                    if isLongRangeRestraint([atom1, atom2]):
+                    if isLongRangeRestraint([atom1, atom2], self.__polySeq):
                         continue
                 else:
                     if isAsymmetricRangeRestraint([atom1, atom2], chain_id_set, self.__symmetric):
@@ -1944,7 +1944,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
-                    if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                    if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq):
                         continue
                     if self.__debug:
                         if dstFunc2 is None:
@@ -1959,7 +1959,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
-                    if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                    if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq):
                         continue
                     if self.__debug:
                         if dstFunc2 is None:
@@ -1973,7 +1973,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[5],
                                                                     self.atomSelectionSet[6],
                                                                     self.atomSelectionSet[7]):
-                    if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                    if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq):
                         continue
                     if self.__debug:
                         if dstFunc2 is None:
@@ -2096,7 +2096,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                        self.atomSelectionSet[2],
                                                                        self.atomSelectionSet[3],
                                                                        self.atomSelectionSet[4]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5]):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CARB) id={self.hvycsRestraints} "
@@ -2335,7 +2335,7 @@ class CnsMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
-            if isLongRangeRestraint([atom1, atom2, atom3]):
+            if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq):
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (PROTON/ANIS) id={self.procsRestraints} "
@@ -2436,7 +2436,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                        self.atomSelectionSet[2],
                                                                        self.atomSelectionSet[3],
                                                                        self.atomSelectionSet[4]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5]):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (PROTON/RING) id={self.procsRestraints} "
@@ -2449,7 +2449,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                               self.atomSelectionSet[3],
                                                                               self.atomSelectionSet[4],
                                                                               self.atomSelectionSet[5]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5, atom6]):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5, atom6], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (PROTON/RING) id={self.procsRestraints} "
@@ -2580,7 +2580,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[i + 1],
                                                                 self.atomSelectionSet[i + 2],
                                                                 self.atomSelectionSet[i + 3]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CONF) id={self.ramaRestraints} "
@@ -2725,7 +2725,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (DANI) id={self.diffRestraints} "

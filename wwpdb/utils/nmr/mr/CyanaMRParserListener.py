@@ -178,6 +178,7 @@ class CyanaMRParserListener(ParseTreeListener):
     __hasPolySeq = False
     __hasNonPoly = False
     __preferAuthSeq = True
+    __gapInAuthSeq = False
 
     # chain number dictionary
     __chainNumberDict = None
@@ -191,6 +192,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = ''
     __cur_subtype_altered = False
+    __cur_subtype_fixedcol = False
     __cur_rdc_orientation = 0
 
     # column_order of distance restraints with chain
@@ -258,6 +260,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
+        if self.__hasPolySeq:
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -450,13 +454,18 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#comment.
     def exitComment(self, ctx: CyanaMRParser.CommentContext):
+        if self.__cur_subtype_fixedcol:
+            return
+
         for col in range(20):
             if ctx.Any_name(col):
                 text = str(ctx.Any_name(col)).lower()
-                if 'upl' in text or 'upper' in text:
+                if ('upl' in text or 'upper' in text) and not ('lol' in text or 'lower' in text):
                     self.__cur_dist_type = 'upl'
-                elif 'lol' in text or 'lower' in text:
+                    break
+                elif ('lol' in text or 'lower' in text) and not ('upl' in text or 'upper' in text):
                     self.__cur_dist_type = 'lol'
+                    break
             else:
                 break
 
@@ -711,7 +720,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
-                                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
+                                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                                     continue
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -830,7 +839,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isLongRangeRestraint([atom1, atom2], self.__polySeq):
+                    if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
@@ -1064,7 +1073,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
-                                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
+                                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                                     continue
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -1183,7 +1192,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isLongRangeRestraint([atom1, atom2], self.__polySeq):
+                    if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
@@ -2290,7 +2299,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq):
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
@@ -2373,7 +2382,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                                self.atomSelectionSet[2],
                                                                                self.atomSelectionSet[3],
                                                                                self.atomSelectionSet[4]):
-                        if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq):
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
@@ -2613,7 +2622,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -2902,10 +2911,11 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__cur_subtype = 'noepk'
 
         self.__cur_subtype_altered = False
+        self.__cur_subtype_fixedcol = True
 
     # Exit a parse tree produced by CyanaMRParser#fixres_distance_restraints.
     def exitFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_subtype_fixedcol = False
 
     # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraint.
     def enterFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext):  # pylint: disable=unused-argument
@@ -3054,10 +3064,11 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__cur_subtype = 'noepk'
 
         self.__cur_subtype_altered = False
+        self.__cur_subtype_fixedcol = True
 
     # Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
     def exitFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_subtype_fixedcol = False
 
     # Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraint.
     def enterFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext):  # pylint: disable=unused-argument
@@ -3252,10 +3263,11 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__cur_subtype = 'noepk'
 
         self.__cur_subtype_altered = False
+        self.__cur_subtype_fixedcol = True
 
     # Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
     def exitFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_subtype_fixedcol = False
 
     # Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraint.
     def enterFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext):  # pylint: disable=unused-argument
@@ -3395,10 +3407,11 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__cur_subtype = 'noepk'
 
         self.__cur_subtype_altered = False
+        self.__cur_subtype_fixedcol = True
 
     # Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
     def exitFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_subtype_fixedcol = False
 
     # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
     def enterFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext):  # pylint: disable=unused-argument
@@ -3547,10 +3560,11 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__cur_subtype = 'noepk'
 
         self.__cur_subtype_altered = False
+        self.__cur_subtype_fixedcol = True
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
     def exitFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_subtype_fixedcol = False
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraint.
     def enterFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext):  # pylint: disable=unused-argument
@@ -3745,10 +3759,11 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__cur_subtype = 'noepk'
 
         self.__cur_subtype_altered = False
+        self.__cur_subtype_fixedcol = True
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
     def exitFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_subtype_fixedcol = False
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraint.
     def enterFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext):  # pylint: disable=unused-argument
@@ -4173,7 +4188,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                               self.atomSelectionSet[1]):
-                            if isLongRangeRestraint([atom1, atom2], self.__polySeq):
+                            if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                                 continue
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -4389,7 +4404,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "

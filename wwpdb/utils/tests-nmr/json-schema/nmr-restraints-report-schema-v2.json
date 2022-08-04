@@ -698,6 +698,10 @@
           "items": {
             "$ref": "#/definitions/well_defined_region"
           }
+        },
+        "gap_in_auth_seq": {
+          "description": "Whether there are explicit sequence gaps in the author sequence, excluding null value concatenation.",
+          "type": "boolean"
         }
       },
       "additionalProperties": false,

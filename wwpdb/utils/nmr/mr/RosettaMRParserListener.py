@@ -151,6 +151,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __hasPolySeq = False
     __hasNonPoly = False
     __preferAuthSeq = True
+    __gapInAuthSeq = False
 
     # polymer sequence of MR file
     __polySeqRst = None
@@ -211,6 +212,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
+        if self.__hasPolySeq:
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -965,7 +968,7 @@ class RosettaMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
-            if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq):
+            if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
@@ -2742,7 +2745,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CS-ROSETTA: RDC) id={self.rdcRestraints} "

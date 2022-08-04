@@ -110,7 +110,7 @@ fixres_distance_restraints:
 
 fixres_distance_restraint:
 	Integer Simple_name
-	(Simple_name Integer Simple_name Simple_name number)+;
+	(Simple_name Integer Simple_name Simple_name number | comment)+;
 
 /* with weight value or upper limit value */
 fixresw_distance_restraints:
@@ -126,7 +126,7 @@ fixresw2_distance_restraints:
 
 fixresw2_distance_restraint:
 	Integer Simple_name
-	(Simple_name Integer Simple_name Simple_name number number number)+;
+	(Simple_name Integer Simple_name Simple_name number number number | comment)+;
 
 /* CYANA (undocumented) - ambiguous (fixed atom) distance restraint
  77 VAL H  #

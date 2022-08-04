@@ -302,8 +302,8 @@ class CyanaMRParserListener(ParseTreeListener):
             if file_ext == 'lol':
                 self.__upl_or_lol = 'lol_w_upl'
 
-        self.__max_dist_value = None
-        self.__min_dist_value = None
+        self.__max_dist_value = DIST_ERROR_MIN
+        self.__min_dist_value = DIST_ERROR_MAX
 
         self.__dihed_lb_greater_than_ub = False
         self.__dihed_ub_always_positive = True
@@ -423,7 +423,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             if 'chain_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
-            if 'Atom not found' in self.warningMessage:
+            if 'Atom not found' in self.warningMessage and self.__reasons is None:
                 if len(self.unambigAtomNameMapping) > 0:
                     if self.reasonsForReParsing is None:
                         self.reasonsForReParsing = {}
@@ -555,12 +555,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         f"The relative weight value of '{weight}' should be a positive value.\n"
 
                 if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
-                    if self.__max_dist_value is None:
-                        self.__max_dist_value = value
                     if value > self.__max_dist_value:
                         self.__max_dist_value = value
-                    if self.__min_dist_value is None:
-                        self.__min_dist_value = value
                     if value < self.__min_dist_value:
                         self.__min_dist_value = value
 
@@ -908,12 +904,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         f"The relative weight value of '{weight}' should be a positive value.\n"
 
                 if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
-                    if self.__max_dist_value is None:
-                        self.__max_dist_value = value
                     if value > self.__max_dist_value:
                         self.__max_dist_value = value
-                    if self.__min_dist_value is None:
-                        self.__min_dist_value = value
                     if value < self.__min_dist_value:
                         self.__min_dist_value = value
 
@@ -2961,12 +2953,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__cur_subtype == 'dist':
 
                     if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                        if self.__max_dist_value is None:
-                            self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
-                        if self.__min_dist_value is None:
-                            self.__min_dist_value = value
                         if value < self.__min_dist_value:
                             self.__min_dist_value = value
 
@@ -3134,12 +3122,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__cur_subtype == 'dist':
 
                     if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                        if self.__max_dist_value is None:
-                            self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
-                        if self.__min_dist_value is None:
-                            self.__min_dist_value = value
                         if value < self.__min_dist_value:
                             self.__min_dist_value = value
 
@@ -3325,12 +3309,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__cur_subtype == 'dist':
 
                     if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                        if self.__max_dist_value is None:
-                            self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
-                        if self.__min_dist_value is None:
-                            self.__min_dist_value = value
                         if value < self.__min_dist_value:
                             self.__min_dist_value = value
 
@@ -3457,12 +3437,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__cur_subtype == 'dist':
 
                     if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                        if self.__max_dist_value is None:
-                            self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
-                        if self.__min_dist_value is None:
-                            self.__min_dist_value = value
                         if value < self.__min_dist_value:
                             self.__min_dist_value = value
 
@@ -3630,12 +3606,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__cur_subtype == 'dist':
 
                     if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                        if self.__max_dist_value is None:
-                            self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
-                        if self.__min_dist_value is None:
-                            self.__min_dist_value = value
                         if value < self.__min_dist_value:
                             self.__min_dist_value = value
 
@@ -3821,12 +3793,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__cur_subtype == 'dist':
 
                     if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                        if self.__max_dist_value is None:
-                            self.__max_dist_value = value
                         if value > self.__max_dist_value:
                             self.__max_dist_value = value
-                        if self.__min_dist_value is None:
-                            self.__min_dist_value = value
                         if value < self.__min_dist_value:
                             self.__min_dist_value = value
 
@@ -4018,12 +3986,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     f"The relative weight value of '{weight}' should be a positive value.\n"
 
             if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
-                if self.__max_dist_value is None:
-                    self.__max_dist_value = value
                 if value > self.__max_dist_value:
                     self.__max_dist_value = value
-                if self.__min_dist_value is None:
-                    self.__min_dist_value = value
                 if value < self.__min_dist_value:
                     self.__min_dist_value = value
 
@@ -4962,7 +4926,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 return 'lol'
             return 'both'
 
-        if self.__max_dist_value is None or self.__min_dist_value is None:
+        if self.__max_dist_value == DIST_ERROR_MIN:
             return ''
 
         if self.__max_dist_value > 3.5 and self.__min_dist_value > 2.7:

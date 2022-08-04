@@ -436,7 +436,7 @@ class DynamoMRParser ( Parser ):
 
     symbolicNames = [ "<INVALID>", "Data", "Vars", "Format", "Integer", 
                       "Float", "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                      "Simple_name", "SPACE", "COMMENT", "SECTION_COMMENT", 
+                      "Simple_name", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
                       "LINE_COMMENT", "First_resid", "Sequence", "Pales_mode", 
                       "Tensor_mode", "Saupe_matrix", "S_DA", "Saupe", "Irreducible_rep", 
                       "Irreducible", "General_magnitude", "Mapping_corr", 
@@ -523,7 +523,7 @@ class DynamoMRParser ( Parser ):
     SMCLN_COMMENT=8
     Simple_name=9
     SPACE=10
-    COMMENT=11
+    ENCLOSE_COMMENT=11
     SECTION_COMMENT=12
     LINE_COMMENT=13
     First_resid=14

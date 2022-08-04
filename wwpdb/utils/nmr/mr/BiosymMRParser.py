@@ -80,7 +80,7 @@ class BiosymMRParser ( Parser ):
 
     symbolicNames = [ "<INVALID>", "Integer", "Float", "Real", "SHARP_COMMENT", 
                       "EXCLM_COMMENT", "SMCLN_COMMENT", "Chiral_code", "Atom_selection", 
-                      "Ordinal", "SPACE", "COMMENT", "SECTION_COMMENT", 
+                      "Ordinal", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
                       "LINE_COMMENT" ]
 
     RULE_biosym_mr = 0
@@ -117,7 +117,7 @@ class BiosymMRParser ( Parser ):
     Atom_selection=8
     Ordinal=9
     SPACE=10
-    COMMENT=11
+    ENCLOSE_COMMENT=11
     SECTION_COMMENT=12
     LINE_COMMENT=13
 

@@ -699,7 +699,7 @@ class DynamoMRLexer(Lexer):
     SMCLN_COMMENT = 8
     Simple_name = 9
     SPACE = 10
-    COMMENT = 11
+    ENCLOSE_COMMENT = 11
     SECTION_COMMENT = 12
     LINE_COMMENT = 13
     First_resid = 14
@@ -841,7 +841,7 @@ class DynamoMRLexer(Lexer):
 
     symbolicNames = [ "<INVALID>",
             "Data", "Vars", "Format", "Integer", "Float", "SHARP_COMMENT", 
-            "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", "SPACE", "COMMENT", 
+            "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", "SPACE", "ENCLOSE_COMMENT", 
             "SECTION_COMMENT", "LINE_COMMENT", "First_resid", "Sequence", 
             "Pales_mode", "Tensor_mode", "Saupe_matrix", "S_DA", "Saupe", 
             "Irreducible_rep", "Irreducible", "General_magnitude", "Mapping_corr", 
@@ -868,7 +868,7 @@ class DynamoMRLexer(Lexer):
                   "DEC_DIGIT", "DECIMAL", "SHARP_COMMENT", "EXCLM_COMMENT", 
                   "SMCLN_COMMENT", "Simple_name", "ALPHA", "ALPHA_NUM", 
                   "START_CHAR", "NAME_CHAR", "ATM_NAME_CHAR", "ATM_TYPE_CHAR", 
-                  "SIMPLE_NAME", "SPACE", "COMMENT", "SECTION_COMMENT", 
+                  "SIMPLE_NAME", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
                   "LINE_COMMENT", "First_resid", "Sequence", "Pales_mode", 
                   "Tensor_mode", "Saupe_matrix", "S_DA", "Saupe", "Irreducible_rep", 
                   "Irreducible", "General_magnitude", "Mapping_corr", "Mapping", 

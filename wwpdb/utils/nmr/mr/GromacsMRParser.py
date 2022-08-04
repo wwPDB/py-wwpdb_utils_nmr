@@ -82,7 +82,7 @@ class GromacsMRParser ( Parser ):
                       "Dihedral_restraints", "Orientation_restraints", "Angle_restraints", 
                       "Angle_restraints_z", "Position_restraints", "Intermolecular_interactions", 
                       "Integer", "Float", "SHARP_COMMENT", "EXCLM_COMMENT", 
-                      "SMCLN_COMMENT", "Simple_name", "SPACE", "COMMENT", 
+                      "SMCLN_COMMENT", "Simple_name", "SPACE", "ENCLOSE_COMMENT", 
                       "SECTION_COMMENT", "LINE_COMMENT" ]
 
     RULE_gromacs_mr = 0
@@ -123,7 +123,7 @@ class GromacsMRParser ( Parser ):
     SMCLN_COMMENT=14
     Simple_name=15
     SPACE=16
-    COMMENT=17
+    ENCLOSE_COMMENT=17
     SECTION_COMMENT=18
     LINE_COMMENT=19
 

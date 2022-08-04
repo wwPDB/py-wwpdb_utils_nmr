@@ -209,7 +209,7 @@ class GromacsMRLexer(Lexer):
     SMCLN_COMMENT = 14
     Simple_name = 15
     SPACE = 16
-    COMMENT = 17
+    ENCLOSE_COMMENT = 17
     SECTION_COMMENT = 18
     LINE_COMMENT = 19
 
@@ -227,7 +227,8 @@ class GromacsMRLexer(Lexer):
             "Orientation_restraints", "Angle_restraints", "Angle_restraints_z", 
             "Position_restraints", "Intermolecular_interactions", "Integer", 
             "Float", "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-            "Simple_name", "SPACE", "COMMENT", "SECTION_COMMENT", "LINE_COMMENT" ]
+            "Simple_name", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
+            "LINE_COMMENT" ]
 
     ruleNames = [ "L_brkt", "R_brkt", "Distance_restraints", "Dihedral_restraints", 
                   "Orientation_restraints", "Angle_restraints", "Angle_restraints_z", 
@@ -235,8 +236,8 @@ class GromacsMRLexer(Lexer):
                   "Integer", "Float", "DEC_DOT_DEC", "DEC_DIGIT", "DECIMAL", 
                   "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", 
                   "ALPHA", "ALPHA_NUM", "START_CHAR", "NAME_CHAR", "ATM_NAME_CHAR", 
-                  "ATM_TYPE_CHAR", "SIMPLE_NAME", "SPACE", "COMMENT", "SECTION_COMMENT", 
-                  "LINE_COMMENT" ]
+                  "ATM_TYPE_CHAR", "SIMPLE_NAME", "SPACE", "ENCLOSE_COMMENT", 
+                  "SECTION_COMMENT", "LINE_COMMENT" ]
 
     grammarFileName = "GromacsMRLexer.g4"
 

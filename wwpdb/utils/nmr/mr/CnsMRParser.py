@@ -921,7 +921,7 @@ class CnsMRParser ( Parser ):
                       "SMCLN_COMMENT", "Simple_name", "Simple_names", "Integers", 
                       "L_paren", "R_paren", "Colon", "Equ_op", "Lt_op", 
                       "Gt_op", "Leq_op", "Geq_op", "Neq_op", "Symbol_name", 
-                      "SPACE", "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
+                      "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
                       "SET_VARIABLE", "Abs", "Attr_properties", "Comparison_ops", 
                       "SPACE_AP", "Averaging_methods", "Class_name_AM", 
                       "SPACE_AM", "Equ_op_PT", "Potential_types", "Class_name_PT", 
@@ -1222,7 +1222,7 @@ class CnsMRParser ( Parser ):
     Neq_op=168
     Symbol_name=169
     SPACE=170
-    COMMENT=171
+    ENCLOSE_COMMENT=171
     SECTION_COMMENT=172
     LINE_COMMENT=173
     SET_VARIABLE=174

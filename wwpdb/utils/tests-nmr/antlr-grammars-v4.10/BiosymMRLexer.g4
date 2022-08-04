@@ -48,7 +48,7 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 Ordinal:		DECIMAL '.';
 
 SPACE:			[ \t\r\n]+ -> skip;
-COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
+ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
 

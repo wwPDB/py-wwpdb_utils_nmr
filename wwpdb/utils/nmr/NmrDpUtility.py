@@ -6530,15 +6530,29 @@ class NmrDpUtility:
 
         if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints' and not self.__bmrb_only:
 
-            err = "NMR restraint file includes assigned chemical shifts. "\
-                f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+            if self.__remediation_mode and lp_counts['dist_restraint'] + lp_counts['dihed_restraint'] + lp_counts['rdc_restraint'] > 0:
 
-            self.report.error.appendDescription('content_mismatch',
-                                                {'file_name': file_name, 'description': err})
-            self.report.setError()
+                warn = "NMR restraint file includes assigned chemical shifts. "\
+                    "which will be ignored during NMR restraint remediation processing."
 
-            if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.report.warning.appendDescription('corrected_format_issue',
+                                                      {'file_name': file_name, 'description': warn})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+
+            else:
+
+                err = "NMR restraint file includes assigned chemical shifts. "\
+                    f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
 
         content_subtype = 'dist_restraint'
 
@@ -6595,6 +6609,21 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+
+        if self.__remediation_mode and content_type == 'nmr-restraints' and not self.__bmrb_only:
+
+            for content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref'):
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+
+                if sf_category is None or lp_counts[content_subtype] == 0:
+                    continue
+
+                for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                    self.__star_data[file_list_id].remove_saveframe(sf_framecode)
+
+                lp_counts[content_subtype] = 0
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 

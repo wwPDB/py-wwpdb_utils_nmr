@@ -1192,9 +1192,15 @@ class NmrDpUtility:
 
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
-                                     'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt')
+                                     'dist_restraint', 'dihed_restraint', 'rdc_restraint',
+                                     'spectral_peak', 'spectral_peak_alt',
+                                     'noepk_restraint', 'jcoup_restraint', 'rdc_raw_data',
+                                     'csa_restraint', 'ddc_restraint',
+                                     'hvycs_restraint', 'procs_restraint',
+                                     'csp_restraint', 'relax_restraint',
+                                     'ccr_d_csa_restraint', 'ccr_dd_restraint',
+                                     'other_restraint')
 
-        # CIF content types
         self.cif_content_subtypes = ('poly_seq', 'non_poly', 'coordinate')
 
         # readable file type
@@ -1226,7 +1232,19 @@ class NmrDpUtility:
                                       'dihed_restraint': 'nef_dihedral_restraint_list',
                                       'rdc_restraint': 'nef_rdc_restraint_list',
                                       'spectral_peak': 'nef_nmr_spectrum',
-                                      'spectral_peak_alt': None
+                                      'spectral_peak_alt': None,
+                                      'noepk_restraint': None,
+                                      'jcoup_restraint': None,
+                                      'rdc_raw_data': None,
+                                      'csa_restraint': None,
+                                      'ddc_restraint': None,
+                                      'hvycs_restraint': None,
+                                      'procs_restraint': None,
+                                      'csp_restraint': None,
+                                      'relax_restraint': None,
+                                      'ccr_d_csa_restraint': None,
+                                      'ccr_dd_restraint': None,
+                                      'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': 'entry_information',
                                            'poly_seq': 'assembly',
@@ -1237,7 +1255,19 @@ class NmrDpUtility:
                                            'dihed_restraint': 'torsion_angle_constraints',
                                            'rdc_restraint': 'RDC_constraints',
                                            'spectral_peak': 'spectral_peak_list',
-                                           'spectral_peak_alt': 'spectral_peak_list'
+                                           'spectral_peak_alt': 'spectral_peak_list',
+                                           'noepk_restraint': 'homonucl_NOEs',
+                                           'jcoup_restraint': 'coupling_constants',
+                                           'rdc_raw_data': 'RDCs',
+                                           'csa_restraint': 'chem_shift_anisotropy',
+                                           'ddc_restraint': 'dipolar_couplings',
+                                           'hvycs_restraint': 'CA_CB_chem_shift_constraints',
+                                           'procs_restraint': 'H_chem_shift_constraints',
+                                           'csp_restraint': 'chem_shift_perturbation',
+                                           'relax_restraint': 'auto_relaxation',
+                                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
+                                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
+                                           'other_restraint': 'other_data_types'
                                            }
                               }
 
@@ -1251,7 +1281,19 @@ class NmrDpUtility:
                                       'dihed_restraint': '_nef_dihedral_restraint',
                                       'rdc_restraint': '_nef_rdc_restraint',
                                       'spectral_peak': '_nef_peak',
-                                      'spectral_peak_alt': None
+                                      'spectral_peak_alt': None,
+                                      'noepk_restraint': None,
+                                      'jcoup_restraint': None,
+                                      'rdc_raw_data': None,
+                                      'csa_restraint': None,
+                                      'ddc_restraint': None,
+                                      'hvycs_restraint': None,
+                                      'procs_restraint': None,
+                                      'csp_restraint': None,
+                                      'relax_restraint': None,
+                                      'ccr_d_csa_restraint': None,
+                                      'ccr_dd_restraint': None,
+                                      'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': '_Software_applied_methods',
                                            'poly_seq': '_Chem_comp_assembly',
@@ -1262,7 +1304,19 @@ class NmrDpUtility:
                                            'dihed_restraint': '_Torsion_angle_constraint',
                                            'rdc_restraint': '_RDC_constraint',
                                            'spectral_peak': '_Peak_row_format',
-                                           'spectral_peak_alt': '_Peak'
+                                           'spectral_peak_alt': '_Peak',
+                                           'noepk_restraint': '_Homonucl_NOE',
+                                           'jcoup_restraint': '_Coupling_constant',
+                                           'rdc_raw_data': '_RDC',
+                                           'csa_restraint': '_CS_anisotropy',
+                                           'ddc_restraint': '_Dipolar_coupling',
+                                           'hvycs_restraint': '_CA_CB_constraint',
+                                           'procs_restraint': '_H_chem_shift_constraint',
+                                           'csp_restraint': '_Chem_shift_perturbation',
+                                           'relax_restraint': '_Auto_relaxation',
+                                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
+                                           'ccr_dd_restraint': '_Cross_correlation_DD',
+                                           'other_restraint': '_Other_data'
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
                                        'non_poly': 'pdbx_nonpoly_scheme',
@@ -6533,7 +6587,7 @@ class NmrDpUtility:
             if self.__remediation_mode and lp_counts['dist_restraint'] + lp_counts['dihed_restraint'] + lp_counts['rdc_restraint'] > 0:
 
                 warn = "NMR restraint file includes assigned chemical shifts. "\
-                    "which will be ignored during NMR restraint remediation processing."
+                    "which will be ignored during remediation."
 
                 self.report.warning.appendDescription('corrected_format_issue',
                                                       {'file_name': file_name, 'description': warn})
@@ -22301,12 +22355,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
@@ -22427,12 +22480,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-amb':
                 reader = AmberMRReader(self.__verbose, self.__lfh,
@@ -22524,12 +22576,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-cya':
                 has_dist_restraint = 'dist_restraint' in content_subtype
@@ -22668,12 +22719,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
@@ -22788,12 +22838,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-bio':
                 reader = BiosymMRReader(self.__verbose, self.__lfh,
@@ -22903,12 +22952,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-gro':
                 reader = GromacsMRReader(self.__verbose, self.__lfh,
@@ -22992,12 +23040,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-dyn':
                 reader = DynamoMRReader(self.__verbose, self.__lfh,
@@ -23115,12 +23162,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-syb':
                 reader = SybylMRReader(self.__verbose, self.__lfh,
@@ -23230,12 +23276,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
         if len(poly_seq_set) > 1:
 
@@ -23260,25 +23305,29 @@ class NmrDpUtility:
 
             if chain_assign is not None:
 
-                chain_mapping = {}
+                if len(poly_seq_model) == len(poly_seq_rst):
 
-                for ca in chain_assign:
-                    ref_chain_id = ca['ref_chain_id']
-                    test_chain_id = ca['test_chain_id']
+                    chain_mapping = {}
 
-                    if ref_chain_id != test_chain_id:
-                        chain_mapping[test_chain_id] = ref_chain_id
+                    for ca in chain_assign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
-                if len(chain_mapping) > 0:
+                        if ref_chain_id != test_chain_id:
+                            chain_mapping[test_chain_id] = ref_chain_id
 
-                    for ps in poly_seq_rst:
-                        if ps['chain_id'] in chain_mapping:
-                            ps['chain_id'] = chain_mapping[ps['chain_id']]
+                    if len(chain_mapping) == len(poly_seq_model):
 
-                    seq_align, _ = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, conservative=False)
-                    chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+                        for ps in poly_seq_rst:
+                            if ps['chain_id'] in chain_mapping:
+                                ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                trimSequenceAlignment(seq_align, chain_assign)
+                        seq_align, _ = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, conservative=False)
+                        chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+
+                    trimSequenceAlignment(seq_align, chain_assign)
+
+            input_source.setItemValue('polymer_sequence', poly_seq_rst)
 
             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 

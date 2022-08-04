@@ -834,7 +834,7 @@ class NEFTranslator:
                                               '_CS_anisotropy', '_Dipolar_coupling',
                                               '_CA_CB_constraint', '_H_chem_shift_constraint',
                                               '_Chem_shift_perturbation', '_Auto_relaxation',
-                                              '_Cross_correlation_DD', 'Cross_correlation_D_CSA',
+                                              '_Cross_correlation_D_CSA', '_Cross_correlation_DD',
                                               '_Other_data']
 
                 minimal_sf_category_nef_a = ['nef_chemical_shift_list', 'nef_distance_restraint_list']
@@ -849,7 +849,7 @@ class NEFTranslator:
                                               'chem_shift_anisotropy', 'dipolar_couplings',
                                               'CA_CB_chem_shift_constraints', 'H_chem_shift_constraints',
                                               'chem_shift_perturbation', 'auto_relaxation',
-                                              'dipole_dipole_cross_correlations', 'dipole_CSA_cross_correlations',
+                                              'dipole_CSA_cross_correlations', 'dipole_dipole_cross_correlations',
                                               'other_data_types']
 
                 sf_list, lp_list = self.get_inventory_list(star_data, data_type)

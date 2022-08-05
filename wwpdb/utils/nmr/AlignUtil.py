@@ -477,7 +477,6 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             continue
 
         seq_id_name = 'auth_seq_id' if 'auth_seq_id' in s1 else 'seq_id'
-        # gap_in_auth_seq2 = any(s2 for s2 in polySeqRst if 'gap_in_auth_seq' in s2 and s2['gap_in_auth_seq'])
 
         for i2, s2 in enumerate(polySeqRst):
             chain_id2 = s2['chain_id']
@@ -534,9 +533,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1, seqIdName=seq_id_name)
             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-            both_have_gaps = s1['gap_in_auth_seq']  # and gap_in_auth_seq2
-
-            if both_have_gaps:
+            if s1['gap_in_auth_seq']:
 
                 for p in range(len(s1[seq_id_name]) - 1):
                     s_p = s1[seq_id_name][p]
@@ -562,7 +559,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             if conflict > 0 and hasLargeSeqGap(_s1, _s2, seqIdName1=seq_id_name):
                 __s1, __s2 = beautifyPolySeq(_s1, _s2, seqIdName1=seq_id_name)
 
-                if both_have_gaps:
+                if s1['gap_in_auth_seq']:
 
                     for p in range(len(s1[seq_id_name]) - 1):
                         s_p = s1[seq_id_name][p]
@@ -616,7 +613,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                                 if s1[seq_id_name][idx1] == s_p:
                                     beg = idx2
                             if myPr0 != '.':
-                                while idx1 < len(_s1[seq_id_name]):
+                                while idx1 < len(_s1['seq_id']):
                                     if _s1['comp_id'][idx1] == myPr0:
                                         idx1 += 1
                                         break
@@ -643,11 +640,11 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             ref_code = getOneLetterCodeSequence(_s1['comp_id'])
             test_code = getOneLetterCodeSequence(_s2['comp_id'])
             mid_code = getMiddleCode(ref_code, test_code)
-            ref_gauge_code = getGaugeCode(_s1[seq_id_name])
+            ref_gauge_code = getGaugeCode(_s1['seq_id'])
             test_gauge_code = getGaugeCode(_s2['seq_id'])
 
             if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                   in zip(_s1[seq_id_name], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                   in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                    if __c1 != '.' and __c2 != '.' and __c1 != __c2):
                 seq_id1 = []
                 seq_id2 = []
@@ -660,9 +657,9 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                     myPr0 = str(myPr[0])
                     myPr1 = str(myPr[1])
                     if myPr0 != '.':
-                        while idx1 < len(_s1[seq_id_name]):
+                        while idx1 < len(_s1['seq_id']):
                             if _s1['comp_id'][idx1] == myPr0:
-                                seq_id1.append(_s1[seq_id_name][idx1])
+                                seq_id1.append(_s1['seq_id'][idx1])
                                 comp_id1.append(myPr0)
                                 idx1 += 1
                                 break
@@ -700,7 +697,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length,
                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                          'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                         'ref_seq_id': _s1[seq_id_name], 'test_seq_id': _s2['seq_id'],
+                         'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
 

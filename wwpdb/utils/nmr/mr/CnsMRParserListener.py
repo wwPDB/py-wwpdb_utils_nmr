@@ -1579,18 +1579,21 @@ class CnsMRParserListener(ParseTreeListener):
 
             if chain_id_1 != chain_id_2:
                 if self.__symmetric == 'no':
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    return
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    if ps1 is None and ps2 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"Found inter-chain RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
+            elif abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Found inter-residue RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -1916,18 +1919,21 @@ class CnsMRParserListener(ParseTreeListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain J-coupling vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    return
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    if ps1 is None and ps2 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"Found inter-chain J-coupling vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
-                if abs(seq_id_1 - seq_id_2) > 1:
+                elif abs(seq_id_1 - seq_id_2) > 1:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"Found inter-residue J-coupling vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
-                if abs(seq_id_1 - seq_id_2) == 1:
+                elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -2552,18 +2558,21 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain dihedral angle vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain dihedral angle vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
+            elif abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Found inter-residue dihedral angle vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -2700,18 +2709,21 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain diffusion anisotropy vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain diffusion anisotropy vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
+            elif abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Found inter-residue diffusion anisotropy vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))

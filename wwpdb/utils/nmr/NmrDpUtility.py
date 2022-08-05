@@ -157,6 +157,7 @@
 # 01-Jun-2022  M. Yokochi - add support for GROMACS PT/MR format (DAOTHER-7769, NMR restraint remediation)
 # 17-Jun-2022  M. Yokochi - add support for DYNAMO/PALES/TALOS MR format (DAOTHER-7872, NMR restraint remediation)
 # 06-Jul-2022  M. Yokochi - add support for SYBYL MR format (DAOTHER-7902, NMR restraint remediation)
+# 05-Aug-2022  M. Yokochi - do not add a saveframe tag if there is already the tag (DAOTHER-7947)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -37580,8 +37581,10 @@ class NmrDpUtility:
 
                         list_id = collections.Counter(list_ids).most_common()[0][0]
 
-                        if len(get_first_sf_tag(sf_data, 'ID')) > 0:
-                            tagNames = [t[0] for t in sf_data.tags]
+                        tagNames = [t[0] for t in sf_data.tags]
+
+                        if 'ID' in tagNames:
+
                             itCol = tagNames.index('ID')
 
                             sf_data.tags[itCol][1] = list_id
@@ -37658,14 +37661,17 @@ class NmrDpUtility:
 
                     if entryIdTag in self.sf_allowed_tags[file_type][content_subtype]:
 
-                        if len(get_first_sf_tag(sf_data, entryIdTag)) == 0:
-                            sf_data.add_tag(entryIdTag, self.__entry_id)
+                        tagNames = [t[0] for t in sf_data.tags]
 
-                        else:
-                            tagNames = [t[0] for t in sf_data.tags]
+                        if entryIdTag in tagNames:
+
                             itCol = tagNames.index(entryIdTag)
 
                             sf_data.tags[itCol][1] = self.__entry_id
+
+                        else:
+
+                            sf_data.add_tag(entryIdTag, self.__entry_id)
 
                     if self.__insert_entry_id_to_loops:
 
@@ -37740,14 +37746,17 @@ class NmrDpUtility:
 
                 entryIdTag = 'ID' if sf_category == 'entry_information' else 'Entry_ID'
 
-                if len(get_first_sf_tag(sf_data, entryIdTag)) == 0:
-                    sf_data.add_tag(entryIdTag, self.__entry_id)
+                tagNames = [t[0] for t in sf_data.tags]
 
-                else:
-                    tagNames = [t[0] for t in sf_data.tags]
+                if entryIdTag in tagNames:
+
                     itCol = tagNames.index(entryIdTag)
 
                     sf_data.tags[itCol][1] = self.__entry_id
+
+                else:
+
+                    sf_data.add_tag(entryIdTag, self.__entry_id)
 
                 if self.__insert_entry_id_to_loops:
 

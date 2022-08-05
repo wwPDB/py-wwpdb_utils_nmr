@@ -5860,10 +5860,15 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__rescueFormerNef() ++ LookupError  - {err}\n")
 
-                    for l, i in enumerate(loop, start=1):  # noqa: E741
-                        i.append(l)
+                    try:
 
-                    loop.add_tag(lp_category + '.index')
+                        for l, i in enumerate(loop, start=1):  # noqa: E741
+                            i.append(l)
+
+                        loop.add_tag(lp_category + '.index')
+
+                    except ValueError:
+                        pass
 
             elif content_subtype == 'chem_shift':
 
@@ -5894,6 +5899,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__rescueFormerNef() ++ LookupError  - {err}\n")
 
                     try:
+
                         atom_name_col = loop.tags.index('atom_name')
 
                         for row in loop:
@@ -5934,6 +5940,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__rescueFormerNef() ++ LookupError  - {err}\n")
 
                     try:
+
                         atom_name_col = loop.tags.index('atom_name')
 
                         for row in loop:
@@ -5988,13 +5995,17 @@ class NmrDpUtility:
             elif content_subtype == 'rdc_restraint':
 
                 try:
+
                     tag = next(tag for tag in sf_data.tags if tag[0] == 'tensor_residue_type')
                     sf_data.add_tag(sf_category + '.tensor_residue_name', tag[1])
                     if __pynmrstar_v3_2__:
                         sf_data.remove_tag('tensor_residue_type')
                     else:
                         sf_data.delete_tag('tensor_residue_type')
+
                 except StopIteration:
+                    pass
+                except ValueError:
                     pass
 
             if content_subtype in ('dist_restraint', 'rdc_restraint'):
@@ -6032,8 +6043,6 @@ class NmrDpUtility:
                     pass
 
         except KeyError:
-            pass
-        except ValueError:
             pass
 
     def __rescueImmatureStr(self, file_list_id):
@@ -35053,119 +35062,131 @@ class NmrDpUtility:
         if not self.__combined_mode:
             return False
 
-        for fileListId in range(self.__file_path_list_len):
+        try:
 
-            input_source = self.report.input_sources[fileListId]
-            input_source_dic = input_source.get()
+            for fileListId in range(self.__file_path_list_len):
 
-            file_type = input_source_dic['file_type']
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
 
-            if file_type != 'nef':
-                continue
+                file_type = input_source_dic['file_type']
 
-            content_subtype = 'chem_shift'
-
-            if not has_key_value(input_source_dic['content_subtype'], content_subtype):
-                continue
-
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
-
-            cs_item_names = self.item_names_in_cs_loop[file_type]
-            cs_atom_id_name = cs_item_names['atom_id']
-            cs_atom_type = cs_item_names['atom_type']
-            cs_iso_number = cs_item_names['isotope_number']
-
-            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
-                try:
-                    if __pynmrstar_v3_2__:
-                        loop = sf_data.get_loop(lp_category)
-                    else:
-                        loop = sf_data.get_loop_by_category(lp_category)
-                except KeyError:
+                if file_type != 'nef':
                     continue
 
-                has_atom_type = cs_atom_type in loop.tags
-                has_iso_number = cs_iso_number in loop.tags
+                content_subtype = 'chem_shift'
 
-                atomIdCol = loop.tags.index(cs_atom_id_name)
+                if not has_key_value(input_source_dic['content_subtype'], content_subtype):
+                    continue
 
-                if has_atom_type and has_iso_number:
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-                    atomTypeCol = loop.tags.index(cs_atom_type)
-                    isoNumCol = loop.tags.index(cs_iso_number)
+                cs_item_names = self.item_names_in_cs_loop[file_type]
+                cs_atom_id_name = cs_item_names['atom_id']
+                cs_atom_type = cs_item_names['atom_type']
+                cs_iso_number = cs_item_names['isotope_number']
 
-                    for row in loop.data:
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        atom_id = row[atomIdCol]
+                    try:
+                        if __pynmrstar_v3_2__:
+                            loop = sf_data.get_loop(lp_category)
+                        else:
+                            loop = sf_data.get_loop_by_category(lp_category)
+                    except KeyError:
+                        continue
 
-                        if row[atomTypeCol] in emptyValue:
-                            row[atomTypeCol] = atom_id[0]
+                    has_atom_type = cs_atom_type in loop.tags
+                    has_iso_number = cs_iso_number in loop.tags
 
-                        if row[isoNumCol] is emptyValue:
+                    atomIdCol = loop.tags.index(cs_atom_id_name)
+
+                    if has_atom_type and has_iso_number:
+
+                        atomTypeCol = loop.tags.index(cs_atom_type)
+                        isoNumCol = loop.tags.index(cs_iso_number)
+
+                        for row in loop.data:
+
+                            atom_id = row[atomIdCol]
+
+                            if row[atomTypeCol] in emptyValue:
+                                row[atomTypeCol] = atom_id[0]
+
+                            if row[isoNumCol] is emptyValue:
+
+                                try:
+                                    row[isoNumCol] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
+                                except KeyError:
+                                    pass
+
+                    elif has_atom_type:
+
+                        atomTypeCol = loop.tags.index(cs_atom_type)
+
+                        for row in loop.data:
+
+                            atom_id = row[atomIdCol]
+
+                            if row[atomTypeCol] in emptyValue:
+                                row[atomTypeCol] = atom_id[0]
 
                             try:
-                                row[isoNumCol] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
+                                iso_num = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
+                                row.append(iso_num)
                             except KeyError:
-                                pass
+                                row.append('.')
 
-                elif has_atom_type:
+                        loop.add_tag(cs_iso_number)
 
-                    atomTypeCol = loop.tags.index(cs_atom_type)
+                    elif has_iso_number:
 
-                    for row in loop.data:
+                        isoNumCol = loop.tags.index(cs_iso_number)
 
-                        atom_id = row[atomIdCol]
+                        for row in loop.data:
 
-                        if row[atomTypeCol] in emptyValue:
-                            row[atomTypeCol] = atom_id[0]
+                            atom_id = row[atomIdCol]
 
-                        try:
-                            iso_num = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
-                            row.append(iso_num)
-                        except KeyError:
-                            row.append('.')
+                            if row[isoNumCol] is emptyValue:
 
-                    loop.add_tag(cs_iso_number)
+                                try:
+                                    row[isoNumCol] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
+                                except KeyError:
+                                    pass
 
-                elif has_iso_number:
+                            row.append(atom_id[0] if atom_id[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS else '.')
 
-                    isoNumCol = loop.tags.index(cs_iso_number)
+                        loop.add_tag(cs_atom_type)
 
-                    for row in loop.data:
+                    else:
 
-                        atom_id = row[atomIdCol]
+                        for row in loop.data:
 
-                        if row[isoNumCol] is emptyValue:
+                            atom_id = row[atomIdCol]
+
+                            row.append(atom_id[0] if atom_id[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS else '.')
 
                             try:
-                                row[isoNumCol] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
+                                iso_num = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
+                                row.append(iso_num)
                             except KeyError:
-                                pass
+                                row.append('.')
 
-                        row.append(atom_id[0] if atom_id[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS else '.')
+                        loop.add_tag(cs_atom_type)
+                        loop.add_tag(cs_iso_number)
 
-                    loop.add_tag(cs_atom_type)
+            return True
 
-                else:
+        except ValueError as e:
 
-                    for row in loop.data:
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendElemAndIsoNumOfNefCSLoop() ++ Error  - " + str(e))
+            self.report.setError()
 
-                        atom_id = row[atomIdCol]
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__appendElemAndIsoNumOfNefCSLoop() ++ Error  - {str(e)}\n")
 
-                        row.append(atom_id[0] if atom_id[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS else '.')
-
-                        try:
-                            iso_num = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
-                            row.append(iso_num)
-                        except KeyError:
-                            row.append('.')
-
-                    loop.add_tag(cs_atom_type)
-                    loop.add_tag(cs_iso_number)
-
-        return True
+            return False
 
     def __appendWeightInLoop(self):
         """ Append weight column in interesting loops, if required.
@@ -35239,7 +35260,14 @@ class NmrDpUtility:
 
             return is_done
 
-        except ValueError:
+        except ValueError as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendWeightInLoop() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__appendWeightInLoop() ++ Error  - {str(e)}\n")
+
             return False
 
     def __appendDihedAngleType(self):
@@ -35288,7 +35316,14 @@ class NmrDpUtility:
 
             return True
 
-        except ValueError:
+        except ValueError as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendDihedAngleType() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__appendDihedAngleType() ++ Error  - {str(e)}\n")
+
             return False
 
     def __appendSfTagItem(self):
@@ -35353,7 +35388,14 @@ class NmrDpUtility:
 
             return True
 
-        except ValueError:
+        except ValueError as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendSfTagItem() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__appendSfTagItem() ++ Error  - {str(e)}\n")
+
             return False
 
     def __updateDihedralAngleType(self):
@@ -37633,7 +37675,14 @@ class NmrDpUtility:
 
             return True
 
-        except ValueError:
+        except ValueError as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendParentSfTag() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__appendParentSfTag() ++ Error  - {str(e)}\n")
+
             return False
 
     def __addUnnamedEntryId(self):
@@ -37819,7 +37868,14 @@ class NmrDpUtility:
 
             return True
 
-        except ValueError:
+        except ValueError as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__addUnnamedEntryId() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__addUnnamedEntryId() ++ Error  - {str(e)}\n")
+
             return False
 
     def __sortCSLoop(self):

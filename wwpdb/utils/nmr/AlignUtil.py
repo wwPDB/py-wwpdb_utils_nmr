@@ -7,6 +7,8 @@
     @author: Masashi Yokochi
 """
 import copy
+from itertools import zip_longest
+
 
 # criterion for low sequence coverage
 LOW_SEQ_COVERAGE = 0.3
@@ -452,16 +454,52 @@ def sortPolySeqRst(polySeqRst):
         ps['comp_id'] = _compIds
 
 
+def stripPolySeqRst(polySeqRst):
+    """ Strip polymer sequence of the current MR file.
+    """
+
+    if polySeqRst is None:
+        return
+
+    for ps in polySeqRst:
+        seq_ids = copy.copy(ps['seq_id'])
+        comp_ids = copy.copy(ps['comp_id'])
+
+        idx = 0
+        while idx < len(seq_ids):
+            if comp_ids[idx] != '.':
+                break
+            idx += 1
+
+        if idx != 0:
+            seq_ids = seq_ids[idx - 1:]
+            comp_ids = comp_ids[idx - 1:]
+
+        len_seq_ids = len(seq_ids)
+        idx = len_seq_ids - 1
+        while idx >= 0:
+            if comp_ids[idx] != '.':
+                break
+            idx -= 1
+
+        if idx != len_seq_ids - 1:
+            seq_ids = seq_ids[:idx + 1]
+            comp_ids = comp_ids[:idx + 1]
+
+        if len(ps['seq_id']) != len(seq_ids):
+            ps['seq_id'] = seq_ids
+            ps['comp_id'] = comp_ids
+
+
 def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolvedMultimer=False):
     """ Align polymer sequence of the coordinates and restraints.
     """
 
+    seqAlign = []
     compIdMapping = []
 
     if pA is None or polySeqModel is None or polySeqRst is None:
-        return None, None
-
-    seqAlign = []
+        return seqAlign, compIdMapping
 
     tabooList = []
     inhibitList = []
@@ -1086,11 +1124,14 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId):
     """
 
     try:
+
         item = next(item for item in mrAtomNameMapping
                     if item['original_seq_id'] == seqId
                     and item['original_comp_id'] == compId
                     and item['original_atom_id'] == atomId)
+
         return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
+
     except StopIteration:
         return seqId, compId, atomId
 
@@ -1100,11 +1141,14 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId):
     """
 
     try:
+
         item = next(item for item in mrAtomNameMapping
                     if item['auth_seq_id'] == cifSeqId
                     and item['auth_comp_id'] == cifCompId
                     and item['original_atom_id'] == atomId)
+
         return item['auth_atom_id']
+
     except StopIteration:
         return atomId
 
@@ -1114,13 +1158,16 @@ def retrieveRemappedSeqId(seqIdRemap, chainId, seqId):
     """
 
     try:
+
         if chainId is None:
-            item = next(item for item in seqIdRemap if seqId in item['seq_id_dict'])
+            remap = next(remap for remap in seqIdRemap if seqId in remap['seq_id_dict'])
         else:
-            item = next(item for item in seqIdRemap if seqId in item['seq_id_dict'] and item['chain_id'] == chainId)
-        return item['chain_id'], item['seq_id_dict'][seqId]
+            remap = next(remap for remap in seqIdRemap if seqId in remap['seq_id_dict'] and remap['chain_id'] == chainId)
+
+        return remap['chain_id'], remap['seq_id_dict'][seqId]
+
     except StopIteration:
-        return chainId, seqId
+        return None, None
 
 
 def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
@@ -1130,16 +1177,16 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
     if polySeqModel is None or polySeqRst is None or chainAssign is None:
         return None, None
 
-    target_test_chain_id = {}
+    target_chain_ids = {}
     for ca in chainAssign:
         if ca['conflict'] == 0 and ca['unmapped'] > 0:
             ref_chain_id = ca['ref_chain_id']
             test_chain_id = ca['test_chain_id']
-            if test_chain_id not in target_test_chain_id:
-                target_test_chain_id[test_chain_id] = []
-            target_test_chain_id[test_chain_id].append(ref_chain_id)
+            if test_chain_id not in target_chain_ids:
+                target_chain_ids[test_chain_id] = []
+            target_chain_ids[test_chain_id].append(ref_chain_id)
 
-    if len(target_test_chain_id) == 0:
+    if len(target_chain_ids) == 0:
         return None, None
 
     split = False
@@ -1147,7 +1194,7 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
     _polySeqRst = copy.copy(polySeqRst)
     _chainIdMapping = {}
 
-    for test_chain_id, ref_chain_ids in target_test_chain_id.items():
+    for test_chain_id, ref_chain_ids in target_chain_ids.items():
 
         total_gaps = len(ref_chain_ids) - 1
 
@@ -1270,11 +1317,109 @@ def retrieveRemappedChainId(chainIdRemap, seqId):
     """ Retrieve chain_id and seq_id from mapping dictionary based on sequence alignments.
     """
 
-    try:
-
-        item = chainIdRemap[seqId]
-
-        return item['chain_id'], item['seq_id']
-
-    except KeyError:
+    if seqId not in chainIdRemap:
         return None, None
+
+    remap = chainIdRemap[seqId]
+
+    return remap['chain_id'], remap['seq_id']
+
+
+def splitPolySeqRstForNonPoly(polySeqModel, nonPolyModel, polySeqRst, seqAlign, chainAssign):
+    """ Split polymer sequence of the current MR file for non-polymer.
+    """
+
+    if polySeqModel is None or polySeqRst is None or nonPolyModel is None or seqAlign is None or chainAssign is None:
+        return None, None
+
+    comp_ids = set()
+    target_comp_ids = []
+    for ca in chainAssign:
+        if ca['conflict'] == 0 and ca['unmapped'] > 0:
+            ref_chain_id = ca['ref_chain_id']
+            test_chain_id = ca['test_chain_id']
+            test_ps = next(ps for ps in polySeqRst if ps['chain_id'] == test_chain_id)
+            sa = next(sa for sa in seqAlign if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id)
+
+            for test_seq_id, test_code, mid_code in zip_longest(sa['test_seq_id'], sa['test_code'], sa['mid_code']):
+                if mid_code in emptyValue and test_code == 'X':
+                    test_comp_id = next(comp_id for seq_id, comp_id in zip(test_ps['seq_id'], test_ps['comp_id']) if seq_id == test_seq_id)
+                    candidate = []
+                    for np in nonPolyModel:
+                        _ref_chain_id = np['auth_chain_id']
+                        seq_id_name = 'auth_seq_id' if 'auth_seq_id' in np else 'seq_id'
+                        if test_comp_id in np['comp_id']:
+                            for ref_seq_id, ref_comp_id in zip(np[seq_id_name], np['comp_id']):
+                                if test_comp_id == ref_comp_id:
+                                    candidate.append({'chain_id': _ref_chain_id, 'seq_id': ref_seq_id})
+
+                    if len(candidate) > 0:
+                        comp_ids.add(test_comp_id)
+                        target_comp_ids.append({'chain_id': test_chain_id,
+                                                'seq_id': test_seq_id,
+                                                'comp_id': test_comp_id,
+                                                'candidate': candidate
+                                                })
+
+    if len(comp_ids) == 0:
+        return None, None
+
+    split = False
+
+    _polySeqRst = copy.copy(polySeqRst)
+    _nonPolyMapping = {}
+
+    for comp_id in comp_ids:
+        _nonPolyMapping[comp_id] = {}
+
+        targets = [target for target in target_comp_ids if target['comp_id'] == comp_id]
+
+        candidates = []
+        for target in targets:
+            for candidate in target['candidate']:
+                if candidate not in candidates:
+                    candidates.append(candidate)
+            del target['candidate']
+
+        for target, candidate in zip_longest(targets, candidates):
+
+            if target is None or candidate is None:
+                break
+
+            test_chain_id = target['chain_id']
+            test_seq_id = target['seq_id']
+
+            test_ps = next(ps for ps in _polySeqRst if ps['chain_id'] == test_chain_id)
+
+            idx = test_ps['seq_id'].index(test_seq_id)
+
+            del test_ps['seq_id'][idx]
+            del test_ps['comp_id'][idx]
+
+            _nonPolyMapping[comp_id][test_seq_id] = {'chain_id': candidate['chain_id'],
+                                                     'seq_id': candidate['seq_id'],
+                                                     'original_chain_id': test_chain_id}
+
+            split = True
+
+    if not split:
+        return None, None
+
+    stripPolySeqRst(_polySeqRst)
+
+    return _polySeqRst, _nonPolyMapping
+
+
+def retrieveRemappedNonPoly(nonPolyRemap, chainId, seqId, compId):
+    """ Retrieve seq_id from mapping dictionary based on sequence alignments.
+    """
+
+    if compId not in nonPolyRemap or seqId not in nonPolyRemap[compId]:
+        return None, None
+
+    remap = nonPolyRemap[compId][seqId]
+
+    if chainId is None or remap['original_chain_id'] == chainId:
+        return remap['chain_id'], remap['seq_id']
+
+    return None, None

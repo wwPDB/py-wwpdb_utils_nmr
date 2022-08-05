@@ -571,6 +571,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1, seqIdName=seq_id_name)
             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
+            _seq_id_name = 'auth_seq_id' if 'auth_seq_id' in _s1 else 'seq_id'
+
             if s1['gap_in_auth_seq']:
 
                 for p in range(len(s1[seq_id_name]) - 1):
@@ -594,8 +596,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                             _s2['comp_id'] = _s2['comp_id'][:beg + 1] + _s2['comp_id'][end:]
                             _s2['gap_in_auth_seq'] = True
 
-            if conflict > 0 and hasLargeSeqGap(_s1, _s2, seqIdName1=seq_id_name):
-                __s1, __s2 = beautifyPolySeq(_s1, _s2, seqIdName1=seq_id_name)
+            if conflict > 0 and hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
+                __s1, __s2 = beautifyPolySeq(_s1, _s2, seqIdName1=_seq_id_name)
 
                 if s1['gap_in_auth_seq']:
 
@@ -670,7 +672,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                                 truncated = (s_p, s_q)
                                 break
 
-            if conflict > 0 and not hasLargeSeqGap(_s1, _s2, seqIdName1=seq_id_name):
+            if conflict > 0 and not hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
                 tabooList.append({chain_id, chain_id2})
 
             ref_length = len(s1[seq_id_name])
@@ -908,8 +910,10 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
         _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1, seqIdName=seq_id_name)
         _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-        if conflict > 0 and hasLargeSeqGap(_s1, _s2, seqIdName1=seq_id_name):
-            __s1, __s2 = beautifyPolySeq(_s1, _s2, seqIdName1=seq_id_name)
+        _seq_id_name = 'auth_seq_id' if 'auth_seq_id' in _s1 else 'seq_id'
+
+        if conflict > 0 and hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
+            __s1, __s2 = beautifyPolySeq(_s1, _s2, seqIdName1=_seq_id_name)
             _s1 = __s1
             _s2 = __s2
 

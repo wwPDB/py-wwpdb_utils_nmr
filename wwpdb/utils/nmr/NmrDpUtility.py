@@ -6087,6 +6087,8 @@ class NmrDpUtility:
 
         except KeyError:
             pass
+        except ValueError:
+            pass
 
     def __rescueImmatureStr(self, file_list_id):
         """ Rescue immature NMR-STAR.
@@ -6242,6 +6244,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
 
                     try:
+
                         atom_name_col = loop.tags.index('Atom_ID')
 
                         for row in loop:
@@ -6282,6 +6285,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
 
                     try:
+
                         atom_name_col = loop.tags.index('Atom_ID')
 
                         for row in loop:
@@ -6350,6 +6354,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
 
                     try:
+
                         axis_code_name_col = loop.tags.index('Axis_code')
 
                         for row in loop:
@@ -6376,6 +6381,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
 
                     try:
+
                         axis_code_name_col = loop.tags.index('Axis_code')
 
                         for row in loop:
@@ -6402,6 +6408,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
 
                     try:
+
                         atom_type_name_col = loop.tags.index('Atom_type')
                         iso_num_name_col = loop.tags.index('Atom_isotope_number')
 
@@ -35249,36 +35256,101 @@ class NmrDpUtility:
         if not self.__combined_mode:
             return False
 
-        is_done = True
+        try:
 
-        for fileListId in range(self.__file_path_list_len):
+            is_done = True
 
-            input_source = self.report.input_sources[fileListId]
-            input_source_dic = input_source.get()
+            for fileListId in range(self.__file_path_list_len):
 
-            file_name = input_source_dic['file_name']
-            file_type = input_source_dic['file_type']
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
 
-            if input_source_dic['content_subtype'] is None:
-                is_done = False
-                continue
+                file_name = input_source_dic['file_name']
+                file_type = input_source_dic['file_type']
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+                if input_source_dic['content_subtype'] is None:
+                    is_done = False
+                    continue
 
-                if content_subtype == 'entity':
+                for content_subtype in input_source_dic['content_subtype'].keys():
+
+                    if content_subtype == 'entity':
+                        continue
+
+                    sf_category = self.sf_categories[file_type][content_subtype]
+                    lp_category = self.lp_categories[file_type][content_subtype]
+
+                    weight_tag = self.weight_tags[file_type][content_subtype]
+
+                    if weight_tag is None:
+                        continue
+
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                        sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                        try:
+                            if __pynmrstar_v3_2__:
+                                loop = sf_data.get_loop(lp_category)
+                            else:
+                                loop = sf_data.get_loop_by_category(lp_category)
+                        except KeyError:
+                            continue
+
+                        if weight_tag in loop.tags:
+                            continue
+
+                        lp_tag = lp_category + '.' + weight_tag
+                        err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
+
+                        if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+
+                            if self.__rescue_mode:
+                                self.report.error.appendDescription('missing_mandatory_item',
+                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                     'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__appendWeightInLoop() ++ LookupError  - {err}\n")
+
+                        for row in loop.data:
+                            row.append('1.0')
+
+                        loop.add_tag(weight_tag)
+
+            return is_done
+
+        except ValueError:
+            return False
+
+    def __appendDihedAngleType(self):
+        """ Append dihedral angle type column, if required.
+        """
+
+        if not self.__combined_mode:
+            return False
+
+        try:
+
+            for fileListId in range(self.__file_path_list_len):
+
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
+
+                file_type = input_source_dic['file_type']
+
+                content_subtype = 'dihed_restraint'
+
+                if not has_key_value(input_source_dic['content_subtype'], content_subtype):
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                weight_tag = self.weight_tags[file_type][content_subtype]
-
-                if weight_tag is None:
-                    continue
+                angle_type_tag = self.angle_types[file_type]
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
-                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     try:
                         if __pynmrstar_v3_2__:
@@ -35288,73 +35360,18 @@ class NmrDpUtility:
                     except KeyError:
                         continue
 
-                    if weight_tag in loop.tags:
+                    if angle_type_tag in loop.tags:
                         continue
 
-                    lp_tag = lp_category + '.' + weight_tag
-                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
-
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-
-                        if self.__rescue_mode:
-                            self.report.error.appendDescription('missing_mandatory_item',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__appendWeightInLoop() ++ LookupError  - {err}\n")
-
                     for row in loop.data:
-                        row.append('1.0')
+                        row.append('.')
 
-                    loop.add_tag(weight_tag)
+                    loop.add_tag(angle_type_tag)
 
-        return is_done
+            return True
 
-    def __appendDihedAngleType(self):
-        """ Append dihedral angle type column, if required.
-        """
-
-        if not self.__combined_mode:
+        except ValueError:
             return False
-
-        for fileListId in range(self.__file_path_list_len):
-
-            input_source = self.report.input_sources[fileListId]
-            input_source_dic = input_source.get()
-
-            file_type = input_source_dic['file_type']
-
-            content_subtype = 'dihed_restraint'
-
-            if not has_key_value(input_source_dic['content_subtype'], content_subtype):
-                continue
-
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
-
-            angle_type_tag = self.angle_types[file_type]
-
-            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
-                try:
-                    if __pynmrstar_v3_2__:
-                        loop = sf_data.get_loop(lp_category)
-                    else:
-                        loop = sf_data.get_loop_by_category(lp_category)
-                except KeyError:
-                    continue
-
-                if angle_type_tag in loop.tags:
-                    continue
-
-                for row in loop.data:
-                    row.append('.')
-
-                loop.add_tag(angle_type_tag)
-
-        return True
 
     def __appendSfTagItem(self):
         """ Append saveframe tag items, if required.
@@ -35363,58 +35380,63 @@ class NmrDpUtility:
         if not self.__combined_mode:
             return False
 
-        for fileListId in range(self.__file_path_list_len):
+        try:
 
-            input_source = self.report.input_sources[fileListId]
-            input_source_dic = input_source.get()
+            for fileListId in range(self.__file_path_list_len):
 
-            file_name = input_source_dic['file_name']
-            file_type = input_source_dic['file_type']
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
 
-            if input_source_dic['content_subtype'] is None:
-                continue
+                file_name = input_source_dic['file_name']
+                file_type = input_source_dic['file_type']
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
-
-                if content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift'):
+                if input_source_dic['content_subtype'] is None:
                     continue
 
-                sf_category = self.sf_categories[file_type][content_subtype]
-                # lp_category = self.lp_categories[file_type][content_subtype]
+                for content_subtype in input_source_dic['content_subtype'].keys():
 
-                tag_items = self._sf_tag_items[file_type][content_subtype]
+                    if content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift'):
+                        continue
 
-                if tag_items is None:
-                    continue
+                    sf_category = self.sf_categories[file_type][content_subtype]
+                    # lp_category = self.lp_categories[file_type][content_subtype]
 
-                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                    tag_items = self._sf_tag_items[file_type][content_subtype]
 
-                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                    if tag_items is None:
+                        continue
 
-                    tagNames = [t[0] for t in sf_data.tags]
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    for tag_item in tag_items:
+                        sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                        if tag_item in tagNames:
-                            continue
+                        tagNames = [t[0] for t in sf_data.tags]
 
-                        sf_tag = '_' + sf_category + '.' + tag_item
-                        warn = self.__warn_template_for_missing_mandatory_sf_tag % (sf_tag, file_type.upper())
+                        for tag_item in tag_items:
 
-                        if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
+                            if tag_item in tagNames:
+                                continue
 
-                            if self.__rescue_mode:
-                                self.report.warning.appendDescription('missing_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': sf_category,
-                                                                       'description': warn})
-                                self.report.setWarning()
+                            sf_tag = '_' + sf_category + '.' + tag_item
+                            warn = self.__warn_template_for_missing_mandatory_sf_tag % (sf_tag, file_type.upper())
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__appendSfTagItem() ++ Warning  - {warn}\n")
+                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
 
-                        sf_data.add_tag(tag_item, '.')
+                                if self.__rescue_mode:
+                                    self.report.warning.appendDescription('missing_data',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': sf_category,
+                                                                           'description': warn})
+                                    self.report.setWarning()
 
-        return True
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__appendSfTagItem() ++ Warning  - {warn}\n")
+
+                            sf_data.add_tag(tag_item, '.')
+
+            return True
+
+        except ValueError:
+            return False
 
     def __updateDihedralAngleType(self):
         """ Update dihedral angle types if possible.
@@ -37610,86 +37632,91 @@ class NmrDpUtility:
         if input_source_dic['content_subtype'] is None:
             return False
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        try:
 
-            if content_subtype in ('entry_info', 'entity'):
-                continue
+            for content_subtype in input_source_dic['content_subtype'].keys():
 
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
+                if content_subtype in ('entry_info', 'entity'):
+                    continue
 
-            data_items = self.data_items[file_type][content_subtype]
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-            list_id_tag_in_lp = None
+                data_items = self.data_items[file_type][content_subtype]
 
-            if data_items is not None:
-                list_id_tag_in_lp = next((d for d in data_items if d['type'] == 'pointer-index'), None)
+                list_id_tag_in_lp = None
 
-            if list_id_tag_in_lp is not None:
+                if data_items is not None:
+                    list_id_tag_in_lp = next((d for d in data_items if d['type'] == 'pointer-index'), None)
 
-                for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
+                if list_id_tag_in_lp is not None:
 
-                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                    for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                    if not any(loop for loop in sf_data.loops if loop.category == lp_category):
-                        continue
+                        sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    warn_desc = self.report.warning.getDescription('duplicated_index', file_name, sf_framecode)
+                        if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                            continue
 
-                    if (warn_desc is not None) and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
-                        continue
+                        warn_desc = self.report.warning.getDescription('duplicated_index', file_name, sf_framecode)
 
-                    if __pynmrstar_v3_2__:
-                        loop = sf_data.get_loop(lp_category)
-                    else:
-                        loop = sf_data.get_loop_by_category(lp_category)
+                        if (warn_desc is not None) and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
+                            continue
 
-                    itName = list_id_tag_in_lp['name']
-
-                    if itName in loop.tags:
-
-                        itCol = loop.tags.index(itName)
-
-                        list_ids = []
-
-                        for row in loop.data:
-
-                            val = row[itCol]
-
-                            if val is emptyValue:
-                                continue
-
-                            list_ids.append(val)
-
-                        list_id = collections.Counter(list_ids).most_common()[0][0]
-
-                        tagNames = [t[0] for t in sf_data.tags]
-
-                        if 'ID' in tagNames:
-
-                            itCol = tagNames.index('ID')
-
-                            sf_data.tags[itCol][1] = list_id
-
+                        if __pynmrstar_v3_2__:
+                            loop = sf_data.get_loop(lp_category)
                         else:
+                            loop = sf_data.get_loop_by_category(lp_category)
 
-                            sf_tag = '_' + sf_category + '.ID'
-                            warn = self.__warn_template_for_missing_mandatory_sf_tag % (sf_tag, file_type.upper())
+                        itName = list_id_tag_in_lp['name']
 
-                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
+                        if itName in loop.tags:
 
-                                if self.__rescue_mode:
-                                    self.report.warning.appendDescription('missing_data',
-                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': sf_category,
-                                                                           'description': warn})
-                                    self.report.setWarning()
+                            itCol = loop.tags.index(itName)
 
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__appendParentSfTag() ++ Warning  - {warn}\n")
+                            list_ids = []
 
-                            sf_data.add_tag('ID', list_id)
+                            for row in loop.data:
 
-        return True
+                                val = row[itCol]
+
+                                if val is emptyValue:
+                                    continue
+
+                                list_ids.append(val)
+
+                            list_id = collections.Counter(list_ids).most_common()[0][0]
+
+                            tagNames = [t[0] for t in sf_data.tags]
+
+                            if 'ID' in tagNames:
+
+                                itCol = tagNames.index('ID')
+
+                                sf_data.tags[itCol][1] = list_id
+
+                            else:
+
+                                sf_tag = '_' + sf_category + '.ID'
+                                warn = self.__warn_template_for_missing_mandatory_sf_tag % (sf_tag, file_type.upper())
+
+                                if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
+
+                                    if self.__rescue_mode:
+                                        self.report.warning.appendDescription('missing_data',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': sf_category,
+                                                                               'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+NmrDpUtility.__appendParentSfTag() ++ Warning  - {warn}\n")
+
+                                sf_data.add_tag('ID', list_id)
+
+            return True
+
+        except ValueError:
+            return False
 
     def __addUnnamedEntryId(self):
         """ Add UNNAMED entry id.
@@ -37722,68 +37749,129 @@ class NmrDpUtility:
         if self.__updateAtomChemShiftId():
             self.__updateAmbiguousAtomChemShift()
 
-        proc_sf_categories = set()
+        try:
 
-        # supported sf_categories
-        if has_key_value(input_source_dic, 'content_subtype'):
+            proc_sf_categories = set()
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            # supported sf_categories
+            if has_key_value(input_source_dic, 'content_subtype'):
 
-                if content_subtype == 'entity':
-                    continue
+                for content_subtype in input_source_dic['content_subtype'].keys():
 
-                sf_category = self.sf_categories[file_type][content_subtype]
-                lp_category = self.lp_categories[file_type][content_subtype]
+                    if content_subtype == 'entity':
+                        continue
 
-                proc_sf_categories.add(sf_category)
+                    sf_category = self.sf_categories[file_type][content_subtype]
+                    lp_category = self.lp_categories[file_type][content_subtype]
 
-                for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
+                    proc_sf_categories.add(sf_category)
 
-                    entryIdTag = 'ID' if content_subtype == 'entry_info' else 'Entry_ID'
+                    for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                    if entryIdTag in self.sf_allowed_tags[file_type][content_subtype]:
+                        entryIdTag = 'ID' if content_subtype == 'entry_info' else 'Entry_ID'
 
-                        tagNames = [t[0] for t in sf_data.tags]
+                        if entryIdTag in self.sf_allowed_tags[file_type][content_subtype]:
 
-                        if entryIdTag in tagNames:
+                            tagNames = [t[0] for t in sf_data.tags]
 
-                            itCol = tagNames.index(entryIdTag)
+                            if entryIdTag in tagNames:
 
-                            sf_data.tags[itCol][1] = self.__entry_id
+                                itCol = tagNames.index(entryIdTag)
 
-                        else:
+                                sf_data.tags[itCol][1] = self.__entry_id
 
-                            sf_data.add_tag(entryIdTag, self.__entry_id)
-
-                    if self.__insert_entry_id_to_loops:
-
-                        entryIdTag = 'Entry_ID'
-
-                        try:
-                            if __pynmrstar_v3_2__:
-                                loop = sf_data.get_loop(lp_category)
                             else:
-                                loop = sf_data.get_loop_by_category(lp_category)
-                        except KeyError:
-                            continue
 
-                        if loop is not None:
+                                sf_data.add_tag(entryIdTag, self.__entry_id)
 
-                            if entryIdTag in self.allowed_tags[file_type][content_subtype]:
+                        if self.__insert_entry_id_to_loops:
 
-                                if entryIdTag in loop.tags:
+                            entryIdTag = 'Entry_ID'
 
-                                    itCol = loop.tags.index(entryIdTag)
+                            try:
+                                if __pynmrstar_v3_2__:
+                                    loop = sf_data.get_loop(lp_category)
+                                else:
+                                    loop = sf_data.get_loop_by_category(lp_category)
+                            except KeyError:
+                                continue
 
-                                    for row in loop.data:
+                            if loop is not None:
+
+                                if entryIdTag in self.allowed_tags[file_type][content_subtype]:
+
+                                    if entryIdTag in loop.tags:
+
+                                        itCol = loop.tags.index(entryIdTag)
+
+                                        for row in loop.data:
+                                            row[itCol] = self.__entry_id
+
+                                    else:
+
+                                        for row in loop.data:
+                                            row.append(self.__entry_id)
+
+                                        loop.add_tag(entryIdTag)
+
+                            for loop in sf_data.loops:
+
+                                lp_category = loop.category
+
+                                if lp_category is None:
+                                    continue
+
+                                if lp_category in self.lp_categories[file_type][content_subtype]:
+                                    continue
+
+                                # elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
+
+                                if __pynmrstar_v3_2__:
+                                    _loop = sf_data.get_loop(lp_category)
+                                else:
+                                    _loop = sf_data.get_loop_by_category(lp_category)
+
+                                    # if entryIdTag in self.aux_allowed_tags[file_type][content_subtype][lp_category]:
+
+                                if entryIdTag in _loop.tags:
+
+                                    itCol = _loop.tags.index(entryIdTag)
+
+                                    for row in _loop.data:
                                         row[itCol] = self.__entry_id
 
                                 else:
 
-                                    for row in loop.data:
+                                    for row in _loop.data:
                                         row.append(self.__entry_id)
 
-                                    loop.add_tag(entryIdTag)
+                                    _loop.add_tag(entryIdTag)
+
+            # skipped saveframe categories
+            for sf_category in set(self.__sf_category_list):
+
+                if sf_category in proc_sf_categories:
+                    continue
+
+                for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
+
+                    entryIdTag = 'ID' if sf_category == 'entry_information' else 'Entry_ID'
+
+                    tagNames = [t[0] for t in sf_data.tags]
+
+                    if entryIdTag in tagNames:
+
+                        itCol = tagNames.index(entryIdTag)
+
+                        sf_data.tags[itCol][1] = self.__entry_id
+
+                    else:
+
+                        sf_data.add_tag(entryIdTag, self.__entry_id)
+
+                    if self.__insert_entry_id_to_loops:
+
+                        entryIdTag = 'Entry_ID'
 
                         for loop in sf_data.loops:
 
@@ -37792,17 +37880,10 @@ class NmrDpUtility:
                             if lp_category is None:
                                 continue
 
-                            if lp_category in self.lp_categories[file_type][content_subtype]:
-                                continue
-
-                            # elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
-
                             if __pynmrstar_v3_2__:
                                 _loop = sf_data.get_loop(lp_category)
                             else:
                                 _loop = sf_data.get_loop_by_category(lp_category)
-
-                                # if entryIdTag in self.aux_allowed_tags[file_type][content_subtype][lp_category]:
 
                             if entryIdTag in _loop.tags:
 
@@ -37818,59 +37899,10 @@ class NmrDpUtility:
 
                                 _loop.add_tag(entryIdTag)
 
-        # skipped saveframe categories
-        for sf_category in set(self.__sf_category_list):
+            return True
 
-            if sf_category in proc_sf_categories:
-                continue
-
-            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
-
-                entryIdTag = 'ID' if sf_category == 'entry_information' else 'Entry_ID'
-
-                tagNames = [t[0] for t in sf_data.tags]
-
-                if entryIdTag in tagNames:
-
-                    itCol = tagNames.index(entryIdTag)
-
-                    sf_data.tags[itCol][1] = self.__entry_id
-
-                else:
-
-                    sf_data.add_tag(entryIdTag, self.__entry_id)
-
-                if self.__insert_entry_id_to_loops:
-
-                    entryIdTag = 'Entry_ID'
-
-                    for loop in sf_data.loops:
-
-                        lp_category = loop.category
-
-                        if lp_category is None:
-                            continue
-
-                        if __pynmrstar_v3_2__:
-                            _loop = sf_data.get_loop(lp_category)
-                        else:
-                            _loop = sf_data.get_loop_by_category(lp_category)
-
-                        if entryIdTag in _loop.tags:
-
-                            itCol = _loop.tags.index(entryIdTag)
-
-                            for row in _loop.data:
-                                row[itCol] = self.__entry_id
-
-                        else:
-
-                            for row in _loop.data:
-                                row.append(self.__entry_id)
-
-                            _loop.add_tag(entryIdTag)
-
-        return True
+        except ValueError:
+            return False
 
     def __sortCSLoop(self):
         """ Sort assigned chemical shift loop if required.

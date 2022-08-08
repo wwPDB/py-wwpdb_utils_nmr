@@ -157,7 +157,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    reasonsForReParsing = None
+    reasonsForReParsing = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -300,8 +300,6 @@ class BiosymMRParserListener(ParseTreeListener):
                             seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
                     if len(seqIdRemap) > 0:
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
@@ -310,8 +308,6 @@ class BiosymMRParserListener(ParseTreeListener):
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'chain_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
@@ -321,10 +317,12 @@ class BiosymMRParserListener(ParseTreeListener):
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'non_poly_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
+
+        if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+            if 'seq_id_remap' in self.reasonsForReParsing:
+                del self.reasonsForReParsing['seq_id_remap']
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -693,8 +691,6 @@ class BiosymMRParserListener(ParseTreeListener):
                                 chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
-                                if self.reasonsForReParsing is None:
-                                    self.reasonsForReParsing = {}
                                 if 'label_seq_scheme' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -724,8 +720,6 @@ class BiosymMRParserListener(ParseTreeListener):
                                     chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                                    if self.reasonsForReParsing is None:
-                                        self.reasonsForReParsing = {}
                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -1332,6 +1326,6 @@ class BiosymMRParserListener(ParseTreeListener):
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing BIOSYM MR file.
         """
-        return self.reasonsForReParsing
+        return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
 # del BiosymMRParser

@@ -385,7 +385,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    reasonsForReParsing = None
+    reasonsForReParsing = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -639,13 +639,9 @@ class AmberMRParserListener(ParseTreeListener):
 
             if 'Missing data' in self.warningMessage:
                 if len(self.unambigAtomNameMapping) > 0:
-                    if self.reasonsForReParsing is None:
-                        self.reasonsForReParsing = {}
                     if 'unambig_atom_id_remap' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['unambig_atom_id_remap'] = self.unambigAtomNameMapping
                 if len(self.ambigAtomNameMapping) > 0:
-                    if self.reasonsForReParsing is None:
-                        self.reasonsForReParsing = {}
                     if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
 
@@ -6793,7 +6789,7 @@ class AmberMRParserListener(ParseTreeListener):
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing AMBER MR file.
         """
-        return self.reasonsForReParsing
+        return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
     def hasComments(self):
         """ Return whether Sander comments are available.

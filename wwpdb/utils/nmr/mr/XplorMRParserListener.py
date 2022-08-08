@@ -356,7 +356,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     __warningInAtomSelection = ''
 
-    reasonsForReParsing = None
+    reasonsForReParsing = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -547,8 +547,6 @@ class XplorMRParserListener(ParseTreeListener):
                             seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
                     if len(seqIdRemap) > 0:
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
@@ -557,8 +555,6 @@ class XplorMRParserListener(ParseTreeListener):
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'chain_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
@@ -568,10 +564,12 @@ class XplorMRParserListener(ParseTreeListener):
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'non_poly_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
+
+        if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+            if 'seq_id_remap' in self.reasonsForReParsing:
+                del self.reasonsForReParsing['seq_id_remap']
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -6350,7 +6348,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         if self.depth > 0 and len(self.factor) > 0:
             if 'atom_selection' not in self.factor:
-                self.consumeFactor_expressions(cifCheck=False)
+                self.consumeFactor_expressions(cifCheck=True)
             if 'atom_selection' in self.factor:
                 self.stackSelections.append(self.factor['atom_selection'])
                 self.stackSelections.append('and')  # intersection
@@ -6395,7 +6393,7 @@ class XplorMRParserListener(ParseTreeListener):
             print("  " * self.depth + "exit_term")
 
         while self.stackFactors:
-            _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=False)
+            _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=True)
             self.factor = self.__intersectionFactor_expressions(self.factor, None if 'atom_selection' not in _factor else _factor['atom_selection'])
 
         if 'atom_selection' in self.factor:
@@ -6466,7 +6464,6 @@ class XplorMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
-                            realSeqId = self.getRealSeqId(ps, realSeqId)
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
@@ -6484,7 +6481,6 @@ class XplorMRParserListener(ParseTreeListener):
                         np = next((np for np in self.__nonPoly if np['auth_chain_id'] == chainId), None)
                         if np is not None:
                             for realSeqId in np['auth_seq_id']:
-                                realSeqId = self.getRealSeqId(np, realSeqId, False)
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
@@ -6510,7 +6506,6 @@ class XplorMRParserListener(ParseTreeListener):
                 if ps is not None:
                     found = False
                     for realSeqId in ps['auth_seq_id']:
-                        realSeqId = self.getRealSeqId(ps, realSeqId)
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
@@ -6523,7 +6518,6 @@ class XplorMRParserListener(ParseTreeListener):
                             found = True
                     if not found:
                         for realSeqId in ps['auth_seq_id']:
-                            realSeqId = self.getRealSeqId(ps, realSeqId)
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = ps['auth_seq_id'].index(realSeqId)
                                 realCompId = ps['comp_id'][idx]
@@ -6542,7 +6536,6 @@ class XplorMRParserListener(ParseTreeListener):
                     if np is not None:
                         found = False
                         for realSeqId in np['auth_seq_id']:
-                            realSeqId = self.getRealSeqId(np, realSeqId, False)
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
@@ -6555,7 +6548,6 @@ class XplorMRParserListener(ParseTreeListener):
                                 found = True
                         if not found:
                             for realSeqId in np['auth_seq_id']:
-                                realSeqId = self.getRealSeqId(np, realSeqId, False)
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     idx = np['auth_seq_id'].index(realSeqId)
                                     realCompId = np['comp_id'][idx]
@@ -6577,7 +6569,6 @@ class XplorMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
-                        realSeqId = self.getRealSeqId(ps, realSeqId)
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
@@ -6591,7 +6582,6 @@ class XplorMRParserListener(ParseTreeListener):
                     np = next((np for np in self.__nonPoly if np['auth_chain_id'] == chainId), None)
                     if np is not None:
                         for realSeqId in np['auth_seq_id']:
-                            realSeqId = self.getRealSeqId(np, realSeqId, False)
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
@@ -6660,9 +6650,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                            if realSeqId not in _factor['seq_id']:
+                            if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 continue
-                        realSeqId = self.getRealSeqId(ps, realSeqId)
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -6677,9 +6666,8 @@ class XplorMRParserListener(ParseTreeListener):
                     if np is not None:
                         for realSeqId in np['auth_seq_id']:
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                if realSeqId not in _factor['seq_id']:
+                                if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     continue
-                            realSeqId = self.getRealSeqId(np, realSeqId, False)
                             idx = np['auth_seq_id'].index(realSeqId)
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -6738,9 +6726,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                            if realSeqId not in _factor['seq_id']:
+                            if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 continue
-                        realSeqId = self.getRealSeqId(ps, realSeqId)
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -6755,9 +6742,8 @@ class XplorMRParserListener(ParseTreeListener):
                     if np is not None:
                         for realSeqId in np['auth_seq_id']:
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                if realSeqId not in _factor['seq_id']:
+                                if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     continue
-                            realSeqId = self.getRealSeqId(np, realSeqId, False)
                             idx = np['auth_seq_id'].index(realSeqId)
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -6822,6 +6808,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if cifCheck:
                     self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}.\n"
+                    if 'atom_id' in __factor and __factor['atom_id'][0] is None:
+                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['label_seq_scheme'] = True
                 else:
                     self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}. "\
@@ -7043,8 +7032,6 @@ class XplorMRParserListener(ParseTreeListener):
                                             if self.__ccU.updateChemCompDict(_compId):
                                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                 if cca is not None:
-                                                    if self.reasonsForReParsing is None:
-                                                        self.reasonsForReParsing = {}
                                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['label_seq_scheme'] = True
                                     if cifCheck and self.__cur_subtype != 'plane':
@@ -7052,6 +7039,19 @@ class XplorMRParserListener(ParseTreeListener):
                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 
         return foundCompId
+
+    def getOrigSeqId(self, ps, seqId, isPolySeq=True):
+        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
+            if seqKey in self.__authToLabelSeq:
+                _chainId, _seqId = self.__authToLabelSeq[seqKey]
+                if _seqId in ps['seq_id']:
+                    return _seqId
+        if seqId in ps['auth_seq_id']:
+            return seqId
+        if seqId in ps['seq_id']:
+            return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+        return seqId
 
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
         if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
@@ -7075,7 +7075,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     def updateSegmentIdDict(self, factor, chainId):
         if self.__reasons is not None or 'alt_chain_id' not in factor\
-           or self.reasonsForReParsing is None or 'segment_id_mismatch' not in self.reasonsForReParsing:
+           or len(self.reasonsForReParsing) == 0 or 'segment_id_mismatch' not in self.reasonsForReParsing:
             return
         altChainId = factor['alt_chain_id']
         if altChainId not in self.reasonsForReParsing['segment_id_mismatch']:
@@ -7434,8 +7434,6 @@ class XplorMRParserListener(ParseTreeListener):
                             "Couldn't specify segment name "\
                             f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
                     else:
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['segment_id_mismatch'] = {}
                         if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
@@ -8644,8 +8642,6 @@ class XplorMRParserListener(ParseTreeListener):
                                 "Couldn't specify segment name "\
                                 f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
                         else:
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'segment_id_mismatch' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['segment_id_mismatch'] = {}
                             if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
@@ -9895,7 +9891,7 @@ class XplorMRParserListener(ParseTreeListener):
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing XPLOR-NIH MR file.
         """
-        return self.reasonsForReParsing
+        return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
 
 # del XplorMRParser

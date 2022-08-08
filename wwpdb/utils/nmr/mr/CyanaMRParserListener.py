@@ -231,7 +231,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    reasonsForReParsing = None
+    reasonsForReParsing = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -412,8 +412,6 @@ class CyanaMRParserListener(ParseTreeListener):
                             seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
                     if len(seqIdRemap) > 0:
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
@@ -422,8 +420,6 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'chain_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
@@ -433,22 +429,20 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'non_poly_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
 
             if 'Atom not found' in self.warningMessage and self.__reasons is None:
                 if len(self.unambigAtomNameMapping) > 0:
-                    if self.reasonsForReParsing is None:
-                        self.reasonsForReParsing = {}
                     if 'unambig_atom_id_remap' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['unambig_atom_id_remap'] = self.unambigAtomNameMapping
                 if len(self.ambigAtomNameMapping) > 0:
-                    if self.reasonsForReParsing is None:
-                        self.reasonsForReParsing = {}
                     if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
+
+        if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+            if 'seq_id_remap' in self.reasonsForReParsing:
+                del self.reasonsForReParsing['seq_id_remap']
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -458,8 +452,6 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if self.__remediate:
             if self.__dihed_lb_greater_than_ub and self.__dihed_ub_always_positive:
-                if self.reasonsForReParsing is None:
-                    self.reasonsForReParsing = {}
                 if 'dihed_unusual_order' not in self.reasonsForReParsing:
                     self.reasonsForReParsing['dihed_unusual_order'] = True
 
@@ -1468,8 +1460,6 @@ class CyanaMRParserListener(ParseTreeListener):
                         if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
-                                if self.reasonsForReParsing is None:
-                                    self.reasonsForReParsing = {}
                                 if 'label_seq_scheme' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -1492,8 +1482,6 @@ class CyanaMRParserListener(ParseTreeListener):
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
-                                    if self.reasonsForReParsing is None:
-                                        self.reasonsForReParsing = {}
                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -1635,8 +1623,6 @@ class CyanaMRParserListener(ParseTreeListener):
                                 chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
-                                if self.reasonsForReParsing is None:
-                                    self.reasonsForReParsing = {}
                                 if 'label_seq_scheme' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -1666,8 +1652,6 @@ class CyanaMRParserListener(ParseTreeListener):
                                     chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                                    if self.reasonsForReParsing is None:
-                                        self.reasonsForReParsing = {}
                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -1778,8 +1762,6 @@ class CyanaMRParserListener(ParseTreeListener):
                         updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                         if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'label_seq_scheme' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['label_seq_scheme'] = True
 
@@ -1794,8 +1776,6 @@ class CyanaMRParserListener(ParseTreeListener):
                             updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                             if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
-                                if self.reasonsForReParsing is None:
-                                    self.reasonsForReParsing = {}
                                 if 'label_seq_scheme' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['label_seq_scheme'] = True
 
@@ -1891,8 +1871,6 @@ class CyanaMRParserListener(ParseTreeListener):
                         updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'label_seq_scheme' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['label_seq_scheme'] = True
 
@@ -1909,8 +1887,6 @@ class CyanaMRParserListener(ParseTreeListener):
                             updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
-                                if self.reasonsForReParsing is None:
-                                    self.reasonsForReParsing = {}
                                 if 'label_seq_scheme' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['label_seq_scheme'] = True
 
@@ -3048,8 +3024,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         self.reasonsForReParsing['noepk_fixres'] = True
 
                 else:  # 'noepk'
@@ -3239,8 +3213,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         self.reasonsForReParsing['noepk_fixresw'] = True
 
                 else:  # 'noepk'
@@ -3382,8 +3354,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         self.reasonsForReParsing['noepk_fixresw2'] = True
 
                 else:  # 'noepk'
@@ -3532,8 +3502,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         self.reasonsForReParsing['noepk_fixatm'] = True
 
                 else:  # 'noepk'
@@ -3723,8 +3691,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         self.reasonsForReParsing['noepk_fixatmw'] = True
 
                 else:  # 'noepk'
@@ -3866,8 +3832,6 @@ class CyanaMRParserListener(ParseTreeListener):
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         self.reasonsForReParsing['noepk_fixatmw2'] = True
 
                 else:  # 'noepk'
@@ -4962,7 +4926,7 @@ class CyanaMRParserListener(ParseTreeListener):
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing CYANA MR file.
         """
-        return self.reasonsForReParsing
+        return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
     def getTypeOfDistanceRestraints(self):
         """ Return type of distance restraints of the CYANA MR file.

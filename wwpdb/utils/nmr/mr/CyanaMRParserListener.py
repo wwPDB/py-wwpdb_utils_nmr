@@ -424,7 +424,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
                     if self.__hasNonPoly:
-                        polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__polySeq, self.__nonPoly, self.__polySeqRst,
+                        polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__polySeq, self.__nonPoly, self.__polySeqRst,
                                                                                self.__seqAlign, self.__chainAssign)
 
                         if polySeqRst is not None:
@@ -1402,7 +1402,7 @@ class CyanaMRParserListener(ParseTreeListener):
                and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
-        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, translateToStdResName(compId))
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, translateToStdResName(compId), compId)
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -1546,7 +1546,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
-        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId))
+        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId), compId)
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)

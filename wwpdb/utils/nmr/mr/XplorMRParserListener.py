@@ -559,7 +559,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
                     if self.__hasNonPoly:
-                        polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__polySeq, self.__nonPoly, self.__polySeqRst,
+                        polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__polySeq, self.__nonPoly, self.__polySeqRst,
                                                                                self.__seqAlign, self.__chainAssign)
 
                         if polySeqRst is not None:

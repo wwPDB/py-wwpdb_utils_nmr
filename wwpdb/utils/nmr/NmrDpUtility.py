@@ -6478,7 +6478,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
         tags_with_null_str = []
 
@@ -6500,7 +6500,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
         for sf_category in self.__sf_category_list:
 
@@ -6522,7 +6522,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
         # initialize loop counter
         lp_counts = {t: 0 for t in self.nmr_content_subtypes}
@@ -6549,7 +6549,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
                 else:
                     err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
@@ -6559,7 +6559,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
             elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0 and content_type != 'nmr-restraints':
                 err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
@@ -6569,7 +6569,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         elif lp_counts[content_subtype] > 1:
 
@@ -6580,7 +6580,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         content_subtype = 'chem_shift'
 
@@ -6597,7 +6597,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints' and not self.__bmrb_only:
 
@@ -6611,7 +6611,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
             else:
 
@@ -6623,7 +6623,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         content_subtype = 'dist_restraint'
 
@@ -6640,7 +6640,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint'])\
            and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
@@ -6653,7 +6653,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         has_spectral_peak = lp_counts['spectral_peak'] + lp_counts['spectral_peak_alt'] > 0
 
@@ -6667,7 +6667,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
         if has_spectral_peak and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
 
@@ -6679,7 +6679,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         if self.__remediation_mode and content_type == 'nmr-restraints' and not self.__bmrb_only:
 
@@ -10622,7 +10622,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR__() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
         except ValueError:
             pass
@@ -15186,6 +15186,11 @@ class NmrDpUtility:
 
                     if self.__csStat.peptideLike(first_comp_id):
                         first_comp_ids.add(first_comp_id)
+
+                    for comp_id in s['comp_id']:
+                        if self.__csStat.peptideLike(comp_id):
+                            first_comp_ids.add(comp_id)
+                            break
 
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 

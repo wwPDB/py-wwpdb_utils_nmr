@@ -1219,7 +1219,7 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
 
         ref_seq_lengths = []
 
-        for ref_seq_id in ref_chain_ids:
+        for ref_chain_id in ref_chain_ids:
             ref_ps = next(ps for ps in polySeqModel if ps['auth_chain_id'] == ref_chain_id)
             ref_seq_lengths.append(len(ref_ps['seq_id']))
 
@@ -1228,8 +1228,8 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
         test_ps = next(ps for ps in _polySeqRst if ps['chain_id'] == test_chain_id)
         len_test_ps = len(test_ps['seq_id'])
 
-        if sum_ref_seq_lengths < len_test_ps:
-            half_gap = (len_test_ps - sum_ref_seq_lengths) // (total_gaps * 2)
+        if sum_ref_seq_lengths < len_test_ps or len_test_ps > sum_ref_seq_lengths / len(ref_chain_ids):
+            half_gap = (len_test_ps - sum_ref_seq_lengths) // (total_gaps * 2) if sum_ref_seq_lengths < len_test_ps else 0
 
             _test_ps = copy.copy(test_ps)
 

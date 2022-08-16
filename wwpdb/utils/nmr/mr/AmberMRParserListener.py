@@ -2372,6 +2372,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
+                if coordAtomSite is not None\
+                   and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                   and atomId in coordAtomSite['atom_id']:
+                    atomIds = [atomId]
+
                 for _atomId in atomIds:
                     ccdCheck = not cifCheck
 
@@ -2472,6 +2477,11 @@ class AmberMRParserListener(ParseTreeListener):
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                        if coordAtomSite is not None\
+                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                           and atomId in coordAtomSite['atom_id']:
+                            atomIds = [atomId]
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck
@@ -2634,6 +2644,11 @@ class AmberMRParserListener(ParseTreeListener):
                         authAtomId = translateToStdAtomName(authAtomId, compId, ccU=self.__ccU)
 
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
+
+                    if coordAtomSite is not None\
+                       and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                       and authAtomId in coordAtomSite['atom_id']:
+                        atomIds = [authAtomId]
 
                     if 'iat' in factor:
                         iat = factor['iat']
@@ -2829,6 +2844,11 @@ class AmberMRParserListener(ParseTreeListener):
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                    if coordAtomSite is not None\
+                       and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                       and authAtomId in coordAtomSite['atom_id']:
+                        atomIds = [authAtomId]
 
                     if 'iat' in factor:
                         iat = factor['iat']
@@ -3057,6 +3077,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
+                        if coordAtomSite is not None\
+                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                           and authAtomId in coordAtomSite['atom_id']:
+                            atomIds = [authAtomId]
+
                         if 'iat' in factor:
                             iat = factor['iat']
                             for _atomId in atomIds:
@@ -3233,6 +3258,11 @@ class AmberMRParserListener(ParseTreeListener):
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                        if coordAtomSite is not None\
+                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                           and authAtomId in coordAtomSite['atom_id']:
+                            atomIds = [authAtomId]
 
                         if 'iat' in factor:
                             iat = factor['iat']
@@ -6614,6 +6644,12 @@ class AmberMRParserListener(ParseTreeListener):
                 if _atomId_ != atomId:
                     _atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
+
+            if coordAtomSite is not None\
+               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
+               and atomId in coordAtomSite['atom_id']:
+                _atomId = [atomId]
+
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
                 if enableWarning:

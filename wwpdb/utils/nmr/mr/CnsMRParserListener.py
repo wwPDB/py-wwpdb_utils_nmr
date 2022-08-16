@@ -3694,6 +3694,11 @@ class CnsMRParserListener(ParseTreeListener):
                                 if self.__nefT.validate_comp_atom(compId, _atomId):
                                     atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
 
+                    if coordAtomSite is not None\
+                       and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                       and atomId in coordAtomSite['atom_id']:
+                        atomIds = [atomId]
+
                     for _atomId in atomIds:
                         ccdCheck = not cifCheck
 

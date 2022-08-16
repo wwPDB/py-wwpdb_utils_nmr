@@ -1,0 +1,684 @@
+assign (segid "    " and resid   10 and name  HD2) (segid "    " and resid   10 and name  HB2) 1.599 0.320 0.320 
+    or (segid "    " and resid   10 and name  HD2) (segid "    " and resid   10 and name  HB1)
+    or (segid "    " and resid   10 and name  HD1) (segid "    " and resid   10 and name  HB2)
+    or (segid "    " and resid   10 and name  HD1) (segid "    " and resid   10 and name  HB1)
+    or (segid "    " and resid   24 and name  HE1) (segid "    " and resid   24 and name  HE2)
+assign (segid "    " and resid    2 and name HG21) (segid "    " and resid    2 and name   HB) 1.889 0.446 0.446 
+    or (segid "    " and resid    2 and name HG22) (segid "    " and resid    2 and name   HB)
+    or (segid "    " and resid    2 and name HG23) (segid "    " and resid    2 and name   HB)
+    or (segid "    " and resid   55 and name HG21) (segid "    " and resid   55 and name   HB)
+    or (segid "    " and resid   55 and name HG22) (segid "    " and resid   55 and name   HB)
+    or (segid "    " and resid   55 and name HG23) (segid "    " and resid   55 and name   HB)
+assign (segid "    " and resid   31 and name  HD2) (segid "    " and resid   31 and name  HG1) 1.910 0.456 0.456 
+    or (segid "    " and resid   31 and name  HD1) (segid "    " and resid   31 and name  HG1)
+    or (segid "    " and resid   39 and name HG22) (segid "    " and resid   39 and name HG12)
+    or (segid "    " and resid   39 and name HG22) (segid "    " and resid   39 and name HG11)
+    or (segid "    " and resid   39 and name HG22) (segid "    " and resid   39 and name HG13)
+    or (segid "    " and resid   39 and name HG21) (segid "    " and resid   39 and name HG12)
+    or (segid "    " and resid   39 and name HG21) (segid "    " and resid   39 and name HG11)
+    or (segid "    " and resid   39 and name HG21) (segid "    " and resid   39 and name HG13)
+    or (segid "    " and resid   39 and name HG23) (segid "    " and resid   39 and name HG12)
+    or (segid "    " and resid   39 and name HG23) (segid "    " and resid   39 and name HG11)
+    or (segid "    " and resid   39 and name HG23) (segid "    " and resid   39 and name HG13)
+assign (segid "    " and resid   23 and name   HA) (segid "    " and resid   26 and name  HB2) 2.063 0.532 0.532 
+    or (segid "    " and resid   23 and name   HA) (segid "    " and resid   26 and name  HB1)
+    or (segid "    " and resid   23 and name   HA) (segid "    " and resid   26 and name  HB3)
+    or (segid "    " and resid   26 and name   HA) (segid "    " and resid   26 and name  HB2)
+    or (segid "    " and resid   26 and name   HA) (segid "    " and resid   26 and name  HB1)
+    or (segid "    " and resid   26 and name   HA) (segid "    " and resid   26 and name  HB3)
+assign (segid "    " and resid   35 and name   HA) (segid "    " and resid   36 and name   HN) 2.079 0.540 0.540 
+    or (segid "    " and resid   36 and name  HB2) (segid "    " and resid   36 and name   HN)
+assign (segid "    " and resid   55 and name   HA) (segid "    " and resid   55 and name   HB) 2.148 0.577 0.577 
+    or (segid "    " and resid   16 and name   HA) (segid "    " and resid   16 and name   HB)
+assign (segid "    " and resid    3 and name  HB2) (segid "    " and resid   52 and name  HE1) 2.171 0.589 0.589 
+    or (segid "    " and resid    3 and name  HB2) (segid "    " and resid   52 and name  HE2)
+    or (segid "    " and resid    3 and name  HB2) (segid "    " and resid    3 and name  HD1)
+    or (segid "    " and resid    3 and name  HB2) (segid "    " and resid    3 and name  HD2)
+assign (segid "    " and resid    4 and name  HD2) (segid "    " and resid    4 and name  HB2) 2.177 0.592 0.592 
+    or (segid "    " and resid    4 and name  HD1) (segid "    " and resid    4 and name  HB2)
+    or (segid "    " and resid   27 and name  HG2) (segid "    " and resid   27 and name  HB2)
+    or (segid "    " and resid   27 and name  HG1) (segid "    " and resid   27 and name  HB2)
+assign (segid "    " and resid   26 and name  HB2) (segid "    " and resid    3 and name  HD1) 2.198 0.604 0.604 
+    or (segid "    " and resid   26 and name  HB2) (segid "    " and resid    3 and name  HD2)
+    or (segid "    " and resid   26 and name  HB1) (segid "    " and resid    3 and name  HD1)
+    or (segid "    " and resid   26 and name  HB1) (segid "    " and resid    3 and name  HD2)
+    or (segid "    " and resid   26 and name  HB3) (segid "    " and resid    3 and name  HD1)
+    or (segid "    " and resid   26 and name  HB3) (segid "    " and resid    3 and name  HD2)
+    or (segid "    " and resid   26 and name  HB2) (segid "    " and resid   52 and name  HE1)
+    or (segid "    " and resid   26 and name  HB2) (segid "    " and resid   52 and name  HE2)
+    or (segid "    " and resid   26 and name  HB1) (segid "    " and resid   52 and name  HE1)
+    or (segid "    " and resid   26 and name  HB1) (segid "    " and resid   52 and name  HE2)
+    or (segid "    " and resid   26 and name  HB3) (segid "    " and resid   52 and name  HE1)
+    or (segid "    " and resid   26 and name  HB3) (segid "    " and resid   52 and name  HE2)
+assign (segid "    " and resid   28 and name  HD1) (segid "    " and resid   28 and name  HE1) 2.235 0.624 0.624 
+    or (segid "    " and resid   28 and name  HD1) (segid "    " and resid   28 and name  HG1)
+assign (segid "    " and resid   56 and name   HA) (segid "    " and resid   56 and name   HN) 2.240 0.627 0.627 
+    or (segid "    " and resid    9 and name  HA2) (segid "    " and resid   56 and name   HN)
+assign (segid "    " and resid    4 and name  HG1) (segid "    " and resid    4 and name  HB1) 2.252 0.634 0.634 
+    or (segid "    " and resid   50 and name  HG2) (segid "    " and resid   50 and name  HB1)
+assign (segid "    " and resid    7 and name   HA) (segid "    " and resid   54 and name HG22) 2.290 0.656 0.656 
+    or (segid "    " and resid    7 and name   HA) (segid "    " and resid   54 and name HG21)
+    or (segid "    " and resid    7 and name   HA) (segid "    " and resid   54 and name HG23)
+    or (segid "    " and resid   54 and name   HA) (segid "    " and resid   54 and name HG22)
+    or (segid "    " and resid   54 and name   HA) (segid "    " and resid   54 and name HG21)
+    or (segid "    " and resid   54 and name   HA) (segid "    " and resid   54 and name HG23)
+assign (segid "    " and resid   41 and name  HA2) (segid "    " and resid   42 and name   HN) 2.293 0.657 0.657 
+    or (segid "    " and resid   24 and name   HB) (segid "    " and resid   27 and name   HN)
+assign (segid "    " and resid    9 and name  HA2) (segid "    " and resid   56 and name  HB1) 2.358 0.695 0.695 
+    or (segid "    " and resid   56 and name   HA) (segid "    " and resid   56 and name  HB1)
+assign (segid "    " and resid   30 and name  HB2) (segid "    " and resid    5 and name HD22) 2.358 0.695 0.695 
+    or (segid "    " and resid   30 and name  HB2) (segid "    " and resid    5 and name HD21)
+    or (segid "    " and resid   30 and name  HB2) (segid "    " and resid    5 and name HD23)
+    or (segid "    " and resid   52 and name  HB1) (segid "    " and resid    5 and name HD22)
+    or (segid "    " and resid   52 and name  HB1) (segid "    " and resid    5 and name HD21)
+    or (segid "    " and resid   52 and name  HB1) (segid "    " and resid    5 and name HD23)
+assign (segid "    " and resid   18 and name   HB) (segid "    " and resid   29 and name HG12) 2.368 0.701 0.701 
+    or (segid "    " and resid   18 and name   HB) (segid "    " and resid   29 and name HG11)
+    or (segid "    " and resid   18 and name   HB) (segid "    " and resid   29 and name HG13)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid    7 and name HD22)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid    7 and name HD21)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid    7 and name HD23)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid    7 and name HD12)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid    7 and name HD11)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid    7 and name HD13)
+assign (segid "    " and resid    4 and name   HA) (segid "    " and resid    4 and name   HN) 2.383 0.710 0.710 
+    or (segid "    " and resid   53 and name   HA) (segid "    " and resid    6 and name   HN)
+assign (segid "    " and resid   12 and name  HB1) (segid "    " and resid   12 and name HD12) 2.387 0.712 0.712 
+    or (segid "    " and resid   12 and name  HB1) (segid "    " and resid   12 and name HD11)
+    or (segid "    " and resid   12 and name  HB1) (segid "    " and resid   12 and name HD13)
+    or (segid "    " and resid   12 and name   HG) (segid "    " and resid   12 and name HD12)
+    or (segid "    " and resid   12 and name   HG) (segid "    " and resid   12 and name HD11)
+    or (segid "    " and resid   12 and name   HG) (segid "    " and resid   12 and name HD13)
+assign (segid "    " and resid   30 and name  HB2) (segid "    " and resid   43 and name  HZ3) 2.391 0.715 0.715 
+    or (segid "    " and resid   52 and name  HB1) (segid "    " and resid   43 and name  HZ3)
+assign (segid "    " and resid   55 and name   HA) (segid "    " and resid   55 and name   HB) 2.409 0.725 0.725 
+    or (segid "    " and resid   18 and name   HA) (segid "    " and resid   18 and name   HB)
+assign (segid "    " and resid    9 and name  HA1) (segid "    " and resid   39 and name HG12) 2.410 0.726 0.726 
+    or (segid "    " and resid    9 and name  HA1) (segid "    " and resid   39 and name HG11)
+    or (segid "    " and resid    9 and name  HA1) (segid "    " and resid   39 and name HG13)
+    or (segid "    " and resid   39 and name   HA) (segid "    " and resid   39 and name HG12)
+    or (segid "    " and resid   39 and name   HA) (segid "    " and resid   39 and name HG11)
+    or (segid "    " and resid   39 and name   HA) (segid "    " and resid   39 and name HG13)
+assign (segid "    " and resid    2 and name   HA) (segid "    " and resid    2 and name HG21) 2.423 0.734 0.734 
+    or (segid "    " and resid    2 and name   HA) (segid "    " and resid    2 and name HG22)
+    or (segid "    " and resid    2 and name   HA) (segid "    " and resid    2 and name HG23)
+    or (segid "    " and resid   20 and name   HA) (segid "    " and resid   25 and name HG21)
+    or (segid "    " and resid   20 and name   HA) (segid "    " and resid   25 and name HG22)
+    or (segid "    " and resid   20 and name   HA) (segid "    " and resid   25 and name HG23)
+assign (segid "    " and resid   56 and name   HA) (segid "    " and resid   56 and name  HB2) 2.429 0.738 0.738 
+    or (segid "    " and resid    9 and name  HA2) (segid "    " and resid   56 and name  HB2)
+assign (segid "    " and resid   12 and name  HB1) (segid "    " and resid   12 and name HD22) 2.429 0.738 0.738 
+    or (segid "    " and resid   12 and name  HB1) (segid "    " and resid   12 and name HD21)
+    or (segid "    " and resid   12 and name  HB1) (segid "    " and resid   12 and name HD23)
+    or (segid "    " and resid   12 and name   HG) (segid "    " and resid   12 and name HD22)
+    or (segid "    " and resid   12 and name   HG) (segid "    " and resid   12 and name HD21)
+    or (segid "    " and resid   12 and name   HG) (segid "    " and resid   12 and name HD23)
+assign (segid "    " and resid   45 and name  HE1) (segid "    " and resid    3 and name  HD1) 2.439 0.743 0.743 
+    or (segid "    " and resid   45 and name  HE1) (segid "    " and resid    3 and name  HD2)
+    or (segid "    " and resid   45 and name  HE2) (segid "    " and resid    3 and name  HD1)
+    or (segid "    " and resid   45 and name  HE2) (segid "    " and resid    3 and name  HD2)
+    or (segid "    " and resid   45 and name  HE1) (segid "    " and resid   52 and name  HE1)
+    or (segid "    " and resid   45 and name  HE1) (segid "    " and resid   52 and name  HE2)
+    or (segid "    " and resid   45 and name  HE2) (segid "    " and resid   52 and name  HE1)
+    or (segid "    " and resid   45 and name  HE2) (segid "    " and resid   52 and name  HE2)
+assign (segid "    " and resid   24 and name  HE2) (segid "    " and resid   28 and name  HF2) 2.445 0.747 0.747 
+    or (segid "    " and resid   24 and name  HE2) (segid "    " and resid   28 and name  HF1)
+    or (segid "    " and resid   34 and name  HB2) (segid "    " and resid   35 and name   HA)
+    or (segid "    " and resid   34 and name  HB1) (segid "    " and resid   35 and name   HA)
+    or (segid "    " and resid   34 and name  HB3) (segid "    " and resid   35 and name   HA)
+    or (segid "    " and resid   35 and name  HG1) (segid "    " and resid   35 and name   HA)
+assign (segid "    " and resid   44 and name HG21) (segid "    " and resid   44 and name   HN) 2.445 0.747 0.747 
+    or (segid "    " and resid   44 and name HG22) (segid "    " and resid   44 and name   HN)
+    or (segid "    " and resid   44 and name HG23) (segid "    " and resid   44 and name   HN)
+    or (segid "    " and resid    2 and name HG21) (segid "    " and resid    3 and name   HN)
+    or (segid "    " and resid    2 and name HG22) (segid "    " and resid    3 and name   HN)
+    or (segid "    " and resid    2 and name HG23) (segid "    " and resid    3 and name   HN)
+assign (segid "    " and resid    2 and name   HB) (segid "    " and resid    2 and name   HN) 2.460 0.756 0.756 
+    or (segid "    " and resid   16 and name   HB) (segid "    " and resid   16 and name   HN)
+assign (segid "    " and resid   47 and name   HA) (segid "    " and resid   48 and name   HN) 2.460 0.756 0.756 
+    or (segid "    " and resid   48 and name   HA) (segid "    " and resid   48 and name   HN)
+assign (segid "    " and resid   43 and name  HB2) (segid "    " and resid   43 and name   HN) 2.468 0.761 0.761 
+    or (segid "    " and resid   43 and name  HB2) (segid "    " and resid   44 and name   HN)
+assign (segid "    " and resid   26 and name  HB2) (segid "    " and resid   30 and name  HE1) 2.491 0.776 0.776 
+    or (segid "    " and resid   26 and name  HB2) (segid "    " and resid   30 and name  HE2)
+    or (segid "    " and resid   26 and name  HB1) (segid "    " and resid   30 and name  HE1)
+    or (segid "    " and resid   26 and name  HB1) (segid "    " and resid   30 and name  HE2)
+    or (segid "    " and resid   26 and name  HB3) (segid "    " and resid   30 and name  HE1)
+    or (segid "    " and resid   26 and name  HB3) (segid "    " and resid   30 and name  HE2)
+    or (segid "    " and resid   26 and name  HB2) (segid "    " and resid   52 and name   HZ)
+    or (segid "    " and resid   26 and name  HB1) (segid "    " and resid   52 and name   HZ)
+    or (segid "    " and resid   26 and name  HB3) (segid "    " and resid   52 and name   HZ)
+assign (segid "    " and resid   23 and name   HA) (segid "    " and resid   26 and name   HN) 2.510 0.787 0.787 
+    or (segid "    " and resid   26 and name   HA) (segid "    " and resid   26 and name   HN)
+assign (segid "    " and resid   23 and name  HB2) (segid "    " and resid    3 and name  HD1) 2.510 0.788 0.788 
+    or (segid "    " and resid   23 and name  HB2) (segid "    " and resid    3 and name  HD2)
+    or (segid "    " and resid   23 and name  HB1) (segid "    " and resid    3 and name  HD1)
+    or (segid "    " and resid   23 and name  HB1) (segid "    " and resid    3 and name  HD2)
+    or (segid "    " and resid   23 and name  HB3) (segid "    " and resid    3 and name  HD1)
+    or (segid "    " and resid   23 and name  HB3) (segid "    " and resid    3 and name  HD2)
+    or (segid "    " and resid   23 and name  HB2) (segid "    " and resid   52 and name  HE1)
+    or (segid "    " and resid   23 and name  HB2) (segid "    " and resid   52 and name  HE2)
+    or (segid "    " and resid   23 and name  HB1) (segid "    " and resid   52 and name  HE1)
+    or (segid "    " and resid   23 and name  HB1) (segid "    " and resid   52 and name  HE2)
+    or (segid "    " and resid   23 and name  HB3) (segid "    " and resid   52 and name  HE1)
+    or (segid "    " and resid   23 and name  HB3) (segid "    " and resid   52 and name  HE2)
+assign (segid "    " and resid   20 and name   HA) (segid "    " and resid   20 and name   HN) 2.513 0.790 0.790 
+    or (segid "    " and resid    2 and name   HA) (segid "    " and resid   20 and name   HN)
+assign (segid "    " and resid   21 and name   HA) (segid "    " and resid   22 and name   HN) 2.531 0.801 0.801 
+    or (segid "    " and resid   24 and name   HB) (segid "    " and resid   24 and name   HN)
+    or (segid "    " and resid   31 and name   HB) (segid "    " and resid   35 and name   HN)
+assign (segid "    " and resid   12 and name   HA) (segid "    " and resid   12 and name  HB1) 2.543 0.808 0.808 
+    or (segid "    " and resid   12 and name   HA) (segid "    " and resid   12 and name   HG)
+assign (segid "    " and resid   26 and name  HB2) (segid "    " and resid   28 and name   HN) 2.547 0.811 0.811 
+    or (segid "    " and resid   26 and name  HB1) (segid "    " and resid   28 and name   HN)
+    or (segid "    " and resid   26 and name  HB3) (segid "    " and resid   28 and name   HN)
+    or (segid "    " and resid   31 and name  HG1) (segid "    " and resid   28 and name   HN)
+    or (segid "    " and resid   31 and name  HG1) (segid "    " and resid   43 and name  HZ2)
+    or (segid "    " and resid   39 and name HG12) (segid "    " and resid   43 and name  HZ2)
+    or (segid "    " and resid   39 and name HG11) (segid "    " and resid   43 and name  HZ2)
+    or (segid "    " and resid   39 and name HG13) (segid "    " and resid   43 and name  HZ2)
+assign (segid "    " and resid   22 and name  HB2) (segid "    " and resid   22 and name   HN) 2.576 0.829 0.829 
+    or (segid "    " and resid   22 and name  HB1) (segid "    " and resid   22 and name   HN)
+    or (segid "    " and resid   22 and name  HB2) (segid "    " and resid   24 and name   HN)
+    or (segid "    " and resid   22 and name  HB1) (segid "    " and resid   24 and name   HN)
+assign (segid "    " and resid   49 and name   HA) (segid "    " and resid   49 and name   HN) 2.597 0.843 0.843 
+    or (segid "    " and resid   49 and name   HB) (segid "    " and resid   49 and name   HN)
+assign (segid "    " and resid   24 and name   HB) (segid "    " and resid   28 and name   HN) 2.598 0.844 0.844 
+    or (segid "    " and resid   31 and name   HB) (segid "    " and resid   43 and name  HZ2)
+assign (segid "    " and resid   35 and name   HA) (segid "    " and resid   35 and name   HB) 2.605 0.848 0.848 
+    or (segid "    " and resid   36 and name  HB2) (segid "    " and resid   33 and name   HA)
+assign (segid "    " and resid   19 and name   HA) (segid "    " and resid    3 and name   HN) 2.605 0.848 0.848 
+    or (segid "    " and resid    3 and name   HA) (segid "    " and resid    3 and name   HN)
+assign (segid "    " and resid   12 and name  HB1) (segid "    " and resid   12 and name   HN) 2.624 0.861 0.861 
+    or (segid "    " and resid   12 and name   HG) (segid "    " and resid   12 and name   HN)
+assign (segid "    " and resid    2 and name HG21) (segid "    " and resid   18 and name   HN) 2.625 0.862 0.862 
+    or (segid "    " and resid    2 and name HG22) (segid "    " and resid   18 and name   HN)
+    or (segid "    " and resid    2 and name HG23) (segid "    " and resid   18 and name   HN)
+    or (segid "    " and resid   17 and name HG21) (segid "    " and resid   18 and name   HN)
+    or (segid "    " and resid   17 and name HG22) (segid "    " and resid   18 and name   HN)
+    or (segid "    " and resid   17 and name HG23) (segid "    " and resid   18 and name   HN)
+assign (segid "    " and resid   37 and name  HB2) (segid "    " and resid   39 and name HG22) 2.646 0.875 0.875 
+    or (segid "    " and resid   37 and name  HB2) (segid "    " and resid   39 and name HG21)
+    or (segid "    " and resid   37 and name  HB2) (segid "    " and resid   39 and name HG23)
+    or (segid "    " and resid   37 and name  HB2) (segid "    " and resid   12 and name HD12)
+    or (segid "    " and resid   37 and name  HB2) (segid "    " and resid   12 and name HD11)
+    or (segid "    " and resid   37 and name  HB2) (segid "    " and resid   12 and name HD13)
+assign (segid "    " and resid   29 and name   HB) (segid "    " and resid   18 and name   HB) 2.658 0.883 0.883 
+    or (segid "    " and resid   39 and name   HB) (segid "    " and resid   34 and name   HA)
+assign (segid "    " and resid    6 and name   HA) (segid "    " and resid    6 and name HD12) 2.676 0.895 0.895 
+    or (segid "    " and resid    6 and name   HA) (segid "    " and resid    6 and name HD11)
+    or (segid "    " and resid    6 and name   HA) (segid "    " and resid    6 and name HD13)
+    or (segid "    " and resid    6 and name   HA) (segid "    " and resid    7 and name HD22)
+    or (segid "    " and resid    6 and name   HA) (segid "    " and resid    7 and name HD21)
+    or (segid "    " and resid    6 and name   HA) (segid "    " and resid    7 and name HD23)
+    or (segid "    " and resid    6 and name   HA) (segid "    " and resid    7 and name HD12)
+    or (segid "    " and resid    6 and name   HA) (segid "    " and resid    7 and name HD11)
+    or (segid "    " and resid    6 and name   HA) (segid "    " and resid    7 and name HD13)
+assign (segid "    " and resid   35 and name  HE1) (segid "    " and resid   35 and name   HB) 2.680 0.897 0.897 
+    or (segid "    " and resid   35 and name  HG1) (segid "    " and resid   35 and name   HB)
+assign (segid "    " and resid   24 and name  HE1) (segid "    " and resid   28 and name  HF2) 2.686 0.902 0.902 
+    or (segid "    " and resid   24 and name  HE1) (segid "    " and resid   28 and name  HF1)
+    or (segid "    " and resid   35 and name  HD1) (segid "    " and resid   35 and name   HA)
+assign (segid "    " and resid   12 and name  HB1) (segid "    " and resid   13 and name   HN) 2.693 0.906 0.906 
+    or (segid "    " and resid   13 and name  HG2) (segid "    " and resid   13 and name   HN)
+    or (segid "    " and resid   13 and name  HG1) (segid "    " and resid   13 and name   HN)
+assign (segid "    " and resid   23 and name   HA) (segid "    " and resid    3 and name  HD1) 2.719 0.924 0.924 
+    or (segid "    " and resid   23 and name   HA) (segid "    " and resid    3 and name  HD2)
+    or (segid "    " and resid   23 and name   HA) (segid "    " and resid   52 and name  HE1)
+    or (segid "    " and resid   23 and name   HA) (segid "    " and resid   52 and name  HE2)
+assign (segid "    " and resid   30 and name  HB1) (segid "    " and resid   43 and name  HH2) 2.732 0.933 0.933 
+    or (segid "    " and resid   35 and name   HA) (segid "    " and resid   32 and name HE21)
+assign (segid "    " and resid   34 and name   HA) (segid "    " and resid   39 and name   HN) 2.736 0.936 0.936 
+    or (segid "    " and resid   38 and name  HA1) (segid "    " and resid   39 and name   HN)
+assign (segid "    " and resid   33 and name  HB1) (segid "    " and resid   30 and name  HD1) 2.750 0.945 0.945 
+    or (segid "    " and resid   33 and name  HB1) (segid "    " and resid   30 and name  HD2)
+    or (segid "    " and resid   52 and name  HB2) (segid "    " and resid   30 and name  HD1)
+    or (segid "    " and resid   52 and name  HB2) (segid "    " and resid   30 and name  HD2)
+assign (segid "    " and resid    5 and name   HA) (segid "    " and resid   52 and name  HB1) 2.772 0.961 0.961 
+    or (segid "    " and resid   45 and name   HA) (segid "    " and resid   52 and name  HB1)
+assign (segid "    " and resid   16 and name   HB) (segid "    " and resid   17 and name   HN) 2.796 0.977 0.977 
+    or (segid "    " and resid   18 and name   HB) (segid "    " and resid   19 and name   HN)
+assign (segid "    " and resid   51 and name HG21) (segid "    " and resid    4 and name   HN) 2.805 0.984 0.984 
+    or (segid "    " and resid   51 and name HG22) (segid "    " and resid    4 and name   HN)
+    or (segid "    " and resid   51 and name HG23) (segid "    " and resid    4 and name   HN)
+    or (segid "    " and resid   51 and name HG21) (segid "    " and resid    6 and name   HN)
+    or (segid "    " and resid   51 and name HG22) (segid "    " and resid    6 and name   HN)
+    or (segid "    " and resid   51 and name HG23) (segid "    " and resid    6 and name   HN)
+assign (segid "    " and resid   28 and name  HA1) (segid "    " and resid   29 and name   HA) 2.815 0.991 0.991 
+    or (segid "    " and resid   32 and name  HB1) (segid "    " and resid   29 and name   HA)
+assign (segid "    " and resid   31 and name  HF2) (segid "    " and resid   31 and name  HE2) 2.824 0.997 0.997 
+    or (segid "    " and resid   31 and name  HF2) (segid "    " and resid   31 and name  HE1)
+    or (segid "    " and resid   34 and name  HB2) (segid "    " and resid   54 and name HG22)
+    or (segid "    " and resid   34 and name  HB2) (segid "    " and resid   54 and name HG21)
+    or (segid "    " and resid   34 and name  HB2) (segid "    " and resid   54 and name HG23)
+    or (segid "    " and resid   34 and name  HB1) (segid "    " and resid   54 and name HG22)
+    or (segid "    " and resid   34 and name  HB1) (segid "    " and resid   54 and name HG21)
+    or (segid "    " and resid   34 and name  HB1) (segid "    " and resid   54 and name HG23)
+    or (segid "    " and resid   34 and name  HB3) (segid "    " and resid   54 and name HG22)
+    or (segid "    " and resid   34 and name  HB3) (segid "    " and resid   54 and name HG21)
+    or (segid "    " and resid   34 and name  HB3) (segid "    " and resid   54 and name HG23)
+assign (segid "    " and resid   47 and name   HA) (segid "    " and resid   49 and name   HN) 2.828 0.999 0.999 
+    or (segid "    " and resid   48 and name   HA) (segid "    " and resid   49 and name   HN)
+assign (segid "    " and resid   18 and name HG21) (segid "    " and resid   30 and name  HD1) 2.854 1.018 1.018 
+    or (segid "    " and resid   18 and name HG21) (segid "    " and resid   30 and name  HD2)
+    or (segid "    " and resid   18 and name HG22) (segid "    " and resid   30 and name  HD1)
+    or (segid "    " and resid   18 and name HG22) (segid "    " and resid   30 and name  HD2)
+    or (segid "    " and resid   18 and name HG23) (segid "    " and resid   30 and name  HD1)
+    or (segid "    " and resid   18 and name HG23) (segid "    " and resid   30 and name  HD2)
+    or (segid "    " and resid    5 and name HD22) (segid "    " and resid   30 and name  HD1)
+    or (segid "    " and resid    5 and name HD22) (segid "    " and resid   30 and name  HD2)
+    or (segid "    " and resid    5 and name HD21) (segid "    " and resid   30 and name  HD1)
+    or (segid "    " and resid    5 and name HD21) (segid "    " and resid   30 and name  HD2)
+    or (segid "    " and resid    5 and name HD23) (segid "    " and resid   30 and name  HD1)
+    or (segid "    " and resid    5 and name HD23) (segid "    " and resid   30 and name  HD2)
+assign (segid "    " and resid    7 and name   HG) (segid "    " and resid   54 and name HG22) 2.862 1.024 1.024 
+    or (segid "    " and resid    7 and name   HG) (segid "    " and resid   54 and name HG21)
+    or (segid "    " and resid    7 and name   HG) (segid "    " and resid   54 and name HG23)
+    or (segid "    " and resid   28 and name  HD2) (segid "    " and resid   31 and name  HE2)
+    or (segid "    " and resid   28 and name  HD2) (segid "    " and resid   31 and name  HE1)
+assign (segid "    " and resid   27 and name   HA) (segid "    " and resid   26 and name  HB2) 2.866 1.027 1.027 
+    or (segid "    " and resid   27 and name   HA) (segid "    " and resid   26 and name  HB1)
+    or (segid "    " and resid   27 and name   HA) (segid "    " and resid   26 and name  HB3)
+    or (segid "    " and resid   30 and name  HB1) (segid "    " and resid   26 and name  HB2)
+    or (segid "    " and resid   30 and name  HB1) (segid "    " and resid   26 and name  HB1)
+    or (segid "    " and resid   30 and name  HB1) (segid "    " and resid   26 and name  HB3)
+assign (segid "    " and resid   31 and name  HG1) (segid "    " and resid   43 and name  HH2) 2.870 1.030 1.030 
+    or (segid "    " and resid   39 and name HG12) (segid "    " and resid   43 and name  HH2)
+    or (segid "    " and resid   39 and name HG11) (segid "    " and resid   43 and name  HH2)
+    or (segid "    " and resid   39 and name HG13) (segid "    " and resid   43 and name  HH2)
+assign (segid "    " and resid   23 and name  HB2) (segid "    " and resid   50 and name   HA) 2.898 1.050 1.050 
+    or (segid "    " and resid   23 and name  HB1) (segid "    " and resid   50 and name   HA)
+    or (segid "    " and resid   23 and name  HB3) (segid "    " and resid   50 and name   HA)
+    or (segid "    " and resid   50 and name  HD1) (segid "    " and resid   50 and name   HA)
+assign (segid "    " and resid   35 and name  HE2) (segid "    " and resid   32 and name   HA) 2.899 1.051 1.051 
+    or (segid "    " and resid    6 and name   HB) (segid "    " and resid   53 and name   HB)
+assign (segid "    " and resid   50 and name  HB1) (segid "    " and resid   51 and name   HA) 2.905 1.055 1.055 
+    or (segid "    " and resid    4 and name  HB1) (segid "    " and resid   51 and name   HA)
+assign (segid "    " and resid   17 and name HG21) (segid "    " and resid    4 and name  HE2) 2.926 1.070 1.070 
+    or (segid "    " and resid   17 and name HG22) (segid "    " and resid    4 and name  HE2)
+    or (segid "    " and resid   17 and name HG23) (segid "    " and resid    4 and name  HE2)
+    or (segid "    " and resid   23 and name  HB2) (segid "    " and resid   22 and name  HB2)
+    or (segid "    " and resid   23 and name  HB2) (segid "    " and resid   22 and name  HB1)
+    or (segid "    " and resid   23 and name  HB1) (segid "    " and resid   22 and name  HB2)
+    or (segid "    " and resid   23 and name  HB1) (segid "    " and resid   22 and name  HB1)
+    or (segid "    " and resid   23 and name  HB3) (segid "    " and resid   22 and name  HB2)
+    or (segid "    " and resid   23 and name  HB3) (segid "    " and resid   22 and name  HB1)
+assign (segid "    " and resid   31 and name  HF1) (segid "    " and resid   43 and name  HD1) 2.934 1.076 1.076 
+    or (segid "    " and resid   35 and name  HD2) (segid "    " and resid   35 and name   HN)
+assign (segid "    " and resid   47 and name  HB2) (segid "    " and resid   49 and name   HN) 2.934 1.076 1.076 
+    or (segid "    " and resid    3 and name  HB1) (segid "    " and resid    3 and name  HE1)
+    or (segid "    " and resid    3 and name  HB1) (segid "    " and resid    3 and name  HE2)
+    or (segid "    " and resid   30 and name  HB1) (segid "    " and resid   33 and name  HD1)
+    or (segid "    " and resid   30 and name  HB1) (segid "    " and resid   33 and name  HD2)
+assign (segid "    " and resid   53 and name   HB) (segid "    " and resid   44 and name   HN) 2.937 1.078 1.078 
+    or (segid "    " and resid    2 and name   HB) (segid "    " and resid    3 and name   HN)
+assign (segid "    " and resid   34 and name   HA) (segid "    " and resid   35 and name   HN) 2.950 1.088 1.088 
+    or (segid "    " and resid   32 and name   HA) (segid "    " and resid   35 and name   HN)
+assign (segid "    " and resid    4 and name  HB1) (segid "    " and resid    5 and name   HN) 2.961 1.096 1.096 
+    or (segid "    " and resid   34 and name  HB2) (segid "    " and resid   39 and name   HN)
+    or (segid "    " and resid   34 and name  HB1) (segid "    " and resid   39 and name   HN)
+    or (segid "    " and resid   34 and name  HB3) (segid "    " and resid   39 and name   HN)
+assign (segid "    " and resid    5 and name   HA) (segid "    " and resid   52 and name  HD1) 2.962 1.097 1.097 
+    or (segid "    " and resid    5 and name   HA) (segid "    " and resid   52 and name  HD2)
+    or (segid "    " and resid   45 and name   HA) (segid "    " and resid   52 and name  HD1)
+    or (segid "    " and resid   45 and name   HA) (segid "    " and resid   52 and name  HD2)
+assign (segid "    " and resid   32 and name   HA) (segid "    " and resid   31 and name  HD2) 2.962 1.097 1.097 
+    or (segid "    " and resid   32 and name   HA) (segid "    " and resid   31 and name  HD1)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid   39 and name HG22)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid   39 and name HG21)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid   39 and name HG23)
+    or (segid "    " and resid   38 and name  HA1) (segid "    " and resid   39 and name HG22)
+    or (segid "    " and resid   38 and name  HA1) (segid "    " and resid   39 and name HG21)
+    or (segid "    " and resid   38 and name  HA1) (segid "    " and resid   39 and name HG23)
+assign (segid "    " and resid   26 and name  HB2) (segid "    " and resid   22 and name   HN) 2.971 1.104 1.104 
+    or (segid "    " and resid   26 and name  HB1) (segid "    " and resid   22 and name   HN)
+    or (segid "    " and resid   26 and name  HB3) (segid "    " and resid   22 and name   HN)
+    or (segid "    " and resid   31 and name  HG1) (segid "    " and resid   35 and name   HN)
+assign (segid "    " and resid    6 and name   HN) (segid "    " and resid   52 and name   HN) 2.975 1.106 1.106 
+    or (segid "    " and resid    4 and name   HN) (segid "    " and resid   52 and name   HN)
+assign (segid "    " and resid    9 and name  HA2) (segid "    " and resid   57 and name  HN1) 3.005 1.129 1.129 
+    or (segid "    " and resid    9 and name  HA2) (segid "    " and resid   57 and name  HN2)
+    or (segid "    " and resid   56 and name   HA) (segid "    " and resid   57 and name  HN1)
+    or (segid "    " and resid   56 and name   HA) (segid "    " and resid   57 and name  HN2)
+assign (segid "    " and resid   27 and name  HB1) (segid "    " and resid   52 and name   HZ) 3.027 1.145 1.145 
+    or (segid "    " and resid   29 and name   HB) (segid "    " and resid   30 and name  HE1)
+    or (segid "    " and resid   29 and name   HB) (segid "    " and resid   30 and name  HE2)
+assign (segid "    " and resid   12 and name HD12) (segid "    " and resid   33 and name  HE1) 3.027 1.145 1.145 
+    or (segid "    " and resid   12 and name HD12) (segid "    " and resid   33 and name  HE2)
+    or (segid "    " and resid   12 and name HD11) (segid "    " and resid   33 and name  HE1)
+    or (segid "    " and resid   12 and name HD11) (segid "    " and resid   33 and name  HE2)
+    or (segid "    " and resid   12 and name HD13) (segid "    " and resid   33 and name  HE1)
+    or (segid "    " and resid   12 and name HD13) (segid "    " and resid   33 and name  HE2)
+    or (segid "    " and resid   12 and name HD12) (segid "    " and resid   37 and name HD22)
+    or (segid "    " and resid   12 and name HD11) (segid "    " and resid   37 and name HD22)
+    or (segid "    " and resid   12 and name HD13) (segid "    " and resid   37 and name HD22)
+    or (segid "    " and resid   39 and name HG22) (segid "    " and resid   33 and name  HE1)
+    or (segid "    " and resid   39 and name HG22) (segid "    " and resid   33 and name  HE2)
+    or (segid "    " and resid   39 and name HG21) (segid "    " and resid   33 and name  HE1)
+    or (segid "    " and resid   39 and name HG21) (segid "    " and resid   33 and name  HE2)
+    or (segid "    " and resid   39 and name HG23) (segid "    " and resid   33 and name  HE1)
+    or (segid "    " and resid   39 and name HG23) (segid "    " and resid   33 and name  HE2)
+    or (segid "    " and resid   39 and name HG22) (segid "    " and resid   37 and name HD22)
+    or (segid "    " and resid   39 and name HG21) (segid "    " and resid   37 and name HD22)
+    or (segid "    " and resid   39 and name HG23) (segid "    " and resid   37 and name HD22)
+assign (segid "    " and resid   50 and name   HA) (segid "    " and resid    3 and name  HE1) 3.035 1.151 1.151 
+    or (segid "    " and resid   50 and name   HA) (segid "    " and resid    3 and name  HE2)
+    or (segid "    " and resid   50 and name   HA) (segid "    " and resid   49 and name   HN)
+assign (segid "    " and resid    2 and name HG21) (segid "    " and resid    2 and name   HN) 3.047 1.161 1.161 
+    or (segid "    " and resid    2 and name HG22) (segid "    " and resid    2 and name   HN)
+    or (segid "    " and resid    2 and name HG23) (segid "    " and resid    2 and name   HN)
+    or (segid "    " and resid   17 and name HG21) (segid "    " and resid   16 and name   HN)
+    or (segid "    " and resid   17 and name HG22) (segid "    " and resid   16 and name   HN)
+    or (segid "    " and resid   17 and name HG23) (segid "    " and resid   16 and name   HN)
+    or (segid "    " and resid   50 and name  HD1) (segid "    " and resid    2 and name   HN)
+assign (segid "    " and resid   54 and name   HA) (segid "    " and resid   43 and name   HN) 3.056 1.167 1.167 
+    or (segid "    " and resid   54 and name   HA) (segid "    " and resid   44 and name   HN)
+assign (segid "    " and resid   13 and name  HG2) (segid "    " and resid    9 and name   HN) 3.076 1.183 1.183 
+    or (segid "    " and resid   13 and name  HG1) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid    4 and name  HG2) (segid "    " and resid   17 and name   HN)
+    or (segid "    " and resid   12 and name  HB1) (segid "    " and resid    9 and name   HN)
+assign (segid "    " and resid   23 and name   HA) (segid "    " and resid   27 and name   HN) 3.076 1.183 1.183 
+    or (segid "    " and resid   26 and name   HA) (segid "    " and resid   27 and name   HN)
+assign (segid "    " and resid   22 and name   HN) (segid "    " and resid   25 and name   HN) 3.078 1.185 1.185 
+    or (segid "    " and resid   24 and name   HN) (segid "    " and resid   25 and name   HN)
+assign (segid "    " and resid    6 and name HD12) (segid "    " and resid    6 and name   HN) 3.085 1.190 1.190 
+    or (segid "    " and resid    6 and name HD11) (segid "    " and resid    6 and name   HN)
+    or (segid "    " and resid    6 and name HD13) (segid "    " and resid    6 and name   HN)
+    or (segid "    " and resid    7 and name HD22) (segid "    " and resid    6 and name   HN)
+    or (segid "    " and resid    7 and name HD21) (segid "    " and resid    6 and name   HN)
+    or (segid "    " and resid    7 and name HD23) (segid "    " and resid    6 and name   HN)
+    or (segid "    " and resid    7 and name HD12) (segid "    " and resid    6 and name   HN)
+    or (segid "    " and resid    7 and name HD11) (segid "    " and resid    6 and name   HN)
+    or (segid "    " and resid    7 and name HD13) (segid "    " and resid    6 and name   HN)
+assign (segid "    " and resid   30 and name  HB1) (segid "    " and resid   52 and name  HD1) 3.085 1.190 1.190 
+    or (segid "    " and resid   30 and name  HB1) (segid "    " and resid   52 and name  HD2)
+    or (segid "    " and resid   35 and name   HA) (segid "    " and resid   32 and name HE22)
+    or (segid "    " and resid    3 and name  HB1) (segid "    " and resid   52 and name  HD1)
+    or (segid "    " and resid    3 and name  HB1) (segid "    " and resid   52 and name  HD2)
+assign (segid "    " and resid   30 and name  HB2) (segid "    " and resid   30 and name  HE1) 3.107 1.206 1.206 
+    or (segid "    " and resid   30 and name  HB2) (segid "    " and resid   30 and name  HE2)
+    or (segid "    " and resid   52 and name  HB1) (segid "    " and resid   30 and name  HE1)
+    or (segid "    " and resid   52 and name  HB1) (segid "    " and resid   30 and name  HE2)
+assign (segid "    " and resid   39 and name HG12) (segid "    " and resid    9 and name   HN) 3.127 1.222 1.222 
+    or (segid "    " and resid   39 and name HG11) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid   39 and name HG13) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid   39 and name HG12) (segid "    " and resid   41 and name   HN)
+    or (segid "    " and resid   39 and name HG11) (segid "    " and resid   41 and name   HN)
+    or (segid "    " and resid   39 and name HG13) (segid "    " and resid   41 and name   HN)
+assign (segid "    " and resid   19 and name  HB2) (segid "    " and resid    3 and name   HN) 3.132 1.226 1.226 
+    or (segid "    " and resid   19 and name  HB1) (segid "    " and resid    3 and name   HN)
+    or (segid "    " and resid   42 and name  HB1) (segid "    " and resid   43 and name   HN)
+assign (segid "    " and resid   33 and name   HA) (segid "    " and resid   36 and name   HN) 3.134 1.228 1.228 
+    or (segid "    " and resid   35 and name   HB) (segid "    " and resid   36 and name   HN)
+assign (segid "    " and resid   50 and name  HG2) (segid "    " and resid    3 and name  HD1) 3.148 1.238 1.238 
+    or (segid "    " and resid   50 and name  HG2) (segid "    " and resid    3 and name  HD2)
+    or (segid "    " and resid   50 and name  HD2) (segid "    " and resid    3 and name  HD1)
+    or (segid "    " and resid   50 and name  HD2) (segid "    " and resid    3 and name  HD2)
+assign (segid "    " and resid   18 and name   HB) (segid "    " and resid   26 and name  HB2) 3.150 1.241 1.241 
+    or (segid "    " and resid   18 and name   HB) (segid "    " and resid   26 and name  HB1)
+    or (segid "    " and resid   18 and name   HB) (segid "    " and resid   26 and name  HB3)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid   39 and name HG12)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid   39 and name HG11)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid   39 and name HG13)
+    or (segid "    " and resid   38 and name  HA1) (segid "    " and resid   39 and name HG12)
+    or (segid "    " and resid   38 and name  HA1) (segid "    " and resid   39 and name HG11)
+    or (segid "    " and resid   38 and name  HA1) (segid "    " and resid   39 and name HG13)
+assign (segid "    " and resid   23 and name  HB2) (segid "    " and resid   27 and name   HN) 3.164 1.251 1.251 
+    or (segid "    " and resid   23 and name  HB1) (segid "    " and resid   27 and name   HN)
+    or (segid "    " and resid   23 and name  HB3) (segid "    " and resid   27 and name   HN)
+    or (segid "    " and resid   55 and name HG21) (segid "    " and resid   42 and name   HN)
+    or (segid "    " and resid   55 and name HG22) (segid "    " and resid   42 and name   HN)
+    or (segid "    " and resid   55 and name HG23) (segid "    " and resid   42 and name   HN)
+assign (segid "    " and resid    5 and name  HB1) (segid "    " and resid    4 and name   HN) 3.181 1.265 1.265 
+    or (segid "    " and resid    5 and name  HB1) (segid "    " and resid    6 and name   HN)
+assign (segid "    " and resid   31 and name  HG1) (segid "    " and resid   43 and name  HE1) 3.187 1.269 1.269 
+    or (segid "    " and resid   39 and name HG12) (segid "    " and resid   43 and name  HE1)
+    or (segid "    " and resid   39 and name HG11) (segid "    " and resid   43 and name  HE1)
+    or (segid "    " and resid   39 and name HG13) (segid "    " and resid   43 and name  HE1)
+assign (segid "    " and resid    2 and name   HA) (segid "    " and resid   19 and name  HB2) 3.193 1.274 1.274 
+    or (segid "    " and resid    2 and name   HA) (segid "    " and resid   19 and name  HB1)
+    or (segid "    " and resid   20 and name   HA) (segid "    " and resid   19 and name  HB2)
+    or (segid "    " and resid   20 and name   HA) (segid "    " and resid   19 and name  HB1)
+assign (segid "    " and resid    4 and name  HG1) (segid "    " and resid    4 and name   HN) 3.196 1.276 1.276 
+    or (segid "    " and resid    4 and name  HG1) (segid "    " and resid    6 and name   HN)
+assign (segid "    " and resid    2 and name HG21) (segid "    " and resid    3 and name   HA) 3.205 1.284 1.284 
+    or (segid "    " and resid    2 and name HG22) (segid "    " and resid    3 and name   HA)
+    or (segid "    " and resid    2 and name HG23) (segid "    " and resid    3 and name   HA)
+    or (segid "    " and resid    2 and name HG21) (segid "    " and resid   19 and name   HA)
+    or (segid "    " and resid    2 and name HG22) (segid "    " and resid   19 and name   HA)
+    or (segid "    " and resid    2 and name HG23) (segid "    " and resid   19 and name   HA)
+    or (segid "    " and resid   50 and name  HD1) (segid "    " and resid    3 and name   HA)
+assign (segid "    " and resid   31 and name  HA1) (segid "    " and resid   32 and name   HA) 3.208 1.286 1.286 
+    or (segid "    " and resid   35 and name  HG2) (segid "    " and resid   32 and name   HA)
+assign (segid "    " and resid   54 and name   HA) (segid "    " and resid   53 and name HG21) 3.211 1.289 1.289 
+    or (segid "    " and resid   54 and name   HA) (segid "    " and resid   53 and name HG22)
+    or (segid "    " and resid   54 and name   HA) (segid "    " and resid   53 and name HG23)
+    or (segid "    " and resid    7 and name   HA) (segid "    " and resid   53 and name HG21)
+    or (segid "    " and resid    7 and name   HA) (segid "    " and resid   53 and name HG22)
+    or (segid "    " and resid    7 and name   HA) (segid "    " and resid   53 and name HG23)
+assign (segid "    " and resid   17 and name   HN) (segid "    " and resid   18 and name   HN) 3.233 1.306 1.306 
+    or (segid "    " and resid   19 and name   HN) (segid "    " and resid   18 and name   HN)
+    or (segid "    " and resid   19 and name   HN) (segid "    " and resid   20 and name   HN)
+assign (segid "    " and resid    9 and name  HA2) (segid "    " and resid   54 and name HG12) 3.236 1.309 1.309 
+    or (segid "    " and resid    9 and name  HA2) (segid "    " and resid   54 and name HG11)
+    or (segid "    " and resid    9 and name  HA2) (segid "    " and resid   54 and name HG13)
+    or (segid "    " and resid   56 and name   HA) (segid "    " and resid   54 and name HG12)
+    or (segid "    " and resid   56 and name   HA) (segid "    " and resid   54 and name HG11)
+    or (segid "    " and resid   56 and name   HA) (segid "    " and resid   54 and name HG13)
+assign (segid "    " and resid   33 and name   HA) (segid "    " and resid   33 and name  HE1) 3.256 1.325 1.325 
+    or (segid "    " and resid   33 and name   HA) (segid "    " and resid   33 and name  HE2)
+    or (segid "    " and resid   33 and name   HA) (segid "    " and resid   37 and name HD22)
+assign (segid "    " and resid    3 and name  HB1) (segid "    " and resid   18 and name   HN) 3.270 1.336 1.336 
+    or (segid "    " and resid    3 and name  HB1) (segid "    " and resid   20 and name   HN)
+assign (segid "    " and resid   33 and name  HB1) (segid "    " and resid   33 and name  HE1) 3.284 1.348 1.348 
+    or (segid "    " and resid   33 and name  HB1) (segid "    " and resid   33 and name  HE2)
+    or (segid "    " and resid   33 and name  HB1) (segid "    " and resid   37 and name HD22)
+assign (segid "    " and resid   16 and name   HB) (segid "    " and resid    5 and name HD12) 3.287 1.351 1.351 
+    or (segid "    " and resid   16 and name   HB) (segid "    " and resid    5 and name HD11)
+    or (segid "    " and resid   16 and name   HB) (segid "    " and resid    5 and name HD13)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid    5 and name HD12)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid    5 and name HD11)
+    or (segid "    " and resid   34 and name   HA) (segid "    " and resid    5 and name HD13)
+assign (segid "    " and resid    5 and name   HG) (segid "    " and resid   33 and name  HD1) 3.287 1.351 1.351 
+    or (segid "    " and resid    5 and name   HG) (segid "    " and resid   33 and name  HD2)
+    or (segid "    " and resid   12 and name HD12) (segid "    " and resid   33 and name  HD1)
+    or (segid "    " and resid   12 and name HD12) (segid "    " and resid   33 and name  HD2)
+    or (segid "    " and resid   12 and name HD11) (segid "    " and resid   33 and name  HD1)
+    or (segid "    " and resid   12 and name HD11) (segid "    " and resid   33 and name  HD2)
+    or (segid "    " and resid   12 and name HD13) (segid "    " and resid   33 and name  HD1)
+    or (segid "    " and resid   12 and name HD13) (segid "    " and resid   33 and name  HD2)
+    or (segid "    " and resid   39 and name HG22) (segid "    " and resid   33 and name  HD1)
+    or (segid "    " and resid   39 and name HG22) (segid "    " and resid   33 and name  HD2)
+    or (segid "    " and resid   39 and name HG21) (segid "    " and resid   33 and name  HD1)
+    or (segid "    " and resid   39 and name HG21) (segid "    " and resid   33 and name  HD2)
+    or (segid "    " and resid   39 and name HG23) (segid "    " and resid   33 and name  HD1)
+    or (segid "    " and resid   39 and name HG23) (segid "    " and resid   33 and name  HD2)
+assign (segid "    " and resid   31 and name  HF2) (segid "    " and resid   43 and name  HE1) 3.314 1.372 1.372 
+    or (segid "    " and resid   34 and name  HB2) (segid "    " and resid   43 and name  HE1)
+    or (segid "    " and resid   34 and name  HB1) (segid "    " and resid   43 and name  HE1)
+    or (segid "    " and resid   34 and name  HB3) (segid "    " and resid   43 and name  HE1)
+assign (segid "    " and resid   17 and name HG21) (segid "    " and resid   30 and name   HZ) 3.333 1.389 1.389 
+    or (segid "    " and resid   17 and name HG22) (segid "    " and resid   30 and name   HZ)
+    or (segid "    " and resid   17 and name HG23) (segid "    " and resid   30 and name   HZ)
+    or (segid "    " and resid    2 and name HG21) (segid "    " and resid   30 and name   HZ)
+    or (segid "    " and resid    2 and name HG22) (segid "    " and resid   30 and name   HZ)
+    or (segid "    " and resid    2 and name HG23) (segid "    " and resid   30 and name   HZ)
+assign (segid "    " and resid   42 and name   HA) (segid "    " and resid   54 and name HG12) 3.371 1.420 1.420 
+    or (segid "    " and resid   42 and name   HA) (segid "    " and resid   54 and name HG11)
+    or (segid "    " and resid   42 and name   HA) (segid "    " and resid   54 and name HG13)
+    or (segid "    " and resid   55 and name   HA) (segid "    " and resid   54 and name HG12)
+    or (segid "    " and resid   55 and name   HA) (segid "    " and resid   54 and name HG11)
+    or (segid "    " and resid   55 and name   HA) (segid "    " and resid   54 and name HG13)
+assign (segid "    " and resid   23 and name   HA) (segid "    " and resid   52 and name  HD1) 3.393 1.439 1.439 
+    or (segid "    " and resid   23 and name   HA) (segid "    " and resid   52 and name  HD2)
+    or (segid "    " and resid   26 and name   HA) (segid "    " and resid   52 and name  HD1)
+    or (segid "    " and resid   26 and name   HA) (segid "    " and resid   52 and name  HD2)
+assign (segid "    " and resid   52 and name  HE1) (segid "    " and resid   52 and name   HN) 3.393 1.439 1.439 
+    or (segid "    " and resid   52 and name  HE2) (segid "    " and resid   52 and name   HN)
+    or (segid "    " and resid    3 and name  HD1) (segid "    " and resid   52 and name   HN)
+    or (segid "    " and resid    3 and name  HD2) (segid "    " and resid   52 and name   HN)
+assign (segid "    " and resid    2 and name HG21) (segid "    " and resid    4 and name   HN) 3.397 1.443 1.443 
+    or (segid "    " and resid    2 and name HG22) (segid "    " and resid    4 and name   HN)
+    or (segid "    " and resid    2 and name HG23) (segid "    " and resid    4 and name   HN)
+    or (segid "    " and resid   17 and name HG21) (segid "    " and resid    4 and name   HN)
+    or (segid "    " and resid   17 and name HG22) (segid "    " and resid    4 and name   HN)
+    or (segid "    " and resid   17 and name HG23) (segid "    " and resid    4 and name   HN)
+assign (segid "    " and resid   35 and name   HB) (segid "    " and resid   37 and name   HN) 3.416 1.458 1.458 
+    or (segid "    " and resid   33 and name   HA) (segid "    " and resid   37 and name   HN)
+assign (segid "    " and resid   55 and name   HN) (segid "    " and resid   43 and name   HN) 3.425 1.467 1.467 
+    or (segid "    " and resid   55 and name   HN) (segid "    " and resid   44 and name   HN)
+assign (segid "    " and resid   50 and name  HG2) (segid "    " and resid    3 and name  HE1) 3.425 1.467 1.467 
+    or (segid "    " and resid   50 and name  HG2) (segid "    " and resid    3 and name  HE2)
+    or (segid "    " and resid   50 and name  HD2) (segid "    " and resid    3 and name  HE1)
+    or (segid "    " and resid   50 and name  HD2) (segid "    " and resid    3 and name  HE2)
+assign (segid "    " and resid   31 and name  HA2) (segid "    " and resid   33 and name   HN) 3.430 1.471 1.471 
+    or (segid "    " and resid   32 and name  HG2) (segid "    " and resid   33 and name   HN)
+    or (segid "    " and resid   32 and name  HG1) (segid "    " and resid   33 and name   HN)
+assign (segid "    " and resid    3 and name   HA) (segid "    " and resid    3 and name  HE1) 3.430 1.471 1.471 
+    or (segid "    " and resid    3 and name   HA) (segid "    " and resid    3 and name  HE2)
+    or (segid "    " and resid   19 and name   HA) (segid "    " and resid    3 and name  HE1)
+    or (segid "    " and resid   19 and name   HA) (segid "    " and resid    3 and name  HE2)
+assign (segid "    " and resid    2 and name   HA) (segid "    " and resid   18 and name HG21) 3.440 1.479 1.479 
+    or (segid "    " and resid    2 and name   HA) (segid "    " and resid   18 and name HG22)
+    or (segid "    " and resid    2 and name   HA) (segid "    " and resid   18 and name HG23)
+    or (segid "    " and resid   20 and name   HA) (segid "    " and resid   18 and name HG21)
+    or (segid "    " and resid   20 and name   HA) (segid "    " and resid   18 and name HG22)
+    or (segid "    " and resid   20 and name   HA) (segid "    " and resid   18 and name HG23)
+assign (segid "    " and resid   33 and name  HB2) (segid "    " and resid   33 and name  HE1) 3.466 1.501 1.501 
+    or (segid "    " and resid   33 and name  HB2) (segid "    " and resid   33 and name  HE2)
+    or (segid "    " and resid   33 and name  HB2) (segid "    " and resid   37 and name HD22)
+assign (segid "    " and resid   12 and name HD12) (segid "    " and resid   12 and name   HN) 3.476 1.511 1.511 
+    or (segid "    " and resid   12 and name HD11) (segid "    " and resid   12 and name   HN)
+    or (segid "    " and resid   12 and name HD13) (segid "    " and resid   12 and name   HN)
+    or (segid "    " and resid   39 and name HG22) (segid "    " and resid   12 and name   HN)
+    or (segid "    " and resid   39 and name HG21) (segid "    " and resid   12 and name   HN)
+    or (segid "    " and resid   39 and name HG23) (segid "    " and resid   12 and name   HN)
+assign (segid "    " and resid    4 and name  HE1) (segid "    " and resid    6 and name HD12) 3.476 1.511 1.511 
+    or (segid "    " and resid    4 and name  HE1) (segid "    " and resid    6 and name HD11)
+    or (segid "    " and resid    4 and name  HE1) (segid "    " and resid    6 and name HD13)
+    or (segid "    " and resid   27 and name   HA) (segid "    " and resid   29 and name HG12)
+    or (segid "    " and resid   27 and name   HA) (segid "    " and resid   29 and name HG11)
+    or (segid "    " and resid   27 and name   HA) (segid "    " and resid   29 and name HG13)
+    or (segid "    " and resid   36 and name  HB2) (segid "    " and resid    7 and name HD22)
+    or (segid "    " and resid   36 and name  HB2) (segid "    " and resid    7 and name HD21)
+    or (segid "    " and resid   36 and name  HB2) (segid "    " and resid    7 and name HD23)
+    or (segid "    " and resid   36 and name  HB2) (segid "    " and resid    7 and name HD12)
+    or (segid "    " and resid   36 and name  HB2) (segid "    " and resid    7 and name HD11)
+    or (segid "    " and resid   36 and name  HB2) (segid "    " and resid    7 and name HD13)
+assign (segid "    " and resid    4 and name  HB2) (segid "    " and resid   52 and name  HD1) 3.482 1.515 1.515 
+    or (segid "    " and resid    4 and name  HB2) (segid "    " and resid   52 and name  HD2)
+    or (segid "    " and resid   27 and name  HB2) (segid "    " and resid   52 and name  HD1)
+    or (segid "    " and resid   27 and name  HB2) (segid "    " and resid   52 and name  HD2)
+assign (segid "    " and resid   23 and name  HB2) (segid "    " and resid   50 and name   HN) 3.482 1.515 1.515 
+    or (segid "    " and resid   23 and name  HB1) (segid "    " and resid   50 and name   HN)
+    or (segid "    " and resid   23 and name  HB3) (segid "    " and resid   50 and name   HN)
+    or (segid "    " and resid   50 and name  HD1) (segid "    " and resid   50 and name   HN)
+assign (segid "    " and resid   31 and name  HE2) (segid "    " and resid   43 and name  HE1) 3.487 1.520 1.520 
+    or (segid "    " and resid   31 and name  HE1) (segid "    " and resid   43 and name  HE1)
+    or (segid "    " and resid   54 and name HG22) (segid "    " and resid   43 and name  HE1)
+    or (segid "    " and resid   54 and name HG21) (segid "    " and resid   43 and name  HE1)
+    or (segid "    " and resid   54 and name HG23) (segid "    " and resid   43 and name  HE1)
+assign (segid "    " and resid   33 and name  HB2) (segid "    " and resid    7 and name HD22) 3.493 1.525 1.525 
+    or (segid "    " and resid   33 and name  HB2) (segid "    " and resid    7 and name HD21)
+    or (segid "    " and resid   33 and name  HB2) (segid "    " and resid    7 and name HD23)
+    or (segid "    " and resid   33 and name  HB2) (segid "    " and resid    7 and name HD12)
+    or (segid "    " and resid   33 and name  HB2) (segid "    " and resid    7 and name HD11)
+    or (segid "    " and resid   33 and name  HB2) (segid "    " and resid    7 and name HD13)
+    or (segid "    " and resid   33 and name  HB2) (segid "    " and resid   29 and name HG12)
+    or (segid "    " and resid   33 and name  HB2) (segid "    " and resid   29 and name HG11)
+    or (segid "    " and resid   33 and name  HB2) (segid "    " and resid   29 and name HG13)
+assign (segid "    " and resid    9 and name  HA2) (segid "    " and resid   12 and name HD12) 3.510 1.540 1.540 
+    or (segid "    " and resid    9 and name  HA2) (segid "    " and resid   12 and name HD11)
+    or (segid "    " and resid    9 and name  HA2) (segid "    " and resid   12 and name HD13)
+    or (segid "    " and resid    9 and name  HA2) (segid "    " and resid   39 and name HG22)
+    or (segid "    " and resid    9 and name  HA2) (segid "    " and resid   39 and name HG21)
+    or (segid "    " and resid    9 and name  HA2) (segid "    " and resid   39 and name HG23)
+assign (segid "    " and resid   12 and name HD12) (segid "    " and resid    9 and name   HN) 3.523 1.551 1.551 
+    or (segid "    " and resid   12 and name HD11) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid   12 and name HD13) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid   31 and name  HD2) (segid "    " and resid   41 and name   HN)
+    or (segid "    " and resid   31 and name  HD1) (segid "    " and resid   41 and name   HN)
+    or (segid "    " and resid   39 and name HG22) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid   39 and name HG21) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid   39 and name HG23) (segid "    " and resid    9 and name   HN)
+assign (segid "    " and resid   49 and name   HA) (segid "    " and resid   48 and name  HB2) 3.537 1.564 1.564 
+    or (segid "    " and resid   49 and name   HA) (segid "    " and resid   48 and name  HB1)
+    or (segid "    " and resid   49 and name   HA) (segid "    " and resid   48 and name  HB3)
+    or (segid "    " and resid   49 and name   HB) (segid "    " and resid   48 and name  HB2)
+    or (segid "    " and resid   49 and name   HB) (segid "    " and resid   48 and name  HB1)
+    or (segid "    " and resid   49 and name   HB) (segid "    " and resid   48 and name  HB3)
+assign (segid "    " and resid   20 and name  HB2) (segid "    " and resid   22 and name  HB2) 3.558 1.582 1.582 
+    or (segid "    " and resid   20 and name  HB2) (segid "    " and resid   22 and name  HB1)
+    or (segid "    " and resid   20 and name  HB1) (segid "    " and resid   22 and name  HB2)
+    or (segid "    " and resid   20 and name  HB1) (segid "    " and resid   22 and name  HB1)
+    or (segid "    " and resid   20 and name  HB3) (segid "    " and resid   22 and name  HB2)
+    or (segid "    " and resid   20 and name  HB3) (segid "    " and resid   22 and name  HB1)
+    or (segid "    " and resid    4 and name  HG1) (segid "    " and resid    4 and name  HE2)
+assign (segid "    " and resid   27 and name  HB1) (segid "    " and resid   26 and name   HN) 3.561 1.586 1.586 
+    or (segid "    " and resid   29 and name   HB) (segid "    " and resid   26 and name   HN)
+assign (segid "    " and resid   26 and name  HB2) (segid "    " and resid   30 and name   HN) 3.581 1.603 1.603 
+    or (segid "    " and resid   26 and name  HB1) (segid "    " and resid   30 and name   HN)
+    or (segid "    " and resid   26 and name  HB3) (segid "    " and resid   30 and name   HN)
+    or (segid "    " and resid   31 and name  HG1) (segid "    " and resid   30 and name   HN)
+assign (segid "    " and resid    7 and name HD22) (segid "    " and resid    9 and name   HN) 3.584 1.605 1.605 
+    or (segid "    " and resid    7 and name HD21) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid    7 and name HD23) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid    7 and name HD12) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid    7 and name HD11) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid    7 and name HD13) (segid "    " and resid    9 and name   HN)
+    or (segid "    " and resid    7 and name HD22) (segid "    " and resid   17 and name   HN)
+    or (segid "    " and resid    7 and name HD21) (segid "    " and resid   17 and name   HN)
+    or (segid "    " and resid    7 and name HD23) (segid "    " and resid   17 and name   HN)
+    or (segid "    " and resid    7 and name HD12) (segid "    " and resid   17 and name   HN)
+    or (segid "    " and resid    7 and name HD11) (segid "    " and resid   17 and name   HN)
+    or (segid "    " and resid    7 and name HD13) (segid "    " and resid   17 and name   HN)
+    or (segid "    " and resid   29 and name HG12) (segid "    " and resid   17 and name   HN)
+    or (segid "    " and resid   29 and name HG11) (segid "    " and resid   17 and name   HN)
+    or (segid "    " and resid   29 and name HG13) (segid "    " and resid   17 and name   HN)
+assign (segid "    " and resid    6 and name   HA) (segid "    " and resid   53 and name   HA) 3.585 1.606 1.606 
+    or (segid "    " and resid   17 and name   HB) (segid "    " and resid    4 and name   HA)
+assign (segid "    " and resid    5 and name HD12) (segid "    " and resid   16 and name   HN) 3.614 1.633 1.633 
+    or (segid "    " and resid    5 and name HD11) (segid "    " and resid   16 and name   HN)
+    or (segid "    " and resid    5 and name HD13) (segid "    " and resid   16 and name   HN)
+    or (segid "    " and resid    5 and name HD12) (segid "    " and resid   31 and name   HN)
+    or (segid "    " and resid    5 and name HD11) (segid "    " and resid   31 and name   HN)
+    or (segid "    " and resid    5 and name HD13) (segid "    " and resid   31 and name   HN)
+assign (segid "    " and resid   28 and name  HG2) (segid "    " and resid   25 and name   HN) 3.619 1.637 1.637 
+    or (segid "    " and resid   24 and name  HG1) (segid "    " and resid   25 and name   HN)
+assign (segid "    " and resid    2 and name   HA) (segid "    " and resid    3 and name  HE1) 3.626 1.644 1.644 
+    or (segid "    " and resid    2 and name   HA) (segid "    " and resid    3 and name  HE2)
+    or (segid "    " and resid   20 and name   HA) (segid "    " and resid    3 and name  HE1)
+    or (segid "    " and resid   20 and name   HA) (segid "    " and resid    3 and name  HE2)
+assign (segid "    " and resid   31 and name  HE2) (segid "    " and resid   43 and name  HD1) 3.648 1.663 1.663 
+    or (segid "    " and resid   31 and name  HE1) (segid "    " and resid   43 and name  HD1)
+    or (segid "    " and resid   54 and name HG22) (segid "    " and resid   43 and name  HD1)
+    or (segid "    " and resid   54 and name HG21) (segid "    " and resid   43 and name  HD1)
+    or (segid "    " and resid   54 and name HG23) (segid "    " and resid   43 and name  HD1)
+assign (segid "    " and resid   54 and name HG12) (segid "    " and resid   43 and name   HN) 3.667 1.681 1.681 
+    or (segid "    " and resid   54 and name HG11) (segid "    " and resid   43 and name   HN)
+    or (segid "    " and resid   54 and name HG13) (segid "    " and resid   43 and name   HN)
+    or (segid "    " and resid   54 and name HG12) (segid "    " and resid   44 and name   HN)
+    or (segid "    " and resid   54 and name HG11) (segid "    " and resid   44 and name   HN)
+    or (segid "    " and resid   54 and name HG13) (segid "    " and resid   44 and name   HN)
+assign (segid "    " and resid   35 and name  HG2) (segid "    " and resid   33 and name   HN) 3.668 1.682 1.682 
+    or (segid "    " and resid   31 and name  HA1) (segid "    " and resid   33 and name   HN)
+assign (segid "    " and resid   43 and name   HN) (segid "    " and resid   43 and name  HE1) 3.686 1.698 1.698 
+    or (segid "    " and resid   44 and name   HN) (segid "    " and resid   52 and name   HN)
+assign (segid "    " and resid   31 and name  HF2) (segid "    " and resid   43 and name  HE3) 3.710 1.720 1.720 
+    or (segid "    " and resid   34 and name  HB2) (segid "    " and resid   43 and name  HE3)
+    or (segid "    " and resid   34 and name  HB1) (segid "    " and resid   43 and name  HE3)
+    or (segid "    " and resid   34 and name  HB3) (segid "    " and resid   43 and name  HE3)
+assign (segid "    " and resid   13 and name   HA) (segid "    " and resid   12 and name HD12) 3.725 1.735 1.735 
+    or (segid "    " and resid   13 and name   HA) (segid "    " and resid   12 and name HD11)
+    or (segid "    " and resid   13 and name   HA) (segid "    " and resid   12 and name HD13)
+    or (segid "    " and resid   13 and name   HA) (segid "    " and resid   39 and name HG22)
+    or (segid "    " and resid   13 and name   HA) (segid "    " and resid   39 and name HG21)
+    or (segid "    " and resid   13 and name   HA) (segid "    " and resid   39 and name HG23)
+assign (segid "    " and resid   24 and name  HG1) (segid "    " and resid   27 and name   HN) 3.755 1.762 1.762 
+    or (segid "    " and resid   28 and name  HG2) (segid "    " and resid   27 and name   HN)
+assign (segid "    " and resid   24 and name   HA) (segid "    " and resid   27 and name   HN) 3.816 1.821 1.821 
+    or (segid "    " and resid   28 and name  HA2) (segid "    " and resid   27 and name   HN)
+assign (segid "    " and resid   34 and name  HB2) (segid "    " and resid   36 and name   HN) 3.946 1.946 1.946 
+    or (segid "    " and resid   34 and name  HB1) (segid "    " and resid   36 and name   HN)
+    or (segid "    " and resid   34 and name  HB3) (segid "    " and resid   36 and name   HN)
+    or (segid "    " and resid   35 and name  HG1) (segid "    " and resid   36 and name   HN)

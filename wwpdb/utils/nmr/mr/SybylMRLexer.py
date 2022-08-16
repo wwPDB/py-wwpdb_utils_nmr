@@ -157,7 +157,7 @@ class SybylMRLexer(Lexer):
     SMCLN_COMMENT = 9
     Atom_selection = 10
     SPACE = 11
-    COMMENT = 12
+    ENCLOSE_COMMENT = 12
     SECTION_COMMENT = 13
     LINE_COMMENT = 14
 
@@ -171,14 +171,14 @@ class SybylMRLexer(Lexer):
     symbolicNames = [ "<INVALID>",
             "Atom1", "Atom2", "Lower", "Upper", "Integer", "Float", "SHARP_COMMENT", 
             "EXCLM_COMMENT", "SMCLN_COMMENT", "Atom_selection", "SPACE", 
-            "COMMENT", "SECTION_COMMENT", "LINE_COMMENT" ]
+            "ENCLOSE_COMMENT", "SECTION_COMMENT", "LINE_COMMENT" ]
 
     ruleNames = [ "Atom1", "Atom2", "Lower", "Upper", "Integer", "Float", 
                   "DEC_DOT_DEC", "DEC_DIGIT", "DECIMAL", "SHARP_COMMENT", 
                   "EXCLM_COMMENT", "SMCLN_COMMENT", "Atom_selection", "ALPHA", 
                   "ALPHA_NUM", "START_CHAR", "NAME_CHAR", "ATM_NAME_CHAR", 
-                  "ATM_TYPE_CHAR", "SIMPLE_NAME", "SPACE", "COMMENT", "SECTION_COMMENT", 
-                  "LINE_COMMENT" ]
+                  "ATM_TYPE_CHAR", "SIMPLE_NAME", "SPACE", "ENCLOSE_COMMENT", 
+                  "SECTION_COMMENT", "LINE_COMMENT" ]
 
     grammarFileName = "SybylMRLexer.g4"
 

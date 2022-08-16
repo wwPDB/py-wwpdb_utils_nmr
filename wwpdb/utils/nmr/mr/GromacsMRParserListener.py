@@ -127,6 +127,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
     __hasPolySeq = False
     __preferAuthSeq = True
+    __gapInAuthSeq = False
 
     # polymer sequence of MR file
     __polySeqRst = None
@@ -173,6 +174,8 @@ class GromacsMRParserListener(ParseTreeListener):
             # self.__authToLabelSeq = ret['auth_to_label_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
+        if self.__hasPolySeq:
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -222,9 +225,9 @@ class GromacsMRParserListener(ParseTreeListener):
 
                     chain_mapping = {}
 
-                    for chain_assign in self.__chainAssign:
-                        ref_chain_id = chain_assign['ref_chain_id']
-                        test_chain_id = chain_assign['test_chain_id']
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
                         if ref_chain_id != test_chain_id:
                             chain_mapping[test_chain_id] = ref_chain_id
@@ -706,18 +709,23 @@ class GromacsMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"Found inter-chain RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
+                        f"Found inter-chain RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"Found inter-residue RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
+                        f"Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -752,7 +760,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} exp={exp} index={index} "
@@ -957,7 +965,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[atom_order[0]],
                                                              self.atomSelectionSet[atom_order[1]],
                                                              self.atomSelectionSet[atom_order[2]]):
-                    if isLongRangeRestraint([atom1, atom2, atom3]):
+                    if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
@@ -969,7 +977,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
-                    if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                    if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
@@ -1068,7 +1076,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "

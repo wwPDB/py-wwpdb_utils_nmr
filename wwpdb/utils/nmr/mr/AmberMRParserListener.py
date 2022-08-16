@@ -226,6 +226,7 @@ class AmberMRParserListener(ParseTreeListener):
     __hasPolySeq = False
     __hasNonPoly = False
     __preferAuthSeq = True
+    __gapInAuthSeq = False
 
     # polymer sequence of MR file
     __polySeqRst = None
@@ -384,7 +385,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    reasonsForReParsing = None
+    reasonsForReParsing = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -416,6 +417,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
+        if self.__hasPolySeq:
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -616,9 +619,9 @@ class AmberMRParserListener(ParseTreeListener):
 
                     chain_mapping = {}
 
-                    for chain_assign in self.__chainAssign:
-                        ref_chain_id = chain_assign['ref_chain_id']
-                        test_chain_id = chain_assign['test_chain_id']
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
                         if ref_chain_id != test_chain_id:
                             chain_mapping[test_chain_id] = ref_chain_id
@@ -636,13 +639,9 @@ class AmberMRParserListener(ParseTreeListener):
 
             if 'Missing data' in self.warningMessage:
                 if len(self.unambigAtomNameMapping) > 0:
-                    if self.reasonsForReParsing is None:
-                        self.reasonsForReParsing = {}
                     if 'unambig_atom_id_remap' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['unambig_atom_id_remap'] = self.unambigAtomNameMapping
                 if len(self.ambigAtomNameMapping) > 0:
-                    if self.reasonsForReParsing is None:
-                        self.reasonsForReParsing = {}
                     if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
 
@@ -1046,7 +1045,7 @@ class AmberMRParserListener(ParseTreeListener):
                         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                      self.atomSelectionSet[1],
                                                                      self.atomSelectionSet[2]):
-                            if isLongRangeRestraint([atom1, atom2, atom3]):
+                            if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                                 continue
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
@@ -1633,7 +1632,7 @@ class AmberMRParserListener(ParseTreeListener):
                         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                      self.atomSelectionSet[1],
                                                                      self.atomSelectionSet[2]):
-                            if isLongRangeRestraint([atom1, atom2, atom3]):
+                            if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                                 continue
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
@@ -2373,6 +2372,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
+                if coordAtomSite is not None\
+                   and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                   and atomId in coordAtomSite['atom_id']:
+                    atomIds = [atomId]
+
                 for _atomId in atomIds:
                     ccdCheck = not cifCheck
 
@@ -2473,6 +2477,11 @@ class AmberMRParserListener(ParseTreeListener):
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                        if coordAtomSite is not None\
+                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                           and atomId in coordAtomSite['atom_id']:
+                            atomIds = [atomId]
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck
@@ -2635,6 +2644,11 @@ class AmberMRParserListener(ParseTreeListener):
                         authAtomId = translateToStdAtomName(authAtomId, compId, ccU=self.__ccU)
 
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
+
+                    if coordAtomSite is not None\
+                       and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                       and authAtomId in coordAtomSite['atom_id']:
+                        atomIds = [authAtomId]
 
                     if 'iat' in factor:
                         iat = factor['iat']
@@ -2830,6 +2844,11 @@ class AmberMRParserListener(ParseTreeListener):
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                    if coordAtomSite is not None\
+                       and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                       and authAtomId in coordAtomSite['atom_id']:
+                        atomIds = [authAtomId]
 
                     if 'iat' in factor:
                         iat = factor['iat']
@@ -3058,6 +3077,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
+                        if coordAtomSite is not None\
+                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                           and authAtomId in coordAtomSite['atom_id']:
+                            atomIds = [authAtomId]
+
                         if 'iat' in factor:
                             iat = factor['iat']
                             for _atomId in atomIds:
@@ -3234,6 +3258,11 @@ class AmberMRParserListener(ParseTreeListener):
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                        if coordAtomSite is not None\
+                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                           and authAtomId in coordAtomSite['atom_id']:
+                            atomIds = [authAtomId]
 
                         if 'iat' in factor:
                             iat = factor['iat']
@@ -5263,20 +5292,25 @@ class AmberMRParserListener(ParseTreeListener):
                     continue
 
                 if chain_id_1 != chain_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    continue
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    if ps1 is None and ps2 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                            f"Found inter-chain RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        continue
 
-                if abs(seq_id_1 - seq_id_2) > 1:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    continue
+                elif abs(seq_id_1 - seq_id_2) > 1:
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                    if ps1 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                            f"Found inter-residue RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        continue
 
-                if abs(seq_id_1 - seq_id_2) == 1:
+                elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -5319,7 +5353,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isLongRangeRestraint([atom1, atom2]):
+                    if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} dataset={self.dataset} n={n} "
@@ -5830,14 +5864,18 @@ class AmberMRParserListener(ParseTreeListener):
                     continue
 
                 if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"Found inter-chain CSA vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                    continue
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    ps3 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_3 and 'identical_auth_chain_id' in ps), None)
+                    if ps1 is None and ps2 is None and ps3 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                            f"Found inter-chain CSA vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        continue
 
-                if abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
+                elif abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
                         f"Found inter-residue CSA vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -5845,50 +5883,52 @@ class AmberMRParserListener(ParseTreeListener):
                         f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
                     continue
 
-                if abs(seq_id_1 - seq_id_2) == 1:
+                elif abs(seq_id_1 - seq_id_2) == 1 or abs(seq_id_2 - seq_id_3) == 1 or abs(seq_id_3 - seq_id_1) == 1:
 
-                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
-                        pass
+                    if abs(seq_id_1 - seq_id_2) == 1:
 
-                    else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                            "Found inter-residue CSA vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                        continue
+                        if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                            pass
 
-                elif abs(seq_id_2 - seq_id_3) == 1:
+                        else:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                                "Found inter-residue CSA vector; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                            continue
 
-                    if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
-                            ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA'))
-                             or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')):
-                        pass
+                    elif abs(seq_id_2 - seq_id_3) == 1:
 
-                    else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                            "Found inter-residue CSA vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                        continue
+                        if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
+                                ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA'))
+                                 or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')):
+                            pass
 
-                elif abs(seq_id_3 - seq_id_1) == 1:
+                        else:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                                "Found inter-residue CSA vector; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                            continue
 
-                    if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
-                            ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H', 'CA'))
-                             or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H', 'CA') and atom_id_1 == 'C')):
-                        pass
+                    elif abs(seq_id_3 - seq_id_1) == 1:
 
-                    else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                            "Found inter-residue CSA vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                        continue
+                        if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
+                                ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H', 'CA'))
+                                 or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H', 'CA') and atom_id_1 == 'C')):
+                            pass
+
+                        else:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                                "Found inter-residue CSA vector; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                            continue
 
                 elif atom_id_1 == atom_id_2 or atom_id_2 == atom_id_3 or atom_id_3 == atom_id_1:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
@@ -5938,7 +5978,7 @@ class AmberMRParserListener(ParseTreeListener):
                 for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                              self.atomSelectionSet[1],
                                                              self.atomSelectionSet[2]):
-                    if isLongRangeRestraint([atom1, atom2, atom3]):
+                    if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} dataset={self.datasetc} n={n} "
@@ -6604,6 +6644,12 @@ class AmberMRParserListener(ParseTreeListener):
                 if _atomId_ != atomId:
                     _atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
+
+            if coordAtomSite is not None\
+               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
+               and atomId in coordAtomSite['atom_id']:
+                _atomId = [atomId]
+
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
                 if enableWarning:
@@ -6779,7 +6825,7 @@ class AmberMRParserListener(ParseTreeListener):
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing AMBER MR file.
         """
-        return self.reasonsForReParsing
+        return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
     def hasComments(self):
         """ Return whether Sander comments are available.

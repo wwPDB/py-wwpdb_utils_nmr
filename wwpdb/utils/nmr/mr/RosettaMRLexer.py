@@ -431,7 +431,7 @@ class RosettaMRLexer(Lexer):
     SMCLN_COMMENT = 54
     Simple_name = 55
     SPACE = 56
-    COMMENT = 57
+    ENCLOSE_COMMENT = 57
     SECTION_COMMENT = 58
     LINE_COMMENT = 59
 
@@ -467,7 +467,7 @@ class RosettaMRLexer(Lexer):
             "SPLINE", "NONE", "FADE", "SIGMOID", "SQUARE_WELL", "SQUARE_WELL2", 
             "DEGREES", "LINEAR_PENALTY", "KARPLUS", "SOEDINGFUNC", "TOPOUT", 
             "ETABLE", "USOG", "SOG", "Integer", "Float", "SHARP_COMMENT", 
-            "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", "SPACE", "COMMENT", 
+            "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", "SPACE", "ENCLOSE_COMMENT", 
             "SECTION_COMMENT", "LINE_COMMENT" ]
 
     ruleNames = [ "AtomPair", "NamedAtomPair", "Angle", "NamedAngle", "Dihedral", 
@@ -486,7 +486,7 @@ class RosettaMRLexer(Lexer):
                   "DECIMAL", "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
                   "Simple_name", "ALPHA", "ALPHA_NUM", "START_CHAR", "NAME_CHAR", 
                   "ATM_NAME_CHAR", "ATM_TYPE_CHAR", "SIMPLE_NAME", "SPACE", 
-                  "COMMENT", "SECTION_COMMENT", "LINE_COMMENT" ]
+                  "ENCLOSE_COMMENT", "SECTION_COMMENT", "LINE_COMMENT" ]
 
     grammarFileName = "RosettaMRLexer.g4"
 

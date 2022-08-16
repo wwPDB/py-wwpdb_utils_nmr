@@ -271,7 +271,7 @@ class GromacsPTParser ( Parser ):
                       "Virtual_sitesn", "System", "Molecules", "Position_restraints", 
                       "Intermolecular_interactions", "Integer", "Real", 
                       "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                      "Simple_name", "SPACE", "COMMENT", "SECTION_COMMENT", 
+                      "Simple_name", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
                       "LINE_COMMENT", "R_brkt_AA", "SECTION_COMMENT_AA", 
                       "LINE_COMMENT_AA", "Simple_name_AA", "SPACE_AA", "RETURN_AA" ]
 
@@ -381,7 +381,7 @@ class GromacsPTParser ( Parser ):
     SMCLN_COMMENT=34
     Simple_name=35
     SPACE=36
-    COMMENT=37
+    ENCLOSE_COMMENT=37
     SECTION_COMMENT=38
     LINE_COMMENT=39
     R_brkt_AA=40

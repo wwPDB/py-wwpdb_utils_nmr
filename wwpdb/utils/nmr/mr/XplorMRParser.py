@@ -1476,7 +1476,7 @@ class XplorMRParser ( Parser ):
                       "SMCLN_COMMENT", "Simple_name", "Simple_names", "Integers", 
                       "Hbda", "Hbdb", "L_paren", "R_paren", "Colon", "Equ_op", 
                       "Lt_op", "Gt_op", "Leq_op", "Geq_op", "Neq_op", "Symbol_name", 
-                      "SPACE", "COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
+                      "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
                       "SET_VARIABLE", "Abs", "Attr_properties", "Comparison_ops", 
                       "SPACE_AP", "Averaging_methods", "Class_name_AM", 
                       "SPACE_AM", "Equ_op_PT", "Potential_types", "Class_name_PT", 
@@ -1887,7 +1887,7 @@ class XplorMRParser ( Parser ):
     Neq_op=212
     Symbol_name=213
     SPACE=214
-    COMMENT=215
+    ENCLOSE_COMMENT=215
     SECTION_COMMENT=216
     LINE_COMMENT=217
     SET_VARIABLE=218

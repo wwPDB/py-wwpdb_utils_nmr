@@ -155,7 +155,7 @@ class BiosymMRLexer(Lexer):
     Atom_selection = 8
     Ordinal = 9
     SPACE = 10
-    COMMENT = 11
+    ENCLOSE_COMMENT = 11
     SECTION_COMMENT = 12
     LINE_COMMENT = 13
 
@@ -169,14 +169,14 @@ class BiosymMRLexer(Lexer):
     symbolicNames = [ "<INVALID>",
             "Integer", "Float", "Real", "SHARP_COMMENT", "EXCLM_COMMENT", 
             "SMCLN_COMMENT", "Chiral_code", "Atom_selection", "Ordinal", 
-            "SPACE", "COMMENT", "SECTION_COMMENT", "LINE_COMMENT" ]
+            "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", "LINE_COMMENT" ]
 
     ruleNames = [ "Integer", "Float", "Real", "DEC_DOT_DEC", "DEC_DIGIT", 
                   "DECIMAL", "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
                   "Chiral_code", "Atom_selection", "ALPHA", "ALPHA_NUM", 
                   "START_CHAR", "NAME_CHAR", "ATM_NAME_CHAR", "ATM_TYPE_CHAR", 
-                  "SIMPLE_NAME", "Ordinal", "SPACE", "COMMENT", "SECTION_COMMENT", 
-                  "LINE_COMMENT" ]
+                  "SIMPLE_NAME", "Ordinal", "SPACE", "ENCLOSE_COMMENT", 
+                  "SECTION_COMMENT", "LINE_COMMENT" ]
 
     grammarFileName = "BiosymMRLexer.g4"
 

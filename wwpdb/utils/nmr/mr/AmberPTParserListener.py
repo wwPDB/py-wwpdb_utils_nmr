@@ -426,9 +426,9 @@ class AmberPTParserListener(ParseTreeListener):
 
                 chain_mapping = {}
 
-                for chain_assign in self.__chainAssign:
-                    ref_chain_id = chain_assign['ref_chain_id']
-                    test_chain_id = chain_assign['test_chain_id']
+                for ca in self.__chainAssign:
+                    ref_chain_id = ca['ref_chain_id']
+                    test_chain_id = ca['test_chain_id']
 
                     if ref_chain_id != test_chain_id:
                         chain_mapping[test_chain_id] = ref_chain_id
@@ -457,8 +457,8 @@ class AmberPTParserListener(ParseTreeListener):
 
                 # other non-polymer
                 nonPolyIndices = [idx for idx, ps in enumerate(self.__polySeqPrmTop)
-                                  if not any(chain_assign for chain_assign in self.__chainAssign
-                                             if chain_assign['test_chain_id'] == ps['chain_id'])
+                                  if not any(ca for ca in self.__chainAssign
+                                             if ca['test_chain_id'] == ps['chain_id'])
                                   and len(set(ps['comp_id'])) == 1 and ps['comp_id'][0] == '.']
 
                 if len(nonPolyIndices) > 0:

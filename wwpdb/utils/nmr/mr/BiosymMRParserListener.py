@@ -37,7 +37,9 @@ try:
                                            retrieveAtomIdentFromMRMap,
                                            retrieveRemappedSeqId,
                                            splitPolySeqRstForMultimers,
-                                           retrieveRemappedChainId)
+                                           retrieveRemappedChainId,
+                                           splitPolySeqRstForNonPoly,
+                                           retrieveRemappedNonPoly)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.BiosymMRParser import BiosymMRParser
@@ -63,7 +65,9 @@ except ImportError:
                                retrieveAtomIdentFromMRMap,
                                retrieveRemappedSeqId,
                                splitPolySeqRstForMultimers,
-                               retrieveRemappedChainId)
+                               retrieveRemappedChainId,
+                               splitPolySeqRstForNonPoly,
+                               retrieveRemappedNonPoly)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -153,7 +157,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    reasonsForReParsing = None
+    reasonsForReParsing = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -236,9 +240,9 @@ class BiosymMRParserListener(ParseTreeListener):
 
                     chain_mapping = {}
 
-                    for chain_assign in self.__chainAssign:
-                        ref_chain_id = chain_assign['ref_chain_id']
-                        test_chain_id = chain_assign['test_chain_id']
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
                         if ref_chain_id != test_chain_id:
                             chain_mapping[test_chain_id] = ref_chain_id
@@ -259,19 +263,19 @@ class BiosymMRParserListener(ParseTreeListener):
 
                     seqIdRemap = []
 
-                    for chain_assign in self.__chainAssign:
-                        ref_chain_id = chain_assign['ref_chain_id']
-                        test_chain_id = chain_assign['test_chain_id']
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
-                        seq_align = next(sa for sa in self.__seqAlign
-                                         if sa['ref_chain_id'] == ref_chain_id
-                                         and sa['test_chain_id'] == test_chain_id)
+                        sa = next(sa for sa in self.__seqAlign
+                                  if sa['ref_chain_id'] == ref_chain_id
+                                  and sa['test_chain_id'] == test_chain_id)
 
                         poly_seq_rst = next(ps for ps in self.__polySeqRst
                                             if ps['chain_id'] == test_chain_id)
 
                         seq_id_mapping = {}
-                        for ref_seq_id, mid_code, test_seq_id in zip(seq_align['ref_seq_id'], seq_align['mid_code'], seq_align['test_seq_id']):
+                        for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                             if mid_code == '|':
                                 seq_id_mapping[test_seq_id] = ref_seq_id
 
@@ -296,8 +300,6 @@ class BiosymMRParserListener(ParseTreeListener):
                             seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
                     if len(seqIdRemap) > 0:
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
@@ -306,10 +308,21 @@ class BiosymMRParserListener(ParseTreeListener):
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'chain_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
+
+                    if self.__hasNonPoly:
+                        polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__polySeq, self.__nonPoly, self.__polySeqRst,
+                                                                               self.__seqAlign, self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if 'non_poly_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
+
+        if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+            if 'seq_id_remap' in self.reasonsForReParsing:
+                del self.reasonsForReParsing['seq_id_remap']
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -589,6 +602,10 @@ class BiosymMRParserListener(ParseTreeListener):
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         if self.__reasons is not None:
+            if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
+               and seqId in self.__reasons['non_poly_remap'][compId]:
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], str(refChainId), seqId, compId)
+                refChainId = fixedChainId
             if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                 refChainId = fixedChainId
@@ -597,7 +614,7 @@ class BiosymMRParserListener(ParseTreeListener):
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
-        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId))
+        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId), compId)
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -674,8 +691,6 @@ class BiosymMRParserListener(ParseTreeListener):
                                 chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
-                                if self.reasonsForReParsing is None:
-                                    self.reasonsForReParsing = {}
                                 if 'label_seq_scheme' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -705,8 +720,6 @@ class BiosymMRParserListener(ParseTreeListener):
                                     chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                                    if self.reasonsForReParsing is None:
-                                        self.reasonsForReParsing = {}
                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -760,6 +773,12 @@ class BiosymMRParserListener(ParseTreeListener):
                 if _atomId_ != atomId:
                     _atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
+
+            if coordAtomSite is not None\
+               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
+               and atomId in coordAtomSite['atom_id']:
+                _atomId = [atomId]
+
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
                 self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
@@ -1313,6 +1332,6 @@ class BiosymMRParserListener(ParseTreeListener):
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing BIOSYM MR file.
         """
-        return self.reasonsForReParsing
+        return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
 # del BiosymMRParser

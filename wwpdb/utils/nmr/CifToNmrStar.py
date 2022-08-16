@@ -6,6 +6,7 @@
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 20-Apr-2022  M. Yokochi - enable to fix broken data block order of CIF formatted NMR-STAR using NMR-STAR schema (DAOTHER-7407, NMR restraint remediation)
 # 28-Jul-2022  M. Yokochi - enable to fix format issue of CIF formatted NMR-STAR (You cannot have two loops with the same category in one saveframe. Category: '_Audit')
+# 10-Aug-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -124,6 +125,8 @@ class CifToNmrStar:
             category_order = []
             previous_order = -1
 
+            sf_category_counter = {}
+
             for block_name in block_name_list:
 
                 dict_list = cifObj.GetDataBlock(block_name)
@@ -188,6 +191,8 @@ class CifToNmrStar:
 
             if entry_id in emptyValue:
                 entry_id = block_name_list[0]
+
+            _entry_id = entry_id.upper()
 
             # reorder
             category_order.sort(key=lambda k: k['category_order'])
@@ -258,6 +263,18 @@ class CifToNmrStar:
                 block_name = item['block_name']
                 category = item['category']
 
+                sf_category = item['sf_category']
+                if sf_category not in sf_category_counter:
+                    cur_list_id = 1
+                else:
+                    cur_list_id = sf_category_counter[sf_category] + 1
+
+                sf_tag_prefix = next(v['Tag category'] for k, v in self.schema.items()
+                                     if v['SFCategory'] == sf_category and v['Tag field'] == 'Sf_category')
+
+                sf_category_counter[sf_category] = cur_list_id
+                _cur_list_id = str(cur_list_id)
+
                 if 'missing_sf_category' in item and item['missing_sf_category']:
                     new_block_name = item['new_block_name']
 
@@ -269,14 +286,13 @@ class CifToNmrStar:
 
                     sf = pynmrstar.Saveframe.from_scratch(new_block_name)
                     reserved_block_names.append(new_block_name)
-                    sf_tag_prefix = next(v['Tag category'] for k, v in self.schema.items()
-                                         if v['SFCategory'] == item['sf_category'] and v['Tag field'] == 'Sf_category')
                     sf.set_tag_prefix(sf_tag_prefix)
-                    sf.add_tag('Sf_category', item['sf_category'])
+                    sf.add_tag('Sf_category', sf_category)
                     sf.add_tag('Sf_framecode', new_block_name)
-                    sf.add_tag('Entry_ID', entry_id.upper())
-                    if item['sf_category'] != item['super_category']:
-                        sf.add_tag('ID', '1')
+                    sf.add_tag('Entry_ID', _entry_id)
+
+                    if sf_category != item['super_category']:
+                        sf.add_tag('ID', _cur_list_id)
 
                 elif item['sf_category_flag']:
                     new_block_name = item['new_block_name'] if 'new_block_name' in item else block_name
@@ -303,10 +319,26 @@ class CifToNmrStar:
                     dict_list = cifObj.GetDataBlock(block_name)
                     itVals = next(v for k, v in dict_list.items() if k == category)
 
-                    for _item in itVals['Items']:
-                        lp.add_tag(_item)
+                    list_id_idx = -1
+                    entry_id_idx = -1
 
-                    for _value in itVals['Values']:
+                    for idx, _item in enumerate(itVals['Items']):
+                        lp.add_tag(_item)
+                        if sf_category != item['super_category']:
+                            tag = '_' + category + '.' + _item
+                            tag = tag.lower()
+                            if tag in self.schema:
+                                sdict = {k: v for k, v in self.schema[tag].items() if v not in emptyValue}
+                                if 'Parent tag' in sdict and sdict['Parent tag'] == '_' + sf_tag_prefix + '.ID':
+                                    list_id_idx = idx
+                        if _item == 'Entry_ID':
+                            entry_id_idx = idx
+
+                    for idx, _value in enumerate(itVals['Values']):
+                        if list_id_idx != -1:
+                            _value[list_id_idx] = _cur_list_id
+                        if entry_id_idx != -1:
+                            _value[entry_id_idx] = _entry_id
                         lp.add_data(_value)
 
                     sf.add_loop(lp)

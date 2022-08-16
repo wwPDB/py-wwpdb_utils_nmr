@@ -36,7 +36,7 @@ class SybylMRParser ( Parser ):
 
     symbolicNames = [ "<INVALID>", "Atom1", "Atom2", "Lower", "Upper", "Integer", 
                       "Float", "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                      "Atom_selection", "SPACE", "COMMENT", "SECTION_COMMENT", 
+                      "Atom_selection", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
                       "LINE_COMMENT" ]
 
     RULE_sybyl_mr = 0
@@ -59,7 +59,7 @@ class SybylMRParser ( Parser ):
     SMCLN_COMMENT=9
     Atom_selection=10
     SPACE=11
-    COMMENT=12
+    ENCLOSE_COMMENT=12
     SECTION_COMMENT=13
     LINE_COMMENT=14
 

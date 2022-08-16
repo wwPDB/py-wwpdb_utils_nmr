@@ -829,7 +829,13 @@ class NEFTranslator:
                 minimal_lp_category_star_a = ['_Atom_chem_shift', '_Gen_dist_constraint']
                 minimal_lp_category_star_s = ['_Atom_chem_shift']
                 minimal_lp_category_star_r = ['_Gen_dist_constraint']
-                allowed_lp_category_star_o = ['_Gen_dist_constraint', '_Torsion_angle_constraint', '_RDC_constraint']
+                allowed_lp_category_star_o = ['_Gen_dist_constraint', '_Torsion_angle_constraint', '_RDC_constraint',
+                                              '_Homonucl_NOE', '_Coupling_constant', '_RDC',
+                                              '_CS_anisotropy', '_Dipolar_coupling',
+                                              '_CA_CB_constraint', '_H_chem_shift_constraint',
+                                              '_Chem_shift_perturbation', '_Auto_relaxation',
+                                              '_Cross_correlation_D_CSA', '_Cross_correlation_DD',
+                                              '_Other_data']
 
                 minimal_sf_category_nef_a = ['nef_chemical_shift_list', 'nef_distance_restraint_list']
                 minimal_sf_category_nef_s = ['nef_chemical_shift_list']
@@ -838,7 +844,13 @@ class NEFTranslator:
                 minimal_sf_category_star_a = ['assigned_chemical_shifts', 'general_distance_constraints']
                 minimal_sf_category_star_s = ['assigned_chemical_shifts']
                 minimal_sf_category_star_r = ['general_distance_constraints']
-                allowed_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints']
+                allowed_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints',
+                                              'homonucl_NOEs', 'coupling_constants', 'RDCs',
+                                              'chem_shift_anisotropy', 'dipolar_couplings',
+                                              'CA_CB_chem_shift_constraints', 'H_chem_shift_constraints',
+                                              'chem_shift_perturbation', 'auto_relaxation',
+                                              'dipole_CSA_cross_correlations', 'dipole_dipole_cross_correlations',
+                                              'other_data_types']
 
                 sf_list, lp_list = self.get_inventory_list(star_data, data_type)
 

@@ -895,18 +895,18 @@ def concat_nmr_restraint_names(content_subtype):
     return '' if len(subtype_name) == 0 else subtype_name[:-2]
 
 
-def is_peak_list(input_l, has_header=True):
+def is_peak_list(line, has_header=True):
     """ Return whether a given input is derived from peak list in any native format.
     """
 
-    if has_header and input_l.count('E') + input_l.count('e') >= 2:  # CYANA peak list
-        s = filter(None, re.split(r'[\t ]', input_l))
+    if has_header and line.count('E') + line.count('e') >= 2:  # CYANA peak list
+        s = filter(None, re.split(r'[\t ]', line))
         return 'U' in s or 'T' in s
 
-    if 'Data Height' in input_l and 'w1' in input_l and 'w2' in input_l:  # SPARKY peak list
+    if 'Data Height' in line and 'w1' in line and 'w2' in line:  # SPARKY peak list
         return True
 
-    if 'label' in input_l and 'dataset' in input_l and 'sw' in input_l and 'sf' in input_l:  # NMRView peak list
+    if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
         return True
 
     return False
@@ -1193,9 +1193,15 @@ class NmrDpUtility:
 
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
-                                     'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt')
+                                     'dist_restraint', 'dihed_restraint', 'rdc_restraint',
+                                     'spectral_peak', 'spectral_peak_alt',
+                                     'noepk_restraint', 'jcoup_restraint', 'rdc_raw_data',
+                                     'csa_restraint', 'ddc_restraint',
+                                     'hvycs_restraint', 'procs_restraint',
+                                     'csp_restraint', 'relax_restraint',
+                                     'ccr_d_csa_restraint', 'ccr_dd_restraint',
+                                     'other_restraint')
 
-        # CIF content types
         self.cif_content_subtypes = ('poly_seq', 'non_poly', 'coordinate')
 
         # readable file type
@@ -1227,7 +1233,19 @@ class NmrDpUtility:
                                       'dihed_restraint': 'nef_dihedral_restraint_list',
                                       'rdc_restraint': 'nef_rdc_restraint_list',
                                       'spectral_peak': 'nef_nmr_spectrum',
-                                      'spectral_peak_alt': None
+                                      'spectral_peak_alt': None,
+                                      'noepk_restraint': None,
+                                      'jcoup_restraint': None,
+                                      'rdc_raw_data': None,
+                                      'csa_restraint': None,
+                                      'ddc_restraint': None,
+                                      'hvycs_restraint': None,
+                                      'procs_restraint': None,
+                                      'csp_restraint': None,
+                                      'relax_restraint': None,
+                                      'ccr_d_csa_restraint': None,
+                                      'ccr_dd_restraint': None,
+                                      'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': 'entry_information',
                                            'poly_seq': 'assembly',
@@ -1238,7 +1256,19 @@ class NmrDpUtility:
                                            'dihed_restraint': 'torsion_angle_constraints',
                                            'rdc_restraint': 'RDC_constraints',
                                            'spectral_peak': 'spectral_peak_list',
-                                           'spectral_peak_alt': 'spectral_peak_list'
+                                           'spectral_peak_alt': 'spectral_peak_list',
+                                           'noepk_restraint': 'homonucl_NOEs',
+                                           'jcoup_restraint': 'coupling_constants',
+                                           'rdc_raw_data': 'RDCs',
+                                           'csa_restraint': 'chem_shift_anisotropy',
+                                           'ddc_restraint': 'dipolar_couplings',
+                                           'hvycs_restraint': 'CA_CB_chem_shift_constraints',
+                                           'procs_restraint': 'H_chem_shift_constraints',
+                                           'csp_restraint': 'chem_shift_perturbation',
+                                           'relax_restraint': 'auto_relaxation',
+                                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
+                                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
+                                           'other_restraint': 'other_data_types'
                                            }
                               }
 
@@ -1252,7 +1282,19 @@ class NmrDpUtility:
                                       'dihed_restraint': '_nef_dihedral_restraint',
                                       'rdc_restraint': '_nef_rdc_restraint',
                                       'spectral_peak': '_nef_peak',
-                                      'spectral_peak_alt': None
+                                      'spectral_peak_alt': None,
+                                      'noepk_restraint': None,
+                                      'jcoup_restraint': None,
+                                      'rdc_raw_data': None,
+                                      'csa_restraint': None,
+                                      'ddc_restraint': None,
+                                      'hvycs_restraint': None,
+                                      'procs_restraint': None,
+                                      'csp_restraint': None,
+                                      'relax_restraint': None,
+                                      'ccr_d_csa_restraint': None,
+                                      'ccr_dd_restraint': None,
+                                      'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': '_Software_applied_methods',
                                            'poly_seq': '_Chem_comp_assembly',
@@ -1263,7 +1305,19 @@ class NmrDpUtility:
                                            'dihed_restraint': '_Torsion_angle_constraint',
                                            'rdc_restraint': '_RDC_constraint',
                                            'spectral_peak': '_Peak_row_format',
-                                           'spectral_peak_alt': '_Peak'
+                                           'spectral_peak_alt': '_Peak',
+                                           'noepk_restraint': '_Homonucl_NOE',
+                                           'jcoup_restraint': '_Coupling_constant',
+                                           'rdc_raw_data': '_RDC',
+                                           'csa_restraint': '_CS_anisotropy',
+                                           'ddc_restraint': '_Dipolar_coupling',
+                                           'hvycs_restraint': '_CA_CB_constraint',
+                                           'procs_restraint': '_H_chem_shift_constraint',
+                                           'csp_restraint': '_Chem_shift_perturbation',
+                                           'relax_restraint': '_Auto_relaxation',
+                                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
+                                           'ccr_dd_restraint': '_Cross_correlation_DD',
+                                           'other_restraint': '_Other_data'
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
                                        'non_poly': 'pdbx_nonpoly_scheme',
@@ -6424,7 +6478,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
         tags_with_null_str = []
 
@@ -6446,7 +6500,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
         for sf_category in self.__sf_category_list:
 
@@ -6468,7 +6522,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
         # initialize loop counter
         lp_counts = {t: 0 for t in self.nmr_content_subtypes}
@@ -6495,7 +6549,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
                 else:
                     err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
@@ -6505,7 +6559,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
             elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0 and content_type != 'nmr-restraints':
                 err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
@@ -6515,7 +6569,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         elif lp_counts[content_subtype] > 1:
 
@@ -6526,7 +6580,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         content_subtype = 'chem_shift'
 
@@ -6543,19 +6597,33 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints' and not self.__bmrb_only:
 
-            err = "NMR restraint file includes assigned chemical shifts. "\
-                f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+            if self.__remediation_mode and lp_counts['dist_restraint'] + lp_counts['dihed_restraint'] + lp_counts['rdc_restraint'] > 0:
 
-            self.report.error.appendDescription('content_mismatch',
-                                                {'file_name': file_name, 'description': err})
-            self.report.setError()
+                warn = "NMR restraint file includes assigned chemical shifts. "\
+                    "which will be ignored during remediation."
 
-            if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.report.warning.appendDescription('corrected_format_issue',
+                                                      {'file_name': file_name, 'description': warn})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+
+            else:
+
+                err = "NMR restraint file includes assigned chemical shifts. "\
+                    f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         content_subtype = 'dist_restraint'
 
@@ -6572,7 +6640,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint'])\
            and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
@@ -6585,7 +6653,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         has_spectral_peak = lp_counts['spectral_peak'] + lp_counts['spectral_peak_alt'] > 0
 
@@ -6599,7 +6667,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
         if has_spectral_peak and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
 
@@ -6611,7 +6679,22 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType__() ++ Error  - {err}\n")
+                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+
+        if self.__remediation_mode and content_type == 'nmr-restraints' and not self.__bmrb_only:
+
+            for content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref'):
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+
+                if sf_category is None or lp_counts[content_subtype] == 0:
+                    continue
+
+                for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                    self.__star_data[file_list_id].remove_saveframe(sf_framecode)
+
+                lp_counts[content_subtype] = 0
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
@@ -7707,7 +7790,11 @@ class NmrDpUtility:
                             _err = self.__retrieveErroneousPreviousInput(description)
                             if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 s = '. ' if _err.startswith('Do you') else ':\n'
-                                err = err[:len_err] + "However, the error may be due to the previous input "\
+                                err = err[:len_err] +\
+                                    ("However, the error may be due to missing statement (i.e. 'noe', 'restraint dihedral', 'sanisotropy') "
+                                     f"at the beginning of {_err.strip().split(' ')[0]!r} and note that the statement should be ended with 'end' tag "
+                                     if _err.lower().strip().startswith('class')
+                                     else "However, the error may be due to the previous input ") +\
                                     f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]
 
                     if len(err) > 0:
@@ -7763,7 +7850,7 @@ class NmrDpUtility:
                                 has_hbond_restraint = 'hbond_restraint' in content_subtype
 
                                 if file_type == 'nm-res-cya' and has_dist_restraint:
-                                    ar['is_upl'] = listener.isUplDistanceRestraint()
+                                    ar['dist_type'] = listener.getTypeOfDistanceRestraints()
                                 if file_type == 'nm-res-amb':
                                     ar['has_comments'] = listener.hasComments()
 
@@ -10535,7 +10622,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR__() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMR() ++ Error  - {err}\n")
 
         except ValueError:
             pass
@@ -15099,6 +15186,11 @@ class NmrDpUtility:
 
                     if self.__csStat.peptideLike(first_comp_id):
                         first_comp_ids.add(first_comp_id)
+
+                    for comp_id in s['comp_id']:
+                        if self.__csStat.peptideLike(comp_id):
+                            first_comp_ids.add(comp_id)
+                            break
 
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
@@ -21544,10 +21636,10 @@ class NmrDpUtility:
 
             nmr2ca = {}
 
-            for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+            for ca in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
 
-                ref_chain_id = chain_assign['ref_chain_id']
-                test_chain_id = chain_assign['test_chain_id']
+                ref_chain_id = ca['ref_chain_id']
+                test_chain_id = ca['test_chain_id']
 
                 result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
@@ -21557,8 +21649,8 @@ class NmrDpUtility:
 
                 complex = {'seq_align': result}  # DAOTHER-7465  # pylint: disable=redefined-builtin
 
-                if 'unmapped_sequence' in chain_assign:
-                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in chain_assign['unmapped_sequence']]
+                if 'unmapped_sequence' in ca:
+                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in ca['unmapped_sequence']]
 
                 nmr2ca[ref_chain_id].append(complex)
 
@@ -22101,9 +22193,9 @@ class NmrDpUtility:
                             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
                 elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
-                    if ar['is_upl']:
+                    if ar['dist_type'] in ('upl', 'both'):
                         cyanaUplDistRest += 1
-                    else:
+                    if ar['dist_type'] in ('lol', 'both'):
                         cyanaLolDistRest += 1
 
         poly_seq_set = []
@@ -22285,12 +22377,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
@@ -22411,12 +22502,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-amb':
                 reader = AmberMRReader(self.__verbose, self.__lfh,
@@ -22508,29 +22598,28 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-cya':
                 has_dist_restraint = 'dist_restraint' in content_subtype
 
                 upl_or_lol = None
                 if has_dist_restraint:
-                    is_upl = ar['is_upl']
-                    if cyanaUplDistRest + cyanaLolDistRest == 1:
-                        upl_or_lol = 'upl_only' if is_upl else 'lol_only'
-                    elif cyanaLolDistRest == 0:
+                    dist_type = ar['dist_type']
+                    if cyanaLolDistRest == 0 and dist_type == 'upl':
                         upl_or_lol = 'upl_only'
-                    elif cyanaUplDistRest == 0:
+                    elif cyanaUplDistRest == 0 and dist_type == 'lol':
                         upl_or_lol = 'lol_only'
-                    elif is_upl:
+                    elif dist_type == 'upl':
                         upl_or_lol = 'upl_w_lol'
-                    else:
+                    elif dist_type == 'lol':
                         upl_or_lol = 'lol_w_upl'
+                    else:
+                        upl_or_lol = None
 
                 cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMRFile()
 
@@ -22652,12 +22741,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
@@ -22772,12 +22860,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-bio':
                 reader = BiosymMRReader(self.__verbose, self.__lfh,
@@ -22887,12 +22974,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-gro':
                 reader = GromacsMRReader(self.__verbose, self.__lfh,
@@ -22976,12 +23062,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-dyn':
                 reader = DynamoMRReader(self.__verbose, self.__lfh,
@@ -23099,12 +23184,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
             elif file_type == 'nm-res-syb':
                 reader = SybylMRReader(self.__verbose, self.__lfh,
@@ -23214,12 +23298,11 @@ class NmrDpUtility:
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
                         input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    poly_seq_set.append(poly_seq)
 
         if len(poly_seq_set) > 1:
 
@@ -23244,25 +23327,29 @@ class NmrDpUtility:
 
             if chain_assign is not None:
 
-                chain_mapping = {}
+                if len(poly_seq_model) == len(poly_seq_rst):
 
-                for ca in chain_assign:
-                    ref_chain_id = ca['ref_chain_id']
-                    test_chain_id = ca['test_chain_id']
+                    chain_mapping = {}
 
-                    if ref_chain_id != test_chain_id:
-                        chain_mapping[test_chain_id] = ref_chain_id
+                    for ca in chain_assign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
-                if len(chain_mapping) > 0:
+                        if ref_chain_id != test_chain_id:
+                            chain_mapping[test_chain_id] = ref_chain_id
 
-                    for ps in poly_seq_rst:
-                        if ps['chain_id'] in chain_mapping:
-                            ps['chain_id'] = chain_mapping[ps['chain_id']]
+                    if len(chain_mapping) == len(poly_seq_model):
 
-                    seq_align, _ = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, conservative=False)
-                    chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+                        for ps in poly_seq_rst:
+                            if ps['chain_id'] in chain_mapping:
+                                ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                trimSequenceAlignment(seq_align, chain_assign)
+                        seq_align, _ = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, conservative=False)
+                        chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+
+                    trimSequenceAlignment(seq_align, chain_assign)
+
+            input_source.setItemValue('polymer_sequence', poly_seq_rst)
 
             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
@@ -30458,14 +30545,14 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
-                                    'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
-                                    'sequence_coverage': result['sequence_coverage']}
+                    ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
+                          'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
+                          'sequence_coverage': result['sequence_coverage']}
 
                     auth_chain_id = chain_id
                     if 'auth_chain_id' in cif_polymer_sequence[row]:
                         auth_chain_id = cif_polymer_sequence[row]['auth_chain_id']
-                        chain_assign['ref_auth_chain_id'] = auth_chain_id
+                        ca['ref_auth_chain_id'] = auth_chain_id
 
                     s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
@@ -30572,10 +30659,10 @@ class NmrDpUtility:
                                 elif nmr_comp_id != cif_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
+                            if _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
                                 continue
 
                         unmapped = []
@@ -30633,22 +30720,22 @@ class NmrDpUtility:
                                         pass
 
                         if len(unmapped) > 0:
-                            chain_assign['unmapped_sequence'] = unmapped
+                            ca['unmapped_sequence'] = unmapped
 
                         if len(conflict) > 0:
-                            chain_assign['conflict_sequence'] = conflict
-                            chain_assign['conflict'] = len(conflict)
-                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
-                            if chain_assign['unmapped'] < 0:
-                                chain_assign['conflict'] -= chain_assign['unmapped']
-                                chain_assign['unmapped'] = 0
+                            ca['conflict_sequence'] = conflict
+                            ca['conflict'] = len(conflict)
+                            ca['unmapped'] = ca['unmapped'] - len(conflict)
+                            if ca['unmapped'] < 0:
+                                ca['conflict'] -= ca['unmapped']
+                                ca['unmapped'] = 0
 
-                            result['conflict'] = chain_assign['conflict']
-                            result['unmapped'] = chain_assign['unmapped']
+                            result['conflict'] = ca['conflict']
+                            result['unmapped'] = ca['unmapped']
 
                             if _result is not None:
-                                _result['conflict'] = chain_assign['conflict']
-                                _result['unmapped'] = chain_assign['unmapped']
+                                _result['conflict'] = ca['conflict']
+                                _result['unmapped'] = ca['unmapped']
 
                 # from nmr to model
 
@@ -30676,7 +30763,7 @@ class NmrDpUtility:
                 if self.__combined_mode:
                     indices = m.compute(mat)
 
-                chain_assign_set = []
+                chain_assign = []
 
                 for row, column in indices:
 
@@ -30691,14 +30778,14 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
-                                    'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
-                                    'sequence_coverage': result['sequence_coverage']}
+                    ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
+                          'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
+                          'sequence_coverage': result['sequence_coverage']}
 
                     auth_chain_id2 = chain_id2
                     if 'auth_chain_id' in cif_polymer_sequence[column]:
                         auth_chain_id2 = cif_polymer_sequence[column]['auth_chain_id']
-                        chain_assign['test_auth_chain_id'] = auth_chain_id2
+                        ca['test_auth_chain_id'] = auth_chain_id2
 
                     s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
@@ -30807,10 +30894,10 @@ class NmrDpUtility:
                                 elif cif_comp_id != nmr_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
+                            if _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
                                 continue
 
                         unmapped = []
@@ -30987,40 +31074,40 @@ class NmrDpUtility:
                                 #     offset_2 += 1
                                 # """
                         if len(unmapped) > 0:
-                            chain_assign['unmapped_sequence'] = unmapped
+                            ca['unmapped_sequence'] = unmapped
 
                         if len(conflict) > 0:
-                            chain_assign['conflict_sequence'] = conflict
-                            chain_assign['conflict'] = len(conflict)
-                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
-                            if chain_assign['unmapped'] < 0:
-                                chain_assign['conflict'] -= chain_assign['unmapped']
-                                chain_assign['unmapped'] = 0
+                            ca['conflict_sequence'] = conflict
+                            ca['conflict'] = len(conflict)
+                            ca['unmapped'] = ca['unmapped'] - len(conflict)
+                            if ca['unmapped'] < 0:
+                                ca['conflict'] -= ca['unmapped']
+                                ca['unmapped'] = 0
 
-                            result['conflict'] = chain_assign['conflict']
-                            result['unmapped'] = chain_assign['unmapped']
+                            result['conflict'] = ca['conflict']
+                            result['unmapped'] = ca['unmapped']
 
                             if _result is not None:
-                                _result['conflict'] = chain_assign['conflict']
-                                _result['unmapped'] = chain_assign['unmapped']
+                                _result['conflict'] = ca['conflict']
+                                _result['unmapped'] = ca['unmapped']
 
-                    chain_assign_set.append(chain_assign)
+                    chain_assign.append(ca)
 
-                if len(chain_assign_set) > 0 and fileListId == 0:
+                if len(chain_assign) > 0 and fileListId == 0:
 
                     if len(cif_polymer_sequence) > 1:
 
                         if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
-                            _chain_assign_set = chain_assign_set.copy()
+                            _chain_assign = chain_assign.copy()
 
-                            for chain_assign in _chain_assign_set:
+                            for ca in _chain_assign:
 
-                                if chain_assign['conflict'] > 0:
+                                if ca['conflict'] > 0:
                                     continue
 
-                                _chain_id = chain_assign['test_chain_id']
-                                _auth_chain_id = None if 'test_auth_chain_id' not in chain_assign else chain_assign['test_auth_chain_id']
+                                _chain_id = ca['test_chain_id']
+                                _auth_chain_id = None if 'test_auth_chain_id' not in ca else ca['test_auth_chain_id']
 
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
@@ -31028,17 +31115,17 @@ class NmrDpUtility:
 
                                     for _chain_id in identity:
 
-                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id):
-                                            _chain_assign = chain_assign.copy()
-                                            _chain_assign['test_chain_id'] = _chain_id
+                                        if not any(_ca for _ca in chain_assign if _ca['test_chain_id'] == _chain_id):
+                                            _ca = ca.copy()
+                                            _ca['test_chain_id'] = _chain_id
                                             if _auth_chain_id is not None:
-                                                _chain_assign['test_auth_chain_id'] = _auth_chain_id
-                                            chain_assign_set.append(_chain_assign)
+                                                _ca['test_auth_chain_id'] = _auth_chain_id
+                                            chain_assign.append(_ca)
 
                                 except StopIteration:
                                     pass
 
-                    self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign_set)
+                    self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign)
 
                 # from model to nmr (final)
 
@@ -31067,7 +31154,7 @@ class NmrDpUtility:
                 if self.__combined_mode:
                     indices = m.compute(mat)
 
-                chain_assign_set = []
+                chain_assign = []
 
                 concatenated_nmr_chain = {}
 
@@ -31104,14 +31191,14 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
-                                    'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
-                                    'sequence_coverage': result['sequence_coverage']}
+                    ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
+                          'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
+                          'sequence_coverage': result['sequence_coverage']}
 
                     auth_chain_id = chain_id
                     if 'auth_chain_id' in cif_polymer_sequence[row]:
                         auth_chain_id = cif_polymer_sequence[row]['auth_chain_id']
-                        chain_assign['ref_auth_chain_id'] = auth_chain_id
+                        ca['ref_auth_chain_id'] = auth_chain_id
 
                     s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
@@ -31218,10 +31305,10 @@ class NmrDpUtility:
                                 elif nmr_comp_id != cif_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
+                            if _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and chain_assign['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
                                 continue
 
                         unmapped = []
@@ -31381,40 +31468,40 @@ class NmrDpUtility:
                                 #     offset_2 += 1
                                 # """
                         if len(unmapped) > 0:
-                            chain_assign['unmapped_sequence'] = unmapped
+                            ca['unmapped_sequence'] = unmapped
 
                         if len(conflict) > 0:
-                            chain_assign['conflict_sequence'] = conflict
-                            chain_assign['conflict'] = len(conflict)
-                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
-                            if chain_assign['unmapped'] < 0:
-                                chain_assign['conflict'] -= chain_assign['unmapped']
-                                chain_assign['unmapped'] = 0
+                            ca['conflict_sequence'] = conflict
+                            ca['conflict'] = len(conflict)
+                            ca['unmapped'] = ca['unmapped'] - len(conflict)
+                            if ca['unmapped'] < 0:
+                                ca['conflict'] -= ca['unmapped']
+                                ca['unmapped'] = 0
 
-                            result['conflict'] = chain_assign['conflict']
-                            result['unmapped'] = chain_assign['unmapped']
+                            result['conflict'] = ca['conflict']
+                            result['unmapped'] = ca['unmapped']
 
                             if _result is not None:
-                                _result['conflict'] = chain_assign['conflict']
-                                _result['unmapped'] = chain_assign['unmapped']
+                                _result['conflict'] = ca['conflict']
+                                _result['unmapped'] = ca['unmapped']
 
-                    chain_assign_set.append(chain_assign)
+                    chain_assign.append(ca)
 
-                if len(chain_assign_set) > 0 and fileListId == 0:
+                if len(chain_assign) > 0 and fileListId == 0:
 
                     if len(cif_polymer_sequence) > 1:
 
                         if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
-                            _chain_assign_set = chain_assign_set.copy()
+                            _chain_assign = chain_assign.copy()
 
-                            for chain_assign in _chain_assign_set:
+                            for ca in _chain_assign:
 
-                                if chain_assign['conflict'] > 0:
+                                if ca['conflict'] > 0:
                                     continue
 
-                                chain_id = chain_assign['ref_chain_id']
-                                auth_chain_id = None if 'ref_auth_chain_id' not in chain_assign else chain_assign['ref_auth_chain_id']
+                                chain_id = ca['ref_chain_id']
+                                auth_chain_id = None if 'ref_auth_chain_id' not in ca else ca['ref_auth_chain_id']
 
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
@@ -31422,17 +31509,17 @@ class NmrDpUtility:
 
                                     for chain_id in identity:
 
-                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['ref_chain_id'] == chain_id):
-                                            _chain_assign = chain_assign.copy()
-                                            _chain_assign['ref_chain_id'] = chain_id
+                                        if not any(_ca for _ca in chain_assign if _ca['ref_chain_id'] == chain_id):
+                                            _ca = ca.copy()
+                                            _ca['ref_chain_id'] = chain_id
                                             if auth_chain_id is not None:
-                                                _chain_assign['ref_auth_chain_id'] = auth_chain_id
-                                            chain_assign_set.append(_chain_assign)
+                                                _ca['ref_auth_chain_id'] = auth_chain_id
+                                            chain_assign.append(_ca)
 
                                 except StopIteration:
                                     pass
 
-                    self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', chain_assign_set)
+                    self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', chain_assign)
 
             else:
 
@@ -31496,10 +31583,10 @@ class NmrDpUtility:
 
             nmr2ca = {}
 
-            for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+            for ca in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
 
-                ref_chain_id = chain_assign['ref_chain_id']
-                test_chain_id = chain_assign['test_chain_id']
+                ref_chain_id = ca['ref_chain_id']
+                test_chain_id = ca['test_chain_id']
 
                 result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
@@ -31509,8 +31596,8 @@ class NmrDpUtility:
 
                 complex = {'seq_align': result}  # DAOTHER-7465  # pylint: disable=redefined-builtin
 
-                if 'unmapped_sequence' in chain_assign:
-                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in chain_assign['unmapped_sequence']]
+                if 'unmapped_sequence' in ca:
+                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in ca['unmapped_sequence']]
 
                 nmr2ca[ref_chain_id].append(complex)
 
@@ -32583,20 +32670,20 @@ class NmrDpUtility:
                     #     chain_assign_dic = self.report.chain_assignment.get()
                     #     if 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
                     #         try:
-                    #             chain_assign = next(chain_assign for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']
-                    #                                 if chain_assign['test_chain_id'] == chain_id)
-                    #             if 'unmapped_sequence' in chain_assign:
-                    #                 ref_seq = next(ref_seq for ref_seq in chain_assign['unmapped_sequence'] if ref_seq['ref_seq_id'] == seq_id)
+                    #             ca = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']
+                    #                       if ca['test_chain_id'] == chain_id)
+                    #             if 'unmapped_sequence' in ca:
+                    #                 ref_seq = next(ref_seq for ref_seq in ca['unmapped_sequence'] if ref_seq['ref_seq_id'] == seq_id)
                     #                 auth_comp_id = ref_seq['ref_comp_id']
                     #                 comp_id = auth_comp_id.upper()
                     #         except StopIteration:
                     #             if 'identical_chain_id' in s:
                     #                 for chain_id_ in s['identical_chain_id']:
                     #                     try:
-                    #                         chain_assign_ = next(chain_assign for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']
-                    #                                              if chain_assign['test_chain_id'] == chain_id_)
-                    #                         if 'unmapped_sequence' in chain_assign_:
-                    #                             ref_seq = next(ref_seq for ref_seq in chain_assign_['unmapped_sequence'] if ref_seq['ref_seq_id'] == seq_id)
+                    #                         ca_ = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']
+                    #                                    if ca['test_chain_id'] == chain_id_)
+                    #                         if 'unmapped_sequence' in ca_:
+                    #                             ref_seq = next(ref_seq for ref_seq in ca_['unmapped_sequence'] if ref_seq['ref_seq_id'] == seq_id)
                     #                             auth_comp_id = ref_seq['ref_comp_id']
                     #                             comp_id = auth_comp_id.upper()
                     #                             break

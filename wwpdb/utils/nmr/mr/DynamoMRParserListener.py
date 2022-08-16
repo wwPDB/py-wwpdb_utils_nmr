@@ -43,7 +43,9 @@ try:
                                            retrieveAtomIdentFromMRMap,
                                            retrieveRemappedSeqId,
                                            splitPolySeqRstForMultimers,
-                                           retrieveRemappedChainId)
+                                           retrieveRemappedChainId,
+                                           splitPolySeqRstForNonPoly,
+                                           retrieveRemappedNonPoly)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.DynamoMRParser import DynamoMRParser
@@ -75,7 +77,9 @@ except ImportError:
                                retrieveAtomIdentFromMRMap,
                                retrieveRemappedSeqId,
                                splitPolySeqRstForMultimers,
-                               retrieveRemappedChainId)
+                               retrieveRemappedChainId,
+                               splitPolySeqRstForNonPoly,
+                               retrieveRemappedNonPoly)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -156,6 +160,7 @@ class DynamoMRParserListener(ParseTreeListener):
     __hasPolySeq = False
     __hasNonPoly = False
     __preferAuthSeq = True
+    __gapInAuthSeq = False
 
     # chain number dictionary
     __chainNumberDict = None
@@ -186,7 +191,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
-    reasonsForReParsing = None
+    reasonsForReParsing = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -219,6 +224,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
+        if self.__hasPolySeq:
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -270,9 +277,9 @@ class DynamoMRParserListener(ParseTreeListener):
 
                     chain_mapping = {}
 
-                    for chain_assign in self.__chainAssign:
-                        ref_chain_id = chain_assign['ref_chain_id']
-                        test_chain_id = chain_assign['test_chain_id']
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
                         if ref_chain_id != test_chain_id:
                             chain_mapping[test_chain_id] = ref_chain_id
@@ -293,19 +300,19 @@ class DynamoMRParserListener(ParseTreeListener):
 
                     seqIdRemap = []
 
-                    for chain_assign in self.__chainAssign:
-                        ref_chain_id = chain_assign['ref_chain_id']
-                        test_chain_id = chain_assign['test_chain_id']
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
-                        seq_align = next(sa for sa in self.__seqAlign
-                                         if sa['ref_chain_id'] == ref_chain_id
-                                         and sa['test_chain_id'] == test_chain_id)
+                        sa = next(sa for sa in self.__seqAlign
+                                  if sa['ref_chain_id'] == ref_chain_id
+                                  and sa['test_chain_id'] == test_chain_id)
 
                         poly_seq_rst = next(ps for ps in self.__polySeqRst
                                             if ps['chain_id'] == test_chain_id)
 
                         seq_id_mapping = {}
-                        for ref_seq_id, mid_code, test_seq_id in zip(seq_align['ref_seq_id'], seq_align['mid_code'], seq_align['test_seq_id']):
+                        for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                             if mid_code == '|':
                                 seq_id_mapping[test_seq_id] = ref_seq_id
 
@@ -330,8 +337,6 @@ class DynamoMRParserListener(ParseTreeListener):
                             seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
                     if len(seqIdRemap) > 0:
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
@@ -340,10 +345,21 @@ class DynamoMRParserListener(ParseTreeListener):
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'chain_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
+
+                    if self.__hasNonPoly:
+                        polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__polySeq, self.__nonPoly, self.__polySeqRst,
+                                                                               self.__seqAlign, self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if 'non_poly_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
+
+        if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+            if 'seq_id_remap' in self.reasonsForReParsing:
+                del self.reasonsForReParsing['seq_id_remap']
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -811,6 +827,10 @@ class DynamoMRParserListener(ParseTreeListener):
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         if self.__reasons is not None:
+            if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
+               and seqId in self.__reasons['non_poly_remap'][compId]:
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], refChainId, seqId, compId)
+                refChainId = fixedChainId
             if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                 refChainId = fixedChainId
@@ -820,7 +840,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
-        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, translateToStdResName(compId))
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, translateToStdResName(compId), compId)
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -897,8 +917,6 @@ class DynamoMRParserListener(ParseTreeListener):
                                 chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
-                                if self.reasonsForReParsing is None:
-                                    self.reasonsForReParsing = {}
                                 if 'label_seq_scheme' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -928,8 +946,6 @@ class DynamoMRParserListener(ParseTreeListener):
                                     chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                                    if self.reasonsForReParsing is None:
-                                        self.reasonsForReParsing = {}
                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -983,6 +999,12 @@ class DynamoMRParserListener(ParseTreeListener):
                 if _atomId_ != atomId:
                     _atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
+
+            if coordAtomSite is not None\
+               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
+               and atomId in coordAtomSite['atom_id']:
+                _atomId = [atomId]
+
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
                 self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index,g=group)}"\
@@ -1019,6 +1041,12 @@ class DynamoMRParserListener(ParseTreeListener):
                 if _atomId_ != atomId:
                     _atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
+
+            if coordAtomSite is not None\
+               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
+               and atomId in coordAtomSite['atom_id']:
+                _atomId = [atomId]
+
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
                 self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index,g=group)}"\
@@ -1566,18 +1594,23 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -1610,7 +1643,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -1716,18 +1749,23 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -1762,7 +1800,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -1868,18 +1906,23 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -1914,7 +1957,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -2029,18 +2072,23 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -2073,7 +2121,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
@@ -2676,10 +2724,15 @@ class DynamoMRParserListener(ParseTreeListener):
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None:
-                            self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                "Please update the sequence in the Macromolecules page.\n"
-                            _cifCompId = '.'
+                            try:
+                                _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
+                            except IndexError:
+                                pass
+                            if _cifCompId is None:
+                                self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
+                                    f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                    "Please update the sequence in the Macromolecules page.\n"
+                                _cifCompId = '.'
                             cifAtomId = atomId
 
                         else:
@@ -2707,7 +2760,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "
@@ -2819,10 +2872,15 @@ class DynamoMRParserListener(ParseTreeListener):
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None:
-                            self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                "Please update the sequence in the Macromolecules page.\n"
-                            _cifCompId = '.'
+                            try:
+                                _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
+                            except IndexError:
+                                pass
+                            if _cifCompId is None:
+                                self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
+                                    f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                    "Please update the sequence in the Macromolecules page.\n"
+                                _cifCompId = '.'
                             cifAtomId = atomId
 
                         else:
@@ -2850,7 +2908,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "
@@ -2919,7 +2977,7 @@ class DynamoMRParserListener(ParseTreeListener):
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing DYNAMO/PALES/TALOS MR file.
         """
-        return self.reasonsForReParsing
+        return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
 
 # del DynamoMRParser

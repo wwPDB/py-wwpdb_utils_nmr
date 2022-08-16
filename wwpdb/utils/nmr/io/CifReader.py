@@ -22,6 +22,7 @@
 # 02-Feb-2022   my  - add 'abs-int', 'abs-float', 'range-int', 'range-abs-int', 'range-abs-float' as filter item types and 'not_equal_to' range filter (NMR restraint remediation)
 # 30-Mar-2022   my  - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 # 06-Apr-2022   my  - add support for auth_comp_id (DAOTHER-7690)
+# 04-Aug-2022   my  - detect sequence gaps in auth_seq_id, 'gap_in_auth_seq' (NMR restraint remediation)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -473,6 +474,15 @@ class CifReader:
                                     ent['auth_seq_id'].append(_s)
                                 else:
                                     ent['auth_seq_id'].append(None)
+                                ent['gap_in_auth_seq'] = False
+                                for p in range(len(ent['auth_seq_id']) - 1):
+                                    s_p = ent['auth_seq_id'][p]
+                                    s_q = ent['auth_seq_id'][p + 1]
+                                    if s_p is None or s_q is None:
+                                        continue
+                                    if s_p + 1 != s_q:
+                                        ent['gap_in_auth_seq'] = True
+                                        break
 
                     if auth_comp_id_col != -1:
                         ent['auth_comp_id'] = []

@@ -56,12 +56,12 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-ORI_HEADER:		'#' [ \t]* O R I E N T A T I O N [ \t]+ M A G N I T U D E [ \t]+ R H O M B I C I T Y [ \t]+ O R I [ \t]+ R E S I D U E [ \t]+ N U M B E R [ \t]* [\r\n]+;
-TEN_HEADER:		'#' [ \t]* T E N S O R [ \t]+ M A G N I T U D E [ \t]+ R H O M B I C I T Y [ \t]+ R E S I D U E [ \t]* [\r\n]+;
+Orientation_header:	'#' [ \t]* O R I E N T A T I O N [ \t]+ M A G N I T U D E [ \t]+ R H O M B I C I T Y [ \t]+ O R I [ \t]+ R E S I D U E [ \t]+ N U M B E R [ \t]* [\r\n]+;
+Tensor_header:		'#' [ \t]* T E N S O R [ \t]+ M A G N I T U D E [ \t]+ R H O M B I C I T Y [ \t]+ R E S I D U E [ \t]* [\r\n]+;
 
-SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
-EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
+
+COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 
 /* extensions for torsion angle restraints */
 Type:			T Y P E;		// = Integer
@@ -104,9 +104,16 @@ fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 SPACE:			[ \t\r\n]+ -> skip;
-COMMENT:		'{' (COMMENT | .)*? '}' -> channel(HIDDEN);
+ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K) ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K) ~[\r\n]* -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K) ~[\r\n]* -> channel(HIDDEN);
+
+mode COMMENT_MODE;
+
+Any_name:		~[ \t\r\n]+;
+
+SPACE_CM:		[ \t]+ -> skip;
+RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
 
 mode HBOND_MODE;
 

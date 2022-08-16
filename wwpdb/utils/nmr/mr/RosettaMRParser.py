@@ -224,7 +224,7 @@ class RosettaMRParser ( Parser ):
                       "DEGREES", "LINEAR_PENALTY", "KARPLUS", "SOEDINGFUNC", 
                       "TOPOUT", "ETABLE", "USOG", "SOG", "Integer", "Float", 
                       "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                      "Simple_name", "SPACE", "COMMENT", "SECTION_COMMENT", 
+                      "Simple_name", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
                       "LINE_COMMENT" ]
 
     RULE_rosetta_mr = 0
@@ -328,7 +328,7 @@ class RosettaMRParser ( Parser ):
     SMCLN_COMMENT=54
     Simple_name=55
     SPACE=56
-    COMMENT=57
+    ENCLOSE_COMMENT=57
     SECTION_COMMENT=58
     LINE_COMMENT=59
 

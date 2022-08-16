@@ -66,7 +66,9 @@ try:
                                            retrieveAtomIdFromMRMap,
                                            retrieveRemappedSeqId,
                                            splitPolySeqRstForMultimers,
-                                           retrieveRemappedChainId)
+                                           retrieveRemappedChainId,
+                                           splitPolySeqRstForNonPoly,
+                                           retrieveRemappedNonPoly)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.XplorMRParser import XplorMRParser
@@ -117,7 +119,9 @@ except ImportError:
                                retrieveAtomIdFromMRMap,
                                retrieveRemappedSeqId,
                                splitPolySeqRstForMultimers,
-                               retrieveRemappedChainId)
+                               retrieveRemappedChainId,
+                               splitPolySeqRstForNonPoly,
+                               retrieveRemappedNonPoly)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -246,6 +250,7 @@ class XplorMRParserListener(ParseTreeListener):
     __hasPolySeq = False
     __hasNonPoly = False
     __preferAuthSeq = True
+    __gapInAuthSeq = False
 
     # large model
     __largeModel = False
@@ -351,7 +356,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     __warningInAtomSelection = ''
 
-    reasonsForReParsing = None
+    reasonsForReParsing = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -387,6 +392,9 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
+        if self.__hasPolySeq:
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
+
         self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_MAJOR_ASYM_ID_SET
         if self.__largeModel:
             self.__representativeAsymId = next(c for c in MAJOR_ASYM_ID_SET if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == c))
@@ -479,9 +487,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                     chain_mapping = {}
 
-                    for chain_assign in self.__chainAssign:
-                        ref_chain_id = chain_assign['ref_chain_id']
-                        test_chain_id = chain_assign['test_chain_id']
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
                         if ref_chain_id != test_chain_id:
                             chain_mapping[test_chain_id] = ref_chain_id
@@ -502,19 +510,19 @@ class XplorMRParserListener(ParseTreeListener):
 
                     seqIdRemap = []
 
-                    for chain_assign in self.__chainAssign:
-                        ref_chain_id = chain_assign['ref_chain_id']
-                        test_chain_id = chain_assign['test_chain_id']
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
-                        seq_align = next(sa for sa in self.__seqAlign
-                                         if sa['ref_chain_id'] == ref_chain_id
-                                         and sa['test_chain_id'] == test_chain_id)
+                        sa = next(sa for sa in self.__seqAlign
+                                  if sa['ref_chain_id'] == ref_chain_id
+                                  and sa['test_chain_id'] == test_chain_id)
 
                         poly_seq_rst = next(ps for ps in self.__polySeqRst
                                             if ps['chain_id'] == test_chain_id)
 
                         seq_id_mapping = {}
-                        for ref_seq_id, mid_code, test_seq_id in zip(seq_align['ref_seq_id'], seq_align['mid_code'], seq_align['test_seq_id']):
+                        for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                             if mid_code == '|':
                                 seq_id_mapping[test_seq_id] = ref_seq_id
 
@@ -539,8 +547,6 @@ class XplorMRParserListener(ParseTreeListener):
                             seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
                     if len(seqIdRemap) > 0:
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         if 'seq_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
@@ -549,10 +555,21 @@ class XplorMRParserListener(ParseTreeListener):
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'chain_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
+
+                    if self.__hasNonPoly:
+                        polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__polySeq, self.__nonPoly, self.__polySeqRst,
+                                                                               self.__seqAlign, self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if 'non_poly_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
+
+        if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+            if 'seq_id_remap' in self.reasonsForReParsing:
+                del self.reasonsForReParsing['seq_id_remap']
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -1689,18 +1706,23 @@ class XplorMRParserListener(ParseTreeListener):
 
             if chain_id_1 != chain_id_2:
                 if self.__symmetric == 'no':
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    if ps1 is None and ps2 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"Found inter-chain RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
+
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
+                        f"Found inter-residue RDC vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
-
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -1735,7 +1757,7 @@ class XplorMRParserListener(ParseTreeListener):
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
                 if self.__symmetric == 'no':
-                    if isLongRangeRestraint([atom1, atom2]):
+                    if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                 else:
                     if isAsymmetricRangeRestraint([atom1, atom2], chain_id_set, self.__symmetric):
@@ -2066,18 +2088,21 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain 1H-1H dipolar coupling vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain 1H-1H dipolar coupling vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
+            elif abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Found inter-residue 1H-1H dipolar coupling vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -2105,7 +2130,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XDIP) id={self.rdcRestraints} "
@@ -2308,18 +2333,23 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    return
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    if ps1 is None and ps2 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"Found inter-chain RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
-                if abs(seq_id_1 - seq_id_2) > 1:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    return
+                elif abs(seq_id_1 - seq_id_2) > 1:
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                    if ps1 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"Found inter-residue RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
-                if abs(seq_id_1 - seq_id_2) == 1:
+                elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -2354,7 +2384,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if isLongRangeRestraint([atom1, atom2]) or isLongRangeRestraint([atom3, atom4]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None)\
+                   or isLongRangeRestraint([atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (VEAN) id={self.rdcRestraints} "
@@ -2546,18 +2577,23 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -2590,7 +2626,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (TENSO) id={self.rdcRestraints} "
@@ -2694,18 +2730,23 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    return
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    if ps1 is None and ps2 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"Found inter-chain RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
-                if abs(seq_id_1 - seq_id_2) > 1:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    return
+                elif abs(seq_id_1 - seq_id_2) > 1:
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                    if ps1 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"Found inter-residue RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
-                if abs(seq_id_1 - seq_id_2) == 1:
+                elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -2740,7 +2781,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (ANIS) id={self.rdcRestraints} "
@@ -3075,18 +3116,21 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain J-coupling vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    return
+                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    if ps1 is None and ps2 is None:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"Found inter-chain J-coupling vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
-                if abs(seq_id_1 - seq_id_2) > 1:
+                elif abs(seq_id_1 - seq_id_2) > 1:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"Found inter-residue J-coupling vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
-                if abs(seq_id_1 - seq_id_2) == 1:
+                elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -3122,7 +3166,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
-                    if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                    if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
                         if dstFunc2 is None:
@@ -3137,7 +3181,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
-                    if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                    if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
                         if dstFunc2 is None:
@@ -3151,7 +3195,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[5],
                                                                     self.atomSelectionSet[6],
                                                                     self.atomSelectionSet[7]):
-                    if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                    if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
                         if dstFunc2 is None:
@@ -3274,7 +3318,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                        self.atomSelectionSet[2],
                                                                        self.atomSelectionSet[3],
                                                                        self.atomSelectionSet[4]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5]):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CARB) id={self.hvycsRestraints} "
@@ -3511,7 +3555,7 @@ class XplorMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
-            if isLongRangeRestraint([atom1, atom2, atom3]):
+            if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (PROTON/ANIS) id={self.procsRestraints} "
@@ -3612,7 +3656,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                        self.atomSelectionSet[2],
                                                                        self.atomSelectionSet[3],
                                                                        self.atomSelectionSet[4]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5]):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (PROTON/RING) id={self.procsRestraints} "
@@ -3625,7 +3669,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                               self.atomSelectionSet[3],
                                                                               self.atomSelectionSet[4],
                                                                               self.atomSelectionSet[5]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5, atom6]):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5, atom6], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (PROTON/RING) id={self.procsRestraints} "
@@ -3714,18 +3758,21 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain dihedral angle vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain dihedral angle vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
+            elif abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Found inter-residue dihedral angle vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -3761,7 +3808,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[i + 1],
                                                                 self.atomSelectionSet[i + 2],
                                                                 self.atomSelectionSet[i + 3]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (RAMA) id={self.ramaRestraints} "
@@ -3934,18 +3981,21 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain diffusion anisotropy vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain diffusion anisotropy vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
+            elif abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Found inter-residue diffusion anisotropy vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -3978,7 +4028,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (DANI) id={self.diffRestraints} "
@@ -4237,7 +4287,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
                                                             self.atomSelectionSet[3]):
-            if isLongRangeRestraint([atom1, atom2, atom3, atom4]):
+            if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (ORIE) id={self.nbaseRestraints} "
@@ -4393,14 +4443,18 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain CSA vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps3 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_3 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None and ps3 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain CSA vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
+            elif abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Found inter-residue CSA vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -4408,50 +4462,52 @@ class XplorMRParserListener(ParseTreeListener):
                     f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
                 return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1 or abs(seq_id_2 - seq_id_3) == 1 or abs(seq_id_3 - seq_id_1) == 1:
 
-                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
-                    pass
+                if abs(seq_id_1 - seq_id_2) == 1:
 
-                else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue CSA vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                    return
+                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        pass
 
-            elif abs(seq_id_2 - seq_id_3) == 1:
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found inter-residue CSA vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        return
 
-                if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
-                        ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA'))
-                         or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')):
-                    pass
+                elif abs(seq_id_2 - seq_id_3) == 1:
 
-                else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue CSA vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                    return
+                    if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
+                            ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA'))
+                             or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')):
+                        pass
 
-            elif abs(seq_id_3 - seq_id_1) == 1:
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found inter-residue CSA vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        return
 
-                if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
-                        ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H', 'CA'))
-                         or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H', 'CA') and atom_id_1 == 'C')):
-                    pass
+                elif abs(seq_id_3 - seq_id_1) == 1:
 
-                else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue CSA vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                    return
+                    if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
+                            ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H', 'CA'))
+                             or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H', 'CA') and atom_id_1 == 'C')):
+                        pass
+
+                    else:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found inter-residue CSA vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        return
 
             elif atom_id_1 == atom_id_2 or atom_id_2 == atom_id_3 or atom_id_3 == atom_id_1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -4494,7 +4550,7 @@ class XplorMRParserListener(ParseTreeListener):
             for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[4],
                                                          self.atomSelectionSet[5],
                                                          self.atomSelectionSet[6]):
-                if isLongRangeRestraint([atom1, atom2, atom3]):
+                if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.csaRestraints} "
@@ -5363,18 +5419,23 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-residue RDC vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -5407,7 +5468,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XRDC) id={self.prdcRestraints} "
@@ -5494,18 +5555,21 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain orientation vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain orientation vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
+            elif abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Found inter-residue orientation vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -5538,7 +5602,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XANG) id={self.pangRestraints} "
@@ -5622,18 +5686,21 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-chain CCR vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                return
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Found inter-chain CCR vector; "\
+                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    return
 
-            if abs(seq_id_1 - seq_id_2) > 1:
+            elif abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Found inter-residue CCR vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            if abs(seq_id_1 - seq_id_2) == 1:
+            elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
@@ -5666,7 +5733,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
                                                   self.atomSelectionSet[2]):
-                if isLongRangeRestraint([atom1, atom2]):
+                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XCCR) id={self.prdcRestraints} "
@@ -5994,7 +6061,7 @@ class XplorMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
-            if isLongRangeRestraint([atom1, atom2, atom3]):
+            if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (HBDA) id={self.hbondRestraints} "
@@ -6281,7 +6348,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         if self.depth > 0 and len(self.factor) > 0:
             if 'atom_selection' not in self.factor:
-                self.consumeFactor_expressions(cifCheck=False)
+                self.consumeFactor_expressions(cifCheck=True)
             if 'atom_selection' in self.factor:
                 self.stackSelections.append(self.factor['atom_selection'])
                 self.stackSelections.append('and')  # intersection
@@ -6326,7 +6393,7 @@ class XplorMRParserListener(ParseTreeListener):
             print("  " * self.depth + "exit_term")
 
         while self.stackFactors:
-            _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=False)
+            _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=True)
             self.factor = self.__intersectionFactor_expressions(self.factor, None if 'atom_selection' not in _factor else _factor['atom_selection'])
 
         if 'atom_selection' in self.factor:
@@ -6397,7 +6464,6 @@ class XplorMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
-                            realSeqId = self.getRealSeqId(ps, realSeqId)
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
@@ -6415,7 +6481,6 @@ class XplorMRParserListener(ParseTreeListener):
                         np = next((np for np in self.__nonPoly if np['auth_chain_id'] == chainId), None)
                         if np is not None:
                             for realSeqId in np['auth_seq_id']:
-                                realSeqId = self.getRealSeqId(np, realSeqId, False)
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
@@ -6441,7 +6506,6 @@ class XplorMRParserListener(ParseTreeListener):
                 if ps is not None:
                     found = False
                     for realSeqId in ps['auth_seq_id']:
-                        realSeqId = self.getRealSeqId(ps, realSeqId)
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
@@ -6454,7 +6518,6 @@ class XplorMRParserListener(ParseTreeListener):
                             found = True
                     if not found:
                         for realSeqId in ps['auth_seq_id']:
-                            realSeqId = self.getRealSeqId(ps, realSeqId)
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = ps['auth_seq_id'].index(realSeqId)
                                 realCompId = ps['comp_id'][idx]
@@ -6473,7 +6536,6 @@ class XplorMRParserListener(ParseTreeListener):
                     if np is not None:
                         found = False
                         for realSeqId in np['auth_seq_id']:
-                            realSeqId = self.getRealSeqId(np, realSeqId, False)
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
@@ -6486,7 +6548,6 @@ class XplorMRParserListener(ParseTreeListener):
                                 found = True
                         if not found:
                             for realSeqId in np['auth_seq_id']:
-                                realSeqId = self.getRealSeqId(np, realSeqId, False)
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     idx = np['auth_seq_id'].index(realSeqId)
                                     realCompId = np['comp_id'][idx]
@@ -6508,7 +6569,6 @@ class XplorMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
-                        realSeqId = self.getRealSeqId(ps, realSeqId)
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
@@ -6522,7 +6582,6 @@ class XplorMRParserListener(ParseTreeListener):
                     np = next((np for np in self.__nonPoly if np['auth_chain_id'] == chainId), None)
                     if np is not None:
                         for realSeqId in np['auth_seq_id']:
-                            realSeqId = self.getRealSeqId(np, realSeqId, False)
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
@@ -6591,9 +6650,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                            if realSeqId not in _factor['seq_id']:
+                            if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 continue
-                        realSeqId = self.getRealSeqId(ps, realSeqId)
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -6608,9 +6666,8 @@ class XplorMRParserListener(ParseTreeListener):
                     if np is not None:
                         for realSeqId in np['auth_seq_id']:
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                if realSeqId not in _factor['seq_id']:
+                                if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     continue
-                            realSeqId = self.getRealSeqId(np, realSeqId, False)
                             idx = np['auth_seq_id'].index(realSeqId)
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -6669,9 +6726,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                            if realSeqId not in _factor['seq_id']:
+                            if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 continue
-                        realSeqId = self.getRealSeqId(ps, realSeqId)
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -6686,9 +6742,8 @@ class XplorMRParserListener(ParseTreeListener):
                     if np is not None:
                         for realSeqId in np['auth_seq_id']:
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                if realSeqId not in _factor['seq_id']:
+                                if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     continue
-                            realSeqId = self.getRealSeqId(np, realSeqId, False)
                             idx = np['auth_seq_id'].index(realSeqId)
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -6753,6 +6808,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if cifCheck:
                     self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}.\n"
+                    if 'atom_id' in __factor and __factor['atom_id'][0] is None:
+                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['label_seq_scheme'] = True
                 else:
                     self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}. "\
@@ -6819,6 +6877,13 @@ class XplorMRParserListener(ParseTreeListener):
                 if compId is None:
                     continue
 
+                if self.__reasons is not None:
+                    if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
+                       and seqId in self.__reasons['non_poly_remap'][compId]:
+                        fixedChainId, seqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, seqId, compId)
+                        if fixedChainId != chainId:
+                            continue
+
                 foundCompId = True
 
                 if not withAxis and not withPara:
@@ -6875,6 +6940,11 @@ class XplorMRParserListener(ParseTreeListener):
                                 _atomId = atomId[:-1] + '1'
                                 if self.__nefT.validate_comp_atom(compId, _atomId):
                                     atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
+
+                    if coordAtomSite is not None\
+                       and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
+                       and atomId in coordAtomSite['atom_id']:
+                        atomIds = [atomId]
 
                     for _atomId in atomIds:
                         ccdCheck = not cifCheck
@@ -6967,8 +7037,6 @@ class XplorMRParserListener(ParseTreeListener):
                                             if self.__ccU.updateChemCompDict(_compId):
                                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                 if cca is not None:
-                                                    if self.reasonsForReParsing is None:
-                                                        self.reasonsForReParsing = {}
                                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['label_seq_scheme'] = True
                                     if cifCheck and self.__cur_subtype != 'plane':
@@ -6976,6 +7044,19 @@ class XplorMRParserListener(ParseTreeListener):
                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 
         return foundCompId
+
+    def getOrigSeqId(self, ps, seqId, isPolySeq=True):
+        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
+            if seqKey in self.__authToLabelSeq:
+                _chainId, _seqId = self.__authToLabelSeq[seqKey]
+                if _seqId in ps['seq_id']:
+                    return _seqId
+        if seqId in ps['auth_seq_id']:
+            return seqId
+        if seqId in ps['seq_id']:
+            return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+        return seqId
 
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
         if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
@@ -6999,7 +7080,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     def updateSegmentIdDict(self, factor, chainId):
         if self.__reasons is not None or 'alt_chain_id' not in factor\
-           or self.reasonsForReParsing is None or 'segment_id_mismatch' not in self.reasonsForReParsing:
+           or len(self.reasonsForReParsing) == 0 or 'segment_id_mismatch' not in self.reasonsForReParsing:
             return
         altChainId = factor['alt_chain_id']
         if altChainId not in self.reasonsForReParsing['segment_id_mismatch']:
@@ -7358,8 +7439,6 @@ class XplorMRParserListener(ParseTreeListener):
                             "Couldn't specify segment name "\
                             f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
                     else:
-                        if self.reasonsForReParsing is None:
-                            self.reasonsForReParsing = {}
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['segment_id_mismatch'] = {}
                         if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
@@ -8568,8 +8647,6 @@ class XplorMRParserListener(ParseTreeListener):
                                 "Couldn't specify segment name "\
                                 f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
                         else:
-                            if self.reasonsForReParsing is None:
-                                self.reasonsForReParsing = {}
                             if 'segment_id_mismatch' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['segment_id_mismatch'] = {}
                             if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
@@ -9819,7 +9896,7 @@ class XplorMRParserListener(ParseTreeListener):
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing XPLOR-NIH MR file.
         """
-        return self.reasonsForReParsing
+        return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
 
 # del XplorMRParser

@@ -701,6 +701,34 @@ class RosettaMRParserListener(ParseTreeListener):
                 if atomId is None\
                    or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                     chainAssign.append((chainId, seqId, cifCompId))
+            elif 'gap_in_auth_seq' in ps:
+                min_auth_seq_id = ps['auth_seq_id'][0]
+                max_auth_seq_id = ps['auth_seq_id'][-1]
+                if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                    offset = 1
+                    while seqId + offset <= max_auth_seq_id:
+                        if seqId + offset in ps['auth_seq_id']:
+                            break
+                        offset += 1
+                    if seqId + offset not in ps['auth_seq_id']:
+                        offset = -1
+                        while seqId + offset >= min_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset -= 1
+                    if seqId + offset in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                        try:
+                            seqId_ = ps['auth_seq_id'][idx]
+                            cifCompId = ps['comp_id'][idx]
+                            updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
+                            if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
+                                _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, cifCompId, atomId)
+                            if atomId is None\
+                               or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
+                                chainAssign.append((chainId, seqId_, cifCompId))
+                        except IndexError:
+                            pass
 
         if self.__hasNonPoly:
             for np in self.__nonPoly:

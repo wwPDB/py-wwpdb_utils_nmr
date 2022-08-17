@@ -1427,6 +1427,34 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                             f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     """
+            elif 'gap_in_auth_seq' in ps:
+                min_auth_seq_id = ps['auth_seq_id'][0]
+                max_auth_seq_id = ps['auth_seq_id'][-1]
+                if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                    offset = 1
+                    while seqId + offset <= max_auth_seq_id:
+                        if seqId + offset in ps['auth_seq_id']:
+                            break
+                        offset += 1
+                    if seqId + offset not in ps['auth_seq_id']:
+                        offset = -1
+                        while seqId + offset >= min_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset -= 1
+                    if seqId + offset in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                        try:
+                            seqId_ = ps['auth_seq_id'][idx]
+                            cifCompId = ps['comp_id'][idx]
+                            origCompId = ps['auth_comp_id'][idx]
+                            if compId in (cifCompId, origCompId):
+                                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.append((chainId, seqId_, cifCompId))
+                                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.append((chainId, seqId_, cifCompId))
+                        except IndexError:
+                            pass
 
         if self.__hasNonPoly:
             for np in self.__nonPoly:
@@ -1578,6 +1606,34 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                             f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     """
+            elif 'gap_in_auth_seq' in ps:
+                min_auth_seq_id = ps['auth_seq_id'][0]
+                max_auth_seq_id = ps['auth_seq_id'][-1]
+                if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                    offset = 1
+                    while seqId + offset <= max_auth_seq_id:
+                        if seqId + offset in ps['auth_seq_id']:
+                            break
+                        offset += 1
+                    if seqId + offset not in ps['auth_seq_id']:
+                        offset = -1
+                        while seqId + offset >= min_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset -= 1
+                    if seqId + offset in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                        try:
+                            seqId_ = ps['auth_seq_id'][idx]
+                            cifCompId = ps['comp_id'][idx]
+                            origCompId = ps['auth_comp_id'][idx]
+                            if compId in (cifCompId, origCompId):
+                                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.append((chainId, seqId_, cifCompId))
+                                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.append((chainId, seqId_, cifCompId))
+                        except IndexError:
+                            pass
 
         if self.__hasNonPoly:
             for np in self.__nonPoly:
@@ -1731,6 +1787,31 @@ class CyanaMRParserListener(ParseTreeListener):
                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                 if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.append((chainId, seqId, cifCompId))
+            elif 'gap_in_auth_seq' in ps:
+                min_auth_seq_id = ps['auth_seq_id'][0]
+                max_auth_seq_id = ps['auth_seq_id'][-1]
+                if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                    offset = 1
+                    while seqId + offset <= max_auth_seq_id:
+                        if seqId + offset in ps['auth_seq_id']:
+                            break
+                        offset += 1
+                    if seqId + offset not in ps['auth_seq_id']:
+                        offset = -1
+                        while seqId + offset >= min_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset -= 1
+                    if seqId + offset in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                        try:
+                            seqId_ = ps['auth_seq_id'][idx]
+                            cifCompId = ps['comp_id'][idx]
+                            updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
+                            if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.append((chainId, seqId_, cifCompId))
+                        except IndexError:
+                            pass
 
         if self.__hasNonPoly:
             for np in self.__nonPoly:
@@ -1836,6 +1917,31 @@ class CyanaMRParserListener(ParseTreeListener):
                 updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.append((chainId, seqId, cifCompId))
+            elif 'gap_in_auth_seq' in ps:
+                min_auth_seq_id = ps['auth_seq_id'][0]
+                max_auth_seq_id = ps['auth_seq_id'][-1]
+                if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                    offset = 1
+                    while seqId + offset <= max_auth_seq_id:
+                        if seqId + offset in ps['auth_seq_id']:
+                            break
+                        offset += 1
+                    if seqId + offset not in ps['auth_seq_id']:
+                        offset = -1
+                        while seqId + offset >= min_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset -= 1
+                    if seqId + offset in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                        try:
+                            seqId_ = ps['auth_seq_id'][idx]
+                            cifCompId = ps['comp_id'][idx]
+                            updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.append((chainId, seqId_, cifCompId))
+                        except IndexError:
+                            pass
 
         if self.__hasNonPoly:
             for np in self.__nonPoly:

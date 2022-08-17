@@ -3618,6 +3618,29 @@ class CnsMRParserListener(ParseTreeListener):
 
                 if ps is not None and seqId in ps['auth_seq_id']:
                     compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                elif 'gap_in_auth_seq' in ps:
+                    compId = None
+                    min_auth_seq_id = ps['auth_seq_id'][0]
+                    max_auth_seq_id = ps['auth_seq_id'][-1]
+                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                        offset = 1
+                        while seqId + offset <= max_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset += 1
+                        if seqId + offset not in ps['auth_seq_id']:
+                            offset = -1
+                            while seqId + offset >= min_auth_seq_id:
+                                if seqId + offset in ps['auth_seq_id']:
+                                    break
+                                offset -= 1
+                        if seqId + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                            try:
+                                seqId = ps['auth_seq_id'][idx]
+                                compId = ps['comp_id'][idx]
+                            except IndexError:
+                                pass
                 else:
                     compId = None
 

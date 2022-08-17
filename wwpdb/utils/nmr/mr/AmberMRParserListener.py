@@ -2358,6 +2358,28 @@ class AmberMRParserListener(ParseTreeListener):
         for ps in (self.__polySeq if useDefault else self.__altPolySeq):
             chainId = ps['auth_chain_id']
 
+            if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
+                min_auth_seq_id = ps['auth_seq_id'][0]
+                max_auth_seq_id = ps['auth_seq_id'][-1]
+                if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                    offset = 1
+                    while seqId + offset <= max_auth_seq_id:
+                        if seqId + offset in ps['auth_seq_id']:
+                            break
+                        offset += 1
+                    if seqId + offset not in ps['auth_seq_id']:
+                        offset = -1
+                        while seqId + offset >= min_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset -= 1
+                    if seqId + offset in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                        try:
+                            seqId = ps['auth_seq_id'][idx]
+                        except IndexError:
+                            pass
+
             if seqId in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
                 compId = ps['comp_id'][ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)]
                 cifSeqId = None if useDefault else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
@@ -2463,6 +2485,29 @@ class AmberMRParserListener(ParseTreeListener):
                 chainId = ps['auth_chain_id']
 
                 seqKey = (chainId, seqId)
+                if seqKey not in self.__authToLabelSeq and 'gap_in_auth_seq' in ps:
+                    min_auth_seq_id = ps['auth_seq_id'][0]
+                    max_auth_seq_id = ps['auth_seq_id'][-1]
+                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                        offset = 1
+                        while seqId + offset <= max_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset += 1
+                        if seqId + offset not in ps['auth_seq_id']:
+                            offset = -1
+                            while seqId + offset >= min_auth_seq_id:
+                                if seqId + offset in ps['auth_seq_id']:
+                                    break
+                                offset -= 1
+                        if seqId + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                            try:
+                                seqId_ = ps['auth_seq_id'][idx]
+                                seqKey = (chainId, seqId_)
+                            except IndexError:
+                                pass
+
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
@@ -2612,9 +2657,31 @@ class AmberMRParserListener(ParseTreeListener):
 
         for ps in (self.__polySeq if useDefault else self.__altPolySeq):
             chainId = ps['auth_chain_id']
+            seqId = factor['auth_seq_id']
 
-            if factor['auth_seq_id'] in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
-                seqId = factor['auth_seq_id']
+            if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
+                min_auth_seq_id = ps['auth_seq_id'][0]
+                max_auth_seq_id = ps['auth_seq_id'][-1]
+                if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                    offset = 1
+                    while seqId + offset <= max_auth_seq_id:
+                        if seqId + offset in ps['auth_seq_id']:
+                            break
+                        offset += 1
+                    if seqId + offset not in ps['auth_seq_id']:
+                        offset = -1
+                        while seqId + offset >= min_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset -= 1
+                    if seqId + offset in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                        try:
+                            seqId = ps['auth_seq_id'][idx]
+                        except IndexError:
+                            pass
+
+            if seqId in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
                 idx = ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
@@ -3060,6 +3127,28 @@ class AmberMRParserListener(ParseTreeListener):
             for ps in (self.__polySeq if useDefault else self.__altPolySeq):
                 if ps['auth_chain_id'] != chainId:
                     continue
+
+                if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
+                    min_auth_seq_id = ps['auth_seq_id'][0]
+                    max_auth_seq_id = ps['auth_seq_id'][-1]
+                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                        offset = 1
+                        while seqId + offset <= max_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset += 1
+                        if seqId + offset not in ps['auth_seq_id']:
+                            offset = -1
+                            while seqId + offset >= min_auth_seq_id:
+                                if seqId + offset in ps['auth_seq_id']:
+                                    break
+                                offset -= 1
+                        if seqId + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                            try:
+                                seqId = ps['auth_seq_id'][idx]
+                            except IndexError:
+                                pass
 
                 if seqId in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
                     idx = ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)
@@ -6570,6 +6659,30 @@ class AmberMRParserListener(ParseTreeListener):
                 cifCompId = ps['comp_id'][idx]
                 if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.append((chainId, seqId, cifCompId))
+            elif 'gap_in_auth_seq' in ps:
+                min_auth_seq_id = ps['auth_seq_id'][0]
+                max_auth_seq_id = ps['auth_seq_id'][-1]
+                if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                    offset = 1
+                    while seqId + offset <= max_auth_seq_id:
+                        if seqId + offset in ps['auth_seq_id']:
+                            break
+                        offset += 1
+                    if seqId + offset not in ps['auth_seq_id']:
+                        offset = -1
+                        while seqId + offset >= min_auth_seq_id:
+                            if seqId + offset in ps['auth_seq_id']:
+                                break
+                            offset -= 1
+                    if seqId + offset in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                        try:
+                            seqId_ = ps['auth_seq_id'][idx]
+                            cifCompId = ps['comp_id'][idx]
+                            if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.append((chainId, seqId_, cifCompId))
+                        except IndexError:
+                            pass
 
         if self.__hasNonPoly:
             for np in self.__nonPoly:

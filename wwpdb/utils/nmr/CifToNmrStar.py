@@ -6,7 +6,7 @@
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 20-Apr-2022  M. Yokochi - enable to fix broken data block order of CIF formatted NMR-STAR using NMR-STAR schema (DAOTHER-7407, NMR restraint remediation)
 # 28-Jul-2022  M. Yokochi - enable to fix format issue of CIF formatted NMR-STAR (You cannot have two loops with the same category in one saveframe. Category: '_Audit')
-# 10-Aug-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
+# 17-Aug-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -264,10 +264,12 @@ class CifToNmrStar:
                 category = item['category']
 
                 sf_category = item['sf_category']
-                if sf_category not in sf_category_counter:
-                    cur_list_id = 1
-                else:
-                    cur_list_id = sf_category_counter[sf_category] + 1
+
+                if item['sf_category_flag']:
+                    if sf_category not in sf_category_counter:
+                        cur_list_id = 1
+                    else:
+                        cur_list_id = sf_category_counter[sf_category] + 1
 
                 sf_tag_prefix = next(v['Tag category'] for k, v in self.schema.items()
                                      if v['SFCategory'] == sf_category and v['Tag field'] == 'Sf_category')
@@ -311,7 +313,7 @@ class CifToNmrStar:
                     itVals = next(v for k, v in dict_list.items() if k == category)
 
                     for _item, value in zip(itVals['Items'], itVals['Values'][0]):
-                        sf.add_tag(_item, new_block_name if _item == 'Sf_framecode' else value)
+                        sf.add_tag(_item, new_block_name if _item == 'Sf_framecode' else (value if _item != 'ID' else _cur_list_id))
 
                 if not item['sf_category_flag']:
                     lp = pynmrstar.Loop.from_scratch(category)

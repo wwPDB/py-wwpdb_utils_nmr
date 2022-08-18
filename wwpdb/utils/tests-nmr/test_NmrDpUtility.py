@@ -44,12 +44,12 @@ class TestNmrDpUtility(unittest.TestCase):
         # compare NMR content subtypes in NmrDpReportInputSource
         input_source = NmrDpReportInputSource()
         self.assertEqual(set(nmr_content_subtypes), set(input_source.content_subtypes)
-                         - {'plane_restraint', 'adist_restraint', 'jcoup_restraint', 'hvycs_restraint',
-                            'procs_restraint', 'rama_restraint', 'radi_restraint', 'diff_restraint',
-                            'nbase_restraint', 'csa_restraint', 'ang_restraint', 'pre_restraint',
-                            'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
-                            'noepk_restraint', 'hbond_restraint', 'geo_restraint',
-                            'coordinate', 'non_poly', 'topology'})
+                          - {'plane_restraint', 'adist_restraint',
+                             'rama_restraint', 'radi_restraint', 'diff_restraint',
+                             'nbase_restraint', 'ang_restraint', 'pre_restraint',
+                             'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
+                             'hbond_restraint', 'geo_restraint',
+                             'coordinate', 'non_poly', 'topology'})
 
         # data directory exists
         self.assertEqual(os.path.isdir(self.data_dir_path), True)

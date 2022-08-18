@@ -434,28 +434,97 @@ def updatePolySeqRstFromAtomSelectionSet(polySeqRst, atomSelectionSet):
             updatePolySeqRst(polySeqRst, chainId, seqId, compId)
 
 
-def sortPolySeqRst(polySeqRst):
+def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
     """ Sort polymer sequence of the current MR file by sequence number.
     """
 
     if polySeqRst is None:
         return
 
-    for ps in polySeqRst:
-        minSeqId = min(ps['seq_id'])
-        maxSeqId = max(ps['seq_id'])
+    if nonPolyRemap is None:
 
-        _seqIds = list(range(minSeqId, maxSeqId + 1))
-        _compIds = ["."] * (maxSeqId - minSeqId + 1)
-        _authCompIds = ["."] * (maxSeqId - minSeqId + 1)
+        for ps in polySeqRst:
+            minSeqId = min(ps['seq_id'])
+            maxSeqId = max(ps['seq_id'])
 
-        for idx, seqId in enumerate(ps['seq_id']):
-            _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
-            _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
+            _seqIds = list(range(minSeqId, maxSeqId + 1))
+            _compIds = ["."] * (maxSeqId - minSeqId + 1)
+            _authCompIds = ["."] * (maxSeqId - minSeqId + 1)
 
-        ps['seq_id'] = _seqIds
-        ps['comp_id'] = _compIds
-        ps['auth_comp_id'] = _authCompIds
+            for idx, seqId in enumerate(ps['seq_id']):
+                _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
+                _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
+
+            ps['seq_id'] = _seqIds
+            ps['comp_id'] = _compIds
+            ps['auth_comp_id'] = _authCompIds
+
+    else:
+
+        nonPolyRemapList = []
+
+        for compId, compIdMap in nonPolyRemap.items():
+            for seqIdMap in compIdMap.values():
+                nonPolyRemapList.append({'chain_id': seqIdMap['chain_id'],
+                                         'seq_id': seqIdMap['seq_id'],
+                                         'comp_id': compId})
+
+        for ps in polySeqRst:
+            seqIds = [seqId for seqId in ps['seq_id'] if not any(item for item in nonPolyRemapList if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)]
+            minSeqId = min(seqIds)
+            maxSeqId = max(seqIds)
+
+            _seqIds = list(range(minSeqId, maxSeqId + 1))
+            _compIds = ["."] * (maxSeqId - minSeqId + 1)
+            _authCompIds = ["."] * (maxSeqId - minSeqId + 1)
+
+            for idx, seqId in enumerate(ps['seq_id']):
+                if minSeqId <= seqId <= maxSeqId:
+                    _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
+                    _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
+
+            _endSeqIds = []
+            _endCompIds = []
+            _endAuthCompIds = []
+
+            _begSeqIds = []
+            _begCompIds = []
+            _begAuthCompIds = []
+
+            for item in nonPolyRemapList:
+                if item['chain_id'] != ps['chain_id']:
+                    continue
+                seqId = item['seq_id']
+                compId = item['comp_id']
+                if seqId in ps['seq_id']:
+                    authCompId = ps['auth_comp_id'][ps['seq_id'].index(seqId)]
+                else:
+                    authCompId = next(item['comp_id'] for item in nonPolyRemapList if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)
+                if seqId > maxSeqId:
+                    _endSeqIds.append(seqId)
+                    _endCompIds.append(compId)
+                    _endAuthCompIds.append(authCompId)
+                elif seqId < minSeqId:
+                    _begSeqIds.append(seqId)
+                    _begCompIds.append(compId)
+                    _begAuthCompIds.append(authCompId)
+
+            if len(_begSeqIds) > 0:
+                _begSeqIds.extend(_seqIds)
+                _begCompIds.extend(_compIds)
+                _begAuthCompIds.extend(_authCompIds)
+                _seqIds = _begSeqIds
+                _compIds = _begCompIds
+                _authCompIds = _begAuthCompIds
+
+            if len(_endSeqIds) > 0:
+                _seqIds.extend(_endSeqIds)
+                _compIds.extend(_endCompIds)
+                _authCompIds.extend(_endAuthCompIds)
+
+            ps['seq_id'] = _seqIds
+            ps['comp_id'] = _compIds
+            ps['auth_comp_id'] = _authCompIds
 
 
 def stripPolySeqRst(polySeqRst):

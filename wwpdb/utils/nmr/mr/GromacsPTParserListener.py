@@ -1067,17 +1067,17 @@ class GromacsPTParserListener(ParseTreeListener):
     def getPolymerSequence(self):
         """ Return polymer sequence of GROMACS parameter/topology file.
         """
-        return self.__polySeqPrmTop
+        return None if self.__polySeqPrmTop is None or len(self.__polySeqPrmTop) == 0 else self.__polySeqPrmTop
 
     def getSequenceAlignment(self):
         """ Return sequence alignment between coordinates and GROMACS parameter/topology.
         """
-        return self.__seqAlign
+        return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self):
         """ Return chain assignment between coordinates and GROMACS parameter/topology.
         """
-        return self.__chainAssign
+        return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
 
 # del GromacsPTParser

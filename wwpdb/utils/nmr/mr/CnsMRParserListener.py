@@ -215,6 +215,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # current restraint subtype
     __cur_subtype = ''
+    __with_axis = False
 
     # vector statement
     __cur_vector_mode = ''
@@ -386,7 +387,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#cns_mr.
     def exitCns_mr(self, ctx: CnsMRParser.Cns_mrContext):  # pylint: disable=unused-argument
         if self.__hasPolySeq and self.__polySeqRst is not None:
-            sortPolySeqRst(self.__polySeqRst)
+            sortPolySeqRst(self.__polySeqRst, None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
 
             file_type = 'nm-res-cns'
 
@@ -434,6 +435,8 @@ class CnsMRParserListener(ParseTreeListener):
                                   if sa['ref_chain_id'] == ref_chain_id
                                   and sa['test_chain_id'] == test_chain_id)
 
+                        poly_seq_model = next(ps for ps in self.__polySeq
+                                              if ps['chain_id'] == ref_chain_id)
                         poly_seq_rst = next(ps for ps in self.__polySeqRst
                                             if ps['chain_id'] == test_chain_id)
 
@@ -459,7 +462,10 @@ class CnsMRParserListener(ParseTreeListener):
                                 if seq_id not in seq_id_mapping:
                                     seq_id_mapping[seq_id] = seq_id - offset
 
-                        if any(k for k, v in seq_id_mapping.items() if k != v):
+                        if any(k for k, v in seq_id_mapping.items() if k != v)\
+                           and not any(k for k, v in seq_id_mapping.items()
+                                       if v in poly_seq_model['seq_id']
+                                       and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                             seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
                     if len(seqIdRemap) > 0:
@@ -484,8 +490,13 @@ class CnsMRParserListener(ParseTreeListener):
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
 
         if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+            if 'non_poly_remap' in self.reasonsForReParsing:
+                self.reasonsForReParsing['label_seq_scheme'] = False
             if 'seq_id_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
+
+        if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
+            del self.reasonsForReParsing['seq_id_remap']
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -3008,7 +3019,7 @@ class CnsMRParserListener(ParseTreeListener):
             if self.scale < 0.0:
                 self.warningMessage += "[Invalid data] "\
                     f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must not be a negative value.\n"
-            if self.scale == 0.0:
+            elif self.scale == 0.0:
                 self.warningMessage += "[Range value warning] "\
                     f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' should be a positive value.\n"
 
@@ -3482,6 +3493,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         if 'atom_id' not in _factor or len(_factor['atom_id']) == 0:
             _compIdSelect = set()
+            _nonPolyCompIdSelect = []
             for chainId in _factor['chain_id']:
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
@@ -3499,7 +3511,7 @@ class CnsMRParserListener(ParseTreeListener):
                         _compIdSelect.add(realCompId)
             if self.__hasNonPoly:
                 for chainId in _factor['chain_id']:
-                    np = next((np for np in self.__polySeq if np['auth_chain_id'] == chainId), None)
+                    np = next((np for np in self.__nonPoly if np['auth_chain_id'] == chainId), None)
                     if np is not None:
                         for realSeqId in np['auth_seq_id']:
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
@@ -3512,7 +3524,9 @@ class CnsMRParserListener(ParseTreeListener):
                                 _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
-                            _compIdSelect.add(realCompId)
+                            _nonPolyCompIdSelect.append({'chain_id': chainId,
+                                                         'seq_id': realSeqId,
+                                                         'comp_id': realCompId})
 
             _atomIdSelect = set()
             for compId in _compIdSelect:
@@ -3521,23 +3535,30 @@ class CnsMRParserListener(ParseTreeListener):
                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             realAtomId = cca[self.__ccU.ccaAtomId]
                             _atomIdSelect.add(realAtomId)
+
+            for nonPolyCompId in _nonPolyCompIdSelect:
+                _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck)
+                if coordAtomSite is not None:
+                    for realAtomId in coordAtomSite['atom_id']:
+                        _atomIdSelect.add(realAtomId)
+
             _factor['atom_id'] = list(_atomIdSelect)
             if len(_factor['atom_id']) == 0:
                 _factor['atom_id'] = [None]
 
         _atomSelection = []
 
-        withAxis = self.__cur_subtype in ('rdc', 'diff')
+        self.__with_axis = self.__cur_subtype in ('rdc', 'diff')
 
         if _factor['atom_id'][0] is not None:
-            foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, withAxis, isPolySeq=True, isChainSpecified=True)
+            foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True)
             if self.__hasNonPoly:
-                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, withAxis, isPolySeq=False, isChainSpecified=True)
+                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=True)
 
             if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1:
-                self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, withAxis, isPolySeq=True, isChainSpecified=False)
+                self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=False)
                 if self.__hasNonPoly:
-                    self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, withAxis, isPolySeq=False, isChainSpecified=False)
+                    self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=False)
 
         if 'atom_ids' in _factor:
             del _factor['atom_ids']
@@ -3558,7 +3579,7 @@ class CnsMRParserListener(ParseTreeListener):
             _factor['atom_selection'] = _atomSelection
 
         if len(_factor['atom_selection']) == 0:
-            if withAxis and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+            if self.__with_axis and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
@@ -3596,7 +3617,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         return _factor
 
-    def __consumeFactor_expressions__(self, _factor, cifCheck, _atomSelection, withAxis, isPolySeq=True, isChainSpecified=True):
+    def __consumeFactor_expressions__(self, _factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True):
         foundCompId = False
 
         for chainId in (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else self.__nonPoly)]):
@@ -3618,7 +3639,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                 if ps is not None and seqId in ps['auth_seq_id']:
                     compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                elif 'gap_in_auth_seq' in ps:
+                elif 'gap_in_auth_seq' in ps and seqId is not None:
                     compId = None
                     min_auth_seq_id = ps['auth_seq_id'][0]
                     max_auth_seq_id = ps['auth_seq_id'][-1]
@@ -3667,11 +3688,11 @@ class CnsMRParserListener(ParseTreeListener):
 
                 foundCompId = True
 
-                if not withAxis:
+                if not self.__with_axis:
                     updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
 
                 for atomId in _factor['atom_id']:
-                    if withAxis:
+                    if self.__with_axis:
                         if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             continue
                         updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
@@ -3815,7 +3836,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                 if cca is not None:
                                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['label_seq_scheme'] = True
-                                    if cifCheck and self.__cur_subtype != 'plane':
+                                    if cifCheck and self.__cur_subtype != 'plane'\
+                                       and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
+                                       and (self.__reasons is None or 'non_poly_remap' not in self.__reasons):
                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 
@@ -3830,8 +3853,8 @@ class CnsMRParserListener(ParseTreeListener):
                     return _seqId
         if seqId in ps['auth_seq_id']:
             return seqId
-        if seqId in ps['seq_id']:
-            return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+        # if seqId in ps['seq_id']:
+        #    return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return seqId
 
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
@@ -3843,8 +3866,8 @@ class CnsMRParserListener(ParseTreeListener):
                     return _seqId
         if seqId in ps['auth_seq_id']:
             return seqId
-        if seqId in ps['seq_id']:
-            return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+        # if seqId in ps['seq_id']:
+        #    return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return seqId
 
     def getRealChainId(self, chainId):
@@ -5129,6 +5152,13 @@ class CnsMRParserListener(ParseTreeListener):
             elif ctx.Name():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> name")
+
+                eval_factor = False
+                if 'atom_id' in self.factor or 'atom_ids' in self.factor:
+                    __factor = copy.copy(self.factor)
+                    self.consumeFactor_expressions("'name' clause", False)
+                    eval_factor = True
+
                 if ctx.Colon():  # range expression
                     if ctx.Simple_name(0):
                         begAtomId = str(ctx.Simple_name(0))
@@ -5142,7 +5172,7 @@ class CnsMRParserListener(ParseTreeListener):
                         endAtomId = str(ctx.Double_quote_string(1)).strip('"').strip()
                         if len(endAtomId) == 0:
                             return
-                    self.factor['chain_id'] = [begAtomId, endAtomId]
+                    self.factor['atom_ids'] = [begAtomId, endAtomId]
 
                 elif ctx.Simple_name(0) or ctx.Double_quote_string(0):
                     if ctx.Simple_name(0):
@@ -5170,6 +5200,20 @@ class CnsMRParserListener(ParseTreeListener):
                     else:
                         self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                             f"The symbol {symbol_name!r} is not defined.\n"
+
+                if eval_factor and 'atom_selection' in self.factor:
+                    if len(self.factor['atom_selection']) == 0:
+                        if self.__with_axis and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                            pass
+                        elif self.__cur_subtype == 'plane':
+                            pass
+                        else:
+                            _factor = copy.copy(self.factor)
+                            if 'atom_selection' in __factor:
+                                del __factor['atom_selection']
+                            del _factor['atom_selection']
+                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                                f"The 'name' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
 
             elif ctx.NONE():
                 if self.__sel_expr_debug:
@@ -5393,6 +5437,13 @@ class CnsMRParserListener(ParseTreeListener):
             elif ctx.Residue():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> residue")
+
+                eval_factor = False
+                if 'seq_id' in self.factor or 'seq_ids' in self.factor:
+                    __factor = copy.copy(self.factor)
+                    self.consumeFactor_expressions("'residue' clause", False)
+                    eval_factor = True
+
                 if ctx.Colon():  # range expression
                     self.factor['seq_id'] = list(range(int(str(ctx.Integer(0))), int(str(ctx.Integer(0))) + 1))
 
@@ -5420,9 +5471,30 @@ class CnsMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                             f"The symbol {symbol_name!r} is not defined.\n"
 
+                if eval_factor and 'atom_selection' in self.factor:
+                    if len(self.factor['atom_selection']) == 0:
+                        if self.__with_axis and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                            pass
+                        elif self.__cur_subtype == 'plane':
+                            pass
+                        else:
+                            _factor = copy.copy(self.factor)
+                            if 'atom_selection' in __factor:
+                                del __factor['atom_selection']
+                            del _factor['atom_selection']
+                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                                f"The 'residue' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
+
             elif ctx.Resname():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> resname")
+
+                eval_factor = False
+                if 'comp_id' in self.factor or 'comp_ids' in self.factor:
+                    __factor = copy.copy(self.factor)
+                    self.consumeFactor_expressions("'resname' clause", False)
+                    eval_factor = True
+
                 if ctx.Colon():  # range expression
                     self.factor['comp_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
 
@@ -5450,20 +5522,45 @@ class CnsMRParserListener(ParseTreeListener):
                         self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                             f"The symbol {symbol_name!r} is not defined.\n"
 
+                if eval_factor and 'atom_selection' in self.factor:
+                    if len(self.factor['atom_selection']) == 0:
+                        if self.__with_axis and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                            pass
+                        elif self.__cur_subtype == 'plane':
+                            pass
+                        else:
+                            _factor = copy.copy(self.factor)
+                            if 'atom_selection' in __factor:
+                                del __factor['atom_selection']
+                            del _factor['atom_selection']
+                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                                f"The 'resname' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
+
             elif ctx.SegIdentifier():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> segidentifier")
                 if not self.__hasPolySeq:
                     return
+
+                eval_factor = False
+                if 'chain_id' in self.factor:
+                    __factor = copy.copy(self.factor)
+                    self.consumeFactor_expressions("'segidentifier' clause", False)
+                    eval_factor = True
+
                 if ctx.Colon():  # range expression
                     if ctx.Simple_name(0):
                         begChainId = str(ctx.Simple_name(0))
                     elif ctx.Double_quote_string(0):
                         begChainId = str(ctx.Double_quote_string(0)).strip('"').strip()
+                        if len(begChainId) == 0:
+                            return
                     if ctx.Simple_name(1):
                         endChainId = str(ctx.Simple_name(1))
                     elif ctx.Double_quote_string(1):
                         endChainId = str(ctx.Double_quote_string(1)).strip('"').strip()
+                        if len(endChainId) == 0:
+                            return
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                if begChainId <= ps['auth_chain_id'] <= endChainId]
                     if self.__hasNonPoly:
@@ -5538,6 +5635,20 @@ class CnsMRParserListener(ParseTreeListener):
                             if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
                                 self.reasonsForReParsing['segment_id_mismatch'][chainId] = None
                             self.factor['alt_chain_id'] = chainId
+
+                if eval_factor and 'atom_selection' in self.factor:
+                    if len(self.factor['atom_selection']) == 0:
+                        if self.__with_axis and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                            pass
+                        elif self.__cur_subtype == 'plane':
+                            pass
+                        else:
+                            _factor = copy.copy(self.factor)
+                            if 'atom_selection' in __factor:
+                                del __factor['atom_selection']
+                            del _factor['atom_selection']
+                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                                f"The 'segidentifier' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
 
             elif ctx.Sfbox():
                 pass
@@ -6416,17 +6527,17 @@ class CnsMRParserListener(ParseTreeListener):
     def getPolymerSequence(self):
         """ Return polymer sequence of CNS MR file.
         """
-        return self.__polySeqRst
+        return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
     def getSequenceAlignment(self):
         """ Return sequence alignment between coordinates and CNS MR.
         """
-        return self.__seqAlign
+        return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self):
         """ Return chain assignment between coordinates and CNS MR.
         """
-        return self.__chainAssign
+        return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing CNS MR file.

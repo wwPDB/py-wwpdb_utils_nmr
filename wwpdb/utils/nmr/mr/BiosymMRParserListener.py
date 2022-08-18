@@ -223,7 +223,7 @@ class BiosymMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by BiosymMRParser#biosym_mr.
     def exitBiosym_mr(self, ctx: BiosymMRParser.Biosym_mrContext):  # pylint: disable=unused-argument
         if self.__hasPolySeq and self.__polySeqRst is not None:
-            sortPolySeqRst(self.__polySeqRst)
+            sortPolySeqRst(self.__polySeqRst, None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
 
             file_type = 'nm-res-bio'
 
@@ -271,6 +271,8 @@ class BiosymMRParserListener(ParseTreeListener):
                                   if sa['ref_chain_id'] == ref_chain_id
                                   and sa['test_chain_id'] == test_chain_id)
 
+                        poly_seq_model = next(ps for ps in self.__polySeq
+                                              if ps['chain_id'] == ref_chain_id)
                         poly_seq_rst = next(ps for ps in self.__polySeqRst
                                             if ps['chain_id'] == test_chain_id)
 
@@ -296,7 +298,10 @@ class BiosymMRParserListener(ParseTreeListener):
                                 if seq_id not in seq_id_mapping:
                                     seq_id_mapping[seq_id] = seq_id - offset
 
-                        if any(k for k, v in seq_id_mapping.items() if k != v):
+                        if any(k for k, v in seq_id_mapping.items() if k != v)\
+                           and not any(k for k, v in seq_id_mapping.items()
+                                       if v in poly_seq_model['seq_id']
+                                       and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                             seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
                     if len(seqIdRemap) > 0:
@@ -321,8 +326,13 @@ class BiosymMRParserListener(ParseTreeListener):
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
 
         if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+            if 'non_poly_remap' in self.reasonsForReParsing:
+                self.reasonsForReParsing['label_seq_scheme'] = False
             if 'seq_id_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
+
+        if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
+            del self.reasonsForReParsing['seq_id_remap']
 
         if len(self.warningMessage) == 0:
             self.warningMessage = None
@@ -1349,17 +1359,17 @@ class BiosymMRParserListener(ParseTreeListener):
     def getPolymerSequence(self):
         """ Return polymer sequence of BIOSYM MR file.
         """
-        return self.__polySeqRst
+        return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
     def getSequenceAlignment(self):
         """ Return sequence alignment between coordinates and BIOSYM MR.
         """
-        return self.__seqAlign
+        return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self):
         """ Return chain assignment between coordinates and BIOSYM MR.
         """
-        return self.__chainAssign
+        return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
     def getReasonsForReparsing(self):
         """ Return reasons for re-parsing BIOSYM MR file.

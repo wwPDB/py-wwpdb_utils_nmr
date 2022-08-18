@@ -1,0 +1,360 @@
+assign  (resid  1 and name  c4') (resid  1 and name  c3')
+        (resid  1 and name  o3') (resid  2 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  2 and name  c4') (resid  2 and name  c3')
+        (resid  2 and name  o3') (resid  3 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  3 and name  c4') (resid  3 and name  c3')
+        (resid  3 and name  o3') (resid  4 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  6 and name  c4') (resid  6 and name  c3')
+        (resid  6 and name  o3') (resid  7 and name   p ) 1.0 -180.0 30.0 2
+assign  (resid  7 and name  c4') (resid  7 and name  c3')
+        (resid  7 and name  o3') (resid  8 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  8 and name  c4') (resid  8 and name  c3')
+        (resid  8 and name  o3') (resid  9 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  9 and name  c4') (resid  9 and name  c3')
+        (resid  9 and name  o3') (resid  10 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  10 and name  c4') (resid  10 and name  c3')
+        (resid  10 and name  o3') (resid  11 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  12 and name  c4') (resid  12 and name  c3')
+        (resid  12 and name  o3') (resid  13 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  13 and name  c4') (resid  13 and name  c3')
+        (resid  13 and name  o3') (resid  14 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  14 and name  c4') (resid  14 and name  c3')
+        (resid  14 and name  o3') (resid  15 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  17 and name  c4') (resid  17 and name  c3')
+        (resid  17 and name  o3') (resid  18 and name   p ) 1.0 -180.0 30.0 2
+assign  (resid  18 and name  c4') (resid  18 and name  c3')
+        (resid  18 and name  o3') (resid  19 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  19 and name  c4') (resid  19 and name  c3')
+        (resid  19 and name  o3') (resid  20 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  20 and name  c4') (resid  20 and name  c3')
+        (resid  20 and name  o3') (resid  21 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  21 and name  c4') (resid  21 and name  c3')
+        (resid  21 and name  o3') (resid  22 and name   p ) 1.0 -180.0 16.0 2
+assign  (resid  1 and name  c3') (resid  1 and name  o3')
+        (resid  2 and name   p ) (resid  2 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  2 and name  c3') (resid  2 and name  o3')
+        (resid  3 and name   p ) (resid  3 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  3 and name  c3') (resid  3 and name  o3')
+        (resid  4 and name   p ) (resid  4 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  6 and name  c3') (resid  6 and name  o3')
+        (resid  7 and name   p ) (resid  7 and name  o5') 1.0 -85.0 30.0 2
+assign  (resid  7 and name  c3') (resid  7 and name  o3')
+        (resid  8 and name   p ) (resid  8 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  8 and name  c3') (resid  8 and name  o3')
+        (resid  9 and name   p ) (resid  9 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  9 and name  c3') (resid  9 and name  o3')
+        (resid 10 and name   p ) (resid 10 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid 10 and name  c3') (resid 10 and name  o3')
+        (resid 11 and name   p ) (resid 11 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  12 and name  c3') (resid  12 and name  o3')
+        (resid  13 and name   p ) (resid  13 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  13 and name  c3') (resid  13 and name  o3')
+        (resid  14 and name   p ) (resid  14 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  14 and name  c3') (resid  14 and name  o3')
+        (resid  15 and name   p ) (resid  15 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  17 and name  c3') (resid  17 and name  o3')
+        (resid  18 and name   p ) (resid  18 and name  o5') 1.0 -85.0 30.0 2
+assign  (resid  18 and name  c3') (resid 18 and name  o3')
+        (resid  19 and name   p ) (resid 19 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  19 and name  c3') (resid 19 and name  o3')
+        (resid  20 and name   p ) (resid 20 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  20 and name  c3') (resid 20  and name  o3')
+        (resid  21 and name   p ) (resid 21 and name  o5') 1.0 -85.0 18.0 2
+assign  (resid  21 and name  c3') (resid 21 and name  o3')
+        (resid  22 and name   p ) (resid 22 and name  o5') 1.0 -85.0 16.0 2
+assign  (resid  1 and name  o3') (resid  2 and name   p )
+        (resid  2 and name  o5') (resid  2 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  2 and name  o3') (resid  3 and name   p )
+        (resid  3 and name  o5') (resid  3 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  3 and name  o3') (resid  4 and name   p )
+        (resid  4 and name  o5') (resid  4 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  6 and name  o3') (resid  7 and name   p )
+        (resid  7 and name  o5') (resid  7 and name  c5') 1.0 -60.0  30.0 2
+assign  (resid  7 and name  o3') (resid  8 and name   p )
+        (resid  8 and name  o5') (resid  8 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  8 and name  o3') (resid  9 and name   p )
+        (resid  9 and name  o5') (resid  9 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  9 and name  o3') (resid  10 and name   p )
+        (resid 10 and name  o5') (resid  10 and name  c5') 1.0 -60.0 16.0 2
+assign  (resid 10 and name  o3') (resid  11 and name   p )
+        (resid 11 and name  o5') (resid  11 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  12 and name  o3') (resid  13 and name   p )
+        (resid  13 and name  o5') (resid  13 and name  c5') 1.0 -60.0 16.0 2
+assign  (resid  13 and name  o3') (resid  14 and name   p )
+        (resid  14 and name  o5') (resid  14 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  14 and name  o3') (resid  15 and name   p )
+        (resid  15 and name  o5') (resid  15 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  17 and name  o3') (resid  18 and name   p )
+        (resid  18 and name  o5') (resid  18 and name  c5') 1.0 -60.0  30.0 2
+assign  (resid  18 and name  o3') (resid  19 and name   p )
+        (resid  19 and name  o5') (resid  19 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  19 and name  o3') (resid  20 and name   p )
+        (resid  20 and name  o5') (resid  20 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  20 and name  o3') (resid  21 and name   p )
+        (resid  21 and name  o5') (resid  21 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  21 and name  o3') (resid  22 and name   p )
+        (resid  22 and name  o5') (resid  22 and name  c5') 1.0 -60.0  16.0 2
+assign  (resid  2 and name   p ) (resid  2 and name  o5')
+        (resid  2 and name  c5') (resid  2 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  3 and name   p ) (resid  3 and name  o5')
+        (resid  3 and name  c5') (resid  3 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  4 and name   p ) (resid  4 and name  o5')
+        (resid  4 and name  c5') (resid  4 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  6 and name   p ) (resid  6 and name  o5')
+        (resid  6 and name  c5') (resid  6 and name  c4') 1.0 180.0 30.0 2
+assign  (resid  7 and name   p ) (resid  7 and name  o5')
+        (resid  7 and name  c5') (resid  7 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  8 and name   p ) (resid  8 and name  o5')
+        (resid  8 and name  c5') (resid  8 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  9 and name   p ) (resid  9 and name  o5')
+        (resid  9 and name  c5') (resid  9 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  10 and name   p ) (resid  10 and name  o5')
+        (resid  10 and name  c5') (resid  10 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  11 and name   p ) (resid  11 and name  o5')
+        (resid  11 and name  c5') (resid  11 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  13 and name   p ) (resid  13 and name  o5')
+        (resid  13 and name  c5') (resid  13 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  14 and name   p ) (resid  14 and name  o5')
+        (resid  14 and name  c5') (resid  14 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  15 and name   p ) (resid  15 and name  o5')
+        (resid  15 and name  c5') (resid  15 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  17 and name   p ) (resid  17 and name  o5')
+        (resid  17 and name  c5') (resid  17 and name  c4') 1.0 180.0 30.0 2
+assign  (resid  18 and name   p ) (resid  18 and name  o5')
+        (resid  18 and name  c5') (resid  18 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  19 and name   p ) (resid  19 and name  o5')
+        (resid  19 and name  c5') (resid  19 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  20 and name   p ) (resid  20 and name  o5')
+        (resid  20 and name  c5') (resid  20 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  21 and name   p ) (resid  21 and name  o5')
+        (resid  21 and name  c5') (resid  21 and name  c4') 1.0 180.0 16.0 2
+assign  (resid  22 and name   p ) (resid  22 and name  o5')
+        (resid  22 and name  c5') (resid  22 and name  c4') 1.0 180.0 16.0 2
+assign (resid 1 and name c5') (resid 1 and name c4')
+       (resid 1 and name c3') (resid 1 and name o3')   1.0  145.0 9.0 2
+assign (resid 2 and name c5') (resid 2 and name c4')
+       (resid 2 and name c3') (resid 2 and name o3')   1.0  145.0 9.0 2
+assign (resid 3 and name c5') (resid 3 and name c4')
+       (resid 3 and name c3') (resid 3 and name o3')   1.0  145.0 9.0 2
+assign (resid 4 and name c5') (resid 4 and name c4')
+       (resid 4 and name c3') (resid 4 and name o3')   1.0  145.0 9.0 2
+assign (resid 6 and name c5') (resid 6 and name c4')
+       (resid 6 and name c3') (resid 6 and name o3')   1.0  145.0 30.0 2
+assign (resid 7 and name c5') (resid 7 and name c4')
+       (resid 7 and name c3') (resid 7 and name o3')   1.0  145.0 9.0 2
+assign (resid 8 and name c5') (resid 8 and name c4')
+       (resid 8 and name c3') (resid 8 and name o3')   1.0  145.0 9.0 2
+assign (resid 9 and name c5') (resid 9 and name c4')
+       (resid 9 and name c3') (resid 9 and name o3')   1.0  145.0 9.0 2
+assign (resid 10 and name c5') (resid 10 and name c4')
+       (resid 10 and name c3') (resid 10 and name o3')   1.0  145.0 9.0 2
+assign (resid 11 and name c5') (resid 11 and name c4')
+       (resid 11 and name c3') (resid 11 and name o3')   1.0  145.0 9.0 2
+assign (resid 12 and name c5') (resid 12 and name c4')
+       (resid 12 and name c3') (resid 12 and name o3')   1.0  145.0 9.0 2
+assign (resid 13 and name c5') (resid 13 and name c4')
+       (resid 13 and name c3') (resid 13 and name o3')   1.0  145.0 9.0 2
+assign (resid 14 and name c5') (resid 14 and name c4')
+       (resid 14 and name c3') (resid 14 and name o3')   1.0  145.0 9.0 2
+assign (resid 15 and name c5') (resid 15 and name c4')
+       (resid 15 and name c3') (resid 15 and name o3')   1.0  145.0 9.0 2
+assign (resid 17 and name c5') (resid 17 and name c4')
+       (resid 17 and name c3') (resid 17 and name o3')   1.0  145.0 30.0 2
+assign (resid 18 and name c5') (resid 18 and name c4')
+       (resid 18 and name c3') (resid 18 and name o3')   1.0  145.0 9.0 2
+assign (resid 19 and name c5') (resid 19 and name c4')
+       (resid 19 and name c3') (resid 19 and name o3')   1.0  145.0 9.0 2
+assign (resid 20 and name c5') (resid 20 and name c4')
+       (resid 20 and name c3') (resid 20 and name o3')   1.0  145.0 9.0 2
+assign (resid 21 and name c5') (resid 21 and name c4')
+       (resid 21 and name c3') (resid 21 and name o3')   1.0  145.0 9.0 2
+assign (resid 22 and name c5') (resid 22 and name c4')
+       (resid 22 and name c3') (resid 22 and name o3')   1.0  145.0 9.0 2
+assign (resid 2 and name o5') (resid 2 and name c5')
+       (resid 2 and name c4') (resid 2 and name c3')   1.0 60.0 9.0 2
+assign (resid 3 and name o5') (resid 3 and name c5')
+       (resid 3 and name c4') (resid 3 and name c3')   1.0 60.0 9.0 2
+assign (resid 4 and name o5') (resid 4 and name c5')
+       (resid 4 and name c4') (resid 4 and name c3')   1.0 60.0 9.0 2
+assign (resid 6 and name o5') (resid 6 and name c5')
+       (resid 6 and name c4') (resid 6 and name c3')   1.0 60.0 30.0 2
+assign (resid 7 and name o5') (resid 7 and name c5')
+       (resid 7 and name c4') (resid 7 and name c3')   1.0 60.0 9.0 2
+assign (resid 8 and name o5') (resid 8 and name c5')
+       (resid 8 and name c4') (resid 8 and name c3')   1.0 60.0 9.0 2
+assign (resid 9 and name o5') (resid 9 and name c5')
+       (resid 9 and name c4') (resid 9 and name c3')   1.0 60.0 9.0 2
+assign (resid 10 and name o5') (resid 10 and name c5')
+       (resid 10 and name c4') (resid 10 and name c3')   1.0 60.0 9.0 2
+assign (resid 11 and name o5') (resid 11 and name c5')
+       (resid 11 and name c4') (resid 11 and name c3')   1.0 60.0 11.0 2
+assign (resid 13 and name o5') (resid 13 and name c5')
+       (resid 13 and name c4') (resid 13 and name c3')   1.0 60.0 9.0 2
+assign (resid 14 and name o5') (resid 14 and name c5')
+       (resid 14 and name c4') (resid 14 and name c3')   1.0 60.0 9.0 2
+assign (resid 15 and name o5') (resid 15 and name c5')
+       (resid 15 and name c4') (resid 15 and name c3')   1.0 60.0 9.0 2
+assign (resid 17 and name o5') (resid 17 and name c5')
+       (resid 17 and name c4') (resid 17 and name c3')   1.0 60.0 30.0 2
+assign (resid 18 and name o5') (resid 18 and name c5')
+       (resid 18 and name c4') (resid 18 and name c3')   1.0 60.0 9.0 2
+assign (resid 19 and name o5') (resid 19 and name c5')
+       (resid 19 and name c4') (resid 19 and name c3')   1.0 60.0 9.0 2
+assign (resid 20 and name o5') (resid 20 and name c5')
+       (resid 20 and name c4') (resid 20 and name c3')   1.0 60.0 9.0 2
+assign (resid 21 and name o5') (resid 21 and name c5')
+       (resid 21 and name c4') (resid 21 and name c3')   1.0 60.0 9.0 2
+assign (resid 22 and name o5') (resid 22 and name c5')
+       (resid 22 and name c4') (resid 22 and name c3')   1.0 60.0 11.0 2
+assign  (resid 1 and name c1')(resid 1 and name c2')
+        (resid 1 and name c3')(resid 1 and name c4')    1.0 -34.9 9.0 2
+assign  (resid 1 and name c5')(resid 1 and name c4')
+        (resid 1 and name c3')(resid 1 and name c2')       1.0 -86.4 9.0 2
+assign  (resid 1 and name c1')(resid 1 and name o4')
+        (resid 1 and name c4')(resid 1 and name c5')       1.0 106.4 9.0 2
+assign  (resid 2 and name c1' )(resid 2 and name c2' )
+        (resid 2 and name c3' )(resid 2 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 2 and name c5' )(resid 2 and name c4' )
+        (resid 2 and name c3' )(resid 2 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 2 and name c1' )(resid 2 and name o4' )
+        (resid 2 and name c4' )(resid 2 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 3 and name c1' )(resid 3 and name c2' )
+        (resid 3 and name c3' )(resid 3 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 3 and name c5' )(resid 3 and name c4' )
+        (resid 3 and name c3' )(resid 3 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 3 and name c1' )(resid 3 and name o4' )
+        (resid 3 and name c4' )(resid 3 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 4 and name c1' )(resid 4 and name c2' )
+        (resid 4 and name c3' )(resid 4 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 4 and name c5' )(resid 4 and name c4' )
+        (resid 4 and name c3' )(resid 4 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 4 and name c1' )(resid 4 and name o4' )
+        (resid 4 and name c4' )(resid 4 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 6 and name c1' )(resid 6 and name c2' )
+        (resid 6 and name c3' )(resid 6 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 6 and name c5' )(resid 6 and name c4' )
+        (resid 6 and name c3' )(resid 6 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 6 and name c1' )(resid 6 and name o4' )
+        (resid 6 and name c4' )(resid 6 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 7 and name c1' )(resid 7 and name c2' )
+        (resid 7 and name c3' )(resid 7 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 7 and name c5' )(resid 7 and name c4' )
+        (resid 7 and name c3' )(resid 7 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 7 and name c1' )(resid 7 and name o4' )
+        (resid 7 and name c4' )(resid 7 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 8 and name c1' )(resid 8 and name c2' )
+        (resid 8 and name c3' )(resid 8 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 8 and name c5' )(resid 8 and name c4' )
+        (resid 8 and name c3' )(resid 8 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 8 and name c1' )(resid 8 and name o4' )
+        (resid 8 and name c4' )(resid 8 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 9 and name c1' )(resid 9 and name c2' )
+        (resid 9 and name c3' )(resid 9 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 9 and name c5' )(resid 9 and name c4' )
+        (resid 9 and name c3' )(resid 9 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 9 and name c1' )(resid 9 and name o4' )
+        (resid 9 and name c4' )(resid 9 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 10 and name c1' )(resid 10 and name c2' )
+        (resid 10 and name c3' )(resid 10 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 10 and name c5' )(resid 10 and name c4' )
+        (resid 10 and name c3' )(resid 10 and name c2' )       1.0 -86.4 12.0 2
+assign  (resid 10 and name c1' )(resid 10 and name o4' )
+        (resid 10 and name c4' )(resid 10 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 11 and name c1' )(resid 11 and name c2' )
+        (resid 11 and name c3' )(resid 11 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 11 and name c5' )(resid 11 and name c4' )
+        (resid 11 and name c3' )(resid 11 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 11 and name c1' )(resid 11 and name o4' )
+        (resid 11 and name c4' )(resid 11 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 12 and name c1' )(resid 12 and name c2' )
+        (resid 12 and name c3' )(resid 12 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 12 and name c5' )(resid 12 and name c4' )
+        (resid 12 and name c3' )(resid 12 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 12 and name c1' )(resid 12 and name o4' )
+        (resid 12 and name c4' )(resid 12 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 13 and name c1' )(resid 13 and name c2' )
+        (resid 13 and name c3' )(resid 13 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 13 and name c5' )(resid 13 and name c4' )
+        (resid 13 and name c3' )(resid 13 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 13 and name c1' )(resid 13 and name o4' )
+        (resid 13 and name c4' )(resid 13 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 14 and name c1' )(resid 14 and name c2' )
+        (resid 14 and name c3' )(resid 14 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 14 and name c5' )(resid 14 and name c4' )
+        (resid 14 and name c3' )(resid 14 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 14 and name c1' )(resid 14 and name o4' )
+        (resid 14 and name c4' )(resid 14 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 15 and name c1' )(resid 15 and name c2' )
+        (resid 15 and name c3' )(resid 15 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 15 and name c5' )(resid 15 and name c4' )
+        (resid 15 and name c3' )(resid 15 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 15 and name c1' )(resid 15 and name o4' )
+        (resid 15 and name c4' )(resid 15 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 17 and name c1' )(resid 17 and name c2' )
+        (resid 17 and name c3' )(resid 17 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 17 and name c5' )(resid 17 and name c4' )
+        (resid 17 and name c3' )(resid 17 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 17 and name c1' )(resid 17 and name o4' )
+        (resid 17 and name c4' )(resid 17 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 18 and name c1' )(resid 18 and name c2' )
+        (resid 18 and name c3' )(resid 18 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 18 and name c5' )(resid 18 and name c4' )
+        (resid 18 and name c3' )(resid 18 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 18 and name c1' )(resid 18 and name o4' )
+        (resid 18 and name c4' )(resid 18 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 19 and name c1' )(resid 19 and name c2' )
+        (resid 19 and name c3' )(resid 19 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 19 and name c5' )(resid 19 and name c4' )
+        (resid 19 and name c3' )(resid 19 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 19 and name c1' )(resid 19 and name o4' )
+        (resid 19 and name c4' )(resid 19 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 20 and name c1' )(resid 20 and name c2' )
+        (resid 20 and name c3' )(resid 20 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 20 and name c5' )(resid 20 and name c4' )
+        (resid 20 and name c3' )(resid 20 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 20 and name c1' )(resid 20 and name o4' )
+        (resid 20 and name c4' )(resid 20 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 21 and name c1' )(resid 21 and name c2' )
+        (resid 21 and name c3' )(resid 21 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 21 and name c5' )(resid 21 and name c4' )
+        (resid 21 and name c3' )(resid 21 and name c2' )       1.0 -86.4 9.0 2
+assign  (resid 21 and name c1' )(resid 21 and name o4' )
+        (resid 21 and name c4' )(resid 21 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 22 and name c1' )(resid 22 and name c2' )
+        (resid 22 and name c3' )(resid 22 and name c4' )       1.0 -34.9 9.0 2
+assign  (resid 22 and name c5' )(resid 22 and name c4' )
+        (resid 22 and name c3' )(resid 22 and name c2' )       1.0 -86.4 12.0 2
+assign  (resid 22 and name c1' )(resid 22 and name o4' )
+        (resid 22 and name c4' )(resid 22 and name c5' )       1.0 106.4 9.0 2
+assign  (resid 1 and name o4' )(resid 1 and name c1' )
+        (resid 1 and name n1  )(resid 1 and name c2  )       1.0 -120 10.0 2
+assign  (resid 2 and name o4' )(resid 2 and name c1' )
+        (resid 2 and name n1  )(resid 2 and name c2  )       1.0 -120 10.0 2
+assign  (resid 3 and name o4' )(resid 3 and name c1' )
+        (resid 3 and name n9  )(resid 3 and name c4  )       1.0 -120 10.0 2
+assign  (resid 4 and name o4' )(resid 4 and name c1' )
+        (resid 4 and name n9  )(resid 4 and name c4  )       1.0 -120 10.0 2
+assign  (resid 8 and name o4' )(resid 8 and name c1' )
+        (resid 8 and name n9  )(resid 8 and name c4  )       1.0 -120 10.0 2
+assign  (resid 9 and name o4' )(resid 9 and name c1' )
+        (resid 9 and name n9  )(resid 9 and name c4  )       1.0 -120 10.0 2
+assign  (resid 10 and name o4' )(resid 10 and name c1' )
+        (resid 10 and name n1  )(resid 10 and name c2  )       1.0 -120 10.0 2
+assign  (resid 11 and name o4' )(resid 11 and name c1' )
+        (resid 11 and name n9  )(resid 11 and name c4  )       1.0 -120 10.0 2
+assign  (resid 12 and name o4' )(resid 12 and name c1' )
+        (resid 12 and name n1  )(resid 12 and name c2  )       1.0 -120 10.0 2
+assign  (resid 13 and name o4' )(resid 13 and name c1' )
+        (resid 13 and name n9  )(resid 13 and name c4  )       1.0 -120 10.0 2
+assign  (resid 14 and name o4' )(resid 14 and name c1' )
+        (resid 14 and name n1  )(resid 14 and name c2  )       1.0 -120 10.0 2
+assign  (resid 15 and name o4' )(resid 15 and name c1' )
+        (resid 15 and name n1  )(resid 15 and name c2  )       1.0 -120 10.0 2
+assign  (resid 19 and name o4' )(resid 19 and name c1' )
+        (resid 19 and name n1  )(resid 19 and name c2  )       1.0 -120 10.0 2
+assign  (resid 20 and name o4' )(resid 20 and name c1' )
+        (resid 20 and name n1  )(resid 20 and name c2  )       1.0 -120 10.0 2
+assign  (resid 21 and name o4' )(resid 21 and name c1' )
+        (resid 21 and name n9  )(resid 21 and name c4  )       1.0 -120 10.0 2
+assign  (resid 22 and name o4' )(resid 22 and name c1' )
+        (resid 22 and name n9  )(resid 22 and name c4  )       1.0 -120 10.0 2

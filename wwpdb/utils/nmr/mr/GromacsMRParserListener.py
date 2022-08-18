@@ -1202,17 +1202,17 @@ class GromacsMRParserListener(ParseTreeListener):
     def getPolymerSequence(self):
         """ Return polymer sequence of GROMACS MR file.
         """
-        return self.__polySeqRst
+        return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
     def getSequenceAlignment(self):
         """ Return sequence alignment between coordinates and GROMACS MR.
         """
-        return self.__seqAlign
+        return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self):
         """ Return chain assignment between coordinates and GROMACS MR.
         """
-        return self.__chainAssign
+        return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
 
 # del GromacsMRParser

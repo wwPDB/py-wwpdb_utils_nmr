@@ -263,7 +263,9 @@ class SybylMRParserListener(ParseTreeListener):
                         seq_id_mapping = {}
                         for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                             if mid_code == '|':
-                                seq_id_mapping[test_seq_id] = ref_seq_id
+                                seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
+                                                                   in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                                   if seq_id == ref_seq_id)
 
                         if isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName):
 
@@ -501,10 +503,10 @@ class SybylMRParserListener(ParseTreeListener):
             idx = ps['auth_seq_id'].index(seqId)
             if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                 return ps['auth_chain_id'], seqId
-        if seqId in ps['seq_id']:
-            idx = ps['seq_id'].index(seqId)
-            if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
-                return ps['auth_chain_id'], ps['auth_seq_id'][idx]
+        # if seqId in ps['seq_id']:
+        #     idx = ps['seq_id'].index(seqId)
+        #     if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
+        #         return ps['auth_chain_id'], ps['auth_seq_id'][idx]
         return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId
 
     def assignCoordPolymerSequence(self, seqId, compId, atomId):

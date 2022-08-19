@@ -528,7 +528,9 @@ class XplorMRParserListener(ParseTreeListener):
                         seq_id_mapping = {}
                         for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                             if mid_code == '|':
-                                seq_id_mapping[test_seq_id] = ref_seq_id
+                                seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
+                                                                   in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                                   if seq_id == ref_seq_id)
 
                         if isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName):
 
@@ -7102,7 +7104,7 @@ class XplorMRParserListener(ParseTreeListener):
         if seqId in ps['auth_seq_id']:
             return seqId
         # if seqId in ps['seq_id']:
-        #    return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+        #     return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return seqId
 
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
@@ -7115,7 +7117,7 @@ class XplorMRParserListener(ParseTreeListener):
         if seqId in ps['auth_seq_id']:
             return seqId
         # if seqId in ps['seq_id']:
-        #    return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+        #     return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return seqId
 
     def getRealChainId(self, chainId):
@@ -9919,7 +9921,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'csa':
             return f"[Check the {self.csaRestraints}th row of (pseudo) chemical shift anisotropy restraints] "
         # if self.__cur_subtype == 'ang':
-        #    return f"[Check the {self.angRestraints}th row of angle database restraints] "
+        #     return f"[Check the {self.angRestraints}th row of angle database restraints] "
         if self.__cur_subtype == 'pre':
             return f"[Check the {self.preRestraints}th row of paramagnetic relaxation enhancement restraints] "
         if self.__cur_subtype == 'pcs':

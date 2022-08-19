@@ -231,14 +231,20 @@ def toNefEx(string):
     return string
 
 
-def stripOnce(string, char):
-    """ Return stripped string with given chars on the both sides removed.
+def stripQuot(string):
+    """ Return strippped string by removing single/double quotation marks.
     """
 
-    if len(string) < 3 or not string.startswith(char) or not string.endswith(char):
-        return string
+    _string = string.strip()
 
-    return string[1:len(string) - 1]
+    while True:
+        if (_string[0] == '\'' and _string[-1] == '\'')\
+           or (_string[0] == '"' and _string[-1] == '"'):
+            _string = _string[1:len(_string) - 1].strip()
+        else:
+            break
+
+    return _string
 
 
 def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None):
@@ -370,8 +376,14 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
     if refAtomIdList is not None and atomId not in refAtomIdList:
         if not atomId.endswith("'") and (atomId + "'") in refAtomIdList:
             return atomId + "'"
-        if atomId.endswith("'''") and atomId[:-1] in refAtomIdList:
-            return atomId[:-1]
+        if atomId.endswith("''''"):
+            if atomId.startswith('H2') and "H2'2" in refAtomIdList:
+                return "H2'2"
+            if atomId[:-2] in refAtomIdList:
+                return atomId[:-2]
+        if atomId.endswith("'''"):
+            if atomId[:-1] in refAtomIdList:
+                return atomId[:-1]
         if atomId == "H2''1" and "H2'" in refAtomIdList:
             return "H2'"
         if atomId in ("H2''2", "H2''"):
@@ -379,6 +391,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                 return "HO2'"
             if "H2''" in refAtomIdList:
                 return "H2''"
+            if atomId == "H2''" and "H2'1" in refAtomIdList:
+                return "H2'1"
         if atomId.endswith("''") and atomId[:-1] in refAtomIdList:
             return atomId[:-1]
         if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[2] in ('1', '2'):

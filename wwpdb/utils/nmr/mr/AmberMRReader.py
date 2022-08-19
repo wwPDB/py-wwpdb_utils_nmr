@@ -282,6 +282,12 @@ class AmberMRReader:
 if __name__ == "__main__":
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5oe1/pa8_wat2.rest',
+                 '../../tests-nmr/mock-data-remediation/5oe1/5oe1.cif',
+                 '../../tests-nmr/mock-data-remediation/5oe1/pa8_wat2.prmtop')
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2jsn/2jsn-corrected.mr',
                  '../../tests-nmr/mock-data-remediation/2jsn/2jsn.cif',
                  None)

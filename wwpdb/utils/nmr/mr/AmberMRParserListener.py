@@ -17,7 +17,7 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (stripOnce,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (stripQuot,
                                                        checkCoordinates,
                                                        translateToStdAtomName,
                                                        translateToStdResName,
@@ -50,7 +50,7 @@ try:
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberMRParser import AmberMRParser
-    from nmr.mr.ParserListenerUtil import (stripOnce,
+    from nmr.mr.ParserListenerUtil import (stripQuot,
                                            checkCoordinates,
                                            translateToStdAtomName,
                                            translateToStdResName,
@@ -2388,11 +2388,14 @@ class AmberMRParserListener(ParseTreeListener):
                     authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(seqId)]
                     _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId)
 
-                atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
+
+                if compId in monDict3 or coordAtomSite is None:
+                    atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                else:
+                    atomId = translateToStdAtomName(atomId, compId, coordAtomSite['atom_id'])
 
                 atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
-
-                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
                 if coordAtomSite is not None\
                    and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
@@ -2517,11 +2520,14 @@ class AmberMRParserListener(ParseTreeListener):
                             authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(seqId)]
                             _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId)
 
-                        atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                        if compId in monDict3 or coordAtomSite is None:
+                            atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                        else:
+                            atomId = translateToStdAtomName(atomId, compId, coordAtomSite['atom_id'])
 
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
-
-                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
                         if coordAtomSite is not None\
                            and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
@@ -3868,7 +3874,7 @@ class AmberMRParserListener(ParseTreeListener):
                 rawStrArray = str(ctx.Qstrings()).split(',')
                 numAtnamCol = 0
                 for col, rawStr in enumerate(rawStrArray):
-                    val = stripOnce(stripOnce(rawStr, '\''), '"').rstrip()
+                    val = stripQuot(rawStr)
                     if len(val) == 0:
                         break
                     self.atnam[col] = val
@@ -3900,7 +3906,7 @@ class AmberMRParserListener(ParseTreeListener):
                 else:
                     self.setAtnamCol.append(decimal)
                 rawStrArray = str(ctx.Qstring_AP()).split(',')
-                val = stripOnce(stripOnce(rawStrArray[0], '\''), '"').rstrip()
+                val = stripQuot(rawStrArray[0])
                 if len(rawStrArray) > 1:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "\
@@ -3950,7 +3956,7 @@ class AmberMRParserListener(ParseTreeListener):
                 rawStrArray = str(ctx.Qstrings()).split(',')
                 numGrnamCol = 0
                 for col, rawStr in enumerate(rawStrArray):
-                    val = stripOnce(stripOnce(rawStr, '\''), '"').rstrip()
+                    val = stripQuot(rawStr)
                     if len(val) == 0:
                         break
                     self.grnam[varNum][col] = val
@@ -4011,7 +4017,7 @@ class AmberMRParserListener(ParseTreeListener):
                 else:
                     self.setGrnamCol[varNum].append(decimal)
                 rawStrArray = str(ctx.Qstring_AP()).split(',')
-                val = stripOnce(stripOnce(rawStrArray[0], '\''), '"').rstrip()
+                val = stripQuot(rawStrArray[0])
                 if len(rawStrArray) > 1:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "\

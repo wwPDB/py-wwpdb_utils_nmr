@@ -24,6 +24,7 @@ import re
 import copy
 import pickle
 import collections
+import hashlib
 
 try:
     from wwpdb.utils.nmr.AlignUtil import emptyValue
@@ -102,6 +103,11 @@ class BMRBChemShiftStat:
 
         if not self.loadStatFromPickleFiles():
             self.loadStatFromCsvFiles()
+
+        self.__cachedDictForPeptideLike = {}
+        self.__cachedDictForTypeOfCompId = {}
+        self.__cachedDictForSimilarCompId = {}
+
     # """
     # def isOk(self):
     #     """ Return whether all BMRB chemical shift statistics are available.
@@ -137,20 +143,33 @@ class BMRBChemShiftStat:
         if comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
             return False
 
-        if self.__ccU.updateChemCompDict(comp_id):
-            ctype = self.__ccU.lastChemCompDict['_chem_comp.type']
+        if comp_id in self.__cachedDictForPeptideLike:
+            return self.__cachedDictForPeptideLike[comp_id]
 
-            if 'PEPTIDE' in ctype:
-                return True
+        try:
 
-            if 'DNA' in ctype or 'RNA' in ctype or 'SACCHARIDE' in ctype:
-                return False
+            result = True
 
-        peptide_like = len(self.getBackBoneAtoms(comp_id, True, True, False, False))
-        nucleotide_like = len(self.getBackBoneAtoms(comp_id, True, False, True, False))
-        carbohydrate_like = len(self.getBackBoneAtoms(comp_id, True, False, False, True))
+            if self.__ccU.updateChemCompDict(comp_id):
+                ctype = self.__ccU.lastChemCompDict['_chem_comp.type']
 
-        return peptide_like > nucleotide_like and peptide_like > carbohydrate_like
+                if 'PEPTIDE' in ctype:
+                    return result
+
+                if 'DNA' in ctype or 'RNA' in ctype or 'SACCHARIDE' in ctype:
+                    result = False
+                    return result
+
+            peptide_like = len(self.getBackBoneAtoms(comp_id, True, True, False, False))
+            nucleotide_like = len(self.getBackBoneAtoms(comp_id, True, False, True, False))
+            carbohydrate_like = len(self.getBackBoneAtoms(comp_id, True, False, False, True))
+
+            result = peptide_like > nucleotide_like and peptide_like > carbohydrate_like
+
+            return result
+
+        finally:
+            self.__cachedDictForPeptideLike[comp_id] = result
 
     def getTypeOfCompId(self, comp_id):
         """ Return type of a given comp_id.
@@ -166,93 +185,71 @@ class BMRBChemShiftStat:
         if comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
             return False, True, False
 
-        if self.__ccU.updateChemCompDict(comp_id):
-            ctype = self.__ccU.lastChemCompDict['_chem_comp.type']
+        try:
 
-            if 'PEPTIDE' in ctype:
-                return True, False, False
+            results = [False] * 3
 
-            if 'DNA' in ctype or 'RNA' in ctype:
-                return False, True, False
+            if self.__ccU.updateChemCompDict(comp_id):
+                ctype = self.__ccU.lastChemCompDict['_chem_comp.type']
 
-            if 'SACCHARIDE' in ctype:
-                return False, False, True
+                if 'PEPTIDE' in ctype:
+                    results[0] = True
+                    return results
 
-        peptide_like = len(self.getBackBoneAtoms(comp_id, True, True, False, False))
-        nucleotide_like = len(self.getBackBoneAtoms(comp_id, True, False, True, False))
-        carbohydrate_like = len(self.getBackBoneAtoms(comp_id, True, False, False, True))
+                if 'DNA' in ctype or 'RNA' in ctype:
+                    results[1] = True
+                    return results
 
-        return peptide_like > nucleotide_like and peptide_like > carbohydrate_like,\
-            nucleotide_like > peptide_like and nucleotide_like > carbohydrate_like,\
-            carbohydrate_like > peptide_like and carbohydrate_like > nucleotide_like
+                if 'SACCHARIDE' in ctype:
+                    results[2] = True
+                    return results
+
+            peptide_like = len(self.getBackBoneAtoms(comp_id, True, True, False, False))
+            nucleotide_like = len(self.getBackBoneAtoms(comp_id, True, False, True, False))
+            carbohydrate_like = len(self.getBackBoneAtoms(comp_id, True, False, False, True))
+
+            results[0] = peptide_like > nucleotide_like and peptide_like > carbohydrate_like
+            results[1] = nucleotide_like > peptide_like and nucleotide_like > carbohydrate_like
+            results[2] = carbohydrate_like > peptide_like and carbohydrate_like > nucleotide_like
+
+            return results
+
+        finally:
+            self.__cachedDictForTypeOfCompId[comp_id] = results
 
     def getSimilarCompIdFromAtomIds(self, atom_ids):
         """ Return the most similar comp_id including atom_ids.
             @return: the most similar comp_id, otherwise None
         """
 
+        hash = hashlib.md5(','.join(atom_ids).encode()).hexdigest()
+
+        if hash in self.__cachedDictForSimilarCompId:
+            return self.__cachedDictForSimilarCompId[hash]
+
         aa_bb = set(['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'])
         dn_bb = set(["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", 'P'])
         rn_bb = set(["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", "H5'1", "H5'2", "H2'1", "HO'2", 'P', "O2'"])
         ch_bb = set(['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H61', 'H62'])
 
-        length = len(atom_ids)
-        atom_id_set = set(atom_ids)
+        try:
 
-        match = [len(atom_id_set & aa_bb),
-                 len(atom_id_set & dn_bb),
-                 len(atom_id_set & rn_bb),
-                 len(atom_id_set & ch_bb)]
+            length = len(atom_ids)
+            atom_id_set = set(atom_ids)
 
-        max_match = max(match)
-        comp_id = None
+            match = [len(atom_id_set & aa_bb),
+                     len(atom_id_set & dn_bb),
+                     len(atom_id_set & rn_bb),
+                     len(atom_id_set & ch_bb)]
 
-        if max_match > 0:
-            position = match.index(max_match)
-            if position == 0:
-                max_score = 0
-                for _comp_id in self.__aa_comp_ids:
-                    _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
-                    conflict = len(atom_id_set - _atom_id_set)
-                    unmapped = len(_atom_id_set - atom_id_set)
-                    score = length - conflict - unmapped
-                    if score > max_score:
-                        max_score = score
-                        comp_id = _comp_id
-                if comp_id is not None:
-                    return comp_id
+            max_match = max(match)
+            comp_id = None
 
-            elif position == 1:
-                max_score = 0
-                for _comp_id in self.__dna_comp_ids:
-                    _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
-                    conflict = len(atom_id_set - _atom_id_set)
-                    unmapped = len(_atom_id_set - atom_id_set)
-                    score = length - conflict - unmapped
-                    if score > max_score:
-                        max_score = score
-                        comp_id = _comp_id
-                if comp_id is not None:
-                    return comp_id
-
-            elif position == 2:
-                max_score = 0
-                for _comp_id in self.__rna_comp_ids:
-                    _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
-                    conflict = len(atom_id_set - _atom_id_set)
-                    unmapped = len(_atom_id_set - atom_id_set)
-                    score = length - conflict - unmapped
-                    if score > max_score:
-                        max_score = score
-                        comp_id = _comp_id
-                if comp_id is not None:
-                    return comp_id
-
-            if position == 0:
-                comp_id = None
-                max_score = 0
-                for _comp_id in self.__all_comp_ids:
-                    if self.getTypeOfCompId(_comp_id)[0]:
+            if max_match > 0:
+                position = match.index(max_match)
+                if position == 0:
+                    max_score = 0
+                    for _comp_id in self.__aa_comp_ids:
                         _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
                         conflict = len(atom_id_set - _atom_id_set)
                         unmapped = len(_atom_id_set - atom_id_set)
@@ -260,13 +257,12 @@ class BMRBChemShiftStat:
                         if score > max_score:
                             max_score = score
                             comp_id = _comp_id
-                if comp_id is not None:
-                    return comp_id
+                    if comp_id is not None:
+                        return comp_id
 
-            elif position in (1, 2):
-                max_score = 0
-                for _comp_id in self.__all_comp_ids:
-                    if self.getTypeOfCompId(_comp_id)[1]:
+                elif position == 1:
+                    max_score = 0
+                    for _comp_id in self.__dna_comp_ids:
                         _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
                         conflict = len(atom_id_set - _atom_id_set)
                         unmapped = len(_atom_id_set - atom_id_set)
@@ -274,13 +270,70 @@ class BMRBChemShiftStat:
                         if score > max_score:
                             max_score = score
                             comp_id = _comp_id
-                if comp_id is not None:
-                    return comp_id
+                    if comp_id is not None:
+                        return comp_id
+
+                elif position == 2:
+                    max_score = 0
+                    for _comp_id in self.__rna_comp_ids:
+                        _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                        conflict = len(atom_id_set - _atom_id_set)
+                        unmapped = len(_atom_id_set - atom_id_set)
+                        score = length - conflict - unmapped
+                        if score > max_score:
+                            max_score = score
+                            comp_id = _comp_id
+                    if comp_id is not None:
+                        return comp_id
+
+                if position == 0:
+                    comp_id = None
+                    max_score = 0
+                    for _comp_id in self.__all_comp_ids:
+                        if self.getTypeOfCompId(_comp_id)[0]:
+                            _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                            conflict = len(atom_id_set - _atom_id_set)
+                            unmapped = len(_atom_id_set - atom_id_set)
+                            score = length - conflict - unmapped
+                            if score > max_score:
+                                max_score = score
+                                comp_id = _comp_id
+                    if comp_id is not None:
+                        return comp_id
+
+                elif position in (1, 2):
+                    max_score = 0
+                    for _comp_id in self.__all_comp_ids:
+                        if self.getTypeOfCompId(_comp_id)[1]:
+                            _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                            conflict = len(atom_id_set - _atom_id_set)
+                            unmapped = len(_atom_id_set - atom_id_set)
+                            score = length - conflict - unmapped
+                            if score > max_score:
+                                max_score = score
+                                comp_id = _comp_id
+                    if comp_id is not None:
+                        return comp_id
+
+                else:
+                    max_score = 0
+                    for _comp_id in self.__all_comp_ids:
+                        if self.getTypeOfCompId(_comp_id)[2]:
+                            _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
+                            conflict = len(atom_id_set - _atom_id_set)
+                            unmapped = len(_atom_id_set - atom_id_set)
+                            score = length - conflict - unmapped
+                            if score > max_score:
+                                max_score = score
+                                comp_id = _comp_id
+                    if comp_id is not None:
+                        return comp_id
 
             else:
                 max_score = 0
                 for _comp_id in self.__all_comp_ids:
-                    if self.getTypeOfCompId(_comp_id)[2]:
+                    peptide_like, nucleotide_like, carbohydrate_like = self.getTypeOfCompId(_comp_id)
+                    if not (peptide_like or nucleotide_like or carbohydrate_like):
                         _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
                         conflict = len(atom_id_set - _atom_id_set)
                         unmapped = len(_atom_id_set - atom_id_set)
@@ -288,23 +341,11 @@ class BMRBChemShiftStat:
                         if score > max_score:
                             max_score = score
                             comp_id = _comp_id
-                if comp_id is not None:
-                    return comp_id
 
-        else:
-            max_score = 0
-            for _comp_id in self.__all_comp_ids:
-                peptide_like, nucleotide_like, carbohydrate_like = self.getTypeOfCompId(_comp_id)
-                if not (peptide_like or nucleotide_like or carbohydrate_like):
-                    _atom_id_set = set(i['atom_id'] for i in self.__get(_comp_id))
-                    conflict = len(atom_id_set - _atom_id_set)
-                    unmapped = len(_atom_id_set - atom_id_set)
-                    score = length - conflict - unmapped
-                    if score > max_score:
-                        max_score = score
-                        comp_id = _comp_id
+            return comp_id
 
-        return comp_id
+        finally:
+            self.__cachedDictForSimilarCompId[hash] = comp_id
 
     def hasEnoughStat(self, comp_id, primary=True):
         """ Return whether a given comp_id has enough chemical shift statistics.

@@ -1332,34 +1332,35 @@ class NEFTranslator:
                     min_seq_id = min(int(i[0]) for i in seq_data if i[2] == c)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set(f"{i[2]} {int(i[0]) + offset_seq_ids[i[2]]:04d} {i[1]}" for i in seq_data))
+                sorted_seq = sorted(set((i[2], int(i[0]) + offset_seq_ids[i[2]], i[1].upper()) for i in seq_data),
+                                    key=lambda x: (x[0], x[1]))
 
-                chk_dict = {f"{i[2]} {int(i[0]):04d}": i[1] for i in seq_data}
+                chk_dict = {(i[2], int(i[0])): i[1].upper() for i in seq_data}
 
                 for i in seq_data:
-                    chk_key = f"{i[2]} {int(i[0]):04d}"
+                    chk_key = (i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
                         raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({i[1]} and {chk_dict[chk_key]}) "
                                        f"with the same {chain_id} {i[2]}, {seq_id} {i[0]}.")
 
-                if len(sorted_seq[0].split(' ')[-1]) > 1:
+                if len(sorted_seq[0][2]) > 1:
                     if len(chains) > 1:
                         for c in chains:
-                            cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
-                            seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
+                            cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
+                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
                         c = list(chains)[0]
-                        cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        cmp_dict[c] = [x[2] for x in sorted_seq]
+                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
-                            cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
-                            seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
+                            cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
+                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
                         c = list(chains)[0]
-                        cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        cmp_dict[c] = [x[2] for x in sorted_seq]
+                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
 
                 asm = []  # assembly of a loop
 
@@ -1543,12 +1544,13 @@ class NEFTranslator:
                     min_seq_id = min(int(i[0]) for i in seq_data if i[2] == c)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set(f"{i[2]} {int(i[0]) + offset_seq_ids[i[2]]:04d} {i[1]}" for i in seq_data))
+                sorted_seq = sorted(set((i[2], int(i[0]) + offset_seq_ids[i[2]], i[1].upper()) for i in seq_data),
+                                    key=lambda x: (x[0], x[1]))
 
-                chk_dict = {f"{i[2]} {int(i[0]):04d}": i[1] for i in seq_data}
+                chk_dict = {(i[2], int(i[0])): i[1].upper() for i in seq_data}
 
                 for i in seq_data:
-                    chk_key = f"{i[2]} {int(i[0]):04d}"
+                    chk_key = (i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
 
                         if seq_id != alt_seq_id and alt_seq_id in loop.tags:
@@ -1574,24 +1576,24 @@ class NEFTranslator:
                         raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({i[1]} and {chk_dict[chk_key]}) "
                                        f"with the same {chain_id} {i[2]}, {seq_id} {i[0]}.")
 
-                if len(sorted_seq[0].split(' ')[-1]) > 1:
+                if len(sorted_seq[0][2]) > 1:
                     if len(chains) > 1:
                         for c in chains:
-                            cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
-                            seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
+                            cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
+                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
                         c = list(chains)[0]
-                        cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        cmp_dict[c] = [x[2] for x in sorted_seq]
+                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
-                            cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
-                            seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
+                            cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
+                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
                         c = list(chains)[0]
-                        cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        cmp_dict[c] = [x[2] for x in sorted_seq]
+                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
 
                 asm = []  # assembly of a loop
 
@@ -1757,43 +1759,44 @@ class NEFTranslator:
                     min_seq_id = min(int(i[3]) for i in seq_data if i[4] == c)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set(f"{i[4]}:{int(i[3]) + offset_seq_ids[i[4]]:04d}:{i[2]}:{i[0]: >4}:{i[1]}" for i in seq_data))
+                sorted_seq = sorted(set((i[4], int(i[3]) + offset_seq_ids[i[4]], i[2], i[0].strip(), i[1]) for i in seq_data),
+                                    key=lambda x: (x[0], x[1]))
 
-                chk_dict = {f"{i[4]}:{int(i[3]):04d}:{i[2]}:{i[0]: >4}": i[1] for i in seq_data}
+                chk_dict = {(i[4], int(i[3]), i[2], i[0].strip()): i[1] for i in seq_data}
 
                 for i in seq_data:
-                    chk_key = f"{i[4]}:{int(i[3]):04d}:{i[2]}:{i[0]: >4}"
+                    chk_key = (i[4], int(i[3]), i[2], i[0].strip())
                     if chk_dict[chk_key] != i[1]:
                         raise KeyError(f"Author sequence must be unique. {chain_id} {i[4]}, {seq_id} {i[3]}, "
                                        f"{asym_id} {i[2]}, {aseq_id} {i[0]}, "
                                        f"{acomp_id} {i[1]} vs {chk_dict[chk_key]}.")
 
-                if len(sorted_seq[0].split(':')[-1]) > 1:
+                if len(sorted_seq[0][4]) > 1:
                     if len(chains) > 1:
                         for c in chains:
-                            acmp_dict[c] = [i.split(':')[-1] for i in sorted_seq if i.split(':')[0] == c]
-                            aseq_dict[c] = [i.split(':')[3].strip() for i in sorted_seq if i.split(':')[0] == c]
-                            asym_dict[c] = [i.split(':')[2] for i in sorted_seq if i.split(':')[0] == c]
-                            seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(':')[0] == c]
+                            acmp_dict[c] = [x[4] for x in sorted_seq if x[0] == c]
+                            aseq_dict[c] = [x[3] for x in sorted_seq if x[0] == c]
+                            asym_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
+                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
                         c = list(chains)[0]
-                        acmp_dict[c] = [i.split(':')[-1] for i in sorted_seq]
-                        aseq_dict[c] = [i.split(':')[3].strip() for i in sorted_seq]
-                        asym_dict[c] = [i.split(':')[2] for i in sorted_seq]
-                        seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        acmp_dict[c] = [x[4] for x in sorted_seq]
+                        aseq_dict[c] = [x[3] for x in sorted_seq]
+                        asym_dict[c] = [x[2] for x in sorted_seq]
+                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
-                            acmp_dict[c] = [i.split(':')[-1] for i in sorted_seq if i.split(':')[0] == c]
-                            aseq_dict[c] = [i.split(':')[3].strip() for i in sorted_seq if i.split(':')[0] == c]
-                            asym_dict[c] = [i.split(':')[2] for i in sorted_seq if i.split(':')[0] == c]
-                            seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(':')[0] == c]
+                            acmp_dict[c] = [x[4] for x in sorted_seq if x[0] == c]
+                            aseq_dict[c] = [x[3] for x in sorted_seq if x[0] == c]
+                            asym_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
+                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
                         c = list(chains)[0]
-                        acmp_dict[c] = [i.split(':')[-1] for i in sorted_seq]
-                        aseq_dict[c] = [i.split(':')[3].strip() for i in sorted_seq]
-                        asym_dict[c] = [i.split(':')[2] for i in sorted_seq]
-                        seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        acmp_dict[c] = [x[4] for x in sorted_seq]
+                        aseq_dict[c] = [x[3] for x in sorted_seq]
+                        asym_dict[c] = [x[2] for x in sorted_seq]
+                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
 
                 asm = []  # assembly of a loop
 
@@ -1904,10 +1907,11 @@ class NEFTranslator:
                 raise UserWarning(user_warn_msg)
 
             comps = sorted(set(i[0].upper() for i in pair_data if i[0] not in emptyValue))
-            sorted_comp_atom = sorted(set(f"{i[0].upper()} {i[1]}" for i in pair_data))
+            sorted_comp_atom = sorted(set((i[0].upper(), i[1]) for i in pair_data),
+                                      key=lambda x: (x[0], x[1]))
 
             for c in comps:
-                atm_dict[c] = [i.split(' ')[1] for i in sorted_comp_atom if i.split(' ')[0] == c]
+                atm_dict[c] = [x[1] for x in sorted_comp_atom if x[0] == c]
 
             asm = []  # assembly of a loop
 
@@ -2012,13 +2016,14 @@ class NEFTranslator:
             try:
 
                 a_types = sorted(set(i[0] for i in a_type_data))
-                sorted_ist = sorted(set(f"{i[0]} {i[1]}" for i in a_type_data))
-                sorted_atm = sorted(set(f"{i[0]} {i[2]}" for i in a_type_data
-                                        if not (i[2] in emptyValue or badPattern.match(i[2]))))  # DAOTHER-7389, issue #3
+                sorted_ist = sorted(set((i[0], int(i[1])) for i in a_type_data),
+                                    key=lambda x: (x[0], x[1]))
+                sorted_atm = sorted(set((i[0], i[2]) for i in a_type_data
+                                        if not (i[2] in emptyValue or badPattern.match(i[2]))), key=lambda x: (x[0], x[1]))  # DAOTHER-7389, issue #3
 
                 for t in a_types:
-                    ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
-                    atm_dict[t] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == t]
+                    ist_dict[t] = [x[1] for x in sorted_ist if x[0] == t]
+                    atm_dict[t] = [x[1] for x in sorted_atm if x[0] == t]
 
                 asm = []  # assembly of a loop
 
@@ -2146,21 +2151,21 @@ class NEFTranslator:
             if len(_ambig_data) == 0:
                 continue
 
-            ambigs = sorted(set(f"{i[0].upper()}:{i[2]}" for i in _ambig_data))
-            sorted_atm = sorted(set(f"{i[0].upper()}:{i[2]} {i[1]}" for i in _ambig_data))
+            ambigs = sorted(set((i[0].upper(), i[2]) for i in _ambig_data),
+                            key=lambda x: (x[0], x[1]))
+            sorted_atm = sorted(set((i[0].upper(), i[2], i[1]) for i in _ambig_data),
+                                key=lambda x: (x[0], x[1], x[2]))
 
             for a in ambigs:
-                atm_dict[a] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == a]
+                atm_dict[a] = [x[2] for x in sorted_atm if x[0] == a[0] and x[1] == a[1]]
 
             asm = []  # assembly of a loop
 
             for a in ambigs:
                 ent = {}  # entity
 
-                split_a = a.split(':')
-
-                ent['comp_id'] = split_a[0]
-                ent['ambig_code'] = None if split_a[1] in emptyValue else int(split_a[1])
+                ent['comp_id'] = a[0]
+                ent['ambig_code'] = None if a[1] in emptyValue else int(a[1])
                 ent['atom_id'] = atm_dict[a]
 
                 asm.append(ent)

@@ -1554,8 +1554,6 @@ class NEFTranslator:
                     if chk_dict[chk_key] != i[1]:
 
                         if seq_id != alt_seq_id and alt_seq_id in loop.tags:
-                            to_idx = loop.tags.index(seq_id)
-                            fr_idx = loop.tags.index(alt_seq_id)
 
                             seq_tags = [seq_id, alt_seq_id]
                             _seq_data = get_lp_tag(loop, seq_tags)
@@ -1564,7 +1562,7 @@ class NEFTranslator:
 
                             for _i in _seq_data:
                                 try:
-                                    offset = int(_i[to_idx]) - int(_i[fr_idx])
+                                    offset = int(_i[0]) - int(_i[1])
                                     break
                                 except ValueError:
                                     continue

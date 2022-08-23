@@ -646,11 +646,11 @@ class BiosymMRParserListener(ParseTreeListener):
                 origCompId = ps['auth_comp_id'][idx]
                 if compId in (cifCompId, origCompId):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId))
+                        chainAssign.append((chainId, seqId, cifCompId, True))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                             self.__chainNumberDict[refChainId] = chainId
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.append((chainId, seqId, cifCompId))
+                    chainAssign.append((chainId, seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     """ defer to sequence alignment error
@@ -681,11 +681,11 @@ class BiosymMRParserListener(ParseTreeListener):
                             origCompId = ps['auth_comp_id'][idx]
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((chainId, seqId_, cifCompId))
+                                    chainAssign.append((chainId, seqId_, cifCompId, True))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((chainId, seqId_, cifCompId))
+                                chainAssign.append((chainId, seqId_, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
                         except IndexError:
@@ -710,11 +710,11 @@ class BiosymMRParserListener(ParseTreeListener):
                     origCompId = np['auth_comp_id'][idx]
                     if compId in (cifCompId, origCompId):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((chainId, seqId, cifCompId))
+                            chainAssign.append((chainId, seqId, cifCompId, False))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                     elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId))
+                        chainAssign.append((chainId, seqId, cifCompId, False))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                             self.__chainNumberDict[refChainId] = chainId
 
@@ -732,13 +732,13 @@ class BiosymMRParserListener(ParseTreeListener):
                         origCompId = ps['auth_comp_id'][ps['seq_id'].index(seqId)]
                         if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
+                                chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
                                 if 'label_seq_scheme' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
+                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                             """ defer to sequence alignment error
@@ -761,13 +761,13 @@ class BiosymMRParserListener(ParseTreeListener):
                             origCompId = np['auth_comp_id'][np['seq_id'].index(seqId)]
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
+                                    chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
+                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
 
@@ -779,7 +779,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.append((chainId, _seqId, cifCompId))
+                    chainAssign.append((chainId, _seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     """ defer to sequence alignment error
@@ -805,7 +805,7 @@ class BiosymMRParserListener(ParseTreeListener):
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        for chainId, cifSeqId, cifCompId in chainAssign:
+        for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
@@ -822,6 +822,17 @@ class BiosymMRParserListener(ParseTreeListener):
                and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
                and atomId in coordAtomSite['atom_id']:
                 _atomId = [atomId]
+
+            if coordAtomSite is None and not isPolySeq:
+                try:
+                    for np in self.__nonPoly:
+                        if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
+                            cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
+                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+                            if coordAtomSite is not None:
+                                break
+                except ValueError:
+                    pass
 
             lenAtomId = len(_atomId)
             if lenAtomId == 0:

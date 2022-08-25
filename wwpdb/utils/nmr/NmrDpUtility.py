@@ -8222,6 +8222,13 @@ class NmrDpUtility:
 
                 return file_ext
 
+            if len(file_ext) == 3:
+
+                if file_ext not in CYANA_MR_FILE_EXTS:
+                    return None
+
+                return file_ext
+
             return None
 
         file_ext = split_ext[1][1:].lower()
@@ -22342,7 +22349,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -22467,7 +22474,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -22579,7 +22586,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -22722,7 +22729,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -22841,7 +22848,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -22955,7 +22962,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -23051,7 +23058,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -23165,7 +23172,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -23279,7 +23286,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 

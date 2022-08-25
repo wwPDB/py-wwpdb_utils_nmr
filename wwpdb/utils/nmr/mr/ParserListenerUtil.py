@@ -762,6 +762,91 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'auth_to_label_seq': authToLabelSeq}
 
 
+def extendCoordinatesForExactNoes(modelChainIdExt,
+                                  polySeq, altPolySeq, coordAtomSite, coordUnobsRes, labelToAuthSeq, authToLabelSeq):
+    """ Extend coordinate chains for eNOEs-guided multiple conformers.
+    """
+
+    _polySeq = None
+
+    if polySeq is not None:
+        _polySeq = copy.copy(polySeq)
+
+        for ps in polySeq:
+            if ps['auth_chain_id'] in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    if not any(ps for ps in polySeq if ps['auth_chain_id'] == dstChainId):
+                        _ps = copy.copy(ps)
+                        _ps['chain_id'] = _ps['auth_chain_id'] = dstChainId
+                        _polySeq.append(_ps)
+
+    _altPolySeq = None
+
+    if altPolySeq is not None:
+        _altPolySeq = copy.copy(altPolySeq)
+
+        for ps in altPolySeq:
+            if ps['auth_chain_id'] in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    if not any(ps for ps in altPolySeq if ps['auth_chain_id'] == dstChainId):
+                        _ps = copy.copy(ps)
+                        _ps['chain_id'] = _ps['auth_chain_id'] = dstChainId
+                        _altPolySeq.append(_ps)
+
+    _coordAtomSite = None
+
+    if coordAtomSite is not None:
+        _coordAtomSite = copy.copy(coordAtomSite)
+
+        for ps in polySeq:
+            srcChainId = ps['auth_chain_id']
+            if srcChainId in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    for seqId in ps['auth_seq_id']:
+                        seqKey = (srcChainId, seqId)
+                        if seqKey in _coordAtomSite:
+                            _seqKey = (dstChainId, seqId)
+                            if _seqKey not in _coordAtomSite:
+                                _coordAtomSite[_seqKey] = coordAtomSite[seqKey]
+
+    _coordUnobsRes = None
+
+    if coordUnobsRes is not None:
+        _coordUnobsRes = copy.copy(coordUnobsRes)
+
+        for ps in polySeq:
+            srcChainId = ps['auth_chain_id']
+            if srcChainId in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    for seqId in ps['auth_seq_id']:
+                        seqKey = (srcChainId, seqId)
+                        if seqKey in coordUnobsRes:
+                            _seqKey = (dstChainId, seqId)
+                            if _seqKey not in _coordUnobsRes:
+                                _coordUnobsRes[_seqKey] = coordUnobsRes[seqKey]
+
+    _authToLabelSeq = None
+    _labelToAuthSeq = None
+
+    if authToLabelSeq is not None:
+        _authToLabelSeq = copy.copy(authToLabelSeq)
+
+        for ps in polySeq:
+            srcChainId = ps['auth_chain_id']
+            if srcChainId in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    for seqId in ps['auth_seq_id']:
+                        seqKey = (srcChainId, seqId)
+                        if seqKey in authToLabelSeq:
+                            _seqKey = (dstChainId, seqId)
+                            if _seqKey not in _authToLabelSeq:
+                                _authToLabelSeq[_seqKey] = (dstChainId, labelToAuthSeq[seqKey][1])
+
+        _labelToAuthSeq = {v: k for k, v in _authToLabelSeq.items()}
+
+    return _polySeq, _altPolySeq, _coordAtomSite, _coordUnobsRes, _labelToAuthSeq, _authToLabelSeq
+
+
 def isLongRangeRestraint(atoms, polySeq=None):
     """ Return whether restraint is neither an intra residue nor sequential residues.
     """

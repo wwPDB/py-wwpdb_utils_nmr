@@ -22,6 +22,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
                                                        toRegEx, toNefEx,
                                                        checkCoordinates,
+                                                       extendCoordinatesForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        isLongRangeRestraint,
@@ -56,6 +57,7 @@ try:
                                            retrieveAtomIdFromMRMap,
                                            retrieveRemappedSeqId,
                                            splitPolySeqRstForMultimers,
+                                           splitPolySeqRstForExactNoes,
                                            retrieveRemappedChainId,
                                            splitPolySeqRstForNonPoly,
                                            retrieveRemappedNonPoly)
@@ -65,6 +67,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (toNpArray,
                                            toRegEx, toNefEx,
                                            checkCoordinates,
+                                           extendCoordinatesForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            isLongRangeRestraint,
@@ -99,6 +102,7 @@ except ImportError:
                                retrieveAtomIdFromMRMap,
                                retrieveRemappedSeqId,
                                splitPolySeqRstForMultimers,
+                               splitPolySeqRstForExactNoes,
                                retrieveRemappedChainId,
                                splitPolySeqRstForNonPoly,
                                retrieveRemappedNonPoly)
@@ -147,6 +151,7 @@ class CnsMRParserListener(ParseTreeListener):
     __debug = False
     __sel_expr_debug = False
     __omitDistLimitOutlier = True
+    __allowZeroUpperLimit = False
 
     # @see: https://bmrb.io/ref_info/atom_nom.tbl
     # @see: https://bmrb.io/macro/files/xplor_to_iupac.Nov140620
@@ -349,6 +354,13 @@ class CnsMRParserListener(ParseTreeListener):
             self.__pA = PairwiseAlign()
             self.__pA.setVerbose(verbose)
 
+        if reasons is not None and 'model_chain_id_ext' in reasons:
+            self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, self.__labelToAuthSeq, self.__authToLabelSeq =\
+                extendCoordinatesForExactNoes(reasons['model_chain_id_ext'],
+                                              self.__polySeq, self.__altPolySeq,
+                                              self.__coordAtomSite, self.__coordUnobsRes,
+                                              self.__labelToAuthSeq, self.__authToLabelSeq)
+
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
@@ -482,6 +494,17 @@ class CnsMRParserListener(ParseTreeListener):
                             self.__polySeqRst = polySeqRst
                             if 'chain_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
+
+                    if len(self.__polySeq) == 1 and len(self.__polySeqRst) == 1:
+                        polySeqRst, chainIdMapping, modelChainIdExt =\
+                            splitPolySeqRstForExactNoes(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if 'chain_id_clone' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['chain_id_clone'] = chainIdMapping
+                            if 'model_chain_id_ext' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['model_chain_id_ext'] = modelChainIdExt
 
                     if self.__hasNonPoly:
                         polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__polySeq, self.__nonPoly, self.__polySeqRst,
@@ -847,14 +870,30 @@ class CnsMRParserListener(ParseTreeListener):
                 lower_limit = target - dminus
                 upper_limit = target + dplus
 
+            if not self.__hasPolySeq:
+                return
+
+            self.__allowZeroUpperLimit = False
+            if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                   and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                    self.__allowZeroUpperLimit = True
+
             dstFunc = self.validateDistanceRange(scale,
                                                  target_value, lower_limit, upper_limit,
                                                  lower_linear_limit, upper_linear_limit)
 
             if dstFunc is None:
-                return
-
-            if not self.__hasPolySeq:
                 return
 
             for i in range(0, len(self.atomSelectionSet), 2):
@@ -877,7 +916,7 @@ class CnsMRParserListener(ParseTreeListener):
         dstFunc = {'weight': weight, 'potential': self.noePotential, 'average': self.noeAverage}
 
         if target_value is not None:
-            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
+            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX or (target_value == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 if target_value <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
@@ -903,10 +942,10 @@ class CnsMRParserListener(ParseTreeListener):
                         f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
-            if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX:
+            if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
-                if upper_limit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
+                if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     upper_limit = None
@@ -929,10 +968,10 @@ class CnsMRParserListener(ParseTreeListener):
                         f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if upper_linear_limit is not None:
-            if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX:
+            if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX or (upper_linear_limit == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
             else:
-                if upper_linear_limit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
+                if (upper_linear_limit <= DIST_ERROR_MIN or upper_linear_limit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The upper linear limit value='{upper_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     upper_linear_limit = None
@@ -3637,6 +3676,10 @@ class CnsMRParserListener(ParseTreeListener):
                     if self.__reasons is not None:
                         if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                            if fixedChainId != chainId:
+                                continue
+                        elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                            fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
                             if fixedChainId != chainId:
                                 continue
                         elif 'seq_id_remap' in self.__reasons:

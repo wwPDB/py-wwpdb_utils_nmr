@@ -2029,7 +2029,7 @@ class AmberMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN < self.upperLimit <= DIST_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{self.upperLimit}"
             else:
-                if self.upperLimit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
+                if (self.upperLimit <= DIST_ERROR_MIN or self.upperLimit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The upper limit value 'r3={self.upperLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     self.upperLimit = None
@@ -2055,7 +2055,7 @@ class AmberMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN < self.upperLinearLimit <= DIST_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit}"
             else:
-                if self.upperLinearLimit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
+                if (self.upperLinearLimit <= DIST_ERROR_MIN or self.upperLinearLimit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The upper linear limit value 'r4={self.upperLinearLimit}' is omitted because it is not  within range {DIST_RESTRAINT_ERROR}.\n"
                     self.upperLinearLimit = None

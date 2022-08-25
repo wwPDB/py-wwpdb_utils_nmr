@@ -6747,10 +6747,6 @@ class AmberMRParserListener(ParseTreeListener):
 
         atomSelection = []
 
-        if compId is not None:
-            if self.__mrAtomNameMapping is not None and compId not in monDict3:
-                seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
-
         for chainId, cifSeqId, cifCompId in chainAssign:
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 

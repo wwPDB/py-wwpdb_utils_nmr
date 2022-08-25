@@ -136,6 +136,7 @@ class CyanaMRParserListener(ParseTreeListener):
     __remediate = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
+    __pdbStatCap = False
 
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
@@ -536,7 +537,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
 
-        if self.__cur_subtype == 'dist' and self.__cur_dist_type == 'cco':
+        if self.__cur_subtype == 'dist' and (self.__cur_dist_type == 'cco' or len(self.numberSelection) == 6):
             self.__cur_subtype = 'jcoup'
             self.distRestraints -= 1
             self.jcoupRestraints += 1
@@ -617,13 +618,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # upl_only
                         if value2 > 1.8:
                             upper_limit = value2
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             upper_limit = value2
 
@@ -645,14 +648,16 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif self.__upl_or_lol == 'upl_only':
                     if self.__cur_dist_type == 'upl':
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     elif self.__cur_dist_type == 'lol':
                         lower_limit = value
                     elif value > 1.8:
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     else:
                         lower_limit = value
 
@@ -661,8 +666,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 elif self.__upl_or_lol == 'lol_only':
                     lower_limit = value
-                    upper_limit = 5.5  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if self.__pdbStatCap:
+                        upper_limit = 5.5  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                 else:  # 'lol_w_upl'
                     lower_limit = value
@@ -987,13 +993,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # upl_only
                         if value2 > 1.8:
                             upper_limit = value2
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             upper_limit = value2
 
@@ -1015,14 +1023,16 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif self.__upl_or_lol == 'upl_only':
                     if self.__cur_dist_type == 'upl':
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     elif self.__cur_dist_type == 'lol':
                         lower_limit = value
                     elif value > 1.8:
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     else:
                         lower_limit = value
 
@@ -1031,8 +1041,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 elif self.__upl_or_lol == 'lol_only':
                     lower_limit = value
-                    upper_limit = 5.5  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if self.__pdbStatCap:
+                        upper_limit = 5.5  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                 else:  # 'lol_w_upl'
                     lower_limit = value
@@ -3198,17 +3209,19 @@ class CyanaMRParserListener(ParseTreeListener):
                         else:
                             lower_limit = value
 
-                    if self.__upl_or_lol == 'upl_only':
+                    elif self.__upl_or_lol == 'upl_only':
                         if self.__cur_dist_type == 'upl':
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         elif self.__cur_dist_type == 'lol':
                             lower_limit = value
                         elif value > 1.8:
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             lower_limit = value
 
@@ -3217,8 +3230,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__upl_or_lol == 'lol_only':
                         lower_limit = value
-                        upper_limit = 5.5  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            upper_limit = 5.5  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
@@ -3362,13 +3376,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                             upper_limit = value2
                             lower_limit = value
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                         else:  # upl_only
                             if value2 > 1.8:
                                 upper_limit = value2
-                                lower_limit = 1.8  # default value of PDBStat
-                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                                if self.__pdbStatCap:
+                                    lower_limit = 1.8  # default value of PDBStat
+                                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                             else:
                                 upper_limit = value2
 
@@ -3390,14 +3406,16 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif self.__upl_or_lol == 'upl_only':
                         if self.__cur_dist_type == 'upl':
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         elif self.__cur_dist_type == 'lol':
                             lower_limit = value
                         elif value > 1.8:
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             lower_limit = value
 
@@ -3406,8 +3424,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__upl_or_lol == 'lol_only':
                         lower_limit = value
-                        upper_limit = 5.5  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            upper_limit = 5.5  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
@@ -3546,13 +3565,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # upl_only
                         if value2 > 1.8:
                             upper_limit = value2
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             upper_limit = value2
 
@@ -3676,17 +3697,19 @@ class CyanaMRParserListener(ParseTreeListener):
                         else:
                             lower_limit = value
 
-                    if self.__upl_or_lol == 'upl_only':
+                    elif self.__upl_or_lol == 'upl_only':
                         if self.__cur_dist_type == 'upl':
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         elif self.__cur_dist_type == 'lol':
                             lower_limit = value
                         elif value > 1.8:
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             lower_limit = value
 
@@ -3695,8 +3718,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__upl_or_lol == 'lol_only':
                         lower_limit = value
-                        upper_limit = 5.5  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            upper_limit = 5.5  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
@@ -3840,13 +3864,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                             upper_limit = value2
                             lower_limit = value
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                         else:  # upl_only
                             if value2 > 1.8:
                                 upper_limit = value2
-                                lower_limit = 1.8  # default value of PDBStat
-                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                                if self.__pdbStatCap:
+                                    lower_limit = 1.8  # default value of PDBStat
+                                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                             else:
                                 upper_limit = value2
 
@@ -3868,14 +3894,16 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif self.__upl_or_lol == 'upl_only':
                         if self.__cur_dist_type == 'upl':
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         elif self.__cur_dist_type == 'lol':
                             lower_limit = value
                         elif value > 1.8:
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             lower_limit = value
 
@@ -3884,8 +3912,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__upl_or_lol == 'lol_only':
                         lower_limit = value
-                        upper_limit = 5.5  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            upper_limit = 5.5  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
@@ -4024,13 +4053,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # upl_only
                         if value2 > 1.8:
                             upper_limit = value2
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             upper_limit = value2
 
@@ -4216,13 +4247,15 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                     upper_limit = value2
                     lower_limit = value
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if self.__pdbStatCap:
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                 else:  # upl_only
                     if value2 > 1.8:
                         upper_limit = value2
-                        lower_limit = 1.8  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     else:
                         upper_limit = value2
 
@@ -4244,14 +4277,16 @@ class CyanaMRParserListener(ParseTreeListener):
             elif self.__upl_or_lol == 'upl_only':
                 if self.__cur_dist_type == 'upl':
                     upper_limit = value
-                    lower_limit = 1.8  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if self.__pdbStatCap:
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                 elif self.__cur_dist_type == 'lol':
                     lower_limit = value
                 elif value > 1.8:
                     upper_limit = value
-                    lower_limit = 1.8  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if self.__pdbStatCap:
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                 else:
                     lower_limit = value
 
@@ -4260,8 +4295,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
             elif self.__upl_or_lol == 'lol_only':
                 lower_limit = value
-                upper_limit = 5.5  # default value of PDBStat
-                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                if self.__pdbStatCap:
+                    upper_limit = 5.5  # default value of PDBStat
+                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
             else:  # 'lol_w_upl'
                 lower_limit = value

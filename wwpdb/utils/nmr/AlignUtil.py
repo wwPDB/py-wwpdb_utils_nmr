@@ -1316,6 +1316,9 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
                 if len_test_ps - end < half_len_ref_ps or idx == total_gaps:
                     end = len_test_ps
 
+                if beg >= len(_test_ps['seq_id']):
+                    break
+
                 while True:
                     if _test_ps['comp_id'][beg] != '.':
                         break
@@ -1471,6 +1474,9 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel, polySeqRst, chainAssign):
 
                 if len_test_ps - end < half_len_ref_ps or idx == total_gaps:
                     end = len_test_ps
+
+                if beg >= len(_test_ps['seq_id']):
+                    break
 
                 while True:
                     if _test_ps['comp_id'][beg] != '.':

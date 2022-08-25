@@ -49,6 +49,7 @@ try:
                                                        T1T2_RESTRAINT_RANGE,
                                                        T1T2_RESTRAINT_ERROR,
                                                        XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
+                                                       XPLOR_NITROXIDE_NAMES,
                                                        XPLOR_ORIGIN_AXIS_COLS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -104,6 +105,7 @@ except ImportError:
                                            T1T2_RESTRAINT_RANGE,
                                            T1T2_RESTRAINT_ERROR,
                                            XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
+                                           XPLOR_NITROXIDE_NAMES,
                                            XPLOR_ORIGIN_AXIS_COLS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -6865,6 +6867,8 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__with_para and (('comp_id' in _factor and _factor['atom_id'][0] == _factor['comp_id'][0] and _factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
                                      or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
                 return _factor
+            if self.__cur_subtype == 'dist' and _factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                return _factor
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
             if self.__cur_subtype != 'plane':
@@ -7047,6 +7051,15 @@ class XplorMRParserListener(ParseTreeListener):
                            and atomId in coordAtomSite['atom_id']:
                             atomIds = [atomId]
 
+                        if self.__cur_subtype == 'dist' and atomId in XPLOR_NITROXIDE_NAMES and coordAtomSite is not None\
+                           and atomId not in coordAtomSite['atom_id']:
+                            if compId == 'CYS' and 'SG' in coordAtomSite['atom_id']:
+                                atomIds = ['SG']
+                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                            elif compId == 'SER' and 'OG' in coordAtomSite['atom_id']:
+                                atomIds = ['OG']
+                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck
 
@@ -7108,7 +7121,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 else:
                                     ccdCheck = True
 
-                            if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                            if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and _atomId not in XPLOR_NITROXIDE_NAMES:
                                 _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
                                 if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
@@ -8409,6 +8422,8 @@ class XplorMRParserListener(ParseTreeListener):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
+                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                            pass
                         else:
                             _factor = copy.copy(self.factor)
                             if 'atom_selection' in __factor:
@@ -8678,6 +8693,8 @@ class XplorMRParserListener(ParseTreeListener):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
+                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                            pass
                         else:
                             _factor = copy.copy(self.factor)
                             if 'atom_selection' in __factor:
@@ -8732,6 +8749,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
+                            pass
+                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
                             pass
                         else:
                             _factor = copy.copy(self.factor)
@@ -8850,6 +8869,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
+                            pass
+                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
                             pass
                         else:
                             _factor = copy.copy(self.factor)

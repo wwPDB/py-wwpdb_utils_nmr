@@ -3763,8 +3763,8 @@ class CnsMRParserListener(ParseTreeListener):
                         atomId = atomId.upper()
 
                         if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                            origCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(seqId)] if seqId in ps['auth_seq_id'] else compId
-                            _, _, atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                            authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(seqId)]
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId)
 
                         atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                         if 'alt_atom_id' in _factor and details is not None and len(atomId) > 1:

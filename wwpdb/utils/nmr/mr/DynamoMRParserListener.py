@@ -42,6 +42,7 @@ try:
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            retrieveAtomIdentFromMRMap,
+                                           retrieveAtomIdFromMRMap,
                                            retrieveRemappedSeqId,
                                            splitPolySeqRstForMultimers,
                                            splitPolySeqRstForExactNoes,
@@ -78,6 +79,7 @@ except ImportError:
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                retrieveAtomIdentFromMRMap,
+                               retrieveAtomIdFromMRMap,
                                retrieveRemappedSeqId,
                                splitPolySeqRstForMultimers,
                                splitPolySeqRstForExactNoes,
@@ -906,8 +908,8 @@ class DynamoMRParserListener(ParseTreeListener):
         fixedChainId = None
         fixedSeqId = None
 
-        # if self.__mrAtomNameMapping is not None and compId not in monDict3:
-        #     seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+        if self.__mrAtomNameMapping is not None and compId not in monDict3:
+            seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         if self.__reasons is not None:
             if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
@@ -945,7 +947,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 cifCompId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                    _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, origCompId, atomId)
+                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                 if compId in (cifCompId, origCompId):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.append((chainId, seqId, cifCompId, True))
@@ -982,7 +984,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             cifCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
                             if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                                _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, origCompId, atomId)
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.append((chainId, seqId_, cifCompId, True))
@@ -1013,7 +1015,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, origCompId, atomId)
+                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                     if compId in (cifCompId, origCompId):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((chainId, seqId, cifCompId, False))
@@ -1038,7 +1040,7 @@ class DynamoMRParserListener(ParseTreeListener):
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, origCompId, atomId)
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                         if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
@@ -1070,7 +1072,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             cifCompId = np['comp_id'][idx]
                             origCompId = np['auth_comp_id'][idx]
                             if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                                _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, origCompId, atomId)
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
@@ -1115,7 +1117,7 @@ class DynamoMRParserListener(ParseTreeListener):
         atomSelection = []
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
-            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)

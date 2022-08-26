@@ -1208,14 +1208,40 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId):
     """ Retrieve atom identifiers from atom name mapping of public MR file.
     """
 
+    elemName = atomId[0]
+
     try:
 
-        item = next(item for item in mrAtomNameMapping
-                    if item['original_seq_id'] == seqId
-                    and item['original_comp_id'] == compId
-                    and item['original_atom_id'] == atomId)
+        if elemName == 'H' or (elemName in ('1', '2', '3') and len(atomId) > 1 and atomId[1] == 'H'):
 
-        return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
+            item = next(item for item in mrAtomNameMapping
+                        if item['original_seq_id'] == seqId
+                        and item['original_comp_id'] == compId
+                        and item['original_atom_id'] == atomId)
+
+            return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
+
+        _atomId = 'H' + atomId[1:]
+
+        item = next((item for item in mrAtomNameMapping
+                     if item['original_seq_id'] == seqId
+                     and item['original_comp_id'] == compId
+                     and item['original_atom_id'] == _atomId), None)
+
+        if item is not None:
+            return item['auth_seq_id'], item['auth_comp_id'], elemName + item['auth_atom_id'][1:]
+
+        _atomId = 'H' + atomId[1:] + '2'
+
+        item = next((item for item in mrAtomNameMapping
+                     if item['original_seq_id'] == seqId
+                     and item['original_comp_id'] == compId
+                     and item['original_atom_id'] == _atomId), None)
+
+        if item is not None:
+            return item['auth_seq_id'], item['auth_comp_id'], elemName + item['auth_atom_id'][1:-1]
+
+        return seqId, compId, atomId
 
     except StopIteration:
         return seqId, compId, atomId
@@ -1225,14 +1251,40 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId):
     """ Retrieve atom_id from atom name mapping of public MR file.
     """
 
+    elemName = atomId[0]
+
     try:
 
-        item = next(item for item in mrAtomNameMapping
-                    if item['auth_seq_id'] == cifSeqId
-                    and item['auth_comp_id'] == cifCompId
-                    and item['original_atom_id'] == atomId)
+        if elemName == 'H' or (elemName in ('1', '2', '3') and len(atomId) > 1 and atomId[1] == 'H'):
 
-        return item['auth_atom_id']
+            item = next(item for item in mrAtomNameMapping
+                        if item['auth_seq_id'] == cifSeqId
+                        and item['auth_comp_id'] == cifCompId
+                        and item['original_atom_id'] == atomId)
+
+            return item['auth_atom_id']
+
+        _atomId = 'H' + atomId[1:]
+
+        item = next((item for item in mrAtomNameMapping
+                     if item['auth_seq_id'] == cifSeqId
+                     and item['auth_comp_id'] == cifCompId
+                     and item['original_atom_id'] == _atomId), None)
+
+        if item is not None:
+            return elemName + item['auth_atom_id'][1:]
+
+        _atomId = 'H' + atomId[1:] + '2'
+
+        item = next((item for item in mrAtomNameMapping
+                     if item['auth_seq_id'] == cifSeqId
+                     and item['auth_comp_id'] == cifCompId
+                     and item['original_atom_id'] == _atomId), None)
+
+        if item is not None:
+            return elemName + item['auth_atom_id'][1:-1]
+
+        return atomId
 
     except StopIteration:
         return atomId

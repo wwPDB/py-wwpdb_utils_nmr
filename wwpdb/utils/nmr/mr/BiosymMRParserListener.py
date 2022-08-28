@@ -774,6 +774,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                    if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
+                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((chainId, seqId, cifCompId, False))

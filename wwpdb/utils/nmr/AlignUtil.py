@@ -537,7 +537,11 @@ def stripPolySeqRst(polySeqRst):
     for ps in polySeqRst:
         seq_ids = copy.copy(ps['seq_id'])
         comp_ids = copy.copy(ps['comp_id'])
-        auth_comp_ids = copy.copy(ps['auth_comp_id'])
+
+        has_auth_comp_id = 'auth_comp_id' in ps
+
+        if has_auth_comp_id:
+            auth_comp_ids = copy.copy(ps['auth_comp_id'])
 
         idx = 0
         while idx < len(seq_ids):
@@ -548,7 +552,9 @@ def stripPolySeqRst(polySeqRst):
         if idx != 0:
             seq_ids = seq_ids[idx - 1:]
             comp_ids = comp_ids[idx - 1:]
-            auth_comp_ids = auth_comp_ids[idx - 1:]
+
+            if has_auth_comp_id:
+                auth_comp_ids = auth_comp_ids[idx - 1:]
 
         len_seq_ids = len(seq_ids)
         idx = len_seq_ids - 1
@@ -560,12 +566,16 @@ def stripPolySeqRst(polySeqRst):
         if idx != len_seq_ids - 1:
             seq_ids = seq_ids[:idx + 1]
             comp_ids = comp_ids[:idx + 1]
-            auth_comp_ids = auth_comp_ids[:idx + 1]
+
+            if has_auth_comp_id:
+                auth_comp_ids = auth_comp_ids[:idx + 1]
 
         if len(ps['seq_id']) != len(seq_ids):
             ps['seq_id'] = seq_ids
             ps['comp_id'] = comp_ids
-            ps['auth_comp_id'] = auth_comp_ids
+
+            if has_auth_comp_id:
+                ps['auth_comp_id'] = auth_comp_ids
 
 
 def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolvedMultimer=False):
@@ -1727,7 +1737,9 @@ def splitPolySeqRstForNonPoly(ccU, polySeqModel, nonPolyModel, polySeqRst, seqAl
         if ca['conflict'] == 0 and ca['unmapped'] > 0:
             ref_chain_id = ca['ref_chain_id']
             test_chain_id = ca['test_chain_id']
-            test_ps = next(ps for ps in polySeqRst if ps['chain_id'] == test_chain_id)
+            test_ps = next((ps for ps in polySeqRst if ps['chain_id'] == test_chain_id), None)
+            if test_ps is None:
+                continue
             sa = next(sa for sa in seqAlign if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id)
 
             for test_seq_id, mid_code in zip_longest(sa['test_seq_id'], sa['mid_code']):
@@ -1786,14 +1798,16 @@ def splitPolySeqRstForNonPoly(ccU, polySeqModel, nonPolyModel, polySeqRst, seqAl
 
             test_ps = next(ps for ps in _polySeqRst if ps['chain_id'] == test_chain_id)
 
-            idx = test_ps['seq_id'].index(test_seq_id)
+            if test_seq_id in test_ps['seq_id']:
 
-            del test_ps['seq_id'][idx]
-            del test_ps['comp_id'][idx]
+                idx = test_ps['seq_id'].index(test_seq_id)
 
-            _nonPolyMapping[comp_id][test_seq_id] = {'chain_id': candidate['chain_id'],
-                                                     'seq_id': candidate['seq_id'],
-                                                     'original_chain_id': test_chain_id}
+                del test_ps['seq_id'][idx]
+                del test_ps['comp_id'][idx]
+
+                _nonPolyMapping[comp_id][test_seq_id] = {'chain_id': candidate['chain_id'],
+                                                         'seq_id': candidate['seq_id'],
+                                                         'original_chain_id': test_chain_id}
 
             split = True
 

@@ -12,7 +12,7 @@ import copy
 import collections
 import itertools
 
-import numpy as np
+import numpy
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
@@ -200,7 +200,7 @@ def toNpArray(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
-    return np.asarray([atom['x'], atom['y'], atom['z']], dtype=float)
+    return numpy.asarray([atom['x'], atom['y'], atom['z']], dtype=float)
 
 
 def toRegEx(string):
@@ -569,6 +569,34 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                 nonPoly = cR.getPolymerSequence(lpCategory, keyItems,
                                                 withStructConf=False,
                                                 withRmsd=False)
+
+                for np in nonPoly:
+                    conflict = False
+
+                    altAuthSeqIds = []
+
+                    for authSeqId, labelSeqId in zip(np['auth_seq_id'], np['seq_id']):
+
+                        ps = next((ps for ps in polySeq if ps['auth_chain_id'] == np['auth_chain_id']), None)
+
+                        if ps is None:
+                            continue
+
+                        if authSeqId in ps['auth_seq_id'] and labelSeqId not in ps['auth_seq_id']:
+                            altAuthSeqIds.append(labelSeqId)
+
+                            if 'ambig_auth_seq_id' not in ps:
+                                ps['ambug_auth_seq_id'] = []
+                            ps['ambug_auth_seq_id'].append(authSeqId)
+
+                            conflict = True
+
+                        else:
+                            altAuthSeqIds.append(authSeqId)
+
+                    if conflict:
+                        np['alt_auth_seq_id'] = altAuthSeqIds
+
             except KeyError:
                 nonPoly = None
 
@@ -1373,7 +1401,7 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
         if a_1 is None or a_2 is None:
             continue
 
-        bond.append({'model_id': model_id, 'distance': float(f"{np.linalg.norm(toNpArray(a_1) - toNpArray(a_2)):.3f}")})
+        bond.append({'model_id': model_id, 'distance': float(f"{numpy.linalg.norm(toNpArray(a_1) - toNpArray(a_2)):.3f}")})
 
     if len(bond) > 0:
         return bond

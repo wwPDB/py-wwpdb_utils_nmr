@@ -3747,6 +3747,11 @@ class CnsMRParserListener(ParseTreeListener):
                             if fixedChainId != chainId:
                                 continue
 
+                    _seqId = seqId
+                    if not isPolySeq and 'alt_auth_seq_id' in ps and seqId in ps['auth_seq_id'] and seqId not in ps['alt_auth_seq_id']:
+                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _seqId == seqId)
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
                     foundCompId = True
 
                     if not self.__with_axis:
@@ -3762,9 +3767,11 @@ class CnsMRParserListener(ParseTreeListener):
 
                         atomId = atomId.upper()
 
-                        if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                            authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(seqId)]
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId)
+                        if compId not in monDict3 and self.__mrAtomNameMapping is not None and _seqId in ps['auth_seq_id']:
+                            authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
+                            _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, _seqId, authCompId, atomId)
+                            if coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
+                                atomId = _atomId
 
                         atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                         if 'alt_atom_id' in _factor and details is not None and len(atomId) > 1:
@@ -3874,6 +3881,12 @@ class CnsMRParserListener(ParseTreeListener):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
                                 else:
                                     ccdCheck = True
+
+                            if isPolySeq and 'ambig_auth_seq_id' in ps and _seqId in ps['ambig_auth_seq_id']:
+                                continue
+
+                            if not isPolySeq and 'alt_auth_seq_id' in ps and _seqId in ps['auth_seq_id'] and _seqId not in ps['alt_auth_seq_id']:
+                                continue
 
                             if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and _atomId not in XPLOR_NITROXIDE_NAMES:
                                 _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]

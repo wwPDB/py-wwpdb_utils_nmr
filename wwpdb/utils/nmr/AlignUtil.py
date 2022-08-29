@@ -682,7 +682,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                         if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
                             _s2['seq_id'] = _s2['seq_id'][:beg + 1] + _s2['seq_id'][end:]
                             _s2['comp_id'] = _s2['comp_id'][:beg + 1] + _s2['comp_id'][end:]
-                            _s2['auth_comp_id'] = _s2['auth_comp_id'][:beg + 1] + _s2['auth_comp_id'][end:]
+                            if 'auth_comp_id' in _s2:
+                                _s2['auth_comp_id'] = _s2['auth_comp_id'][:beg + 1] + _s2['auth_comp_id'][end:]
                             _s2['gap_in_auth_seq'] = True
 
             if conflict > 0 and hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
@@ -702,7 +703,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                             if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
                                 __s2['seq_id'] = __s2['seq_id'][:beg + 1] + __s2['seq_id'][end:]
                                 __s2['comp_id'] = __s2['comp_id'][:beg + 1] + __s2['comp_id'][end:]
-                                __s2['auth_comp_id'] = __s2['auth_comp_id'][:beg + 1] + __s2['auth_comp_id'][end:]
+                                if 'auth_comp_id' in __s2:
+                                    __s2['auth_comp_id'] = __s2['auth_comp_id'][:beg + 1] + __s2['auth_comp_id'][end:]
                                 __s2['gap_in_auth_seq'] = True
 
                 _s1_ = __s1

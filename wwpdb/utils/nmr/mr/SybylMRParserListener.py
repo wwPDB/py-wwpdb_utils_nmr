@@ -335,10 +335,16 @@ class SybylMRParserListener(ParseTreeListener):
                             self.__polySeqRst = polySeqRst
                             if 'non_poly_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
-
-        if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+        # """
+        # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+        #     if 'non_poly_remap' in self.reasonsForReParsing:
+        #         self.reasonsForReParsing['label_seq_scheme'] = False
+        #     if 'seq_id_remap' in self.reasonsForReParsing:
+        #         del self.reasonsForReParsing['seq_id_remap']
+        # """
+        if 'local_seq_scheme' in self.reasonsForReParsing:
             if 'non_poly_remap' in self.reasonsForReParsing:
-                self.reasonsForReParsing['label_seq_scheme'] = False
+                del self.reasonsForReParsing['local_seq_scheme']
             if 'seq_id_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
 
@@ -382,6 +388,8 @@ class SybylMRParserListener(ParseTreeListener):
 
             if not self.__hasPolySeq:
                 return
+
+            self.__retrieveLocalSeqScheme()
 
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -534,7 +542,8 @@ class SybylMRParserListener(ParseTreeListener):
 
     def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
         compId = translateToStdResName(compId)
-        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+        if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
@@ -598,11 +607,11 @@ class SybylMRParserListener(ParseTreeListener):
                         chainAssign.append((chainId, seqId, cifCompId, True))
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.append((chainId, seqId, cifCompId, True))
-                    """ defer to sequence alignment error
-                    if cifCompId != translateToStdResName(compId):
-                        self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
-                    """
+                    # """ defer to sequence alignment error
+                    # if cifCompId != translateToStdResName(compId):
+                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
@@ -675,15 +684,15 @@ class SybylMRParserListener(ParseTreeListener):
                         if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
-                                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    self.reasonsForReParsing['label_seq_scheme'] = True
+                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
-                            """ defer to sequence alignment error
-                            if cifCompId != translateToStdResName(compId):
-                                self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                                    f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
-                            """
+                            # """ defer to sequence alignment error
+                            # if cifCompId != translateToStdResName(compId):
+                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                            #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            # """
 
             if self.__hasNonPoly:
                 for np in self.__nonPoly:
@@ -700,8 +709,8 @@ class SybylMRParserListener(ParseTreeListener):
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
-                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                        self.reasonsForReParsing['label_seq_scheme'] = True
+                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
 
@@ -711,11 +720,11 @@ class SybylMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     chainAssign.append((chainId, _seqId, cifCompId, True))
-                    """ defer to sequence alignment error
-                    if cifCompId != translateToStdResName(compId):
-                        self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
-                    """
+                    # """ defer to sequence alignment error
+                    # if cifCompId != translateToStdResName(compId):
+                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    # """
 
         if len(chainAssign) == 0:
             if seqId == 1 and atomId in ('H', 'HN'):
@@ -793,6 +802,7 @@ class SybylMRParserListener(ParseTreeListener):
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
                 # self.__authAtomId = 'auth_atom_id'
+
             elif self.__preferAuthSeq:
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
                 if _coordAtomSite is not None:
@@ -801,12 +811,34 @@ class SybylMRParserListener(ParseTreeListener):
                         self.__preferAuthSeq = False
                         # self.__authSeqId = 'label_seq_id'
                         seqKey = _seqKey
+                        self.__setLocalSeqScheme()
                     elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                         found = True
                         self.__preferAuthSeq = False
                         # self.__authSeqId = 'label_seq_id'
                         # self.__authAtomId = 'auth_atom_id'
                         seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+
+            else:
+                self.__preferAuthSeq = True
+                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+                if _coordAtomSite is not None:
+                    if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        # self.__authSeqId = 'auth_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                        found = True
+                        # self.__authSeqId = 'auth_seq_id'
+                        # self.__authAtomId = 'auth_atom_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    else:
+                        self.__preferAuthSeq = False
+                else:
+                    self.__preferAuthSeq = False
 
         elif self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
@@ -816,29 +848,74 @@ class SybylMRParserListener(ParseTreeListener):
                     self.__preferAuthSeq = False
                     # self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__preferAuthSeq = False
                     # self.__authSeqId = 'label_seq_id'
                     # self.__authAtomId = 'auth_atom_id'
                     seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+
+        else:
+            self.__preferAuthSeq = True
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+            if _coordAtomSite is not None:
+                if atomId in _coordAtomSite['atom_id']:
+                    found = True
+                    # self.__authSeqId = 'auth_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                    found = True
+                    # self.__authSeqId = 'auth_seq_id'
+                    # self.__authAtomId = 'auth_atom_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                else:
+                    self.__preferAuthSeq = False
+            else:
+                self.__preferAuthSeq = False
 
         if found:
             return
 
-        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-        if _coordAtomSite is not None:
-            if atomId in _coordAtomSite['atom_id']:
-                found = True
+        if self.__preferAuthSeq:
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
+            if _coordAtomSite is not None:
+                if atomId in _coordAtomSite['atom_id']:
+                    found = True
+                    self.__preferAuthSeq = False
+                    # self.__authSeqId = 'label_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                    found = True
+                    self.__preferAuthSeq = False
+                    # self.__authSeqId = 'label_seq_id'
+                    # self.__authAtomId = 'auth_atom_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+
+        else:
+            self.__preferAuthSeq = True
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+            if _coordAtomSite is not None:
+                if atomId in _coordAtomSite['atom_id']:
+                    found = True
+                    # self.__authSeqId = 'auth_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                    found = True
+                    # self.__authSeqId = 'auth_seq_id'
+                    # self.__authAtomId = 'auth_atom_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                else:
+                    self.__preferAuthSeq = False
+            else:
                 self.__preferAuthSeq = False
-                # self.__authSeqId = 'label_seq_id'
-                seqKey = _seqKey
-            elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
-                found = True
-                self.__preferAuthSeq = False
-                # self.__authSeqId = 'label_seq_id'
-                # self.__authAtomId = 'auth_atom_id'
-                seqKey = _seqKey
 
         if found:
             return
@@ -893,6 +970,23 @@ class SybylMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints] "
         return ''
+
+    def __setLocalSeqScheme(self):
+        if 'local_seq_scheme' not in self.reasonsForReParsing:
+            self.reasonsForReParsing['local_seq_scheme'] = {}
+        if self.__cur_subtype == 'dist':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = self.__preferAuthSeq
+
+    def __retrieveLocalSeqScheme(self):
+        if self.__reasons is None or 'local_seq_scheme' not in self.__reasons:
+            return
+        if self.__cur_subtype == 'dist':
+            key = (self.__cur_subtype, self.distRestraints)
+        else:
+            return
+
+        if key in self.__reasons['local_seq_scheme']:
+            self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
     def getContentSubtype(self):
         """ Return content subtype of CYANA MR file.

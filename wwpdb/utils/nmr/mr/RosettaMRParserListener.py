@@ -386,10 +386,16 @@ class RosettaMRParserListener(ParseTreeListener):
                             self.__polySeqRst = polySeqRst
                             if 'non_poly_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
-
-        if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+        # """
+        # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+        #     if 'non_poly_remap' in self.reasonsForReParsing:
+        #         self.reasonsForReParsing['label_seq_scheme'] = False
+        #     if 'seq_id_remap' in self.reasonsForReParsing:
+        #         del self.reasonsForReParsing['seq_id_remap']
+        # """
+        if 'local_seq_scheme' in self.reasonsForReParsing:
             if 'non_poly_remap' in self.reasonsForReParsing:
-                self.reasonsForReParsing['label_seq_scheme'] = False
+                del self.reasonsForReParsing['local_seq_scheme']
             if 'seq_id_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
 
@@ -431,6 +437,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if not self.__hasPolySeq:
             return
+
+        self.__retrieveLocalSeqScheme()
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
@@ -706,7 +714,8 @@ class RosettaMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, isPolySeq=True):
-        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+        if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
@@ -833,8 +842,8 @@ class RosettaMRParserListener(ParseTreeListener):
                         if atomId is None\
                            or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                             chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
-                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['label_seq_scheme'] = True
+                            # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            #     self.reasonsForReParsing['label_seq_scheme'] = True
 
             if self.__hasNonPoly:
                 for np in self.__nonPoly:
@@ -854,8 +863,8 @@ class RosettaMRParserListener(ParseTreeListener):
                             if atomId is None\
                                or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                                 chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
-                                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    self.reasonsForReParsing['label_seq_scheme'] = True
+                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                #     self.reasonsForReParsing['label_seq_scheme'] = True
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -969,6 +978,7 @@ class RosettaMRParserListener(ParseTreeListener):
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
                 self.__authAtomId = 'auth_atom_id'
+
             elif self.__preferAuthSeq:
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
                 if _coordAtomSite is not None:
@@ -977,12 +987,34 @@ class RosettaMRParserListener(ParseTreeListener):
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
                         seqKey = _seqKey
+                        self.__setLocalSeqScheme()
                     elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                         found = True
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
                         self.__authAtomId = 'auth_atom_id'
                         seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+
+            else:
+                self.__preferAuthSeq = True
+                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+                if _coordAtomSite is not None:
+                    if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__authSeqId = 'auth_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                        found = True
+                        self.__authSeqId = 'auth_seq_id'
+                        self.__authAtomId = 'auth_atom_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    else:
+                        self.__preferAuthSeq = False
+                else:
+                    self.__preferAuthSeq = False
 
         elif self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
@@ -992,29 +1024,74 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__preferAuthSeq = False
                     self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__preferAuthSeq = False
                     self.__authSeqId = 'label_seq_id'
                     self.__authAtomId = 'auth_atom_id'
                     seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+
+        else:
+            self.__preferAuthSeq = True
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+            if _coordAtomSite is not None:
+                if atomId in _coordAtomSite['atom_id']:
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    self.__authAtomId = 'auth_atom_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                else:
+                    self.__preferAuthSeq = False
+            else:
+                self.__preferAuthSeq = False
 
         if found:
             return
 
-        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-        if _coordAtomSite is not None:
-            if atomId in _coordAtomSite['atom_id']:
-                found = True
+        if self.__preferAuthSeq:
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
+            if _coordAtomSite is not None:
+                if atomId in _coordAtomSite['atom_id']:
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    self.__authAtomId = 'auth_atom_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+
+        else:
+            self.__preferAuthSeq = True
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+            if _coordAtomSite is not None:
+                if atomId in _coordAtomSite['atom_id']:
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    self.__authAtomId = 'auth_atom_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                else:
+                    self.__preferAuthSeq = False
+            else:
                 self.__preferAuthSeq = False
-                self.__authSeqId = 'label_seq_id'
-                seqKey = _seqKey
-            elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
-                found = True
-                self.__preferAuthSeq = False
-                self.__authSeqId = 'label_seq_id'
-                self.__authAtomId = 'auth_atom_id'
-                seqKey = _seqKey
 
         if found:
             return
@@ -1081,6 +1158,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if not self.__hasPolySeq:
             return
+
+        self.__retrieveLocalSeqScheme()
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
@@ -1297,6 +1376,8 @@ class RosettaMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
+        self.__retrieveLocalSeqScheme()
+
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
         chainAssign3 = self.assignCoordPolymerSequence(seqId3, atomId3)
@@ -1378,6 +1459,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if not self.__hasPolySeq:
             return
+
+        self.__retrieveLocalSeqScheme()
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
@@ -1494,6 +1577,8 @@ class RosettaMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            self.__retrieveLocalSeqScheme()
+
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2, fixedChainId2)
 
@@ -1586,6 +1671,8 @@ class RosettaMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            self.__retrieveLocalSeqScheme()
+
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId234, atomId2)
             chainAssign3 = self.assignCoordPolymerSequence(seqId234, atomId3)
@@ -1650,6 +1737,8 @@ class RosettaMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
+        self.__retrieveLocalSeqScheme()
+
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
 
         if len(chainAssign1) == 0:
@@ -1660,7 +1749,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 1:
             return
 
-        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+        if not self.__preferAuthSeq:
             ps = next((ps for ps in self.__polySeq if ps['chain_id'] == opposingChainId), None)
         else:
             ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == opposingChainId), None)
@@ -1716,6 +1805,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if not self.__hasPolySeq:
             return
+
+        self.__retrieveLocalSeqScheme()
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
 
@@ -1780,6 +1871,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             if not self.__hasPolySeq:
                 return
+
+            self.__retrieveLocalSeqScheme()
 
             chainAssign1 = self.assignCoordPolymerSequence(seqId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2)
@@ -1857,6 +1950,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             if not self.__hasPolySeq:
                 return
+
+            self.__retrieveLocalSeqScheme()
 
             chainAssign = self.assignCoordPolymerSequence(seqId)
 
@@ -2824,6 +2919,8 @@ class RosettaMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            self.__retrieveLocalSeqScheme()
+
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
 
@@ -2966,6 +3063,8 @@ class RosettaMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
+        self.__retrieveLocalSeqScheme()
+
         chainAssign1 = self.assignCoordPolymerSequence(seqId1)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2)
 
@@ -3089,6 +3188,39 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'geo':
             return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "
         return ''
+
+    def __setLocalSeqScheme(self):
+        if 'local_seq_scheme' not in self.reasonsForReParsing:
+            self.reasonsForReParsing['local_seq_scheme'] = {}
+        if self.__cur_subtype == 'dist':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'ang':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.angRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'dihed':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'rdc':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.rdcRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'geo':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
+
+    def __retrieveLocalSeqScheme(self):
+        if self.__reasons is None or 'local_seq_scheme' not in self.__reasons:
+            return
+        if self.__cur_subtype == 'dist':
+            key = (self.__cur_subtype, self.distRestraints)
+        elif self.__cur_subtype == 'ang':
+            key = (self.__cur_subtype, self.angRestraints)
+        elif self.__cur_subtype == 'dihed':
+            key = (self.__cur_subtype, self.dihedRestraints)
+        elif self.__cur_subtype == 'rdc':
+            key = (self.__cur_subtype, self.rdcRestraints)
+        elif self.__cur_subtype == 'geo':
+            key = (self.__cur_subtype, self.geoRestraints)
+        else:
+            return
+
+        if key in self.__reasons['local_seq_scheme']:
+            self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
     def getContentSubtype(self):
         """ Return content subtype of ROSETTA MR file.

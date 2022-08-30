@@ -600,10 +600,16 @@ class XplorMRParserListener(ParseTreeListener):
                             self.__polySeqRst = polySeqRst
                             if 'non_poly_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
-
-        if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+        # """
+        # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+        #     if 'non_poly_remap' in self.reasonsForReParsing:
+        #         self.reasonsForReParsing['label_seq_scheme'] = False
+        #     if 'seq_id_remap' in self.reasonsForReParsing:
+        #         del self.reasonsForReParsing['seq_id_remap']
+        # """
+        if 'local_seq_scheme' in self.reasonsForReParsing:
             if 'non_poly_remap' in self.reasonsForReParsing:
-                self.reasonsForReParsing['label_seq_scheme'] = False
+                del self.reasonsForReParsing['local_seq_scheme']
             if 'seq_id_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
 
@@ -7024,9 +7030,11 @@ class XplorMRParserListener(ParseTreeListener):
                 if cifCheck:
                     self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}.\n"
-                    if 'atom_id' in __factor and __factor['atom_id'][0] is None:
-                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                            self.reasonsForReParsing['label_seq_scheme'] = True
+                    # """
+                    # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
+                    #     if 'label_seq_scheme' not in self.reasonsForReParsing:
+                    #         self.reasonsForReParsing['label_seq_scheme'] = True
+                    # """
                 else:
                     self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}. "\
@@ -7377,15 +7385,17 @@ class XplorMRParserListener(ParseTreeListener):
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
-                                        if self.__reasons is None and seqKey in self.__authToLabelSeq:
-                                            _, _seqId = self.__authToLabelSeq[seqKey]
-                                            if ps is not None and _seqId in ps['auth_seq_id']:
-                                                _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                                                if self.__ccU.updateChemCompDict(_compId):
-                                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                                    if cca is not None:
-                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = True
+                                        # """
+                                        # if self.__reasons is None and seqKey in self.__authToLabelSeq:
+                                        #     _, _seqId = self.__authToLabelSeq[seqKey]
+                                        #     if ps is not None and _seqId in ps['auth_seq_id']:
+                                        #         _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                                        #         if self.__ccU.updateChemCompDict(_compId):
+                                        #             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                        #             if cca is not None:
+                                        #                 if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                        #                     self.reasonsForReParsing['label_seq_scheme'] = True
+                                        # """
                                         if cifCheck and self.__cur_subtype != 'plane'\
                                            and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
                                            and (self.__reasons is None or 'non_poly_remap' not in self.__reasons):
@@ -7395,7 +7405,8 @@ class XplorMRParserListener(ParseTreeListener):
         return foundCompId
 
     def getOrigSeqId(self, ps, seqId, isPolySeq=True):
-        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
+        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
+        if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__authToLabelSeq:
                 _chainId, _seqId = self.__authToLabelSeq[seqKey]
@@ -7408,7 +7419,8 @@ class XplorMRParserListener(ParseTreeListener):
         return seqId
 
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
-        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
+        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
+        if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
@@ -10256,45 +10268,45 @@ class XplorMRParserListener(ParseTreeListener):
             self.reasonsForReParsing['local_seq_scheme'] = {}
         if self.__cur_subtype == 'dist':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'dihed':
+        elif self.__cur_subtype == 'dihed':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'rdc':
+        elif self.__cur_subtype == 'rdc':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.rdcRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'plane':
+        elif self.__cur_subtype == 'plane':
             self.reasonsForReParsing['loca_seq_scheme'][(self.__cur_subtype, self.planeRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'adist':
+        elif self.__cur_subtype == 'adist':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.adistRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'jcoup':
+        elif self.__cur_subtype == 'jcoup':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.jcoupRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'hvycs':
+        elif self.__cur_subtype == 'hvycs':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.hvycsRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'procs':
+        elif self.__cur_subtype == 'procs':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.procsRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'rama':
+        elif self.__cur_subtype == 'rama':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.ramaRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'radi':
+        elif self.__cur_subtype == 'radi':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.radiRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'diff':
+        elif self.__cur_subtype == 'diff':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.diffRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'nbase':
+        elif self.__cur_subtype == 'nbase':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.nbaseRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'csa':
+        elif self.__cur_subtype == 'csa':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.csaRestraints)] = self.__preferAuthSeq
-        # if self.__cur_subtype == 'ang':
+        # elif self.__cur_subtype == 'ang':
         #     self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.angRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'pre':
+        elif self.__cur_subtype == 'pre':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.preRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'pcs':
+        elif self.__cur_subtype == 'pcs':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.pcsRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'prdc':
+        elif self.__cur_subtype == 'prdc':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.prdcRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'pang':
+        elif self.__cur_subtype == 'pang':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.pangRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'pccr':
+        elif self.__cur_subtype == 'pccr':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.pccrRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'hbond':
+        elif self.__cur_subtype == 'hbond':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.hbondRestraints)] = self.__preferAuthSeq
-        if self.__cur_subtype == 'geo':
+        elif self.__cur_subtype == 'geo':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
 
     def __retrieveLocalSeqScheme(self):
@@ -10302,46 +10314,48 @@ class XplorMRParserListener(ParseTreeListener):
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)
-        if self.__cur_subtype == 'dihed':
+        elif self.__cur_subtype == 'dihed':
             key = (self.__cur_subtype, self.dihedRestraints)
-        if self.__cur_subtype == 'rdc':
+        elif self.__cur_subtype == 'rdc':
             key = (self.__cur_subtype, self.rdcRestraints)
-        if self.__cur_subtype == 'plane':
+        elif self.__cur_subtype == 'plane':
             key = (self.__cur_subtype, self.planeRestraints)
-        if self.__cur_subtype == 'adist':
+        elif self.__cur_subtype == 'adist':
             key = (self.__cur_subtype, self.adistRestraints)
-        if self.__cur_subtype == 'jcoup':
+        elif self.__cur_subtype == 'jcoup':
             key = (self.__cur_subtype, self.jcoupRestraints)
-        if self.__cur_subtype == 'hvycs':
+        elif self.__cur_subtype == 'hvycs':
             key = (self.__cur_subtype, self.hvycsRestraints)
-        if self.__cur_subtype == 'procs':
+        elif self.__cur_subtype == 'procs':
             key = (self.__cur_subtype, self.procsRestraints)
-        if self.__cur_subtype == 'rama':
+        elif self.__cur_subtype == 'rama':
             key = (self.__cur_subtype, self.ramaRestraints)
-        if self.__cur_subtype == 'radi':
+        elif self.__cur_subtype == 'radi':
             key = (self.__cur_subtype, self.radiRestraints)
-        if self.__cur_subtype == 'diff':
+        elif self.__cur_subtype == 'diff':
             key = (self.__cur_subtype, self.diffRestraints)
-        if self.__cur_subtype == 'nbase':
+        elif self.__cur_subtype == 'nbase':
             key = (self.__cur_subtype, self.nbaseRestraints)
-        if self.__cur_subtype == 'csa':
+        elif self.__cur_subtype == 'csa':
             key = (self.__cur_subtype, self.csaRestraints)
-        # if self.__cur_subtype == 'ang':
+        # elif self.__cur_subtype == 'ang':
         #     key = (self.__cur_subtype, self.angRestraints)
-        if self.__cur_subtype == 'pre':
+        elif self.__cur_subtype == 'pre':
             key = (self.__cur_subtype, self.preRestraints)
-        if self.__cur_subtype == 'pcs':
+        elif self.__cur_subtype == 'pcs':
             key = (self.__cur_subtype, self.pcsRestraints)
-        if self.__cur_subtype == 'prdc':
+        elif self.__cur_subtype == 'prdc':
             key = (self.__cur_subtype, self.prdcRestraints)
-        if self.__cur_subtype == 'pang':
+        elif self.__cur_subtype == 'pang':
             key = (self.__cur_subtype, self.pangRestraints)
-        if self.__cur_subtype == 'pccr':
+        elif self.__cur_subtype == 'pccr':
             key = (self.__cur_subtype, self.pccrRestraints)
-        if self.__cur_subtype == 'hbond':
+        elif self.__cur_subtype == 'hbond':
             key = (self.__cur_subtype, self.hbondRestraints)
-        if self.__cur_subtype == 'geo':
+        elif self.__cur_subtype == 'geo':
             key = (self.__cur_subtype, self.geoRestraints)
+        else:
+            return
 
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]

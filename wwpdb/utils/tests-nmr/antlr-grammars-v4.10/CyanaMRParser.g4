@@ -74,13 +74,14 @@ torsion_angle_restraint:
 */
 rdc_restraints:
 	rdc_parameter+
-	comment?
+	comment*
 	rdc_restraint+;
 
 rdc_parameter:
 	Integer Float Float Integer;
 
 rdc_restraint:
+	comment*
 	Integer Simple_name Simple_name
 	Integer Simple_name Simple_name
 	number number number Integer number?;
@@ -90,13 +91,14 @@ rdc_restraint:
 */
 pcs_restraints:
 	pcs_parameter+
-	comment?
+	comment*
 	pcs_restraint+;
 
 pcs_parameter:
 	Integer Float Float Integer;
 
 pcs_restraint:
+	comment*
 	Integer Simple_name Simple_name
 	number number number Integer;
 

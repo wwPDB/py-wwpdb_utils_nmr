@@ -366,7 +366,7 @@ class GromacsMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit}"
             else:
-                if upper_limit > DIST_ERROR_MAX and omit_dist_limit_outlier:
+                if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
                         f"The upper limit value='{upper_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     upper_limit = None
@@ -379,7 +379,7 @@ class GromacsMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit}"
             else:
-                if upper_linear_limit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
+                if (upper_linear_limit <= DIST_ERROR_MIN or upper_linear_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
                         f"The upper linear limit value='{upper_linear_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     upper_linear_limit = None

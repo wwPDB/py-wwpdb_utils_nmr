@@ -17,7 +17,7 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (stripOnce,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (stripQuot,
                                                        checkCoordinates,
                                                        translateToStdAtomName,
                                                        translateToStdResName,
@@ -50,7 +50,7 @@ try:
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberMRParser import AmberMRParser
-    from nmr.mr.ParserListenerUtil import (stripOnce,
+    from nmr.mr.ParserListenerUtil import (stripQuot,
                                            checkCoordinates,
                                            translateToStdAtomName,
                                            translateToStdResName,
@@ -2029,7 +2029,7 @@ class AmberMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN < self.upperLimit <= DIST_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{self.upperLimit}"
             else:
-                if self.upperLimit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
+                if (self.upperLimit <= DIST_ERROR_MIN or self.upperLimit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The upper limit value 'r3={self.upperLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     self.upperLimit = None
@@ -2055,7 +2055,7 @@ class AmberMRParserListener(ParseTreeListener):
             if DIST_ERROR_MIN < self.upperLinearLimit <= DIST_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit}"
             else:
-                if self.upperLinearLimit > DIST_ERROR_MAX and self.__omitDistLimitOutlier:
+                if (self.upperLinearLimit <= DIST_ERROR_MIN or self.upperLinearLimit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The upper linear limit value 'r4={self.upperLinearLimit}' is omitted because it is not  within range {DIST_RESTRAINT_ERROR}.\n"
                     self.upperLinearLimit = None
@@ -2381,18 +2381,22 @@ class AmberMRParserListener(ParseTreeListener):
                             pass
 
             if seqId in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
-                compId = ps['comp_id'][ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)]
+                idx = ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)
+                compId = ps['comp_id'][idx]
                 cifSeqId = None if useDefault else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
                 if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                    authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(seqId)]
-                    _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId)
-
-                atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
-
-                atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
+                    origCompId = ps['auth_comp_id'][idx]
+                    _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
+
+                if compId in monDict3 or coordAtomSite is None:
+                    atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                else:
+                    atomId = translateToStdAtomName(atomId, compId, coordAtomSite['atom_id'])
+
+                atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
 
                 if coordAtomSite is not None\
                    and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
@@ -2470,8 +2474,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                         if ccb is not None:
                                             bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                            if bondedTo[0] in ('N', 'O', 'S'):
+                                            if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
                                                 checked = True
+                                                self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
+                                                    "Please re-upload the model file.\n"
                                     if not checked:
                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -2511,17 +2518,21 @@ class AmberMRParserListener(ParseTreeListener):
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
-                        compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                        idx = ps['seq_id'].index(seqId)
+                        compId = ps['comp_id'][idx]
 
                         if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                            authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(seqId)]
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId)
-
-                        atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
-
-                        atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
+                            origCompId = ps['auth_comp_id'][idx]
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+
+                        if compId in monDict3 or coordAtomSite is None:
+                            atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                        else:
+                            atomId = translateToStdAtomName(atomId, compId, coordAtomSite['atom_id'])
+
+                        atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
 
                         if coordAtomSite is not None\
                            and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
@@ -2599,8 +2610,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
                                                     bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if bondedTo[0] in ('N', 'O', 'S'):
+                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
                                                         checked = True
+                                                        self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
+                                                            "Please re-upload the model file.\n"
                                             if not checked:
                                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -2688,7 +2702,7 @@ class AmberMRParserListener(ParseTreeListener):
                 cifSeqId = None if useDefault else ps['seq_id'][idx]
 
                 if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                    _, authCompId, authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, authAtomId)
+                    _, authCompId, authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, authAtomId)
 
                 if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
                    or compId == translateToStdResName(authCompId):
@@ -2790,8 +2804,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
                                                     bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if bondedTo[0] in ('N', 'O', 'S'):
+                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
                                                         checked = True
+                                                        self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
+                                                            "Please re-upload the model file.\n"
                                             if not checked:
                                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -2870,8 +2887,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
                                                     bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if bondedTo[0] in ('N', 'O', 'S'):
+                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
                                                         checked = True
+                                                        self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
+                                                            "Please re-upload the model file.\n"
                                             if not checked:
                                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -2990,8 +3010,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
                                                     bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if bondedTo[0] in ('N', 'O', 'S'):
+                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
                                                         checked = True
+                                                        self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
+                                                            "Please re-upload the model file.\n"
                                             if not checked:
                                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -3070,8 +3093,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
                                                     bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if bondedTo[0] in ('N', 'O', 'S'):
+                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
                                                         checked = True
+                                                        self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
+                                                            "Please re-upload the model file.\n"
                                             if not checked:
                                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -3157,7 +3183,7 @@ class AmberMRParserListener(ParseTreeListener):
                     cifSeqId = None if useDefault else ps['seq_id'][idx]
 
                     if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                        _, authCompId, authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, authAtomId)
+                        _, authCompId, authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, authAtomId)
 
                     if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
                        or compId == translateToStdResName(authCompId):
@@ -3244,8 +3270,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
                                                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if bondedTo[0] in ('N', 'O', 'S'):
+                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
                                                             checked = True
+                                                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
+                                                                "Please re-upload the model file.\n"
                                                 if not checked:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -3324,8 +3353,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
                                                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if bondedTo[0] in ('N', 'O', 'S'):
+                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
                                                             checked = True
+                                                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
+                                                                "Please re-upload the model file.\n"
                                                 if not checked:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -3342,7 +3374,8 @@ class AmberMRParserListener(ParseTreeListener):
                         compId = np['comp_id'][idx]
 
                         if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                            _, compId, authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, authAtomId)
+                            origCompId = np['auth_comp_id'][idx]
+                            _, compId, authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, authAtomId)
 
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
@@ -3426,8 +3459,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
                                                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if bondedTo[0] in ('N', 'O', 'S'):
+                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
                                                             checked = True
+                                                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
+                                                                "Please re-upload the model file.\n"
                                                 if not checked:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -3506,8 +3542,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
                                                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if bondedTo[0] in ('N', 'O', 'S'):
+                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
                                                             checked = True
+                                                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
+                                                                "Please re-upload the model file.\n"
                                                 if not checked:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
@@ -3868,7 +3907,7 @@ class AmberMRParserListener(ParseTreeListener):
                 rawStrArray = str(ctx.Qstrings()).split(',')
                 numAtnamCol = 0
                 for col, rawStr in enumerate(rawStrArray):
-                    val = stripOnce(stripOnce(rawStr, '\''), '"').rstrip()
+                    val = stripQuot(rawStr)
                     if len(val) == 0:
                         break
                     self.atnam[col] = val
@@ -3900,7 +3939,7 @@ class AmberMRParserListener(ParseTreeListener):
                 else:
                     self.setAtnamCol.append(decimal)
                 rawStrArray = str(ctx.Qstring_AP()).split(',')
-                val = stripOnce(stripOnce(rawStrArray[0], '\''), '"').rstrip()
+                val = stripQuot(rawStrArray[0])
                 if len(rawStrArray) > 1:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "\
@@ -3950,7 +3989,7 @@ class AmberMRParserListener(ParseTreeListener):
                 rawStrArray = str(ctx.Qstrings()).split(',')
                 numGrnamCol = 0
                 for col, rawStr in enumerate(rawStrArray):
-                    val = stripOnce(stripOnce(rawStr, '\''), '"').rstrip()
+                    val = stripQuot(rawStr)
                     if len(val) == 0:
                         break
                     self.grnam[varNum][col] = val
@@ -4011,7 +4050,7 @@ class AmberMRParserListener(ParseTreeListener):
                 else:
                     self.setGrnamCol[varNum].append(decimal)
                 rawStrArray = str(ctx.Qstring_AP()).split(',')
-                val = stripOnce(stripOnce(rawStrArray[0], '\''), '"').rstrip()
+                val = stripQuot(rawStrArray[0])
                 if len(rawStrArray) > 1:
                     self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
                         f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "\
@@ -6741,10 +6780,6 @@ class AmberMRParserListener(ParseTreeListener):
 
         atomSelection = []
 
-        if compId is not None:
-            if self.__mrAtomNameMapping is not None and compId not in monDict3:
-                seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
-
         for chainId, cifSeqId, cifCompId in chainAssign:
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
@@ -6856,8 +6891,12 @@ class AmberMRParserListener(ParseTreeListener):
                                 if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                     if ccb is not None:
                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
-                        if bondedTo[0] in ('N', 'O', 'S'):
-                            return
+                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                            if enableWarning:
+                                self.warningMessage += f"[Hydrogen not instantiated] "\
+                                    f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
+                                    "Please re-upload the model file.\n"
+                                return
                 if enableWarning:
                     self.warningMessage += f"[Atom not found] "\
                         f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"

@@ -6,7 +6,7 @@
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 20-Apr-2022  M. Yokochi - enable to fix broken data block order of CIF formatted NMR-STAR using NMR-STAR schema (DAOTHER-7407, NMR restraint remediation)
 # 28-Jul-2022  M. Yokochi - enable to fix format issue of CIF formatted NMR-STAR (You cannot have two loops with the same category in one saveframe. Category: '_Audit')
-# 17-Aug-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
+# 19-Aug-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -257,6 +257,8 @@ class CifToNmrStar:
 
             category_order = _category_order
 
+            _sf_category = ''
+
             reserved_block_names = []
             sf = None
             for item in category_order:
@@ -270,6 +272,10 @@ class CifToNmrStar:
                         cur_list_id = 1
                     else:
                         cur_list_id = sf_category_counter[sf_category] + 1
+                elif sf_category != _sf_category:
+                    cur_list_id = 1
+
+                _sf_category = sf_category
 
                 sf_tag_prefix = next(v['Tag category'] for k, v in self.schema.items()
                                      if v['SFCategory'] == sf_category and v['Tag field'] == 'Sf_category')
@@ -312,8 +318,17 @@ class CifToNmrStar:
                     dict_list = cifObj.GetDataBlock(block_name)
                     itVals = next(v for k, v in dict_list.items() if k == category)
 
+                    sf.add_tag('Sf_category', sf_category)
+                    sf.add_tag('Sf_framecode', new_block_name)
+                    if sf_category != 'entry_information':
+                        sf.add_tag('Entry_ID', _entry_id)
+                        sf.add_tag('ID', _cur_list_id)
+                    else:
+                        sf.add_tag('ID', _entry_id)
+
                     for _item, value in zip(itVals['Items'], itVals['Values'][0]):
-                        sf.add_tag(_item, new_block_name if _item == 'Sf_framecode' else (value if _item != 'ID' else _cur_list_id))
+                        if _item not in ('Sf_category', 'Sf_framecode', 'Entry_ID', 'ID'):
+                            sf.add_tag(_item, value)
 
                 if not item['sf_category_flag']:
                     lp = pynmrstar.Loop.from_scratch(category)

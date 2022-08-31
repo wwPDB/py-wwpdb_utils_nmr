@@ -158,6 +158,7 @@
 # 17-Jun-2022  M. Yokochi - add support for DYNAMO/PALES/TALOS MR format (DAOTHER-7872, NMR restraint remediation)
 # 06-Jul-2022  M. Yokochi - add support for SYBYL MR format (DAOTHER-7902, NMR restraint remediation)
 # 05-Aug-2022  M. Yokochi - do not add a saveframe tag if there is already the tag (DAOTHER-7947)
+# 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -8222,6 +8223,13 @@ class NmrDpUtility:
 
                 return file_ext
 
+            if len(file_ext) == 3:
+
+                if file_ext not in CYANA_MR_FILE_EXTS:
+                    return None
+
+                return file_ext
+
             return None
 
         file_ext = split_ext[1][1:].lower()
@@ -10768,6 +10776,7 @@ class NmrDpUtility:
             has_cif_format = False
             has_str_format = False
             has_cs_str = False
+            has_mr_str = False
 
             try:
 
@@ -11003,6 +11012,11 @@ class NmrDpUtility:
 
                                 if _is_done:
                                     self.__detectContentSubType__(insert_index, input_source)
+                                    input_source_dic = input_source.get()
+                                    if 'content_subtype' in input_source_dic:
+                                        content_subtype = input_source_dic['content_subtype']
+                                        if 'dist_restraint' in content_subtype or 'dihed_restraint' in content_subtype or 'rdc_restraint' in content_subtype:
+                                            has_mr_str = True
 
                         elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                             pass
@@ -11197,7 +11211,7 @@ class NmrDpUtility:
                     has_content = True
                     break
 
-            if not has_content:
+            if not has_content and not has_mr_str:
                 with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
                     ofp.write('')
 
@@ -13268,7 +13282,7 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            if content_subtype not in polymer_sequence_in_loop and content_type == 'nmr-restraints':  # DAOTHER-7545 NMR-STAR formatted MR has no chem_shift
+            if content_subtype not in polymer_sequence_in_loop or content_type == 'nmr-restraints':  # DAOTHER-7545 NMR-STAR formatted MR has no chem_shift
 
                 if 'dist_restraint' in polymer_sequence_in_loop:
                     content_subtype = 'dist_restraint'
@@ -13346,18 +13360,18 @@ class NmrDpUtility:
                         offset_seq_ids[chain_id] = min_seq_id * -1
 
                     for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
-                        common_poly_seq[chain_id].add(f"{seq_id + offset_seq_ids[chain_id]:04d} {comp_id}")
+                        common_poly_seq[chain_id].add((seq_id + offset_seq_ids[chain_id], comp_id))
 
         asm = []  # molecular assembly of a loop
 
         for chain_id in sorted(common_poly_seq.keys()):
 
             if len(common_poly_seq[chain_id]) > 0:
-                seq_id_list = sorted(set(int(i.split(' ')[0]) - offset_seq_ids[chain_id] for i in common_poly_seq[chain_id]))
+                seq_id_list = sorted(set(i[0] - offset_seq_ids[chain_id] for i in common_poly_seq[chain_id]))
                 comp_id_list = []
 
                 for seq_id in seq_id_list:
-                    _comp_id = [i.split(' ')[1] for i in common_poly_seq[chain_id] if int(i.split(' ')[0]) - offset_seq_ids[chain_id] == seq_id]
+                    _comp_id = [i[1] for i in common_poly_seq[chain_id] if i[0] - offset_seq_ids[chain_id] == seq_id]
                     if len(_comp_id) == 1:
                         comp_id_list.append(_comp_id[0])
                     else:
@@ -13502,13 +13516,13 @@ class NmrDpUtility:
                     if entity_id != _entity_id:
                         return False
 
-                    seq.add(f"{seq_id:04d} {comp_id}")
+                    seq.add((seq_id, comp_id))
 
-                sorted_seq = sorted(seq)
+                sorted_seq = sorted(seq, key=lambda x: x[0])
 
                 asm.append({'chain_id': chain_id,
-                            'seq_id': [int(i.split(' ')[0]) for i in sorted_seq],
-                            'comp_id': [i.split(' ')[-1] for i in sorted_seq]})
+                            'seq_id': [x[0] for x in sorted_seq],
+                            'comp_id': [x[1] for x in sorted_seq]})
 
             if len(asm) > 0:
                 input_source.setItemValue('polymer_sequence', asm)
@@ -13586,17 +13600,17 @@ class NmrDpUtility:
                     chain_ids.add(c)
                     if c not in seq:
                         seq[c] = set()
-                    seq[c].add(f"{int(i[0]):04d} {i[1]}")
+                    seq[c].add((int(i[0]), i[1]))
                 except ValueError:
                     return False
 
         for chain_id in chain_ids:
 
-            sorted_seq = sorted(seq[chain_id])
+            sorted_seq = sorted(seq[chain_id], key=lambda x: x[0])
 
             asm.append({'chain_id': chain_id,
-                        'seq_id': [int(i.split(' ')[0]) for i in sorted_seq],
-                        'comp_id': [i.split(' ')[-1] for i in sorted_seq]})
+                        'seq_id': [x[0] for x in sorted_seq],
+                        'comp_id': [x[1] for x in sorted_seq]})
 
         if len(asm) > 0:
             input_source.setItemValue('polymer_sequence', asm)
@@ -13667,17 +13681,17 @@ class NmrDpUtility:
                     chain_ids.add(c)
                     if c not in seq:
                         seq[c] = set()
-                    seq[c].add(f"{int(i[0]):04d} {i[1]}")
+                    seq[c].add((int(i[0]), i[1]))
                 except ValueError:
                     return False
 
         if chain_id in chain_ids:
 
-            sorted_seq = sorted(seq[chain_id])
+            sorted_seq = sorted(seq[chain_id], key=lambda x: x[0])
 
             return {'chain_id': chain_id,
-                    'seq_id': [int(i.split(' ')[0]) for i in sorted_seq],
-                    'comp_id': [i.split(' ')[-1] for i in sorted_seq]}
+                    'seq_id': [x[0] for x in sorted_seq],
+                    'comp_id': [x[1] for x in sorted_seq]}
 
         return None
 
@@ -18514,7 +18528,7 @@ class NmrDpUtility:
                                 else:  # For example, HEM HM[A-D]
                                     _atom_id = atom_id
 
-                                methyl_cs_key = f"{chain_id} {seq_id:04d} {_atom_id} {occupancy}"
+                                methyl_cs_key = (chain_id, seq_id, _atom_id, occupancy)
 
                                 if methyl_cs_key not in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
@@ -19104,7 +19118,7 @@ class NmrDpUtility:
                             has_cs_stat = True
 
                             if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
-                                methyl_cs_key = f"{chain_id} {seq_id:04d} {atom_id_[:-1]} {occupancy}"
+                                methyl_cs_key = (chain_id, seq_id, atom_id_[:-1], occupancy)
 
                                 if methyl_cs_key not in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
@@ -21842,7 +21856,20 @@ class NmrDpUtility:
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
                                         + f") which is a {variant_name} {_variant_!r} is not present in the coordinate."
 
-                                    self.report.error.appendDescription('atom_not_found',
+                                    checked = False
+                                    if atom_id_[0] == 'H':
+                                        self.__ccU.updateChemCompDict(cif_comp_id)
+                                        ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                                    if atom_id_ in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                                        if ccb is not None:
+                                            bonded_to = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atom_id_ else ccb[self.__ccU.ccbAtomId1]
+                                            if coord_atom_site_ is not None and bonded_to in coord_atom_site_['atom_id']:
+                                                checked = True
+                                                err = "Atom ("\
+                                                    + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
+                                                    + f") which is a {variant_name} {_variant_!r} is not properly instantiated in the coordinate. Please re-upload the model file."
+
+                                    self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                          'description': err})
                                     self.report.setError()
@@ -22311,6 +22338,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
@@ -22336,7 +22371,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -22436,6 +22471,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
@@ -22461,7 +22504,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -22548,6 +22591,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
@@ -22573,7 +22624,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -22675,6 +22726,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -22716,7 +22775,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -22802,6 +22861,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -22835,7 +22902,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -22916,6 +22983,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -22949,7 +23024,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -23020,6 +23095,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
@@ -23045,7 +23128,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -23118,6 +23201,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -23159,7 +23250,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -23240,6 +23331,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -23273,7 +23372,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
                             elif warn.startswith('[Range value warning]'):
-                                self.report.warning.appendDescription('unusual_data',
+                                self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -29977,19 +30076,19 @@ class NmrDpUtility:
                     chain_id = s['chain_id']
 
                     for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
-                        common_poly_seq[chain_id].add(f"{seq_id + offset_seq_ids[chain_id]:04d} {comp_id}")
+                        common_poly_seq[chain_id].add((seq_id + offset_seq_ids[chain_id], comp_id))
 
         asm = []  # molecular assembly of a loop
 
         for chain_id in sorted(common_poly_seq.keys()):
 
             if len(common_poly_seq[chain_id]) > 0:
-                seq_id_list = sorted(set(int(i.split(' ')[0]) - offset_seq_ids[chain_id] for i in common_poly_seq[chain_id]))
+                seq_id_list = sorted(set(i[0] - offset_seq_ids[chain_id] for i in common_poly_seq[chain_id]))
                 comp_id_list = []
 
                 for seq_id in seq_id_list:
-                    _comp_id = [i.split(' ')[1] for i in common_poly_seq[chain_id]
-                                if int(i.split(' ')[0]) - offset_seq_ids[chain_id] == seq_id]
+                    _comp_id = [i[1] for i in common_poly_seq[chain_id]
+                                if i[0] - offset_seq_ids[chain_id] == seq_id]
                     if len(_comp_id) == 1:
                         comp_id_list.append(_comp_id[0])
                     else:
@@ -31937,7 +32036,21 @@ class NmrDpUtility:
 
                         if comp_id in monDict3:
 
-                            self.report.error.appendDescription('atom_not_found',
+                            checked = False
+                            if atom_id_[0] == 'H':
+                                self.__ccU.updateChemCompDict(comp_id)
+                                ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                            if atom_id_ in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                                if ccb is not None:
+                                    bonded_to = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atom_id_ else ccb[self.__ccU.ccbAtomId1]
+                                    if coord_atom_site_ is not None and bonded_to in coord_atom_site_['atom_id']:
+                                        checked = True
+                                        err = idx_msg + "Atom ("\
+                                            + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
+                                                                            comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
+                                            + ") is not properly instantiated in the coordinates. Please re-upload the model file."
+
+                            self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                  'description': err})
                             self.report.setError()
@@ -38045,14 +38158,14 @@ class NmrDpUtility:
                     iso_number = i[iso_number_name]
                     atom_id = i[atom_id_name]
 
-                    atoms.append(f"{chain_id:<4}:{seq_id - min_seq_ids[chain_id]:04d}:{iso_number:02d}:{atom_id:<8}:{l:06d}")
+                    atoms.append((chain_id, seq_id - min_seq_ids[chain_id], iso_number, atom_id, l))
 
-                sorted_atoms = sorted(atoms)
+                sorted_atoms = sorted(atoms, key=lambda x: (x[0], x[1], x[2], x[3], x[4]))
 
                 sorted_id = []
 
                 for j in sorted_atoms:
-                    sorted_id.append(int(j.split(':')[4]))
+                    sorted_id.append(j[4])
 
                 if sorted_id != list(range(len(lp_data))):
 

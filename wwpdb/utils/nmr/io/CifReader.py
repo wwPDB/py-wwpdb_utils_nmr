@@ -379,12 +379,13 @@ class CifReader:
             chains = sorted(set(row[chain_id_col] for row in rowList))
 
             if ins_code_col == -1 or label_seq_col == -1:
-                sortedSeq = sorted(set(f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[comp_id_col]}" for row in rowList))
+                sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList),
+                                   key=lambda x: (x[0], x[1]))
 
-                keyDict = {f"{row[chain_id_col]} {int(row[seq_id_col]):04d}": row[comp_id_col] for row in rowList}
+                keyDict = {(row[chain_id_col], int(row[seq_id_col])): row[comp_id_col] for row in rowList}
 
                 for row in rowList:
-                    key = f"{row[chain_id_col]} {int(row[seq_id_col]):04d}"
+                    key = (row[chain_id_col], int(row[seq_id_col]))
                     if keyDict[key] != row[comp_id_col]:
                         raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
                                        f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
@@ -392,20 +393,21 @@ class CifReader:
 
                 if len(chains) > 1:
                     for c in chains:
-                        compDict[c] = [s.split(' ')[-1] for s in sortedSeq if s.split(' ')[0] == c]
-                        seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq if s.split(' ')[0] == c]
+                        compDict[c] = [x[2] for x in sortedSeq if x[0] == c]
+                        seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
                 else:
                     c = list(chains)[0]
-                    compDict[c] = [s.split(' ')[-1] for s in sortedSeq]
-                    seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq]
+                    compDict[c] = [x[2] for x in sortedSeq]
+                    seqDict[c] = [x[1] for x in sortedSeq]
 
             else:
-                sortedSeq = sorted(set(f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]} {row[comp_id_col]}" for row in rowList))
+                sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList),
+                                   key=lambda x: (x[0], x[1]))
 
-                keyDict = {f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}": row[comp_id_col] for row in rowList}
+                keyDict = {(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col]): row[comp_id_col] for row in rowList}
 
                 for row in rowList:
-                    key = f"{row[chain_id_col]} {int(row[seq_id_col]):04d} {row[ins_code_col]} {row[label_seq_col]}"
+                    key = (row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col])
                     if keyDict[key] != row[comp_id_col]:
                         raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
                                        f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
@@ -415,16 +417,16 @@ class CifReader:
 
                 if len(chains) > 1:
                     for c in chains:
-                        compDict[c] = [s.split(' ')[-1] for s in sortedSeq if s.split(' ')[0] == c]
-                        seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq if s.split(' ')[0] == c]
-                        insCodeDict[c] = [s.split(' ')[2] for s in sortedSeq if s.split(' ')[0] == c]
-                        labelSeqDict[c] = [s.split(' ')[3] for s in sortedSeq if s.split(' ')[0] == c]
+                        compDict[c] = [x[4] for x in sortedSeq if x[0] == c]
+                        seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
+                        insCodeDict[c] = [x[2] for x in sortedSeq if x[0] == c]
+                        labelSeqDict[c] = [x[3] for x in sortedSeq if x[0] == c]
                 else:
                     c = list(chains)[0]
-                    compDict[c] = [s.split(' ')[-1] for s in sortedSeq]
-                    seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq]
-                    insCodeDict[c] = [s.split(' ')[2] for s in sortedSeq]
-                    labelSeqDict[c] = [s.split(' ')[3] for s in sortedSeq]
+                    compDict[c] = [x[4] for x in sortedSeq]
+                    seqDict[c] = [x[1] for x in sortedSeq]
+                    insCodeDict[c] = [x[2] for x in sortedSeq]
+                    labelSeqDict[c] = [x[3] for x in sortedSeq]
 
             if auth_chain_id_col != -1:
                 for row in rowList:

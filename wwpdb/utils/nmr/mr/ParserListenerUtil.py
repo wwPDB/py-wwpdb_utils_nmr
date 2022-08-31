@@ -12,7 +12,7 @@ import copy
 import collections
 import itertools
 
-import numpy as np
+import numpy
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
@@ -177,6 +177,8 @@ XPLOR_RDC_PRINCIPAL_AXIS_NAMES = ('OO', 'X', 'Y', 'Z')
 
 XPLOR_ORIGIN_AXIS_COLS = [0, 1, 2, 3]
 
+XPLOR_NITROXIDE_NAMES = ('NO', 'NX')
+
 LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDAT',
                       'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
                       'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
@@ -198,7 +200,7 @@ def toNpArray(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
-    return np.asarray([atom['x'], atom['y'], atom['z']], dtype=float)
+    return numpy.asarray([atom['x'], atom['y'], atom['z']], dtype=float)
 
 
 def toRegEx(string):
@@ -231,14 +233,20 @@ def toNefEx(string):
     return string
 
 
-def stripOnce(string, char):
-    """ Return stripped string with given chars on the both sides removed.
+def stripQuot(string):
+    """ Return strippped string by removing single/double quotation marks.
     """
 
-    if len(string) < 3 or not string.startswith(char) or not string.endswith(char):
-        return string
+    _string = string.strip()
 
-    return string[1:len(string) - 1]
+    while True:
+        if (_string[0] == '\'' and _string[-1] == '\'')\
+           or (_string[0] == '"' and _string[-1] == '"'):
+            _string = _string[1:len(_string) - 1].strip()
+        else:
+            break
+
+    return _string
 
 
 def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None):
@@ -370,8 +378,14 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
     if refAtomIdList is not None and atomId not in refAtomIdList:
         if not atomId.endswith("'") and (atomId + "'") in refAtomIdList:
             return atomId + "'"
-        if atomId.endswith("'''") and atomId[:-1] in refAtomIdList:
-            return atomId[:-1]
+        if atomId.endswith("''''"):
+            if atomId.startswith('H2') and "H2'2" in refAtomIdList:
+                return "H2'2"
+            if atomId[:-2] in refAtomIdList:
+                return atomId[:-2]
+        if atomId.endswith("'''"):
+            if atomId[:-1] in refAtomIdList:
+                return atomId[:-1]
         if atomId == "H2''1" and "H2'" in refAtomIdList:
             return "H2'"
         if atomId in ("H2''2", "H2''"):
@@ -379,6 +393,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                 return "HO2'"
             if "H2''" in refAtomIdList:
                 return "H2''"
+            if atomId == "H2''" and "H2'1" in refAtomIdList:
+                return "H2'1"
         if atomId.endswith("''") and atomId[:-1] in refAtomIdList:
             return atomId[:-1]
         if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[2] in ('1', '2'):
@@ -553,6 +569,34 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                 nonPoly = cR.getPolymerSequence(lpCategory, keyItems,
                                                 withStructConf=False,
                                                 withRmsd=False)
+
+                for np in nonPoly:
+                    conflict = False
+
+                    altAuthSeqIds = []
+
+                    for authSeqId, labelSeqId in zip(np['auth_seq_id'], np['seq_id']):
+
+                        ps = next((ps for ps in polySeq if ps['auth_chain_id'] == np['auth_chain_id']), None)
+
+                        if ps is None:
+                            continue
+
+                        if authSeqId in ps['auth_seq_id'] and labelSeqId not in ps['auth_seq_id']:
+                            altAuthSeqIds.append(labelSeqId)
+
+                            if 'ambig_auth_seq_id' not in ps:
+                                ps['ambug_auth_seq_id'] = []
+                            ps['ambug_auth_seq_id'].append(authSeqId)
+
+                            conflict = True
+
+                        else:
+                            altAuthSeqIds.append(authSeqId)
+
+                    if conflict:
+                        np['alt_auth_seq_id'] = altAuthSeqIds
+
             except KeyError:
                 nonPoly = None
 
@@ -746,6 +790,91 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq,
             'auth_to_label_seq': authToLabelSeq}
+
+
+def extendCoordinatesForExactNoes(modelChainIdExt,
+                                  polySeq, altPolySeq, coordAtomSite, coordUnobsRes, labelToAuthSeq, authToLabelSeq):
+    """ Extend coordinate chains for eNOEs-guided multiple conformers.
+    """
+
+    _polySeq = None
+
+    if polySeq is not None:
+        _polySeq = copy.copy(polySeq)
+
+        for ps in polySeq:
+            if ps['auth_chain_id'] in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    if not any(ps for ps in polySeq if ps['auth_chain_id'] == dstChainId):
+                        _ps = copy.copy(ps)
+                        _ps['chain_id'] = _ps['auth_chain_id'] = dstChainId
+                        _polySeq.append(_ps)
+
+    _altPolySeq = None
+
+    if altPolySeq is not None:
+        _altPolySeq = copy.copy(altPolySeq)
+
+        for ps in altPolySeq:
+            if ps['auth_chain_id'] in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    if not any(ps for ps in altPolySeq if ps['auth_chain_id'] == dstChainId):
+                        _ps = copy.copy(ps)
+                        _ps['chain_id'] = _ps['auth_chain_id'] = dstChainId
+                        _altPolySeq.append(_ps)
+
+    _coordAtomSite = None
+
+    if coordAtomSite is not None:
+        _coordAtomSite = copy.copy(coordAtomSite)
+
+        for ps in polySeq:
+            srcChainId = ps['auth_chain_id']
+            if srcChainId in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    for seqId in ps['auth_seq_id']:
+                        seqKey = (srcChainId, seqId)
+                        if seqKey in _coordAtomSite:
+                            _seqKey = (dstChainId, seqId)
+                            if _seqKey not in _coordAtomSite:
+                                _coordAtomSite[_seqKey] = coordAtomSite[seqKey]
+
+    _coordUnobsRes = None
+
+    if coordUnobsRes is not None:
+        _coordUnobsRes = copy.copy(coordUnobsRes)
+
+        for ps in polySeq:
+            srcChainId = ps['auth_chain_id']
+            if srcChainId in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    for seqId in ps['auth_seq_id']:
+                        seqKey = (srcChainId, seqId)
+                        if seqKey in coordUnobsRes:
+                            _seqKey = (dstChainId, seqId)
+                            if _seqKey not in _coordUnobsRes:
+                                _coordUnobsRes[_seqKey] = coordUnobsRes[seqKey]
+
+    _authToLabelSeq = None
+    _labelToAuthSeq = None
+
+    if authToLabelSeq is not None:
+        _authToLabelSeq = copy.copy(authToLabelSeq)
+
+        for ps in polySeq:
+            srcChainId = ps['auth_chain_id']
+            if srcChainId in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    for seqId in ps['auth_seq_id']:
+                        seqKey = (srcChainId, seqId)
+                        if seqKey in authToLabelSeq:
+                            _seqKey = (dstChainId, seqId)
+                            if _seqKey not in _authToLabelSeq:
+                                _authToLabelSeq[_seqKey] = (dstChainId, labelToAuthSeq[seqKey][1])
+
+        _labelToAuthSeq = {v: k for k, v in _authToLabelSeq.items()}
+
+    return _polySeq, _altPolySeq, _coordAtomSite, _coordUnobsRes, _labelToAuthSeq, _authToLabelSeq
 
 
 def isLongRangeRestraint(atoms, polySeq=None):
@@ -1272,7 +1401,7 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
         if a_1 is None or a_2 is None:
             continue
 
-        bond.append({'model_id': model_id, 'distance': float(f"{np.linalg.norm(toNpArray(a_1) - toNpArray(a_2)):.3f}")})
+        bond.append({'model_id': model_id, 'distance': float(f"{numpy.linalg.norm(toNpArray(a_1) - toNpArray(a_2)):.3f}")})
 
     if len(bond) > 0:
         return bond

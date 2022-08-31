@@ -18,6 +18,7 @@ try:
     from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
                                                        checkCoordinates,
+                                                       extendCoordinatesForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        isLongRangeRestraint,
@@ -48,8 +49,10 @@ try:
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            retrieveAtomIdentFromMRMap,
+                                           retrieveAtomIdFromMRMap,
                                            retrieveRemappedSeqId,
                                            splitPolySeqRstForMultimers,
+                                           splitPolySeqRstForExactNoes,
                                            retrieveRemappedChainId,
                                            splitPolySeqRstForNonPoly,
                                            retrieveRemappedNonPoly)
@@ -58,6 +61,7 @@ except ImportError:
     from nmr.mr.CyanaMRParser import CyanaMRParser
     from nmr.mr.ParserListenerUtil import (toNpArray,
                                            checkCoordinates,
+                                           extendCoordinatesForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            isLongRangeRestraint,
@@ -88,8 +92,10 @@ except ImportError:
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                retrieveAtomIdentFromMRMap,
+                               retrieveAtomIdFromMRMap,
                                retrieveRemappedSeqId,
                                splitPolySeqRstForMultimers,
+                               splitPolySeqRstForExactNoes,
                                retrieveRemappedChainId,
                                splitPolySeqRstForNonPoly,
                                retrieveRemappedNonPoly)
@@ -131,6 +137,8 @@ class CyanaMRParserListener(ParseTreeListener):
     __debug = False
     __remediate = False
     __omitDistLimitOutlier = True
+    __allowZeroUpperLimit = False
+    __pdbStatCap = False
 
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
@@ -281,6 +289,13 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__pA = PairwiseAlign()
             self.__pA.setVerbose(verbose)
 
+        if reasons is not None and 'model_chain_id_ext' in reasons:
+            self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, self.__labelToAuthSeq, self.__authToLabelSeq =\
+                extendCoordinatesForExactNoes(reasons['model_chain_id_ext'],
+                                              self.__polySeq, self.__altPolySeq,
+                                              self.__coordAtomSite, self.__coordUnobsRes,
+                                              self.__labelToAuthSeq, self.__authToLabelSeq)
+
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
@@ -391,7 +406,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         seq_id_mapping = {}
                         for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                             if mid_code == '|':
-                                seq_id_mapping[test_seq_id] = ref_seq_id
+                                seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
+                                                                   in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                                   if seq_id == ref_seq_id)
 
                         if isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName):
 
@@ -428,6 +445,17 @@ class CyanaMRParserListener(ParseTreeListener):
                             if 'chain_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
+                    if len(self.__polySeq) == 1 and len(self.__polySeqRst) == 1:
+                        polySeqRst, chainIdMapping, modelChainIdExt =\
+                            splitPolySeqRstForExactNoes(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if 'chain_id_clone' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['chain_id_clone'] = chainIdMapping
+                            if 'model_chain_id_ext' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['model_chain_id_ext'] = modelChainIdExt
+
                     if self.__hasNonPoly:
                         polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__polySeq, self.__nonPoly, self.__polySeqRst,
                                                                                self.__seqAlign, self.__chainAssign)
@@ -444,10 +472,16 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.ambigAtomNameMapping) > 0:
                     if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
-
-        if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+        # """
+        # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+        #     if 'non_poly_remap' in self.reasonsForReParsing:
+        #         self.reasonsForReParsing['label_seq_scheme'] = False
+        #     if 'seq_id_remap' in self.reasonsForReParsing:
+        #         del self.reasonsForReParsing['seq_id_remap']
+        # """
+        if 'local_seq_scheme' in self.reasonsForReParsing:
             if 'non_poly_remap' in self.reasonsForReParsing:
-                self.reasonsForReParsing['label_seq_scheme'] = False
+                del self.reasonsForReParsing['local_seq_scheme']
             if 'seq_id_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
 
@@ -477,6 +511,9 @@ class CyanaMRParserListener(ParseTreeListener):
         for col in range(20):
             if ctx.Any_name(col):
                 text = str(ctx.Any_name(col)).lower()
+                if 'cco' in text or 'coupling' in text:
+                    self.__cur_dist_type = 'cco'
+                    break
                 if ('upl' in text or 'upper' in text) and not ('lol' in text or 'lower' in text):
                     self.__cur_dist_type = 'upl'
                     break
@@ -507,6 +544,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
+
+        if self.__cur_subtype == 'dist' and (self.__cur_dist_type == 'cco' or len(self.numberSelection) == 6):
+            self.__cur_subtype = 'jcoup'
+            self.distRestraints -= 1
+            self.jcoupRestraints += 1
 
         try:
 
@@ -584,13 +626,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # upl_only
                         if value2 > 1.8:
                             upper_limit = value2
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             upper_limit = value2
 
@@ -612,14 +656,16 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif self.__upl_or_lol == 'upl_only':
                     if self.__cur_dist_type == 'upl':
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     elif self.__cur_dist_type == 'lol':
                         lower_limit = value
                     elif value > 1.8:
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     else:
                         lower_limit = value
 
@@ -628,8 +674,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 elif self.__upl_or_lol == 'lol_only':
                     lower_limit = value
-                    upper_limit = 5.5  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if self.__pdbStatCap:
+                        upper_limit = 5.5  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                 else:  # 'lol_w_upl'
                     lower_limit = value
@@ -639,6 +686,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
                     return
+
+                self.__retrieveLocalSeqScheme()
 
                 chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -743,7 +792,25 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             return
 
+                self.__allowZeroUpperLimit = False
+                if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                   and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                    chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                    seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                    atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                    chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                    seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                    atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                    if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                       and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                            or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                        self.__allowZeroUpperLimit = True
+
                 dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
+
+                self.__allowZeroUpperLimit = False
 
                 if dstFunc is None:
                     return
@@ -786,6 +853,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if not self.__hasPolySeq:
                     return
+
+                self.__retrieveLocalSeqScheme()
 
                 chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -936,13 +1005,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # upl_only
                         if value2 > 1.8:
                             upper_limit = value2
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             upper_limit = value2
 
@@ -964,14 +1035,16 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif self.__upl_or_lol == 'upl_only':
                     if self.__cur_dist_type == 'upl':
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     elif self.__cur_dist_type == 'lol':
                         lower_limit = value
                     elif value > 1.8:
                         upper_limit = value
-                        lower_limit = 1.8  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     else:
                         lower_limit = value
 
@@ -980,8 +1053,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 elif self.__upl_or_lol == 'lol_only':
                     lower_limit = value
-                    upper_limit = 5.5  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if self.__pdbStatCap:
+                        upper_limit = 5.5  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                 else:  # 'lol_w_upl'
                     lower_limit = value
@@ -991,6 +1065,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
                     return
+
+                self.__retrieveLocalSeqScheme()
 
                 chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
@@ -1139,6 +1215,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if not self.__hasPolySeq:
                     return
 
+                self.__retrieveLocalSeqScheme()
+
                 chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
 
@@ -1229,7 +1307,7 @@ class CyanaMRParserListener(ParseTreeListener):
         dstFunc = {'weight': weight}
 
         if target_value is not None:
-            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX:
+            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX or (target_value == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['target_value'] = f"{target_value:.3f}"
             else:
                 if target_value <= DIST_ERROR_MIN and omit_dist_limit_outlier:
@@ -1255,10 +1333,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
 
         if upper_limit is not None:
-            if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX:
+            if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
-                if upper_limit > DIST_ERROR_MAX and omit_dist_limit_outlier:
+                if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     upper_limit = None
@@ -1353,7 +1431,8 @@ class CyanaMRParserListener(ParseTreeListener):
     def getRealChainSeqId(self, ps, seqId, compId=None, isPolySeq=True):
         if compId is not None:
             compId = translateToStdResName(compId)
-        if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+        if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
@@ -1365,12 +1444,12 @@ class CyanaMRParserListener(ParseTreeListener):
             idx = ps['auth_seq_id'].index(seqId)
             if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                 return ps['auth_chain_id'], seqId
-        if seqId in ps['seq_id']:
-            idx = ps['seq_id'].index(seqId)
-            if compId is None:
-                return ps['auth_chain_id'], ps['auth_seq_id'][idx]
-            if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
-                return ps['auth_chain_id'], ps['auth_seq_id'][idx]
+        # if seqId in ps['seq_id']:
+        #     idx = ps['seq_id'].index(seqId)
+        #     if compId is None:
+        #         return ps['auth_chain_id'], ps['auth_seq_id'][idx]
+        #     if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
+        #         return ps['auth_chain_id'], ps['auth_seq_id'][idx]
         return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId
 
     def assignCoordPolymerSequence(self, seqId, compId, atomId):
@@ -1384,7 +1463,7 @@ class CyanaMRParserListener(ParseTreeListener):
         fixedSeqId = None
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
-            seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+            seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         if self.__reasons is not None:
             if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
@@ -1398,6 +1477,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, seqId, compId)
             if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+            elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
             elif 'seq_id_remap' in self.__reasons:
                 fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
             if fixedSeqId is not None:
@@ -1427,16 +1508,18 @@ class CyanaMRParserListener(ParseTreeListener):
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
+                if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                 if compId in (cifCompId, origCompId):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId))
+                        chainAssign.append((chainId, seqId, cifCompId, True))
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.append((chainId, seqId, cifCompId))
-                    """ defer to sequence alignment error
-                    if cifCompId != translateToStdResName(compId):
-                        self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
-                    """
+                    chainAssign.append((chainId, seqId, cifCompId, True))
+                    # """ defer to sequence alignment error
+                    # if cifCompId != translateToStdResName(compId):
+                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
@@ -1458,11 +1541,13 @@ class CyanaMRParserListener(ParseTreeListener):
                             seqId_ = ps['auth_seq_id'][idx]
                             cifCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
+                            if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((chainId, seqId_, cifCompId))
+                                    chainAssign.append((chainId, seqId_, cifCompId, True))
                                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((chainId, seqId_, cifCompId))
+                                    chainAssign.append((chainId, seqId_, cifCompId, True))
                         except IndexError:
                             pass
 
@@ -1480,11 +1565,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
+                    if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                        _, _, atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                    if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
+                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((chainId, seqId, cifCompId))
+                            chainAssign.append((chainId, seqId, cifCompId, False))
                     elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId))
+                        chainAssign.append((chainId, seqId, cifCompId, False))
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
@@ -1493,20 +1582,23 @@ class CyanaMRParserListener(ParseTreeListener):
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
-                        cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                        origCompId = ps['auth_comp_id'][ps['seq_id'].index(seqId)]
+                        idx = ps['seq_id'].index(seqId)
+                        cifCompId = ps['comp_id'][idx]
+                        origCompId = ps['auth_comp_id'][idx]
+                        if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                         if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
-                                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    self.reasonsForReParsing['label_seq_scheme'] = True
+                                chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
+                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
-                            """ defer to sequence alignment error
-                            if cifCompId != translateToStdResName(compId):
-                                self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                                    f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
-                            """
+                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
+                            # """ defer to sequence alignment error
+                            # if cifCompId != translateToStdResName(compId):
+                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                            #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            # """
 
             if self.__hasNonPoly:
                 for np in self.__nonPoly:
@@ -1515,27 +1607,30 @@ class CyanaMRParserListener(ParseTreeListener):
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
                         if seqId in np['seq_id']:
-                            cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
-                            origCompId = np['auth_comp_id'][np['seq_id'].index(seqId)]
+                            idx = np['seq_id'].index(seqId)
+                            cifCompId = np['comp_id'][idx]
+                            origCompId = np['auth_comp_id'][idx]
+                            if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
-                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                        self.reasonsForReParsing['label_seq_scheme'] = True
+                                    chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
+                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
+                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
                 chainId = ps['auth_chain_id']
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.append((chainId, _seqId, cifCompId))
-                    """ defer to sequence alignment error
-                    if cifCompId != translateToStdResName(compId):
-                        self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
-                    """
+                    chainAssign.append((chainId, _seqId, cifCompId, True))
+                    # """ defer to sequence alignment error
+                    # if cifCompId != translateToStdResName(compId):
+                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    # """
 
         if len(chainAssign) == 0:
             if seqId == 1 and atomId in ('H', 'HN'):
@@ -1556,7 +1651,7 @@ class CyanaMRParserListener(ParseTreeListener):
         fixedSeqId = None
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
-            seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+            seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         if self.__reasons is not None:
             if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
@@ -1571,6 +1666,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 refChainId = fixedChainId
             if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                refChainId = fixedChainId
+            elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
                 refChainId = fixedChainId
             elif 'seq_id_remap' in self.__reasons:
                 _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
@@ -1602,20 +1700,22 @@ class CyanaMRParserListener(ParseTreeListener):
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
+                if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                 if compId in (cifCompId, origCompId):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId))
+                        chainAssign.append((chainId, seqId, cifCompId, True))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                             self.__chainNumberDict[refChainId] = chainId
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.append((chainId, seqId, cifCompId))
+                    chainAssign.append((chainId, seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
-                    """ defer to sequence alignment error
-                    if cifCompId != translateToStdResName(compId):
-                        self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
-                    """
+                    # """ defer to sequence alignment error
+                    # if cifCompId != translateToStdResName(compId):
+                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
@@ -1637,11 +1737,13 @@ class CyanaMRParserListener(ParseTreeListener):
                             seqId_ = ps['auth_seq_id'][idx]
                             cifCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
+                            if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((chainId, seqId_, cifCompId))
+                                    chainAssign.append((chainId, seqId_, cifCompId, True))
                                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((chainId, seqId_, cifCompId))
+                                    chainAssign.append((chainId, seqId_, cifCompId, True))
                         except IndexError:
                             pass
 
@@ -1662,13 +1764,17 @@ class CyanaMRParserListener(ParseTreeListener):
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
+                    if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                    if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
+                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((chainId, seqId, cifCompId))
+                            chainAssign.append((chainId, seqId, cifCompId, False))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                     elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId))
+                        chainAssign.append((chainId, seqId, cifCompId, False))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                             self.__chainNumberDict[refChainId] = chainId
 
@@ -1682,24 +1788,27 @@ class CyanaMRParserListener(ParseTreeListener):
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
-                        cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                        origCompId = ps['auth_comp_id'][ps['seq_id'].index(seqId)]
+                        idx = ps['seq_id'].index(seqId)
+                        cifCompId = ps['comp_id'][idx]
+                        origCompId = ps['auth_comp_id'][idx]
+                        if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                         if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
+                                chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
-                                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    self.reasonsForReParsing['label_seq_scheme'] = True
+                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
+                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
-                            """ defer to sequence alignment error
-                            if cifCompId != translateToStdResName(compId):
-                                self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                                    f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
-                            """
+                            # """ defer to sequence alignment error
+                            # if cifCompId != translateToStdResName(compId):
+                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                            #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            # """
 
             if self.__hasNonPoly:
                 for np in self.__nonPoly:
@@ -1711,17 +1820,20 @@ class CyanaMRParserListener(ParseTreeListener):
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
                         if seqId in np['seq_id']:
-                            cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
-                            origCompId = np['auth_comp_id'][np['seq_id'].index(seqId)]
+                            idx = np['seq_id'].index(seqId)
+                            cifCompId = np['comp_id'][idx]
+                            origCompId = np['auth_comp_id'][idx]
+                            if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
+                                    chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                        self.reasonsForReParsing['label_seq_scheme'] = True
+                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
+                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
 
@@ -1740,14 +1852,14 @@ class CyanaMRParserListener(ParseTreeListener):
                         _seqId = fixedSeqId
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.append((chainId, _seqId, cifCompId))
+                    chainAssign.append((chainId, _seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
-                    """ defer to sequence alignment error
-                    if cifCompId != translateToStdResName(compId):
-                        self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
-                    """
+                    # """ defer to sequence alignment error
+                    # if cifCompId != translateToStdResName(compId):
+                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    # """
 
         if len(chainAssign) == 0:
             if seqId == 1 and atomId in ('H', 'HN'):
@@ -1779,6 +1891,10 @@ class CyanaMRParserListener(ParseTreeListener):
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                     if fixedChainId != chainId:
                         continue
+                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                    if fixedChainId != chainId:
+                        continue
                 elif 'seq_id_remap' in self.__reasons:
                     _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                 if fixedSeqId is not None:
@@ -1796,7 +1912,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             continue
                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                 if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.append((chainId, seqId, cifCompId))
+                    chainAssign.append((chainId, seqId, cifCompId, True))
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
@@ -1819,7 +1935,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             cifCompId = ps['comp_id'][idx]
                             updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                             if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((chainId, seqId_, cifCompId))
+                                chainAssign.append((chainId, seqId_, cifCompId, True))
                         except IndexError:
                             pass
 
@@ -1831,6 +1947,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                         if fixedChainId != chainId:
                             continue
+                    elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                        if fixedChainId != chainId:
+                            continue
                     elif 'seq_id_remap' in self.__reasons:
                         _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                     if fixedSeqId is not None:
@@ -1840,7 +1960,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     cifCompId = np['comp_id'][idx]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                     if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId))
+                        chainAssign.append((chainId, seqId, cifCompId, False))
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
@@ -1852,9 +1972,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                         if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
-                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['label_seq_scheme'] = True
+                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
+                            # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            #     self.reasonsForReParsing['label_seq_scheme'] = True
 
             if self.__hasNonPoly:
                 for np in self.__nonPoly:
@@ -1866,9 +1986,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
                             updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                             if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
-                                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    self.reasonsForReParsing['label_seq_scheme'] = True
+                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
+                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                #     self.reasonsForReParsing['label_seq_scheme'] = True
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -1876,7 +1996,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                    chainAssign.append((chainId, _seqId, cifCompId))
+                    chainAssign.append((chainId, _seqId, cifCompId, True))
 
         if len(chainAssign) == 0:
             if seqId == 1 and atomId is not None and atomId in ('H', 'HN'):
@@ -1909,6 +2029,10 @@ class CyanaMRParserListener(ParseTreeListener):
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                     if fixedChainId != chainId:
                         continue
+                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                    if fixedChainId != chainId:
+                        continue
                 elif 'seq_id_remap' in self.__reasons:
                     _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                 if fixedSeqId is not None:
@@ -1926,7 +2050,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             continue
                 updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.append((chainId, seqId, cifCompId))
+                    chainAssign.append((chainId, seqId, cifCompId, True))
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
@@ -1949,7 +2073,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             cifCompId = ps['comp_id'][idx]
                             updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((chainId, seqId_, cifCompId))
+                                chainAssign.append((chainId, seqId_, cifCompId, True))
                         except IndexError:
                             pass
 
@@ -1963,6 +2087,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                         if fixedChainId != chainId:
                             continue
+                    elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                        if fixedChainId != chainId:
+                            continue
                     elif 'seq_id_remap' in self.__reasons:
                         _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                     if fixedSeqId is not None:
@@ -1972,7 +2100,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     cifCompId = np['comp_id'][idx]
                     updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId))
+                        chainAssign.append((chainId, seqId, cifCompId, False))
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
@@ -1986,9 +2114,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
-                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['label_seq_scheme'] = True
+                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
+                            # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            #     self.reasonsForReParsing['label_seq_scheme'] = True
 
             if self.__hasNonPoly:
                 for np in self.__nonPoly:
@@ -2002,9 +2130,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
                             updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
-                                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    self.reasonsForReParsing['label_seq_scheme'] = True
+                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
+                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                #     self.reasonsForReParsing['label_seq_scheme'] = True
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -2014,7 +2142,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
-                    chainAssign.append((chainId, _seqId, cifCompId))
+                    chainAssign.append((chainId, _seqId, cifCompId, True))
 
         if len(chainAssign) == 0:
             if seqId == 1 and atomId in ('H', 'HN'):
@@ -2036,6 +2164,10 @@ class CyanaMRParserListener(ParseTreeListener):
         atomSelection = []
 
         if compId is not None:
+
+            if self.__mrAtomNameMapping is not None and compId not in monDict3:
+                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+
             if self.__reasons is not None:
                 if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
                    and atomId in self.__reasons['ambig_atom_id_remap'][compId]:
@@ -2053,7 +2185,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if 'unambig_atom_id_remap' in self.__reasons and compId in self.__reasons['unambig_atom_id_remap']\
                    and atomId in self.__reasons['unambig_atom_id_remap'][compId]:
                     atomIds = self.__reasons['unambig_atom_id_remap'][compId][atomId]
-                    for chainId, cifSeqId, cifCompId in chainAssign:
+                    for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
                         for cifAtomId in atomIds:
                             self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
@@ -2078,7 +2210,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.unambigAtomNameMapping) > 0:
                 if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
                     atomIds = self.unambigAtomNameMapping[compId][atomId]
-                    for chainId, cifSeqId, cifCompId in chainAssign:
+                    for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
                         for cifAtomId in atomIds:
                             self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
@@ -2087,10 +2219,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.atomSelectionSet.append(atomSelection)
                     return
 
-            if self.__mrAtomNameMapping is not None and compId not in monDict3:
-                seqId, compId, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
-
-        for chainId, cifSeqId, cifCompId in chainAssign:
+        for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
@@ -2107,6 +2236,17 @@ class CyanaMRParserListener(ParseTreeListener):
                and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
                and atomId in coordAtomSite['atom_id']:
                 _atomId = [atomId]
+
+            if coordAtomSite is None and not isPolySeq:
+                try:
+                    for np in self.__nonPoly:
+                        if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
+                            cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
+                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+                            if coordAtomSite is not None:
+                                break
+                except ValueError:
+                    pass
 
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
@@ -2140,52 +2280,120 @@ class CyanaMRParserListener(ParseTreeListener):
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
                 self.__authAtomId = 'auth_atom_id'
+
             elif self.__preferAuthSeq:
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-                if _coordAtomSite is not None:
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
                         seqKey = _seqKey
+                        self.__setLocalSeqScheme()
                     elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                         found = True
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
                         self.__authAtomId = 'auth_atom_id'
                         seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+
+            else:
+                self.__preferAuthSeq = True
+                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                    if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__authSeqId = 'auth_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                        found = True
+                        self.__authSeqId = 'auth_seq_id'
+                        self.__authAtomId = 'auth_atom_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    else:
+                        self.__preferAuthSeq = False
+                else:
+                    self.__preferAuthSeq = False
 
         elif self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-            if _coordAtomSite is not None:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__preferAuthSeq = False
                     self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__preferAuthSeq = False
                     self.__authSeqId = 'label_seq_id'
                     self.__authAtomId = 'auth_atom_id'
                     seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+
+        else:
+            self.__preferAuthSeq = True
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                if atomId in _coordAtomSite['atom_id']:
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    self.__authAtomId = 'auth_atom_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                else:
+                    self.__preferAuthSeq = False
+            else:
+                self.__preferAuthSeq = False
 
         if found:
             return
 
-        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-        if _coordAtomSite is not None:
-            if atomId in _coordAtomSite['atom_id']:
-                found = True
+        if self.__preferAuthSeq:
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                if atomId in _coordAtomSite['atom_id']:
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    self.__authAtomId = 'auth_atom_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+
+        else:
+            self.__preferAuthSeq = True
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                if atomId in _coordAtomSite['atom_id']:
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    self.__authAtomId = 'auth_atom_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
+                else:
+                    self.__preferAuthSeq = False
+            else:
                 self.__preferAuthSeq = False
-                self.__authSeqId = 'label_seq_id'
-                seqKey = _seqKey
-            elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
-                found = True
-                self.__preferAuthSeq = False
-                self.__authSeqId = 'label_seq_id'
-                self.__authAtomId = 'auth_atom_id'
-                seqKey = _seqKey
 
         if found:
             return
@@ -2201,7 +2409,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                     if ccb is not None:
                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
-                        if bondedTo[0] in ('N', 'O', 'S'):
+                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
+                                "Please re-upload the model file.\n"
                             return
                 if enableWarning:
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
@@ -2333,6 +2544,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 else:  # nucleic CHI angle
                     atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
 
+                self.__retrieveLocalSeqScheme()
+
                 if self.__cur_subtype_altered:  # invoked from exitCco_restraint()
                     chainAssign = self.assignCoordPolymerSequenceWithChainId(chainId, seqId, compId, atomId)
                 else:
@@ -2343,7 +2556,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         f"{seqId}:{compId} is not present in the coordinates.\n"
                     return
 
-                for chainId, cifSeqId, cifCompId in chainAssign:
+                for chainId, cifSeqId, cifCompId, _ in chainAssign:
                     ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
 
                     peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
@@ -2447,6 +2660,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 atomId = next(name for name, offset in zip(atomNames, seqOffset) if offset == 0)
 
+                self.__retrieveLocalSeqScheme()
+
                 chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
@@ -2454,7 +2669,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         f"{seqId}:{compId} is not present in the coordinates.\n"
                     return
 
-                for chainId, cifSeqId, cifCompId in chainAssign:
+                for chainId, cifSeqId, cifCompId, _ in chainAssign:
                     ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
 
                     peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
@@ -2643,7 +2858,7 @@ class CyanaMRParserListener(ParseTreeListener):
             weight = self.numberSelection[2]
             orientation = int(str(ctx.Integer(2)))
             # if len(self.numberSelection) > 3:
-            #    scale = self.numberSelection[3]
+            #     scale = self.numberSelection[3]
 
             if weight < 0.0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2679,6 +2894,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if not self.__hasPolySeq:
                 return
+
+            self.__retrieveLocalSeqScheme()
 
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -2954,6 +3171,8 @@ class CyanaMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            self.__retrieveLocalSeqScheme()
+
             chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
 
             if len(chainAssign) == 0:
@@ -3115,17 +3334,19 @@ class CyanaMRParserListener(ParseTreeListener):
                         else:
                             lower_limit = value
 
-                    if self.__upl_or_lol == 'upl_only':
+                    elif self.__upl_or_lol == 'upl_only':
                         if self.__cur_dist_type == 'upl':
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         elif self.__cur_dist_type == 'lol':
                             lower_limit = value
                         elif value > 1.8:
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             lower_limit = value
 
@@ -3134,8 +3355,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__upl_or_lol == 'lol_only':
                         lower_limit = value
-                        upper_limit = 5.5  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            upper_limit = 5.5  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
@@ -3159,6 +3381,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if not self.__hasPolySeq:
                     return
+
+                self.__retrieveLocalSeqScheme()
 
                 chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -3279,13 +3503,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                             upper_limit = value2
                             lower_limit = value
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                         else:  # upl_only
                             if value2 > 1.8:
                                 upper_limit = value2
-                                lower_limit = 1.8  # default value of PDBStat
-                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                                if self.__pdbStatCap:
+                                    lower_limit = 1.8  # default value of PDBStat
+                                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                             else:
                                 upper_limit = value2
 
@@ -3307,14 +3533,16 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif self.__upl_or_lol == 'upl_only':
                         if self.__cur_dist_type == 'upl':
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         elif self.__cur_dist_type == 'lol':
                             lower_limit = value
                         elif value > 1.8:
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             lower_limit = value
 
@@ -3323,8 +3551,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__upl_or_lol == 'lol_only':
                         lower_limit = value
-                        upper_limit = 5.5  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            upper_limit = 5.5  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
@@ -3352,6 +3581,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if not self.__hasPolySeq:
                     return
+
+                self.__retrieveLocalSeqScheme()
 
                 chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -3463,13 +3694,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # upl_only
                         if value2 > 1.8:
                             upper_limit = value2
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             upper_limit = value2
 
@@ -3490,6 +3723,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if not self.__hasPolySeq:
                     return
+
+                self.__retrieveLocalSeqScheme()
 
                 chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -3593,17 +3828,19 @@ class CyanaMRParserListener(ParseTreeListener):
                         else:
                             lower_limit = value
 
-                    if self.__upl_or_lol == 'upl_only':
+                    elif self.__upl_or_lol == 'upl_only':
                         if self.__cur_dist_type == 'upl':
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         elif self.__cur_dist_type == 'lol':
                             lower_limit = value
                         elif value > 1.8:
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             lower_limit = value
 
@@ -3612,8 +3849,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__upl_or_lol == 'lol_only':
                         lower_limit = value
-                        upper_limit = 5.5  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            upper_limit = 5.5  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
@@ -3637,6 +3875,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if not self.__hasPolySeq:
                     return
+
+                self.__retrieveLocalSeqScheme()
 
                 chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -3757,13 +3997,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                             upper_limit = value2
                             lower_limit = value
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                         else:  # upl_only
                             if value2 > 1.8:
                                 upper_limit = value2
-                                lower_limit = 1.8  # default value of PDBStat
-                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                                if self.__pdbStatCap:
+                                    lower_limit = 1.8  # default value of PDBStat
+                                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                             else:
                                 upper_limit = value2
 
@@ -3785,14 +4027,16 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif self.__upl_or_lol == 'upl_only':
                         if self.__cur_dist_type == 'upl':
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         elif self.__cur_dist_type == 'lol':
                             lower_limit = value
                         elif value > 1.8:
                             upper_limit = value
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             lower_limit = value
 
@@ -3801,8 +4045,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__upl_or_lol == 'lol_only':
                         lower_limit = value
-                        upper_limit = 5.5  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            upper_limit = 5.5  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # 'lol_w_upl'
                         lower_limit = value
@@ -3830,6 +4075,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if not self.__hasPolySeq:
                     return
+
+                self.__retrieveLocalSeqScheme()
 
                 chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -3941,13 +4188,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                     else:  # upl_only
                         if value2 > 1.8:
                             upper_limit = value2
-                            lower_limit = 1.8  # default value of PDBStat
-                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                            if self.__pdbStatCap:
+                                lower_limit = 1.8  # default value of PDBStat
+                                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                         else:
                             upper_limit = value2
 
@@ -3968,6 +4217,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if not self.__hasPolySeq:
                     return
+
+                self.__retrieveLocalSeqScheme()
 
                 chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -4133,13 +4384,15 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif 1.8 <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                     upper_limit = value2
                     lower_limit = value
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if self.__pdbStatCap:
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
                 else:  # upl_only
                     if value2 > 1.8:
                         upper_limit = value2
-                        lower_limit = 1.8  # default value of PDBStat
-                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                        if self.__pdbStatCap:
+                            lower_limit = 1.8  # default value of PDBStat
+                            target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                     else:
                         upper_limit = value2
 
@@ -4161,14 +4414,16 @@ class CyanaMRParserListener(ParseTreeListener):
             elif self.__upl_or_lol == 'upl_only':
                 if self.__cur_dist_type == 'upl':
                     upper_limit = value
-                    lower_limit = 1.8  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if self.__pdbStatCap:
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                 elif self.__cur_dist_type == 'lol':
                     lower_limit = value
                 elif value > 1.8:
                     upper_limit = value
-                    lower_limit = 1.8  # default value of PDBStat
-                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                    if self.__pdbStatCap:
+                        lower_limit = 1.8  # default value of PDBStat
+                        target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
                 else:
                     lower_limit = value
 
@@ -4177,8 +4432,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
             elif self.__upl_or_lol == 'lol_only':
                 lower_limit = value
-                upper_limit = 5.5  # default value of PDBStat
-                target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
+                if self.__pdbStatCap:
+                    upper_limit = 5.5  # default value of PDBStat
+                    target_value = (upper_limit + lower_limit) / 2.0  # default procedure of PDBStat
 
             else:  # 'lol_w_upl'
                 lower_limit = value
@@ -4195,6 +4451,8 @@ class CyanaMRParserListener(ParseTreeListener):
             compId2 = jVal[self.__col_order_of_dist_w_chain['comp_id_2']]
             atomId1 = jVal[self.__col_order_of_dist_w_chain['atom_id_1']]
             atomId2 = jVal[self.__col_order_of_dist_w_chain['atom_id_2']]
+
+            self.__retrieveLocalSeqScheme()
 
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
@@ -4303,6 +4561,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if dstFunc is None:
                 return
+
+            self.__retrieveLocalSeqScheme()
 
             chainAssign1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
@@ -4440,6 +4700,8 @@ class CyanaMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            self.__retrieveLocalSeqScheme()
+
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId1, compId1, atomId2)
 
@@ -4538,6 +4800,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         compId = 'CYSS'
         atomId = 'SG'
+
+        self.__retrieveLocalSeqScheme()
 
         chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId, atomId)
         chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId, atomId)
@@ -4638,6 +4902,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
+        self.__retrieveLocalSeqScheme()
+
         chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
         chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
 
@@ -4725,6 +4991,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if not self.__hasPolySeq:
             return
+
+        self.__retrieveLocalSeqScheme()
 
         chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
         chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
@@ -4889,7 +5157,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     ambig['atom_id_list'] = []
 
-                    for cifChainId, cifSeqId, cifCompId in chainAssign:
+                    for cifChainId, cifSeqId, cifCompId, _ in chainAssign:
 
                         has_unambig = False
 
@@ -5001,6 +5269,47 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'hbond':
             return f"[Check the {self.geoRestraints}th row of hydrogen bond restraints] "
         return ''
+
+    def __setLocalSeqScheme(self):
+        if 'local_seq_scheme' not in self.reasonsForReParsing:
+            self.reasonsForReParsing['local_seq_scheme'] = {}
+        if self.__cur_subtype == 'dist':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'dihed':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'rdc':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.rdcRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'pcs':
+            self.reasonsForReParsing['loca_seq_scheme'][(self.__cur_subtype, self.pcsRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'noepk':
+            self.reasonsForReParsing['loca_seq_scheme'][(self.__cur_subtype, self.noepkRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'jcoup':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.jcoupRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype in ('geo', 'hbond'):
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
+
+    def __retrieveLocalSeqScheme(self):
+        if self.__reasons is None or 'local_seq_scheme' not in self.__reasons:
+            return
+        if self.__cur_subtype == 'dist':
+            key = (self.__cur_subtype, self.distRestraints)
+        elif self.__cur_subtype == 'dihed':
+            key = (self.__cur_subtype, self.dihedRestraints)
+        elif self.__cur_subtype == 'rdc':
+            key = (self.__cur_subtype, self.rdcRestraints)
+        elif self.__cur_subtype == 'pcs':
+            key = (self.__cur_subtype, self.pcsRestraints)
+        elif self.__cur_subtype == 'noepk':
+            key = (self.__cur_subtype, self.noepkRestraints)
+        elif self.__cur_subtype == 'jcoup':
+            key = (self.__cur_subtype, self.jcoupRestraints)
+        elif self.__cur_subtype in ('geo', 'hbond'):
+            key = (self.__cur_subtype, self.geoRestraints)
+        else:
+            return
+
+        if key in self.__reasons['local_seq_scheme']:
+            self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
     def getContentSubtype(self):
         """ Return content subtype of CYANA MR file.

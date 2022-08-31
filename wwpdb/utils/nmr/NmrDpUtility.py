@@ -158,6 +158,7 @@
 # 17-Jun-2022  M. Yokochi - add support for DYNAMO/PALES/TALOS MR format (DAOTHER-7872, NMR restraint remediation)
 # 06-Jul-2022  M. Yokochi - add support for SYBYL MR format (DAOTHER-7902, NMR restraint remediation)
 # 05-Aug-2022  M. Yokochi - do not add a saveframe tag if there is already the tag (DAOTHER-7947)
+# 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -21855,7 +21856,20 @@ class NmrDpUtility:
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
                                         + f") which is a {variant_name} {_variant_!r} is not present in the coordinate."
 
-                                    self.report.error.appendDescription('atom_not_found',
+                                    checked = False
+                                    if atom_id_[0] == 'H':
+                                        self.__ccU.updateChemCompDict(cif_comp_id)
+                                        ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                                    if atom_id_ in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                                        if ccb is not None:
+                                            bonded_to = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atom_id_ else ccb[self.__ccU.ccbAtomId1]
+                                            if coord_atom_site_ is not None and bonded_to in coord_atom_site_['atom_id']:
+                                                checked = True
+                                                err = "Atom ("\
+                                                    + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
+                                                    + f") which is a {variant_name} {_variant_!r} is not properly instantiated in the coordinate. Please re-upload the model file."
+
+                                    self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                          'description': err})
                                     self.report.setError()
@@ -22324,6 +22338,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
@@ -22449,6 +22471,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
@@ -22555,6 +22585,14 @@ class NmrDpUtility:
 
                             elif warn.startswith('[Atom not found]'):
                                 self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
 
@@ -22688,6 +22726,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -22815,6 +22861,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -22929,6 +22983,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -23033,6 +23095,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
@@ -23125,6 +23195,14 @@ class NmrDpUtility:
 
                             elif warn.startswith('[Atom not found]'):
                                 self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
 
@@ -23247,6 +23325,14 @@ class NmrDpUtility:
 
                             elif warn.startswith('[Atom not found]'):
                                 self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
 
@@ -31950,7 +32036,21 @@ class NmrDpUtility:
 
                         if comp_id in monDict3:
 
-                            self.report.error.appendDescription('atom_not_found',
+                            checked = False
+                            if atom_id_[0] == 'H':
+                                self.__ccU.updateChemCompDict(comp_id)
+                                ccb = next((ccb for ccb in self.__ccU.lastBonds
+                                            if atom_id_ in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
+                                if ccb is not None:
+                                    bonded_to = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atom_id_ else ccb[self.__ccU.ccbAtomId1]
+                                    if coord_atom_site_ is not None and bonded_to in coord_atom_site_['atom_id']:
+                                        checked = True
+                                        err = idx_msg + "Atom ("\
+                                            + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
+                                                                            comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
+                                            + ") is not properly instantiated in the coordinates. Please re-upload the model file."
+
+                            self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                  'description': err})
                             self.report.setError()

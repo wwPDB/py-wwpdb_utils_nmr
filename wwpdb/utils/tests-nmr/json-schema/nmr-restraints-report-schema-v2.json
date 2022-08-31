@@ -3751,6 +3751,9 @@
         "atom_not_found": {
           "$ref": "#/definitions/common_message"
         },
+        "hydrogen_not_instantiated": {
+          "$ref": "#/definitions/common_message"
+        },
         "multiple_data": {
           "$ref": "#/definitions/common_message"
         },

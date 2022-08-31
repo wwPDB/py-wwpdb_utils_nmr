@@ -1079,7 +1079,10 @@ class BiosymMRParserListener(ParseTreeListener):
                                 if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                     if ccb is not None:
                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
-                        if bondedTo[0] in ('N', 'O', 'S'):
+                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
+                                "Please re-upload the model file.\n"
                             return
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                     f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"

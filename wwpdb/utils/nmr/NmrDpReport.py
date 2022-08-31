@@ -69,6 +69,7 @@
 # 06-Jul-2022  M. Yokochi - add 'nm-res-syb' file type for SYBYL restraint format (DAOTHER-7902, NMR restraint remediation)
 # 07-Jul-2022  M. Yokochi - add 'nmr-peaks' content type and 'nm-pea-any' file type (NMR restraint remediation)
 # 08-Jul-2022  M. Yokochi - add 'anomalous_rdc_vector' warning type for artificial RDCs for protein fibrils using solid-state NMR (NMR restraint remediation, 5w3n)
+# 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1842,11 +1843,11 @@ class NmrDpReportError:
         self.items = ('internal_error', 'format_issue', 'missing_mandatory_content', 'missing_mandatory_item',
                       'content_mismatch', 'sequence_mismatch',
                       'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
-                      'atom_not_found', 'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
+                      'atom_not_found', 'hydrogen_not_instantiated', 'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
 
         self.group_items = ('sequence_mismatch',
                             'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
-                            'atom_not_found', 'multiple_data', 'missing_data', 'anomalous_data')
+                            'atom_not_found', 'hydrogen_not_instantiated', 'multiple_data', 'missing_data', 'anomalous_data')
 
         self.__contents = {item: None for item in self.items}
 

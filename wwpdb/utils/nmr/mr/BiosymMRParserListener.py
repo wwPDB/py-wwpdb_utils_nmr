@@ -547,7 +547,9 @@ class BiosymMRParserListener(ParseTreeListener):
                 seqId = int(residue[1])
             except ValueError:
                 seqId = int(''.join(c for c in residue[1] if c.isdigit()))
-                chainId = None
+                chainId = ''.join(c for c in residue[1] if not c.isdigit())
+                if len(chainId) == 0:
+                    chainId = None
             atomId = atomSel[2]
 
             return chainId, seqId, compId, atomId
@@ -677,6 +679,11 @@ class BiosymMRParserListener(ParseTreeListener):
 
         fixedChainId = None
         fixedSeqId = None
+
+        if refChainId is not None:
+            if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == refChainId):
+                if refChainId not in self.__chainNumberDict:
+                    self.__chainNumberDict[refChainId] = refChainId
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
@@ -952,7 +959,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
             elif self.__preferAuthSeq:
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-                if _coordAtomSite is not None:
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         self.__preferAuthSeq = False
@@ -970,7 +977,7 @@ class BiosymMRParserListener(ParseTreeListener):
             else:
                 self.__preferAuthSeq = True
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
-                if _coordAtomSite is not None:
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         # self.__authSeqId = 'auth_seq_id'
@@ -989,7 +996,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
         elif self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-            if _coordAtomSite is not None:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1007,7 +1014,7 @@ class BiosymMRParserListener(ParseTreeListener):
         else:
             self.__preferAuthSeq = True
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
-            if _coordAtomSite is not None:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     # self.__authSeqId = 'auth_seq_id'
@@ -1031,7 +1038,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
             if self.__preferAuthSeq:
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-                if _coordAtomSite is not None:
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         self.__preferAuthSeq = False
@@ -1048,7 +1055,7 @@ class BiosymMRParserListener(ParseTreeListener):
             else:
                 self.__preferAuthSeq = True
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
-                if _coordAtomSite is not None:
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         # self.__authSeqId = 'auth_seq_id'

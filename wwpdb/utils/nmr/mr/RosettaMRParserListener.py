@@ -981,7 +981,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             elif self.__preferAuthSeq:
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-                if _coordAtomSite is not None:
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         self.__preferAuthSeq = False
@@ -999,7 +999,7 @@ class RosettaMRParserListener(ParseTreeListener):
             else:
                 self.__preferAuthSeq = True
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
-                if _coordAtomSite is not None:
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         self.__authSeqId = 'auth_seq_id'
@@ -1018,7 +1018,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         elif self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-            if _coordAtomSite is not None:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1036,7 +1036,7 @@ class RosettaMRParserListener(ParseTreeListener):
         else:
             self.__preferAuthSeq = True
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
-            if _coordAtomSite is not None:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__authSeqId = 'auth_seq_id'
@@ -1058,7 +1058,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-            if _coordAtomSite is not None:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1076,7 +1076,7 @@ class RosettaMRParserListener(ParseTreeListener):
         else:
             self.__preferAuthSeq = True
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
-            if _coordAtomSite is not None:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__authSeqId = 'auth_seq_id'

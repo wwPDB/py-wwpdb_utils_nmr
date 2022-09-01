@@ -1222,14 +1222,16 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
     elemName = atomId[0]
 
+    mapping = [item for item in mrAtomNameMapping
+               if item['original_seq_id'] == seqId
+               and compId in (item['original_comp_id'], item['auth_comp_id'])]
+
     try:
 
         if elemName in ('Q', 'M'):
 
-            item = next((item for item in mrAtomNameMapping
-                         if item['original_seq_id'] == seqId
-                         and compId in (item['original_comp_id'], item['auth_comp_id'])
-                         and item['original_atom_id'] == 'H' + atomId[1:] + '2'), None)
+            item = next((item for item in mapping
+                         if item['original_atom_id'] == 'H' + atomId[1:] + '2'), None)
 
             if item is not None:
 
@@ -1240,10 +1242,8 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
             if len(atomId) > 1:
 
-                item = next((item for item in mrAtomNameMapping
-                             if item['original_seq_id'] == seqId
-                             and compId in (item['original_comp_id'], item['auth_comp_id'])
-                             and item['original_atom_id'] == '2H' + atomId[1:]), None)
+                item = next((item for item in mapping
+                             if item['original_atom_id'] == '2H' + atomId[1:]), None)
 
                 if item is not None:
 
@@ -1254,19 +1254,15 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
         if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
 
-            item = next((item for item in mrAtomNameMapping
-                         if item['original_seq_id'] == seqId
-                         and compId in (item['original_comp_id'], item['auth_comp_id'])
-                         and item['original_atom_id'] == atomId), None)
+            item = next((item for item in mapping
+                         if item['original_atom_id'] == atomId), None)
 
             if item is None:
 
                 _atomId = atomId[-1] + atomId[:-1]
 
-                item = next((item for item in mrAtomNameMapping
-                             if item['original_seq_id'] == seqId
-                             and compId in (item['original_comp_id'], item['auth_comp_id'])
-                             and item['original_atom_id'] == _atomId), None)
+                item = next((item for item in mapping
+                             if item['original_atom_id'] == _atomId), None)
 
                 if item is not None:
 
@@ -1278,10 +1274,8 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
                 if atomId[-1] == '1':
                     _atomId = '3' + atomId[:-1]
 
-                    item = next((item for item in mrAtomNameMapping
-                                 if item['original_seq_id'] == seqId
-                                 and compId in (item['original_comp_id'], item['auth_comp_id'])
-                                 and item['original_atom_id'] == _atomId), None)
+                    item = next((item for item in mapping
+                                 if item['original_atom_id'] == _atomId), None)
 
                     if item is not None:
 
@@ -1292,10 +1286,8 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
         if elemName == 'H' or (elemName in ('1', '2', '3') and len(atomId) > 1 and atomId[1] == 'H'):
 
-            item = next(item for item in mrAtomNameMapping
-                        if item['original_seq_id'] == seqId
-                        and compId in (item['original_comp_id'], item['auth_comp_id'])
-                        and item['original_atom_id'] == atomId)
+            item = next(item for item in mapping
+                        if item['original_atom_id'] == atomId)
 
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                 return seqId, compId, atomId
@@ -1304,10 +1296,8 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
         _atomId = 'H' + atomId[1:]
 
-        item = next((item for item in mrAtomNameMapping
-                     if item['original_seq_id'] == seqId
-                     and compId in (item['original_comp_id'], item['auth_comp_id'])
-                     and item['original_atom_id'] == _atomId), None)
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == _atomId), None)
 
         if item is not None:
 
@@ -1320,10 +1310,8 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
         _atomId = 'H' + atomId[1:] + '2'
 
-        item = next((item for item in mrAtomNameMapping
-                     if item['original_seq_id'] == seqId
-                     and compId in (item['original_comp_id'], item['auth_comp_id'])
-                     and item['original_atom_id'] == _atomId), None)
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == _atomId), None)
 
         if item is not None:
 
@@ -1346,14 +1334,16 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
 
     elemName = atomId[0]
 
+    mapping = [item for item in mrAtomNameMapping
+               if item['auth_seq_id'] == cifSeqId
+               and cifCompId in (item['auth_comp_id'], item['original_comp_id'])]
+
     try:
 
         if elemName in ('Q', 'M'):
 
-            item = next((item for item in mrAtomNameMapping
-                         if item['auth_seq_id'] == cifSeqId
-                         and item['auth_comp_id'] == cifCompId
-                         and item['original_atom_id'] in ('H' + atomId[1:] + '2', '2H' + atomId[1:])), None)
+            item = next((item for item in mapping
+                         if item['original_atom_id'] in ('H' + atomId[1:] + '2', '2H' + atomId[1:])), None)
 
             if item is not None:
 
@@ -1364,10 +1354,8 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
 
             if len(atomId) > 1:
 
-                item = next((item for item in mrAtomNameMapping
-                             if item['auth_seq_id'] == cifSeqId
-                             and item['auth_comp_id'] == cifCompId
-                             and item['original_atom_id'] == '2H' + atomId[1:]), None)
+                item = next((item for item in mapping
+                             if item['original_atom_id'] == '2H' + atomId[1:]), None)
 
                 if item is not None:
 
@@ -1378,19 +1366,15 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
 
         if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
 
-            item = next((item for item in mrAtomNameMapping
-                         if item['auth_seq_id'] == cifSeqId
-                         and item['auth_comp_id'] == cifCompId
-                         and item['original_atom_id'] == atomId), None)
+            item = next((item for item in mapping
+                         if item['original_atom_id'] == atomId), None)
 
             if item is None:
 
                 _atomId = atomId[-1] + atomId[:-1]
 
-                item = next((item for item in mrAtomNameMapping
-                             if item['auth_seq_id'] == cifSeqId
-                             and item['auth_comp_id'] == cifCompId
-                             and item['original_atom_id'] == _atomId), None)
+                item = next((item for item in mapping
+                             if item['original_atom_id'] == _atomId), None)
 
                 if item is not None:
 
@@ -1402,10 +1386,8 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
                 if atomId[-1] == '1':
                     _atomId = '3' + atomId[:-1]
 
-                    item = next((item for item in mrAtomNameMapping
-                                 if item['auth_seq_id'] == cifSeqId
-                                 and item['auth_comp_id'] == cifCompId
-                                 and item['original_atom_id'] == _atomId), None)
+                    item = next((item for item in mapping
+                                 if item['original_atom_id'] == _atomId), None)
 
                     if item is not None:
 
@@ -1416,10 +1398,8 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
 
         if elemName == 'H' or (elemName in ('1', '2', '3') and len(atomId) > 1 and atomId[1] == 'H'):
 
-            item = next(item for item in mrAtomNameMapping
-                        if item['auth_seq_id'] == cifSeqId
-                        and item['auth_comp_id'] == cifCompId
-                        and item['original_atom_id'] == atomId)
+            item = next(item for item in mapping
+                        if item['original_atom_id'] == atomId)
 
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                 return atomId
@@ -1428,10 +1408,8 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
 
         _atomId = 'H' + atomId[1:]
 
-        item = next((item for item in mrAtomNameMapping
-                     if item['auth_seq_id'] == cifSeqId
-                     and item['auth_comp_id'] == cifCompId
-                     and item['original_atom_id'] == _atomId), None)
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == _atomId), None)
 
         if item is not None:
             _atomId = elemName + item['auth_atom_id'][1:]
@@ -1439,10 +1417,8 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
 
         _atomId = 'H' + atomId[1:] + '2'
 
-        item = next((item for item in mrAtomNameMapping
-                     if item['auth_seq_id'] == cifSeqId
-                     and item['auth_comp_id'] == cifCompId
-                     and item['original_atom_id'] == _atomId), None)
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == _atomId), None)
 
         if item is not None:
             _atomId = elemName + item['auth_atom_id'][1:-1]

@@ -1228,7 +1228,7 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
             item = next((item for item in mrAtomNameMapping
                          if item['original_seq_id'] == seqId
-                         and item['original_comp_id'] == compId
+                         and compId in (item['original_comp_id'], item['auth_comp_id'])
                          and item['original_atom_id'] == 'H' + atomId[1:] + '2'), None)
 
             if item is not None:
@@ -1236,13 +1236,65 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return seqId, compId, atomId
 
-                return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%'
+                return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+            if len(atomId) > 1:
+
+                item = next((item for item in mrAtomNameMapping
+                             if item['original_seq_id'] == seqId
+                             and compId in (item['original_comp_id'], item['auth_comp_id'])
+                             and item['original_atom_id'] == '2H' + atomId[1:]), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return seqId, compId, atomId
+
+                    return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+        if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
+
+            item = next((item for item in mrAtomNameMapping
+                         if item['original_seq_id'] == seqId
+                         and compId in (item['original_comp_id'], item['auth_comp_id'])
+                         and item['original_atom_id'] == atomId), None)
+
+            if item is None:
+
+                _atomId = atomId[-1] + atomId[:-1]
+
+                item = next((item for item in mrAtomNameMapping
+                             if item['original_seq_id'] == seqId
+                             and compId in (item['original_comp_id'], item['auth_comp_id'])
+                             and item['original_atom_id'] == _atomId), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return seqId, compId, atomId
+
+                    return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
+
+                if atomId[-1] == '1':
+                    _atomId = '3' + atomId[:-1]
+
+                    item = next((item for item in mrAtomNameMapping
+                                 if item['original_seq_id'] == seqId
+                                 and compId in (item['original_comp_id'], item['auth_comp_id'])
+                                 and item['original_atom_id'] == _atomId), None)
+
+                    if item is not None:
+
+                        if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                            return seqId, compId, atomId
+
+                        return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
 
         if elemName == 'H' or (elemName in ('1', '2', '3') and len(atomId) > 1 and atomId[1] == 'H'):
 
             item = next(item for item in mrAtomNameMapping
                         if item['original_seq_id'] == seqId
-                        and item['original_comp_id'] == compId
+                        and compId in (item['original_comp_id'], item['auth_comp_id'])
                         and item['original_atom_id'] == atomId)
 
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
@@ -1254,7 +1306,7 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
         item = next((item for item in mrAtomNameMapping
                      if item['original_seq_id'] == seqId
-                     and item['original_comp_id'] == compId
+                     and compId in (item['original_comp_id'], item['auth_comp_id'])
                      and item['original_atom_id'] == _atomId), None)
 
         if item is not None:
@@ -1270,7 +1322,7 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
         item = next((item for item in mrAtomNameMapping
                      if item['original_seq_id'] == seqId
-                     and item['original_comp_id'] == compId
+                     and compId in (item['original_comp_id'], item['auth_comp_id'])
                      and item['original_atom_id'] == _atomId), None)
 
         if item is not None:
@@ -1301,14 +1353,66 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
             item = next((item for item in mrAtomNameMapping
                          if item['auth_seq_id'] == cifSeqId
                          and item['auth_comp_id'] == cifCompId
-                         and item['original_atom_id'] == 'H' + atomId[1:] + '2'), None)
+                         and item['original_atom_id'] in ('H' + atomId[1:] + '2', '2H' + atomId[1:])), None)
 
             if item is not None:
 
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return atomId
 
-                return item['auth_atom_id'][:-1] + '%'
+                return item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+            if len(atomId) > 1:
+
+                item = next((item for item in mrAtomNameMapping
+                             if item['auth_seq_id'] == cifSeqId
+                             and item['auth_comp_id'] == cifCompId
+                             and item['original_atom_id'] == '2H' + atomId[1:]), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return atomId
+
+                    return item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+        if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
+
+            item = next((item for item in mrAtomNameMapping
+                         if item['auth_seq_id'] == cifSeqId
+                         and item['auth_comp_id'] == cifCompId
+                         and item['original_atom_id'] == atomId), None)
+
+            if item is None:
+
+                _atomId = atomId[-1] + atomId[:-1]
+
+                item = next((item for item in mrAtomNameMapping
+                             if item['auth_seq_id'] == cifSeqId
+                             and item['auth_comp_id'] == cifCompId
+                             and item['original_atom_id'] == _atomId), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return atomId
+
+                    return item['auth_atom_id']
+
+                if atomId[-1] == '1':
+                    _atomId = '3' + atomId[:-1]
+
+                    item = next((item for item in mrAtomNameMapping
+                                 if item['auth_seq_id'] == cifSeqId
+                                 and item['auth_comp_id'] == cifCompId
+                                 and item['original_atom_id'] == _atomId), None)
+
+                    if item is not None:
+
+                        if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                            return atomId
+
+                        return item['auth_atom_id']
 
         if elemName == 'H' or (elemName in ('1', '2', '3') and len(atomId) > 1 and atomId[1] == 'H'):
 

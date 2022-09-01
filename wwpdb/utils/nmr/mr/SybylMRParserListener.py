@@ -601,7 +601,8 @@ class SybylMRParserListener(ParseTreeListener):
                 cifCompId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
                 if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if compId in (cifCompId, origCompId):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.append((chainId, seqId, cifCompId, True))
@@ -634,7 +635,8 @@ class SybylMRParserListener(ParseTreeListener):
                             cifCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
                             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, self.__hasCoord)
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.append((chainId, seqId_, cifCompId, True))
@@ -660,7 +662,8 @@ class SybylMRParserListener(ParseTreeListener):
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId):
@@ -680,7 +683,8 @@ class SybylMRParserListener(ParseTreeListener):
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
                         if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
@@ -705,7 +709,8 @@ class SybylMRParserListener(ParseTreeListener):
                             cifCompId = np['comp_id'][idx]
                             origCompId = np['auth_comp_id'][idx]
                             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
@@ -740,11 +745,15 @@ class SybylMRParserListener(ParseTreeListener):
 
         atomSelection = []
 
+        _atomId = atomId
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
-            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+            _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
+
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+            if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
+                atomId = _atomId
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
             if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():

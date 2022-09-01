@@ -3926,9 +3926,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                         if compId not in monDict3 and self.__mrAtomNameMapping is not None and _seqId in ps['auth_seq_id']:
                             authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
-                            _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, _seqId, authCompId, atomId)
-                            if coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
-                                atomId = _atomId
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
 

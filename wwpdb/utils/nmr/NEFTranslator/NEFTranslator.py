@@ -85,6 +85,7 @@
 # 13-Apr-2022  M. Yokochi - use auth_*_id scheme preferentially in combined format translation (v3.1.2, NMR restraint remediation)
 # 02-May-2022  M. Yokochi - remediate inconsistent _Atom_chem_shift.Chem_comp_ID tag values in reference to _Atom_chem_shift.Seq_ID (v3.1.3, NMR restraint remediation)
 # 04-Jul-2022  M. Yokochi - add support for old XPLOR atom nomenclature, i.e. 1HB (v3.1.4, NMR restraint remediation)
+# 01-Sep-2022  M. Yokochi - fix NEF atom name conversion for excess wild card (v3.1.5, NMR restraint remediation)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -112,7 +113,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.1.4'
+__version__ = '3.1.5'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -4469,6 +4470,11 @@ class NEFTranslator:
                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                     return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
                                               f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%." if leave_unmatched else None,
+                                              leave_unmatched)
+
+                if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and nef_atom[:-1] in atoms:
+                    return self.get_star_atom(comp_id, nef_atom[:-1],
+                                              f"{nef_atom} converted to {nef_atom[:-1]}." if leave_unmatched else None,
                                               leave_unmatched)
 
             if nef_atom in atoms:

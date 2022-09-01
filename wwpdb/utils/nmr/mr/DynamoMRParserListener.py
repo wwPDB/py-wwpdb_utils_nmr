@@ -1138,7 +1138,7 @@ class DynamoMRParserListener(ParseTreeListener):
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-            if details is not None and len(atomId) > 1:
+            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
 
             if details is not None:
@@ -1191,7 +1191,7 @@ class DynamoMRParserListener(ParseTreeListener):
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-            if details is not None and len(atomId) > 1:
+            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
 
             if details is not None:

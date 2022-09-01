@@ -2474,7 +2474,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                         if ccb is not None:
                                             bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                            if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                                            if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                 checked = True
                                                 self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
@@ -2610,7 +2610,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
                                                     bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                         checked = True
                                                         self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
@@ -2804,7 +2804,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
                                                     bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                         checked = True
                                                         self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
@@ -2887,7 +2887,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
                                                     bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                         checked = True
                                                         self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
@@ -3010,7 +3010,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
                                                     bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                         checked = True
                                                         self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
@@ -3093,7 +3093,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
                                                     bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                         checked = True
                                                         self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
@@ -3270,7 +3270,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
                                                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
                                                             self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
@@ -3353,7 +3353,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
                                                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
                                                             self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
@@ -3459,7 +3459,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
                                                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
                                                             self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
@@ -3542,7 +3542,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
                                                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
                                                             self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
@@ -6891,7 +6891,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                     if ccb is not None:
                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
-                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             if enableWarning:
                                 self.warningMessage += f"[Hydrogen not instantiated] "\
                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\

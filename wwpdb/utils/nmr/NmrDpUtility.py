@@ -21858,12 +21858,12 @@ class NmrDpUtility:
 
                                     checked = False
                                     if atom_id_[0] == 'H':
-                                        self.__ccU.updateChemCompDict(cif_comp_id)
+                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id_), None)
                                         ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                     if atom_id_ in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                        if ccb is not None:
+                                        if cca is not None and ccb is not None:
                                             bonded_to = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atom_id_ else ccb[self.__ccU.ccbAtomId1]
-                                            if coord_atom_site_ is not None and bonded_to in coord_atom_site_['atom_id']:
+                                            if coord_atom_site_ is not None and bonded_to in coord_atom_site_['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                 checked = True
                                                 err = "Atom ("\
                                                     + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -32039,11 +32039,12 @@ class NmrDpUtility:
                             checked = False
                             if atom_id_[0] == 'H':
                                 self.__ccU.updateChemCompDict(comp_id)
+                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id_), None)
                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
                                             if atom_id_ in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                if ccb is not None:
+                                if cca is not None and ccb is not None:
                                     bonded_to = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atom_id_ else ccb[self.__ccU.ccbAtomId1]
-                                    if coord_atom_site_ is not None and bonded_to in coord_atom_site_['atom_id']:
+                                    if coord_atom_site_ is not None and bonded_to in coord_atom_site_['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                         checked = True
                                         err = idx_msg + "Atom ("\
                                             + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,

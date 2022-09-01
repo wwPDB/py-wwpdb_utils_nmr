@@ -222,10 +222,10 @@ class BMRBChemShiftStat:
             @return: the most similar comp_id, otherwise None
         """
 
-        hash = hashlib.md5(','.join(atom_ids).encode()).hexdigest()
+        md5hash = hashlib.md5(','.join(atom_ids).encode()).hexdigest()
 
-        if hash in self.__cachedDictForSimilarCompId:
-            return self.__cachedDictForSimilarCompId[hash]
+        if md5hash in self.__cachedDictForSimilarCompId:
+            return self.__cachedDictForSimilarCompId[md5hash]
 
         aa_bb = set(['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'])
         dn_bb = set(["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", 'P'])
@@ -345,7 +345,7 @@ class BMRBChemShiftStat:
             return comp_id
 
         finally:
-            self.__cachedDictForSimilarCompId[hash] = comp_id
+            self.__cachedDictForSimilarCompId[md5hash] = comp_id
 
     def hasEnoughStat(self, comp_id, primary=True):
         """ Return whether a given comp_id has enough chemical shift statistics.

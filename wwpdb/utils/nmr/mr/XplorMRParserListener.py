@@ -1431,7 +1431,7 @@ class XplorMRParserListener(ParseTreeListener):
                     f"The energy constant value {energyConst} must be a positive value.\n"
                 return
 
-            if exponent not in (1, 2, 4):
+            if exponent not in (0, 1, 2, 4):
                 self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
                     f"The exponent value of dihedral angle restraint 'ed={exponent}' should be 1 (linear well), 2 (square well) or 4 (quartic well).\n"
                 return
@@ -1449,7 +1449,7 @@ class XplorMRParserListener(ParseTreeListener):
                 lower_linear_limit = target - delta
                 upper_linear_limit = target + delta
 
-            dstFunc = self.validateAngleRange(self.scale, {'energy_const': energyConst, 'exponent': exponent},
+            dstFunc = self.validateAngleRange(self.scale if exponent > 0 else 0.0, {'energy_const': energyConst, 'exponent': exponent},
                                               target_value, lower_limit, upper_limit,
                                               lower_linear_limit, upper_linear_limit)
 
@@ -7379,9 +7379,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
                                                         if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
-                                                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "\
-                                                                "Please re-upload the model file.\n"
+                                                            if len(origAtomId) == 1:
+                                                                self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "\
+                                                                    "Please re-upload the model file.\n"
                                                 if not checked:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"

@@ -203,8 +203,10 @@ try:
                                            MAJOR_ASYM_ID_SET,
                                            LEN_MAJOR_ASYM_ID_SET,
                                            emptyValue, trueValue,
-                                           monDict3, hasLargeSeqGap,
-                                           fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
+                                           monDict3,
+                                           hasLargeInnerSeqGap, hasLargeSeqGap,
+                                           fillInnerBlankCompId, fillBlankCompId, fillBlankCompIdWithOffset,
+                                           beautifyPolySeq,
                                            getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
                                            getOneLetterCode, getOneLetterCodeSequence,
                                            letterToDigit, indexToLetter,
@@ -270,8 +272,10 @@ except ImportError:
                                MAJOR_ASYM_ID_SET,
                                LEN_MAJOR_ASYM_ID_SET,
                                emptyValue, trueValue,
-                               monDict3, hasLargeSeqGap,
-                               fillBlankCompId, fillBlankCompIdWithOffset, beautifyPolySeq,
+                               monDict3,
+                               hasLargeInnerSeqGap, hasLargeSeqGap,
+                               fillInnerBlankCompId, fillBlankCompId, fillBlankCompIdWithOffset,
+                               beautifyPolySeq,
                                getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
                                getOneLetterCode, getOneLetterCodeSequence,
                                letterToDigit, indexToLetter,
@@ -14002,6 +14006,10 @@ class NmrDpUtility:
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
+                            if conflict == 0:
+                                if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                                    _s2 = fillInnerBlankCompId(_s2)
+
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
@@ -14371,6 +14379,10 @@ class NmrDpUtility:
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
+                            if conflict == 0:
+                                if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                                    _s2 = fillInnerBlankCompId(_s2)
+
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
@@ -14688,6 +14700,10 @@ class NmrDpUtility:
 
                                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                                     _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+
+                                    if conflict == 0:
+                                        if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                                            _s2 = fillInnerBlankCompId(_s2)
 
                                     if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                         continue
@@ -30226,6 +30242,10 @@ class NmrDpUtility:
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
+                            if conflict == 0:
+                                if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                                    _s2 = fillInnerBlankCompId(_s2)
+
                             ref_length = len(s1['seq_id'])
 
                             ref_code = getOneLetterCodeSequence(_s1['comp_id'])
@@ -30291,6 +30311,15 @@ class NmrDpUtility:
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+
+                if conflict == 0:
+                    has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
+                    has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
+
+                    if has_inner_gap_2 and not has_inner_gap_1:
+                        _s2 = fillInnerBlankCompId(_s2)
+                    elif has_inner_gap_1 and not has_inner_gap_2:
+                        _s1 = fillInnerBlankCompId(_s1)
 
                 if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
@@ -30431,6 +30460,15 @@ class NmrDpUtility:
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+
+                if conflict == 0:
+                    has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
+                    has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
+
+                    if has_inner_gap_2 and not has_inner_gap_1:
+                        _s2 = fillInnerBlankCompId(_s2)
+                    elif has_inner_gap_1 and not has_inner_gap_2:
+                        _s1 = fillInnerBlankCompId(_s1)
 
                 if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
@@ -30669,6 +30707,15 @@ class NmrDpUtility:
                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                     _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
+                    if conflict == 0:
+                        has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
+                        has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
+
+                        if has_inner_gap_2 and not has_inner_gap_1:
+                            _s2 = fillInnerBlankCompId(_s2)
+                        elif has_inner_gap_1 and not has_inner_gap_2:
+                            _s1 = fillInnerBlankCompId(_s1)
+
                     if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
                         __s1, __s2 = beautifyPolySeq(_s1, _s2)
                         _s1 = __s1
@@ -30901,6 +30948,15 @@ class NmrDpUtility:
 
                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                     _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+
+                    if conflict == 0:
+                        has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
+                        has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
+
+                        if has_inner_gap_2 and not has_inner_gap_1:
+                            _s2 = fillInnerBlankCompId(_s2)
+                        elif has_inner_gap_1 and not has_inner_gap_2:
+                            _s1 = fillInnerBlankCompId(_s1)
 
                     if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
                         __s1, __s2 = beautifyPolySeq(_s1, _s2)
@@ -31314,6 +31370,15 @@ class NmrDpUtility:
 
                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                     _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+
+                    if conflict == 0:
+                        has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
+                        has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
+
+                        if has_inner_gap_2 and not has_inner_gap_1:
+                            _s2 = fillInnerBlankCompId(_s2)
+                        elif has_inner_gap_1 and not has_inner_gap_2:
+                            _s1 = fillInnerBlankCompId(_s1)
 
                     if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
                         __s1, __s2 = beautifyPolySeq(_s1, _s2)

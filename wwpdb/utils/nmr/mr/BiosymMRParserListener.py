@@ -723,7 +723,8 @@ class BiosymMRParserListener(ParseTreeListener):
                 cifCompId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if compId in (cifCompId, origCompId):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.append((chainId, seqId, cifCompId, True))
@@ -760,7 +761,8 @@ class BiosymMRParserListener(ParseTreeListener):
                             cifCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
                             if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, self.__hasCoord)
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.append((chainId, seqId_, cifCompId, True))
@@ -791,7 +793,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId):
@@ -818,7 +821,8 @@ class BiosymMRParserListener(ParseTreeListener):
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
@@ -850,7 +854,8 @@ class BiosymMRParserListener(ParseTreeListener):
                             cifCompId = np['comp_id'][idx]
                             origCompId = np['auth_comp_id'][idx]
                             if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId)
+                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
@@ -894,14 +899,18 @@ class BiosymMRParserListener(ParseTreeListener):
 
         atomSelection = []
 
+        _atomId = atomId
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
-            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+            _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
+
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+            if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
+                atomId = _atomId
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-            if details is not None and len(atomId) > 1:
+            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
 
             if details is not None:
@@ -1086,7 +1095,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                 if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                     if ccb is not None:
                         bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
-                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id']:
+                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file.\n"

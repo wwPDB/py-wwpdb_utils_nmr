@@ -67,6 +67,19 @@ MAJOR_ASYM_ID_SET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
 LEN_MAJOR_ASYM_ID_SET = len(MAJOR_ASYM_ID_SET)
 
 
+def hasLargeInnerSeqGap(polySeq, seqIdName='seq_id'):
+    """ Return whether large gap in a sequence.
+    """
+
+    _s = polySeq[seqIdName]
+
+    for idx, seqId in enumerate(_s):
+        if idx > 0 and seqId - _s[idx - 1] > 20:
+            return True
+
+    return False
+
+
 def hasLargeSeqGap(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'):
     """ Return whether large gap in combined sequence of polySeq1 and polySeq2.
     """
@@ -80,8 +93,32 @@ def hasLargeSeqGap(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id')
     return False
 
 
+def fillInnerBlankCompId(polySeq, seqIdName='seq_id'):
+    """ Fill inner blanked comp_ID.
+    """
+
+    _s = list(range(polySeq[seqIdName][0], polySeq[seqIdName][-1] + 1))
+    _c = []
+
+    for seqId in _s:
+        if seqId in polySeq[seqIdName]:
+            idx = polySeq[seqIdName].index(seqId)
+            if idx < len(polySeq['comp_id']):
+                _c.append(polySeq['comp_id'][idx])
+            else:
+                _c.append('.')
+        else:
+            _c.append('.')
+
+    ps = {'chain_id': polySeq['chain_id'], 'seq_id': _s, 'comp_id': _c}
+    if 'gap_in_auth_seq' in polySeq:
+        ps['gap_in_auth_seq'] = polySeq['gap_in_auth_seq']
+
+    return ps
+
+
 def fillBlankCompId(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'):
-    """ Fill blanked comp ID in polySeq2 against polySeq1.
+    """ Fill blanked comp_ID in polySeq2 against polySeq1.
     """
 
     _s = sorted(set(polySeq1[seqIdName1]) | set(polySeq2[seqIdName2]))
@@ -105,7 +142,7 @@ def fillBlankCompId(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
 
 
 def fillBlankCompIdWithOffset(polySeq, offset, seqIdName='seq_id'):
-    """ Fill blanked comp ID with offset.
+    """ Fill blanked comp_ID with offset.
     """
 
     _s = list(range(polySeq[seqIdName][0] - offset, polySeq[seqIdName][-1] + 1))
@@ -129,7 +166,7 @@ def fillBlankCompIdWithOffset(polySeq, offset, seqIdName='seq_id'):
 
 
 def beautifyPolySeq(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'):
-    """ Truncate negative seq IDs and insert spacing between the large gap.
+    """ Truncate negative seq_IDs and insert spacing between the large gap.
     """
 
     _polySeq1 = fillBlankCompId(polySeq2, polySeq1, seqIdName1=seqIdName2, seqIdName2=seqIdName1)  # pylint: disable=arguments-out-of-order
@@ -330,7 +367,7 @@ def getScoreOfSeqAlign(myAlign):
 
 
 def getOneLetterCode(compId):
-    """ Convert comp ID to 1-letter code.
+    """ Convert comp_ID to 1-letter code.
     """
 
     compId = compId.upper()
@@ -345,7 +382,7 @@ def getOneLetterCode(compId):
 
 
 def getOneLetterCodeSequence(compIdList):
-    """ Convert array of comp IDs to 1-letter code sequence.
+    """ Convert array of comp_IDs to 1-letter code sequence.
     """
 
     compCode = ''
@@ -657,6 +694,10 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
 
             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1, seqIdName=seq_id_name)
             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+
+            if conflict == 0:
+                if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                    _s2 = fillInnerBlankCompId(_s2)
 
             _seq_id_name = 'auth_seq_id' if 'auth_seq_id' in _s1 else 'seq_id'
 
@@ -1003,6 +1044,10 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
         _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1, seqIdName=seq_id_name)
         _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
+        if conflict == 0:
+            if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                _s2 = fillInnerBlankCompId(_s2)
+
         _seq_id_name = 'auth_seq_id' if 'auth_seq_id' in _s1 else 'seq_id'
 
         if conflict > 0 and hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
@@ -1216,42 +1261,111 @@ def trimSequenceAlignment(seqAlign, chainAssign):
             del seqAlign[idx]
 
 
-def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId):
+def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAtomSite=None):
     """ Retrieve atom identifiers from atom name mapping of public MR file.
     """
 
     elemName = atomId[0]
 
+    mapping = [item for item in mrAtomNameMapping
+               if item['original_seq_id'] == seqId
+               and compId in (item['original_comp_id'], item['auth_comp_id'])]
+
     try:
+
+        if elemName in ('Q', 'M'):
+
+            item = next((item for item in mapping
+                         if item['original_atom_id'] == 'H' + atomId[1:] + '2'), None)
+
+            if item is not None:
+
+                if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                    return seqId, compId, atomId
+
+                return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+            if len(atomId) > 1:
+
+                item = next((item for item in mapping
+                             if item['original_atom_id'] == '2H' + atomId[1:]), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return seqId, compId, atomId
+
+                    return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+        if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
+
+            item = next((item for item in mapping
+                         if item['original_atom_id'] == atomId), None)
+
+            if item is None:
+
+                _atomId = atomId[-1] + atomId[:-1]
+
+                item = next((item for item in mapping
+                             if item['original_atom_id'] == _atomId), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return seqId, compId, atomId
+
+                    return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
+
+                if atomId[-1] == '1':
+                    _atomId = '3' + atomId[:-1]
+
+                    item = next((item for item in mapping
+                                 if item['original_atom_id'] == _atomId), None)
+
+                    if item is not None:
+
+                        if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                            return seqId, compId, atomId
+
+                        return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
 
         if elemName == 'H' or (elemName in ('1', '2', '3') and len(atomId) > 1 and atomId[1] == 'H'):
 
-            item = next(item for item in mrAtomNameMapping
-                        if item['original_seq_id'] == seqId
-                        and item['original_comp_id'] == compId
-                        and item['original_atom_id'] == atomId)
+            item = next(item for item in mapping
+                        if item['original_atom_id'] == atomId)
+
+            if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                return seqId, compId, atomId
 
             return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
 
         _atomId = 'H' + atomId[1:]
 
-        item = next((item for item in mrAtomNameMapping
-                     if item['original_seq_id'] == seqId
-                     and item['original_comp_id'] == compId
-                     and item['original_atom_id'] == _atomId), None)
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == _atomId), None)
 
         if item is not None:
-            return item['auth_seq_id'], item['auth_comp_id'], elemName + item['auth_atom_id'][1:]
+
+            _atomId = elemName + item['auth_atom_id'][1:]
+
+            if coordAtomSite is not None and _atomId not in coordAtomSite['atom_id']:
+                return seqId, compId, atomId
+
+            return item['auth_seq_id'], item['auth_comp_id'], _atomId
 
         _atomId = 'H' + atomId[1:] + '2'
 
-        item = next((item for item in mrAtomNameMapping
-                     if item['original_seq_id'] == seqId
-                     and item['original_comp_id'] == compId
-                     and item['original_atom_id'] == _atomId), None)
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == _atomId), None)
 
         if item is not None:
-            return item['auth_seq_id'], item['auth_comp_id'], elemName + item['auth_atom_id'][1:-1]
+
+            _atomId = elemName + item['auth_atom_id'][1:-1]
+
+            if coordAtomSite is not None and _atomId not in coordAtomSite['atom_id']:
+                return seqId, compId, atomId
+
+            return item['auth_seq_id'], item['auth_comp_id'], _atomId
 
         return seqId, compId, atomId
 
@@ -1259,42 +1373,101 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId):
         return seqId, compId, atomId
 
 
-def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId):
+def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite=None):
     """ Retrieve atom_id from atom name mapping of public MR file.
     """
 
     elemName = atomId[0]
 
+    mapping = [item for item in mrAtomNameMapping
+               if item['auth_seq_id'] == cifSeqId
+               and cifCompId in (item['auth_comp_id'], item['original_comp_id'])]
+
     try:
+
+        if elemName in ('Q', 'M'):
+
+            item = next((item for item in mapping
+                         if item['original_atom_id'] in ('H' + atomId[1:] + '2', '2H' + atomId[1:])), None)
+
+            if item is not None:
+
+                if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                    return atomId
+
+                return item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+            if len(atomId) > 1:
+
+                item = next((item for item in mapping
+                             if item['original_atom_id'] == '2H' + atomId[1:]), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return atomId
+
+                    return item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+        if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
+
+            item = next((item for item in mapping
+                         if item['original_atom_id'] == atomId), None)
+
+            if item is None:
+
+                _atomId = atomId[-1] + atomId[:-1]
+
+                item = next((item for item in mapping
+                             if item['original_atom_id'] == _atomId), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return atomId
+
+                    return item['auth_atom_id']
+
+                if atomId[-1] == '1':
+                    _atomId = '3' + atomId[:-1]
+
+                    item = next((item for item in mapping
+                                 if item['original_atom_id'] == _atomId), None)
+
+                    if item is not None:
+
+                        if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                            return atomId
+
+                        return item['auth_atom_id']
 
         if elemName == 'H' or (elemName in ('1', '2', '3') and len(atomId) > 1 and atomId[1] == 'H'):
 
-            item = next(item for item in mrAtomNameMapping
-                        if item['auth_seq_id'] == cifSeqId
-                        and item['auth_comp_id'] == cifCompId
-                        and item['original_atom_id'] == atomId)
+            item = next(item for item in mapping
+                        if item['original_atom_id'] == atomId)
+
+            if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                return atomId
 
             return item['auth_atom_id']
 
         _atomId = 'H' + atomId[1:]
 
-        item = next((item for item in mrAtomNameMapping
-                     if item['auth_seq_id'] == cifSeqId
-                     and item['auth_comp_id'] == cifCompId
-                     and item['original_atom_id'] == _atomId), None)
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == _atomId), None)
 
         if item is not None:
-            return elemName + item['auth_atom_id'][1:]
+            _atomId = elemName + item['auth_atom_id'][1:]
+            return atomId if coordAtomSite is not None and _atomId not in coordAtomSite['atom_id'] else _atomId
 
         _atomId = 'H' + atomId[1:] + '2'
 
-        item = next((item for item in mrAtomNameMapping
-                     if item['auth_seq_id'] == cifSeqId
-                     and item['auth_comp_id'] == cifCompId
-                     and item['original_atom_id'] == _atomId), None)
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == _atomId), None)
 
         if item is not None:
-            return elemName + item['auth_atom_id'][1:-1]
+            _atomId = elemName + item['auth_atom_id'][1:-1]
+            return atomId if coordAtomSite is not None and _atomId not in coordAtomSite['atom_id'] else _atomId
 
         return atomId
 

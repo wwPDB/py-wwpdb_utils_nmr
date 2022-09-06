@@ -158,6 +158,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __altPolySeq = None
     __nonPoly = None
     __branch = None
+    __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
@@ -167,6 +168,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __hasPolySeq = False
     __hasNonPoly = False
     __hasBranch = False
+    __hasNonPolySeq = False
     __preferAuthSeq = True
     __gapInAuthSeq = False
 
@@ -231,6 +233,16 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
         self.__hasBranch = self.__branch is not None and len(self.__branch) > 0
+        if self.__hasNonPoly or self.__hasBranch:
+            self.__hasNonPolySeq = True
+            if self.__hasNonPoly and self.__hasBranch:
+                self.__nonPolySeq = self.__nonPoly
+                self.__nonPolySeq.extend(self.__branch)
+            elif self.__hasNonPoly:
+                self.__nonPolySeq = self.__nonPoly
+            else:
+                self.__nonPolySeq = self.__branch
+
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
 
@@ -827,8 +839,8 @@ class RosettaMRParserListener(ParseTreeListener):
                         except IndexError:
                             pass
 
-        if self.__hasNonPoly:
-            for np in self.__nonPoly:
+        if self.__hasNonPolySeq:
+            for np in self.__nonPolySeq:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, False)
                 if self.__reasons is not None:
                     if 'branch_remap' in self.__reasons and seqId in self.__reasons['branch_remap']:
@@ -857,36 +869,6 @@ class RosettaMRParserListener(ParseTreeListener):
                        or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                         chainAssign.append((chainId, seqId, cifCompId, False))
 
-        if self.__hasBranch:
-            for bp in self.__branch:
-                chainId, seqId = self.getRealChainSeqId(bp, _seqId, False)
-                if self.__reasons is not None:
-                    if 'branch_remap' in self.__reasons and seqId in self.__reasons['branch_remap']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branch_remap'], seqId)
-                    if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-                    elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-                    elif 'seq_id_remap' in self.__reasons:
-                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                    if fixedSeqId is not None:
-                        seqId = _seqId = fixedSeqId
-                if fixedChainId is not None and chainId != fixedChainId:
-                    continue
-                if seqId in bp['auth_seq_id']:
-                    idx = bp['auth_seq_id'].index(seqId)
-                    cifCompId = bp['comp_id'][idx]
-                    updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                    if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
-                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
-                        origCompId = bp['auth_comp_id'][idx]
-                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                    if 'alt_auth_seq_id' in bp and seqId in bp['auth_seq_id'] and seqId not in bp['alt_auth_seq_id']:
-                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(bp['auth_seq_id'], bp['alt_auth_seq_id']) if _seqId == seqId)
-                    if atomId is None\
-                       or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                        chainAssign.append((chainId, seqId, cifCompId, False))
-
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
@@ -909,8 +891,8 @@ class RosettaMRParserListener(ParseTreeListener):
                             # if 'label_seq_scheme' not in self.reasonsForReParsing:
                             #     self.reasonsForReParsing['label_seq_scheme'] = True
 
-            if self.__hasNonPoly:
-                for np in self.__nonPoly:
+            if self.__hasNonPolySeq:
+                for np in self.__nonPolySeq:
                     chainId = np['auth_chain_id']
                     if fixedChainId is not None and chainId != fixedChainId:
                         continue
@@ -928,28 +910,6 @@ class RosettaMRParserListener(ParseTreeListener):
                             if atomId is None\
                                or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                                 chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
-                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                #     self.reasonsForReParsing['label_seq_scheme'] = True
-
-            if self.__hasBranch:
-                for bp in self.__branch:
-                    chainId = bp['auth_chain_id']
-                    if fixedChainId is not None and chainId != fixedChainId:
-                        continue
-                    seqKey = (chainId, _seqId)
-                    if seqKey in self.__authToLabelSeq:
-                        _, seqId = self.__authToLabelSeq[seqKey]
-                        if seqId in bp['seq_id']:
-                            idx = bp['seq_id'].index(seqId)
-                            cifCompId = bp['comp_id'][idx]
-                            updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                            if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
-                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
-                                origCompId = bp['auth_comp_id'][idx]
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                            if atomId is None\
-                               or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                                chainAssign.append((bp['auth_chain_id'], _seqId, cifCompId, False))
                                 # if 'label_seq_scheme' not in self.reasonsForReParsing:
                                 #     self.reasonsForReParsing['label_seq_scheme'] = True
 
@@ -1008,22 +968,14 @@ class RosettaMRParserListener(ParseTreeListener):
                and atomId in coordAtomSite['atom_id']:
                 _atomId = [atomId]
 
-            if coordAtomSite is None and not isPolySeq:
+            if coordAtomSite is None and not isPolySeq and self.__hasNonPolySeq:
                 try:
-                    if self.__hasNonPoly:
-                        for np in self.__nonPoly:
-                            if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
-                                cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
-                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-                                if coordAtomSite is not None:
-                                    break
-                    if self.__hasBranch:
-                        for bp in self.__branch:
-                            if bp['auth_chain_id'] == chainId and cifSeqId in bp['auth_seq_id']:
-                                cifSeqId = bp['seq_id'][bp['auth_seq_id'].index(cifSeqId)]
-                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-                                if coordAtomSite is not None:
-                                    break
+                    for np in self.__nonPolySeq:
+                        if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
+                            cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
+                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+                            if coordAtomSite is not None:
+                                break
                 except ValueError:
                     pass
 

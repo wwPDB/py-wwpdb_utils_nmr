@@ -207,6 +207,7 @@ class CnsMRParserListener(ParseTreeListener):
     # __altPolySeq = None
     __nonPoly = None
     __branch = None
+    __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
@@ -216,6 +217,7 @@ class CnsMRParserListener(ParseTreeListener):
     __hasPolySeq = False
     __hasNonPoly = False
     __hasBranch = False
+    __hasNonPolySeq = False
     __preferAuthSeq = True
     __gapInAuthSeq = False
 
@@ -345,6 +347,16 @@ class CnsMRParserListener(ParseTreeListener):
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
         self.__hasBranch = self.__branch is not None and len(self.__branch) > 0
+        if self.__hasNonPoly or self.__hasBranch:
+            self.__hasNonPolySeq = True
+            if self.__hasNonPoly and self.__hasBranch:
+                self.__nonPolySeq = self.__nonPoly
+                self.__nonPolySeq.extend(self.__branch)
+            elif self.__hasNonPoly:
+                self.__nonPolySeq = self.__nonPoly
+            else:
+                self.__nonPolySeq = self.__branch
+
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
 
@@ -3300,14 +3312,9 @@ class CnsMRParserListener(ParseTreeListener):
                 _factor['chain_id'] = [self.__representativeAsymId]
             else:
                 _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq]
-                if self.__hasNonPoly:
-                    for np in self.__nonPoly:
+                if self.__hasNonPolySeq:
+                    for np in self.__nonPolySeq:
                         _chainId = np['auth_chain_id']
-                        if _chainId not in _factor['chain_id']:
-                            _factor['chain_id'].append(_chainId)
-                if self.__hasBranch:
-                    for bp in self.__branch:
-                        _chainId = bp['auth_chain_id']
                         if _chainId not in _factor['chain_id']:
                             _factor['chain_id'].append(_chainId)
 
@@ -3332,31 +3339,14 @@ class CnsMRParserListener(ParseTreeListener):
                                         or translateToStdResName(_factor['comp_ids'][0]) <= origCompId
                                         <= translateToStdResName(_factor['comp_ids'][1]))):
                                 _compIdSelect.add(realCompId)
-                if self.__hasNonPoly:
+                if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
-                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
-                                if (lenCompIds == 1
-                                    and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0])), realCompId)
-                                         or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0])), origCompId)))\
-                                   or (lenCompIds == 2
-                                       and (translateToStdResName(_factor['comp_ids'][0]) <= realCompId
-                                            <= translateToStdResName(_factor['comp_ids'][1])
-                                            or translateToStdResName(_factor['comp_ids'][0]) <= origCompId
-                                            <= translateToStdResName(_factor['comp_ids'][1]))):
-                                    _compIdSelect.add(realCompId)
-                if self.__hasBranch:
-                    for chainId in _factor['chain_id']:
-                        bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                        for bp in bpList:
-                            for realSeqId in bp['auth_seq_id']:
-                                idx = bp['auth_seq_id'].index(realSeqId)
-                                realCompId = bp['comp_id'][idx]
-                                origCompId = bp['auth_comp_id'][idx]
                                 if (lenCompIds == 1
                                     and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0])), realCompId)
                                          or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0])), origCompId)))\
@@ -3403,9 +3393,9 @@ class CnsMRParserListener(ParseTreeListener):
                                 _, realSeqId = self.__authToLabelSeq[seqKey]
                                 if re.match(_seqId, str(realSeqId)):
                                     seqIds.append(realSeqId)
-            if self.__hasNonPoly:
+            if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
-                    npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                    npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         found = False
                         for realSeqId in np['auth_seq_id']:
@@ -3433,36 +3423,6 @@ class CnsMRParserListener(ParseTreeListener):
                                     _, realSeqId = self.__authToLabelSeq[seqKey]
                                     if re.match(_seqId, str(realSeqId)):
                                         seqIds.append(realSeqId)
-            if self.__hasBranch:
-                for chainId in _factor['chain_id']:
-                    bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                    for bp in bpList:
-                        found = False
-                        for realSeqId in bp['auth_seq_id']:
-                            if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                idx = bp['auth_seq_id'].index(realSeqId)
-                                realCompId = bp['comp_id'][idx]
-                                origCompId = bp['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                if realCompId not in _compIdList and origCompId not in _compIdList:
-                                    continue
-                            if re.match(_seqId, str(realSeqId)):
-                                seqIds.append(realSeqId)
-                                found = True
-                        if not found:
-                            for realSeqId in bp['auth_seq_id']:
-                                if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                    idx = bp['auth_seq_id'].index(realSeqId)
-                                    realCompId = bp['comp_id'][idx]
-                                    origCompId = bp['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                    if realCompId not in _compIdList and origCompId not in _compIdList:
-                                        continue
-                                seqKey = (chainId, realSeqId)
-                                if seqKey in self.__authToLabelSeq:
-                                    _, realSeqId = self.__authToLabelSeq[seqKey]
-                                    if re.match(_seqId, str(realSeqId)):
-                                        seqIds.append(realSeqId)
             _factor['seq_id'] = list(set(seqIds))
             del _factor['seq_ids']
 
@@ -3480,28 +3440,15 @@ class CnsMRParserListener(ParseTreeListener):
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         seqIds.append(realSeqId)
-            if self.__hasNonPoly:
+            if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
-                    npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                    npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                if realCompId not in _compIdList and origCompId not in _compIdList:
-                                    continue
-                            seqIds.append(realSeqId)
-            if self.__hasBranch:
-                for chainId in _factor['chain_id']:
-                    bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                    for bp in bpList:
-                        for realSeqId in bp['auth_seq_id']:
-                            if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                idx = bp['auth_seq_id'].index(realSeqId)
-                                realCompId = bp['comp_id'][idx]
-                                origCompId = bp['auth_comp_id'][idx]
                                 _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
@@ -3518,16 +3465,11 @@ class CnsMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         _compIdSelect |= set(ps['comp_id'])
-                if self.__hasNonPoly:
+                if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
-                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             _compIdSelect |= set(np['comp_id'])
-                if self.__hasBranch:
-                    for chainId in _factor['chain_id']:
-                        bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                        for bp in bpList:
-                            _compIdSelect |= set(bp['comp_id'])
                 for compId in _compIdSelect:
                     if self.__ccU.updateChemCompDict(compId):
                         for cca in self.__ccU.lastAtomList:
@@ -3547,16 +3489,11 @@ class CnsMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         _compIdSelect |= set(ps['comp_id'])
-                if self.__hasNonPoly:
+                if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
-                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             _compIdSelect |= set(np['comp_id'])
-                if self.__hasBranch:
-                    for chainId in _factor['chain_id']:
-                        bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                        for bp in bpList:
-                            _compIdSelect |= set(bp['comp_id'])
                 for compId in _compIdSelect:
                     if self.__ccU.updateChemCompDict(compId):
                         for cca in self.__ccU.lastAtomList:
@@ -3586,9 +3523,9 @@ class CnsMRParserListener(ParseTreeListener):
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
-            if self.__hasNonPoly:
+            if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
-                    npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                    npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
@@ -3598,22 +3535,6 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                if realCompId not in _compIdList and origCompId not in _compIdList:
-                                    continue
-                            _compIdSelect.add(realCompId)
-            if self.__hasBranch:
-                for chainId in _factor['chain_id']:
-                    bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                    for bp in bpList:
-                        for realSeqId in bp['auth_seq_id']:
-                            if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                if self.getOrigSeqId(bp, realSeqId, False) not in _factor['seq_id']:
-                                    continue
-                            idx = bp['auth_seq_id'].index(realSeqId)
-                            realCompId = bp['comp_id'][idx]
-                            if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                origCompId = bp['auth_comp_id'][idx]
                                 _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
@@ -3676,9 +3597,9 @@ class CnsMRParserListener(ParseTreeListener):
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
-                if self.__hasNonPoly:
+                if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
-                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
@@ -3688,22 +3609,6 @@ class CnsMRParserListener(ParseTreeListener):
                                 realCompId = np['comp_id'][idx]
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                    if realCompId not in _compIdList and origCompId not in _compIdList:
-                                        continue
-                                _compIdSelect.add(realCompId)
-                if self.__hasBranch:
-                    for chainId in _factor['chain_id']:
-                        bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                        for bp in bpList:
-                            for realSeqId in bp['auth_seq_id']:
-                                if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                    if self.getOrigSeqId(bp, realSeqId, False) not in _factor['seq_id']:
-                                        continue
-                                idx = bp['auth_seq_id'].index(realSeqId)
-                                realCompId = bp['comp_id'][idx]
-                                if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                    origCompId = bp['auth_comp_id'][idx]
                                     _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
                                         continue
@@ -3763,7 +3668,6 @@ class CnsMRParserListener(ParseTreeListener):
         if 'atom_id' not in _factor or len(_factor['atom_id']) == 0:
             _compIdSelect = set()
             _nonPolyCompIdSelect = []
-            _branchCompIdSelect = []
             for chainId in _factor['chain_id']:
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
@@ -3779,9 +3683,9 @@ class CnsMRParserListener(ParseTreeListener):
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
-            if self.__hasNonPoly:
+            if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
-                    npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                    npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
@@ -3797,24 +3701,6 @@ class CnsMRParserListener(ParseTreeListener):
                             _nonPolyCompIdSelect.append({'chain_id': chainId,
                                                          'seq_id': realSeqId,
                                                          'comp_id': realCompId})
-            if self.__hasBranch:
-                for chainId in _factor['chain_id']:
-                    bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                    for bp in bpList:
-                        for realSeqId in bp['auth_seq_id']:
-                            if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                if self.getOrigSeqId(bp, realSeqId, False) not in _factor['seq_id']:
-                                    continue
-                            idx = bp['auth_seq_id'].index(realSeqId)
-                            realCompId = bp['comp_id'][idx]
-                            if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                origCompId = bp['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                if realCompId not in _compIdList and origCompId not in _compIdList:
-                                    continue
-                            _branchCompIdSelect.append({'chain_id': chainId,
-                                                        'seq_id': realSeqId,
-                                                        'comp_id': realCompId})
 
             _atomIdSelect = set()
             for compId in _compIdSelect:
@@ -3830,19 +3716,12 @@ class CnsMRParserListener(ParseTreeListener):
                     for realAtomId in coordAtomSite['atom_id']:
                         _atomIdSelect.add(realAtomId)
 
-            for branchCompId in _branchCompIdSelect:
-                _, coordAtomSite = self.getCoordAtomSiteOf(branchCompId['chain_id'], branchCompId['seq_id'], cifCheck)
-                if coordAtomSite is not None:
-                    for realAtomId in coordAtomSite['atom_id']:
-                        _atomIdSelect.add(realAtomId)
-
             _factor['atom_id'] = list(_atomIdSelect)
             if len(_factor['atom_id']) == 0:
                 self.__preferAuthSeq = not self.__preferAuthSeq
 
                 _compIdSelect = set()
                 _nonPolyCompIdSelect = []
-                _branchCompIdSelect = []
                 for chainId in _factor['chain_id']:
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
@@ -3858,9 +3737,9 @@ class CnsMRParserListener(ParseTreeListener):
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
-                if self.__hasNonPoly:
+                if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
-                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
@@ -3876,24 +3755,6 @@ class CnsMRParserListener(ParseTreeListener):
                                 _nonPolyCompIdSelect.append({'chain_id': chainId,
                                                              'seq_id': realSeqId,
                                                              'comp_id': realCompId})
-                if self.__hasBranch:
-                    for chainId in _factor['chain_id']:
-                        bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                        for bp in bpList:
-                            for realSeqId in bp['auth_seq_id']:
-                                if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                    if self.getOrigSeqId(bp, realSeqId, False) not in _factor['seq_id']:
-                                        continue
-                                idx = bp['auth_seq_id'].index(realSeqId)
-                                realCompId = bp['comp_id'][idx]
-                                if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                    origCompId = bp['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
-                                    if realCompId not in _compIdList and origCompId not in _compIdList:
-                                        continue
-                                _branchCompIdSelect.append({'chain_id': chainId,
-                                                            'seq_id': realSeqId,
-                                                            'comp_id': realCompId})
 
                 _atomIdSelect = set()
                 for compId in _compIdSelect:
@@ -3905,12 +3766,6 @@ class CnsMRParserListener(ParseTreeListener):
 
                 for nonPolyCompId in _nonPolyCompIdSelect:
                     _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck)
-                    if coordAtomSite is not None:
-                        for realAtomId in coordAtomSite['atom_id']:
-                            _atomIdSelect.add(realAtomId)
-
-                for branchCompId in _branchCompIdSelect:
-                    _, coordAtomSite = self.getCoordAtomSiteOf(branchCompId['chain_id'], branchCompId['seq_id'], cifCheck)
                     if coordAtomSite is not None:
                         for realAtomId in coordAtomSite['atom_id']:
                             _atomIdSelect.add(realAtomId)
@@ -3933,17 +3788,13 @@ class CnsMRParserListener(ParseTreeListener):
 
         if _factor['atom_id'][0] is not None:
             foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True)
-            if self.__hasNonPoly:
-                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=True, altPolySeq=self.__nonPoly)
-            if self.__hasBranch:
-                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=True, altPolySeq=self.__branch)
+            if self.__hasNonPolySeq:
+                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=True, altPolySeq=self.__nonPolySeq)
 
             if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1:
                 self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=False)
-                if self.__hasNonPoly:
-                    self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=False, altPolySeq=self.__nonPoly)
-                if self.__hasBranch:
-                    self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=False, altPolySeq=self.__branch)
+                if self.__hasNonPolySeq:
+                    self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=False, altPolySeq=self.__nonPolySeq)
 
         if 'atom_ids' in _factor:
             del _factor['atom_ids']
@@ -4725,14 +4576,9 @@ class CnsMRParserListener(ParseTreeListener):
                     chainId = str(ctx.Simple_name(0))
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                if ps['auth_chain_id'] == self.getRealChainId(chainId)]
-                    if self.__hasNonPoly:
-                        for np in self.__nonPoly:
+                    if self.__hasNonPolySeq:
+                        for np in self.__nonPolySeq:
                             _chainId = np['auth_chain_id']
-                            if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
-                                self.factor['chain_id'].append(_chainId)
-                    if self.__hasBranch:
-                        for bp in self.__branch:
-                            _chainId = bp['auth_chain_id']
                             if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
                                 self.factor['chain_id'].append(_chainId)
                     if len(self.factor['chain_id']) > 0:
@@ -4743,14 +4589,9 @@ class CnsMRParserListener(ParseTreeListener):
                     _chainId = toRegEx(chainId)
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                if re.match(_chainId, ps['auth_chain_id'])]
-                    if self.__hasNonPoly:
-                        for np in self.__nonPoly:
+                    if self.__hasNonPolySeq:
+                        for np in self.__nonPolySeq:
                             __chainId = np['auth_chain_id']
-                            if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
-                                self.factor['chain_id'].append(__chainId)
-                    if self.__hasBranch:
-                        for bp in self.__branch:
-                            __chainId = bp['auth_chain_id']
                             if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
                                 self.factor['chain_id'].append(__chainId)
                     simpleNamesIndex += 1
@@ -4795,9 +4636,9 @@ class CnsMRParserListener(ParseTreeListener):
                                         _, realSeqId = self.__authToLabelSeq[seqKey]
                                         if re.match(_seqId, str(realSeqId)):
                                             _seqIdSelect.add(realSeqId)
-                    if self.__hasNonPoly:
+                    if self.__hasNonPolySeq:
                         for chainId in self.factor['chain_id']:
-                            npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                            npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                             for np in npList:
                                 found = False
                                 for realSeqId in np['auth_seq_id']:
@@ -4808,24 +4649,6 @@ class CnsMRParserListener(ParseTreeListener):
                                 if not found:
                                     for realSeqId in np['auth_seq_id']:
                                         realSeqId = self.getRealSeqId(np, realSeqId, False)
-                                        seqKey = (chainId, realSeqId)
-                                        if seqKey in self.__authToLabelSeq:
-                                            _, realSeqId = self.__authToLabelSeq[seqKey]
-                                            if re.match(_seqId, str(realSeqId)):
-                                                _seqIdSelect.add(realSeqId)
-                    if self.__hasBranch:
-                        for chainId in self.factor['chain_id']:
-                            bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                            for bp in bpList:
-                                found = False
-                                for realSeqId in bp['auth_seq_id']:
-                                    realSeqId = self.getRealSeqId(bp, realSeqId, False)
-                                    if re.match(_seqId, str(realSeqId)):
-                                        _seqIdSelect.add(realSeqId)
-                                        found = True
-                                if not found:
-                                    for realSeqId in bp['auth_seq_id']:
-                                        realSeqId = self.getRealSeqId(bp, realSeqId, False)
                                         seqKey = (chainId, realSeqId)
                                         if seqKey in self.__authToLabelSeq:
                                             _, realSeqId = self.__authToLabelSeq[seqKey]
@@ -4847,25 +4670,14 @@ class CnsMRParserListener(ParseTreeListener):
                                 if self.__ccU.updateChemCompDict(compId):
                                     if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
                                         _atomIdSelect.add(atomId)
-                    if self.__hasNonPoly:
+                    if self.__hasNonPolySeq:
                         for chainId in self.factor['chain_id']:
-                            npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                            npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                             for np in npList:
                                 for seqId in self.factor['seq_id']:
                                     if seqId in np['auth_seq_id']:
                                         seqId = self.getRealSeqId(np, seqId, False)
                                         compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
-                                        if self.__ccU.updateChemCompDict(compId):
-                                            if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
-                                                _atomIdSelect.add(atomId)
-                    if self.__hasBranch:
-                        for chainId in self.factor['chain_id']:
-                            bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                            for bp in bpList:
-                                for seqId in self.factor['seq_id']:
-                                    if seqId in bp['auth_seq_id']:
-                                        seqId = self.getRealSeqId(bp, seqId, False)
-                                        compId = bp['comp_id'][bp['auth_seq_id'].index(seqId)]
                                         if self.__ccU.updateChemCompDict(compId):
                                             if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
                                                 _atomIdSelect.add(atomId)
@@ -4889,28 +4701,14 @@ class CnsMRParserListener(ParseTreeListener):
                                             realAtomId = cca[self.__ccU.ccaAtomId]
                                             if re.match(_atomId, realAtomId):
                                                 _atomIdSelect.add(realAtomId)
-                    if self.__hasNonPoly:
+                    if self.__hasNonPolySeq:
                         for chainId in self.factor['chain_id']:
-                            npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                            npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                             for np in npList:
                                 for seqId in self.factor['seq_id']:
                                     if seqId in np['auth_seq_id']:
                                         seqId = self.getRealSeqId(np, seqId, False)
                                         compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
-                                        if self.__ccU.updateChemCompDict(compId):
-                                            for cca in self.__ccU.lastAtomList:
-                                                if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                    realAtomId = cca[self.__ccU.ccaAtomId]
-                                                    if re.match(_atomId, realAtomId):
-                                                        _atomIdSelect.add(realAtomId)
-                    if self.__hasBranch:
-                        for chainId in self.factor['chain_id']:
-                            bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                            for bp in bpList:
-                                for seqId in self.factor['seq_id']:
-                                    if seqId in bp['auth_seq_id']:
-                                        seqId = self.getRealSeqId(bp, seqId, False)
-                                        compId = bp['comp_id'][bp['auth_seq_id'].index(seqId)]
                                         if self.__ccU.updateChemCompDict(compId):
                                             for cca in self.__ccU.lastAtomList:
                                                 if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
@@ -5228,18 +5026,11 @@ class CnsMRParserListener(ParseTreeListener):
                                         seqId = self.getRealSeqId(ps, seqId)
                                         if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId):
                                             _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-                                    if self.__hasNonPoly:
-                                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                                    if self.__hasNonPolySeq:
+                                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                                         for np in npList:
                                             if seqId in np['auth_seq_id'] and np['comp_id'][np['auth_seq_id'].index(seqId)] == compId:
                                                 seqId = self.getRealSeqId(np, seqId, False)
-                                                if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId):
-                                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-                                    if self.__hasBranch:
-                                        bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                                        for bp in bpList:
-                                            if seqId in bp['auth_seq_id'] and bp['comp_id'][bp['auth_seq_id'].index(seqId)] == compId:
-                                                seqId = self.getRealSeqId(bp, seqId, False)
                                                 if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId):
                                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
@@ -5305,56 +5096,13 @@ class CnsMRParserListener(ParseTreeListener):
                                                         if numpy.linalg.norm(toNpArray(_neighbor[0]) - origin) < 2.5:
                                                             _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
 
-                                    if self.__hasNonPoly:
-                                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                                    if self.__hasNonPolySeq:
+                                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                                         for np in npList:
                                             for _seqId in [seqId - 1, seqId + 1]:
                                                 if _seqId in np['auth_seq_id']:
                                                     _seqId = self.getRealSeqId(np, _seqId, False)
                                                     _compId = np['comp_id'][np['auth_seq_id'].index(_seqId)]
-                                                    if self.__ccU.updateChemCompDict(_compId):
-                                                        leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
-
-                                                        _atomIdSelect = set()
-                                                        for ccb in self.__ccU.lastBonds:
-                                                            if ccb[self.__ccU.ccbAtomId1] in leavingAtomIds:
-                                                                _atomId = ccb[self.__ccU.ccbAtomId2]
-                                                                if _atomId not in leavingAtomIds:
-                                                                    _atomIdSelect.add(_atomId)
-                                                            if ccb[self.__ccU.ccbAtomId2] in leavingAtomIds:
-                                                                _atomId = ccb[self.__ccU.ccbAtomId1]
-                                                                if _atomId not in leavingAtomIds:
-                                                                    _atomIdSelect.add(_atomId)
-
-                                                        for _atomId in _atomIdSelect:
-                                                            _neighbor =\
-                                                                self.__cR.getDictListWithFilter('atom_site',
-                                                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                                                 ],
-                                                                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
-                                                                                                 {'name': self.__authSeqId, 'type': 'int', 'value': _seqId},
-                                                                                                 {'name': self.__authAtomId, 'type': 'str', 'value': _atomId},
-                                                                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                                                                  'value': self.__representativeModelId},
-                                                                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                                                                  'enum': ('A')}
-                                                                                                 ])
-
-                                                            if len(_neighbor) != 1:
-                                                                continue
-
-                                                            if numpy.linalg.norm(toNpArray(_neighbor[0]) - origin) < 2.5:
-                                                                _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
-
-                                    if self.__hasBranch:
-                                        bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                                        for bp in bpList:
-                                            for _seqId in [seqId - 1, seqId + 1]:
-                                                if _seqId in bp['auth_seq_id']:
-                                                    _seqId = self.getRealSeqId(bp, _seqId, False)
-                                                    _compId = bp['comp_id'][bp['auth_seq_id'].index(_seqId)]
                                                     if self.__ccU.updateChemCompDict(_compId):
                                                         leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
 
@@ -5589,20 +5337,11 @@ class CnsMRParserListener(ParseTreeListener):
                                     atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
                                     for atomId in atomIds:
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
-                            if self.__hasNonPoly:
-                                npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                            if self.__hasNonPolySeq:
+                                npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                                 for np in npList:
                                     if seqId in np['auth_seq_id'] and np['comp_id'][np['auth_seq_id'].index(seqId)] == compId:
                                         seqId = self.getRealSeqId(np, seqId, False)
-                                        if self.__ccU.updateChemCompDict(compId):
-                                            atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
-                                            for atomId in atomIds:
-                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
-                            if self.__hasBranch:
-                                bpList = [bp for bp in self.__branch if bp['auth_chain_id'] == chainId]
-                                for bp in bpList:
-                                    if seqId in bp['auth_seq_id'] and bp['comp_id'][bp['auth_seq_id'].index(seqId)] == compId:
-                                        seqId = self.getRealSeqId(bp, seqId, False)
                                         if self.__ccU.updateChemCompDict(compId):
                                             atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
                                             for atomId in atomIds:
@@ -6203,14 +5942,9 @@ class CnsMRParserListener(ParseTreeListener):
                             return
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                if begChainId <= ps['auth_chain_id'] <= endChainId]
-                    if self.__hasNonPoly:
-                        for np in self.__nonPoly:
+                    if self.__hasNonPolySeq:
+                        for np in self.__nonPolySeq:
                             _chainId = np['auth_chain_id']
-                            if begChainId <= _chainId <= endChainId and _chainId not in self.factor['chain_id']:
-                                self.factor['chain_id'].append(_chainId)
-                    if self.__hasBranch:
-                        for bp in self.__branch:
-                            _chainId = bp['auth_chain_id']
                             if begChainId <= _chainId <= endChainId and _chainId not in self.factor['chain_id']:
                                 self.factor['chain_id'].append(_chainId)
 
@@ -6233,14 +5967,9 @@ class CnsMRParserListener(ParseTreeListener):
                                 return
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                    if ps['auth_chain_id'] == self.getRealChainId(chainId)]
-                        if self.__hasNonPoly:
-                            for np in self.__nonPoly:
+                        if self.__hasNonPolySeq:
+                            for np in self.__nonPolySeq:
                                 _chainId = np['auth_chain_id']
-                                if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
-                                    self.factor['chain_id'].append(_chainId)
-                        if self.__hasBranch:
-                            for bp in self.__branch:
-                                _chainId = bp['auth_chain_id']
                                 if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(_chainId)
                     if ctx.Simple_names(0):
@@ -6248,14 +5977,9 @@ class CnsMRParserListener(ParseTreeListener):
                         _chainId = toRegEx(chainId)
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                    if re.match(_chainId, ps['auth_chain_id'])]
-                        if self.__hasNonPoly:
-                            for np in self.__nonPoly:
+                        if self.__hasNonPolySeq:
+                            for np in self.__nonPolySeq:
                                 __chainId = np['auth_chain_id']
-                                if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
-                                    self.factor['chain_id'].append(__chainId)
-                        if self.__hasBranch:
-                            for bp in self.__branch:
-                                __chainId = bp['auth_chain_id']
                                 if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(__chainId)
                     if ctx.Symbol_name():

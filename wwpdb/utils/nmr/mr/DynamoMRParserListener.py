@@ -163,6 +163,7 @@ class DynamoMRParserListener(ParseTreeListener):
     __altPolySeq = None
     __nonPoly = None
     __branch = None
+    __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
@@ -171,6 +172,8 @@ class DynamoMRParserListener(ParseTreeListener):
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __hasPolySeq = False
     __hasNonPoly = False
+    __hasBranch = False
+    __hasNonPolySeq = False
     __preferAuthSeq = True
     __gapInAuthSeq = False
 
@@ -238,6 +241,16 @@ class DynamoMRParserListener(ParseTreeListener):
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
         self.__hasBranch = self.__branch is not None and len(self.__branch) > 0
+        if self.__hasNonPoly or self.__hasBranch:
+            self.__hasNonPolySeq = True
+            if self.__hasNonPoly and self.__hasBranch:
+                self.__nonPolySeq = self.__nonPoly
+                self.__nonPolySeq.extend(self.__branch)
+            elif self.__hasNonPoly:
+                self.__nonPolySeq = self.__nonPoly
+            else:
+                self.__nonPolySeq = self.__branch
+
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
 
@@ -1038,8 +1051,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         except IndexError:
                             pass
 
-        if self.__hasNonPoly:
-            for np in self.__nonPoly:
+        if self.__hasNonPolySeq:
+            for np in self.__nonPolySeq:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
@@ -1060,38 +1073,6 @@ class DynamoMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
-                    if compId in (cifCompId, origCompId):
-                        if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((chainId, seqId, cifCompId, False))
-                            if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
-                                self.__chainNumberDict[refChainId] = chainId
-                    elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId, False))
-                        if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
-                            self.__chainNumberDict[refChainId] = chainId
-
-        if self.__hasBranch:
-            for bp in self.__branch:
-                chainId, seqId = self.getRealChainSeqId(bp, _seqId, compId, False)
-                if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
-                    if chainId != self.__chainNumberDict[refChainId]:
-                        continue
-                if self.__reasons is not None:
-                    if fixedChainId is not None:
-                        if fixedChainId != chainId:
-                            continue
-                        seqId = fixedSeqId
-                    elif fixedSeqId is not None:
-                        seqId = fixedSeqId
-                if seqId in bp['auth_seq_id']:
-                    idx = bp['auth_seq_id'].index(seqId)
-                    cifCompId = bp['comp_id'][idx]
-                    origCompId = bp['auth_comp_id'][idx]
-                    if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
-                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                    if 'alt_auth_seq_id' in bp and seqId in bp['auth_seq_id'] and seqId not in bp['alt_auth_seq_id']:
-                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(bp['auth_seq_id'], bp['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.append((chainId, seqId, cifCompId, False))
@@ -1137,8 +1118,8 @@ class DynamoMRParserListener(ParseTreeListener):
                             #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
 
-            if self.__hasNonPoly:
-                for np in self.__nonPoly:
+            if self.__hasNonPolySeq:
+                for np in self.__nonPolySeq:
                     chainId = np['auth_chain_id']
                     if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                         if chainId != self.__chainNumberDict[refChainId]:
@@ -1164,36 +1145,6 @@ class DynamoMRParserListener(ParseTreeListener):
                                     #     self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
-                                if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
-                                    self.__chainNumberDict[refChainId] = chainId
-
-            if self.__hasBranch:
-                for bp in self.__branch:
-                    chainId = bp['auth_chain_id']
-                    if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
-                        if chainId != self.__chainNumberDict[refChainId]:
-                            continue
-                    if fixedChainId is not None and fixedChainId != chainId:
-                        continue
-                    seqKey = (chainId, _seqId)
-                    if seqKey in self.__authToLabelSeq:
-                        _, seqId = self.__authToLabelSeq[seqKey]
-                        if seqId in bp['seq_id']:
-                            idx = bp['seq_id'].index(seqId)
-                            cifCompId = bp['comp_id'][idx]
-                            origCompId = bp['auth_comp_id'][idx]
-                            if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
-                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                            if compId in (cifCompId, origCompId):
-                                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((bp['auth_chain_id'], _seqId, cifCompId, False))
-                                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
-                                        self.__chainNumberDict[refChainId] = chainId
-                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
-                            elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((bp['auth_chain_id'], _seqId, cifCompId, False))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
 
@@ -1261,22 +1212,14 @@ class DynamoMRParserListener(ParseTreeListener):
                and atomId in coordAtomSite['atom_id']:
                 _atomId = [atomId]
 
-            if coordAtomSite is None and not isPolySeq:
+            if coordAtomSite is None and not isPolySeq and self.__hasNonPolySeq:
                 try:
-                    if self.__hasNonPoly:
-                        for np in self.__nonPoly:
-                            if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
-                                cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
-                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-                                if coordAtomSite is not None:
-                                    break
-                    if self.__hasBranch:
-                        for bp in self.__branch:
-                            if bp['auth_chain_id'] == chainId and cifSeqId in bp['auth_seq_id']:
-                                cifSeqId = bp['seq_id'][bp['auth_seq_id'].index(cifSeqId)]
-                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
-                                if coordAtomSite is not None:
-                                    break
+                    for np in self.__nonPolySeq:
+                        if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
+                            cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
+                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+                            if coordAtomSite is not None:
+                                break
                 except ValueError:
                     pass
 

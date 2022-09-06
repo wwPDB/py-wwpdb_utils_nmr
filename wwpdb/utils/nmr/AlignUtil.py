@@ -121,7 +121,11 @@ def fillBlankCompId(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
     """ Fill blanked comp_ID in polySeq2 against polySeq1.
     """
 
-    _s = sorted(set(polySeq1[seqIdName1]) | set(polySeq2[seqIdName2]))
+    if seqIdName1 == seqIdName2:
+        _s = sorted(set(polySeq1[seqIdName1]) | set(polySeq2[seqIdName2]))
+    else:
+        _s = polySeq2[seqIdName2]
+
     _c = []
 
     for seqId in _s:
@@ -134,7 +138,11 @@ def fillBlankCompId(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
         else:
             _c.append('.')
 
-    ps = {'chain_id': polySeq2['chain_id'], 'seq_id': _s, 'comp_id': _c}
+    ps = {'chain_id': polySeq2['chain_id'], seqIdName2: _s, 'comp_id': _c}
+    if seqIdName2 == 'auth_seq_id':
+        ps['seq_id'] = polySeq2['seq_id']
+    if seqIdName2 == 'seq_id' and 'auth_seq_id' in polySeq2:
+        ps['auth_seq_id'] = polySeq2['auth_seq_id']
     if 'gap_in_auth_seq' in polySeq2:
         ps['gap_in_auth_seq'] = polySeq2['gap_in_auth_seq']
 

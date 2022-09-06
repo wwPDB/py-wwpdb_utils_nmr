@@ -423,7 +423,7 @@ def translateToStdResName(compId):
         if _compId in monDict3:
             return _compId
 
-    if compId.startswith('R') and compId[1] in ('A', 'C', 'G', 'U'):
+    if compId.startswith('R') and len(compId) > 1 and compId[1] in ('A', 'C', 'G', 'U'):
         _compId = compId[1:]
 
         if _compId in monDict3:
@@ -472,16 +472,19 @@ def checkCoordinates(verbose=True, log=sys.stdout,
     polySeq = None if prevCoordCheck is None or 'polymer_sequence' not in prevCoordCheck else prevCoordCheck['polymer_sequence']
     altPolySeq = None if prevCoordCheck is None or 'alt_polymer_sequence' not in prevCoordCheck else prevCoordCheck['alt_polymer_sequence']
     nonPoly = None if prevCoordCheck is None or 'non_polymer' not in prevCoordCheck else prevCoordCheck['non_polymer']
+    branch = None if prevCoordCheck is None or 'branch' not in prevCoordCheck else prevCoordCheck['branch']
 
     if polySeq is None:
         changed = True
 
         polySeqAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'auth_mon_id') else 'mon_id'
         nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
+        branchAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
 
         # loop categories
         _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
                          'non_poly': 'pdbx_nonpoly_scheme',
+                         'branch': 'pdbx_branch_scheme',
                          'coordinate': 'atom_site'
                          }
 
@@ -500,6 +503,13 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
                                   ],
+                     'branch': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                {'name': branchAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
+                                ],
                      'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
@@ -600,13 +610,58 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             except KeyError:
                 nonPoly = None
 
+        contentSubtype = 'branch'
+
+        lpCategory = _lpCategories[contentSubtype]
+        keyItems = _keyItems[contentSubtype]
+
+        branch = None
+
+        if cR.hasCategory(lpCategory):
+
+            try:
+                branch = cR.getPolymerSequence(lpCategory, keyItems,
+                                               withStructConf=False,
+                                               withRmsd=False)
+
+                for bp in branch:
+                    conflict = False
+
+                    altAuthSeqIds = []
+
+                    for authSeqId, labelSeqId in zip(bp['auth_seq_id'], bp['seq_id']):
+
+                        ps = next((ps for ps in polySeq if ps['auth_chain_id'] == bp['auth_chain_id']), None)
+
+                        if ps is None:
+                            continue
+
+                        if authSeqId in ps['auth_seq_id'] and labelSeqId not in ps['auth_seq_id']:
+                            altAuthSeqIds.append(labelSeqId)
+
+                            if 'ambig_auth_seq_id' not in ps:
+                                ps['ambug_auth_seq_id'] = []
+                            ps['ambug_auth_seq_id'].append(authSeqId)
+
+                            conflict = True
+
+                        else:
+                            altAuthSeqIds.append(authSeqId)
+
+                    if conflict:
+                        bp['alt_auth_seq_id'] = altAuthSeqIds
+
+            except KeyError:
+                branch = None
+
     if not testTag:
         if not changed:
             return prevCoordCheck
 
         return {'polymer_sequence': polySeq,
                 'alt_polymer_sequence': altPolySeq,
-                'non_polymer': nonPoly}
+                'non_polymer': nonPoly,
+                'branch': branch}
 
     modelNumName = None if prevCoordCheck is None or 'model_num_name' not in prevCoordCheck else prevCoordCheck['model_num_name']
     authAsymId = None if prevCoordCheck is None or 'auth_asym_id' not in prevCoordCheck else prevCoordCheck['auth_asym_id']
@@ -722,6 +777,8 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                     altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId), None)
                     if altSeqId is not None and altSeqId.isdigit():
                         labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = seqKey
+                    else:
+                        labelToAuthSeq[seqKey] = seqKey
             authToLabelSeq = {v: k for k, v in labelToAuthSeq.items()}
 
         if coordUnobsRes is None:
@@ -786,6 +843,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'polymer_sequence': polySeq,
             'alt_polymer_sequence': altPolySeq,
             'non_polymer': nonPoly,
+            'branch': branch,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq,

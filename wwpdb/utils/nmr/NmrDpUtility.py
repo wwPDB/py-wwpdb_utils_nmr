@@ -159,6 +159,7 @@
 # 06-Jul-2022  M. Yokochi - add support for SYBYL MR format (DAOTHER-7902, NMR restraint remediation)
 # 05-Aug-2022  M. Yokochi - do not add a saveframe tag if there is already the tag (DAOTHER-7947)
 # 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
+# 06-Sep-2022  M. Yokochi - add support for branched entity (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1203,11 +1204,11 @@ class NmrDpUtility:
                                      'noepk_restraint', 'jcoup_restraint', 'rdc_raw_data',
                                      'csa_restraint', 'ddc_restraint',
                                      'hvycs_restraint', 'procs_restraint',
-                                     'csp_restraint', 'relax_restraint',
+                                     'csp_restraint', 'auto_relax_restraint',
                                      'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                      'other_restraint')
 
-        self.cif_content_subtypes = ('poly_seq', 'non_poly', 'coordinate')
+        self.cif_content_subtypes = ('poly_seq', 'non_poly', 'branch', 'coordinate')
 
         # readable file type
         self.readable_file_type = {'nef': 'NEF (NMR Exchange Format)',
@@ -1247,7 +1248,7 @@ class NmrDpUtility:
                                       'hvycs_restraint': None,
                                       'procs_restraint': None,
                                       'csp_restraint': None,
-                                      'relax_restraint': None,
+                                      'auto_relax_restraint': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'other_restraint': None
@@ -1270,7 +1271,7 @@ class NmrDpUtility:
                                            'hvycs_restraint': 'CA_CB_chem_shift_constraints',
                                            'procs_restraint': 'H_chem_shift_constraints',
                                            'csp_restraint': 'chem_shift_perturbation',
-                                           'relax_restraint': 'auto_relaxation',
+                                           'auto_relax_restraint': 'auto_relaxation',
                                            'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                                            'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                                            'other_restraint': 'other_data_types'
@@ -1296,7 +1297,7 @@ class NmrDpUtility:
                                       'hvycs_restraint': None,
                                       'procs_restraint': None,
                                       'csp_restraint': None,
-                                      'relax_restraint': None,
+                                      'auto_relax_restraint': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'other_restraint': None
@@ -1319,13 +1320,14 @@ class NmrDpUtility:
                                            'hvycs_restraint': '_CA_CB_constraint',
                                            'procs_restraint': '_H_chem_shift_constraint',
                                            'csp_restraint': '_Chem_shift_perturbation',
-                                           'relax_restraint': '_Auto_relaxation',
+                                           'auto_relax_restraint': '_Auto_relaxation',
                                            'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                                            'ccr_dd_restraint': '_Cross_correlation_DD',
                                            'other_restraint': '_Other_data'
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
                                        'non_poly': 'pdbx_nonpoly_scheme',
+                                       'branch': 'pdbx_branch_scheme',
                                        'coordinate': 'atom_site',
                                        'poly_seq_alias': 'ndb_poly_seq_scheme',
                                        'non_poly_alias': 'ndb_nonpoly_scheme'
@@ -1399,6 +1401,7 @@ class NmrDpUtility:
                                         },
                            'pdbx': {'poly_seq': None,
                                     'non_poly': None,
+                                    'branch': None,
                                     'coordinate': 'id'
                                     }
                            }
@@ -1428,6 +1431,7 @@ class NmrDpUtility:
                                          },
                             'pdbx': {'poly_seq': None,
                                      'non_poly': None,
+                                     'branch': None,
                                      'coordinate': None
                                      }
                             }
@@ -1594,6 +1598,11 @@ class NmrDpUtility:
                                                       {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                       {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
                                                       ],
+                                   'branch': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                              {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                              {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                                              ],
                                    'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                   {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
@@ -14005,11 +14014,11 @@ class NmrDpUtility:
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                            """
                             if conflict == 0:
                                 if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
                                     _s2 = fillInnerBlankCompId(_s2)
-
+                            """
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
@@ -14378,11 +14387,11 @@ class NmrDpUtility:
                             # """
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                            """
                             if conflict == 0:
                                 if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
                                     _s2 = fillInnerBlankCompId(_s2)
-
+                            """
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
@@ -14700,11 +14709,11 @@ class NmrDpUtility:
 
                                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                                     _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                                    """
                                     if conflict == 0:
                                         if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
                                             _s2 = fillInnerBlankCompId(_s2)
-
+                                    """
                                     if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                         continue
 
@@ -29351,23 +29360,25 @@ class NmrDpUtility:
             if self.__cR.hasCategory(lp_category):
                 lp_counts[content_subtype] = 1
 
-            elif content_subtype != 'non_poly':
+            elif content_subtype != 'branch':
 
-                if content_subtype == 'poly_seq' and self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
+                if content_subtype != 'non_poly':
+
+                    if content_subtype == 'poly_seq' and self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
+                        lp_counts[content_subtype] = 1
+                    # """ DAOTHER-5654
+                    # else:
+                    #     err = f"Category {lp_category} is mandatory."
+
+                    #     self.report.error.appendDescription('missing_mandatory_content',
+                    #                                         {'file_name': file_name, 'description': err})
+                    #     self.report.setError()
+
+                    #     if self.__verbose:
+                    #         self.__lfh.write(f"+NmrDpUtility.__detectCoordContentSubType() ++ Error  - {err}\n")
+                    # """
+                elif self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
                     lp_counts[content_subtype] = 1
-                # """ DAOTHER-5654
-                # else:
-                #     err = f"Category {lp_category} is mandatory."
-
-                #     self.report.error.appendDescription('missing_mandatory_content',
-                #                                         {'file_name': file_name, 'description': err})
-                #     self.report.setError()
-
-                #     if self.__verbose:
-                #         self.__lfh.write(f"+NmrDpUtility.__detectCoordContentSubType() ++ Error  - {err}\n")
-                # """
-            elif self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
-                lp_counts[content_subtype] = 1
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
@@ -29425,6 +29436,22 @@ class NmrDpUtility:
 
             if len(poly_seq) == 0:
                 return False
+
+            content_subtype = 'branch'
+
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            if self.__cR.hasCategory(lp_category):
+
+                key_items = self.key_items[file_type][content_subtype]
+
+                try:
+                    branch_seq = self.__cR.getPolymerSequence(lp_category, key_items,
+                                                              withStructConf=False, withRmsd=False, alias=False, total_models=self.__total_models)
+                    if len(branch_seq) > 0:
+                        poly_seq.extend(branch_seq)
+                except Exception:
+                    pass
 
             input_source.setItemValue('polymer_sequence', poly_seq)
 
@@ -29732,6 +29759,8 @@ class NmrDpUtility:
                     auth_seq_id = next((c['auth_seq_id'] for c in coord if c['chain_id'] == chain_id and c['seq_id'] is not None and int(c['seq_id']) == seq_id), None)
                     if auth_seq_id is not None:
                         self.__auth_to_label_seq[(label_to_auth_chain[chain_id], auth_seq_id)] = seq_key
+                    else:
+                        self.__auth_to_label_seq[seq_key] = seq_key
             self.__label_to_auth_seq = {v: k for k, v in self.__auth_to_label_seq.items()}
 
             # DAOTHER-7665
@@ -29936,7 +29965,7 @@ class NmrDpUtility:
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ('entry_info', 'poly_seq') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
+            if content_subtype in ('entry_info', 'poly_seq', 'branch') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -30204,7 +30233,7 @@ class NmrDpUtility:
 
             for content_subtype in polymer_sequence_in_loop.keys():
 
-                if content_subtype == 'non_poly':
+                if content_subtype in ('non_poly', 'branch'):
                     continue
 
                 seq_align_set = []
@@ -30241,11 +30270,11 @@ class NmrDpUtility:
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                            """
                             if conflict == 0:
                                 if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
                                     _s2 = fillInnerBlankCompId(_s2)
-
+                            """
                             ref_length = len(s1['seq_id'])
 
                             ref_code = getOneLetterCodeSequence(_s1['comp_id'])
@@ -30282,7 +30311,7 @@ class NmrDpUtility:
 
         seq_align_set = []
 
-        has_conflict = False
+        # has_conflict = False
 
         for i1, s1 in enumerate(polymer_sequence):
             chain_id = s1['chain_id']
@@ -30311,7 +30340,7 @@ class NmrDpUtility:
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                """
                 if conflict == 0:
                     has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
                     has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
@@ -30320,7 +30349,7 @@ class NmrDpUtility:
                         _s2 = fillInnerBlankCompId(_s2)
                     elif has_inner_gap_1 and not has_inner_gap_2:
                         _s1 = fillInnerBlankCompId(_s1)
-
+                """
                 if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
@@ -30343,8 +30372,8 @@ class NmrDpUtility:
                         _s1 = __s1
                         _s2 = __s2
 
-                if conflict > 0:
-                    has_conflict = True
+                # if conflict > 0:
+                #     has_conflict = True
 
                 ref_length = len(s1['seq_id'])
 
@@ -30415,7 +30444,7 @@ class NmrDpUtility:
                 seq_align_set.append(seq_align)
 
         if len(seq_align_set) > 0:
-
+            """
             if has_conflict:
                 err_seq_align = [seq_align for seq_align in seq_align_set
                                  if seq_align['conflict'] > 0
@@ -30426,12 +30455,12 @@ class NmrDpUtility:
                 if len(err_seq_align) > 0:
                     for seq_align in err_seq_align:
                         seq_align_set.remove(seq_align)
-
+            """
             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', seq_align_set)
 
         seq_align_set = []
 
-        has_conflict = False
+        # has_conflict = False
 
         for s1 in nmr_polymer_sequence:
             chain_id = s1['chain_id']
@@ -30460,7 +30489,7 @@ class NmrDpUtility:
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                """
                 if conflict == 0:
                     has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
                     has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
@@ -30469,7 +30498,7 @@ class NmrDpUtility:
                         _s2 = fillInnerBlankCompId(_s2)
                     elif has_inner_gap_1 and not has_inner_gap_2:
                         _s1 = fillInnerBlankCompId(_s1)
-
+                """
                 if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
@@ -30492,8 +30521,8 @@ class NmrDpUtility:
                         _s1 = __s1
                         _s2 = __s2
 
-                if conflict > 0:
-                    has_conflict = True
+                # if conflict > 0:
+                #     has_conflict = True
 
                 ref_length = len(s1['seq_id'])
 
@@ -30564,7 +30593,7 @@ class NmrDpUtility:
                 seq_align_set.append(seq_align)
 
         if len(seq_align_set) > 0:
-
+            """
             if has_conflict:
                 err_seq_align = [seq_align for seq_align in seq_align_set
                                  if seq_align['conflict'] > 0
@@ -30575,7 +30604,7 @@ class NmrDpUtility:
                 if len(err_seq_align) > 0:
                     for seq_align in err_seq_align:
                         seq_align_set.remove(seq_align)
-
+            """
             self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', seq_align_set)
 
         return True

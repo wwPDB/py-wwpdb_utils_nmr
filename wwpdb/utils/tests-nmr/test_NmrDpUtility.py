@@ -49,7 +49,7 @@ class TestNmrDpUtility(unittest.TestCase):
                             'nbase_restraint', 'ang_restraint', 'pre_restraint',
                             'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
                             'hbond_restraint', 'geo_restraint',
-                            'coordinate', 'non_poly', 'topology'})
+                            'coordinate', 'branch', 'non_poly', 'topology'})
 
         # data directory exists
         self.assertEqual(os.path.isdir(self.data_dir_path), True)

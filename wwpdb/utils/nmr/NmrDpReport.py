@@ -70,6 +70,7 @@
 # 07-Jul-2022  M. Yokochi - add 'nmr-peaks' content type and 'nm-pea-any' file type (NMR restraint remediation)
 # 08-Jul-2022  M. Yokochi - add 'anomalous_rdc_vector' warning type for artificial RDCs for protein fibrils using solid-state NMR (NMR restraint remediation, 5w3n)
 # 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
+# 06-Sep-2022  M. Yokochi - add support for branched entity and extra restraints in NMR-STAR format (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1673,14 +1674,15 @@ class NmrDpReportInputSource:
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')
-        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift',
+        self.content_subtypes = ('coordinate', 'non_poly', 'branch',
+                                 'entry_info', 'poly_seq', 'entity', 'chem_shift',
                                  'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint',
                                  'plane_restraint', 'adist_restraint', 'jcoup_restraint', 'hvycs_restraint',
                                  'procs_restraint', 'rama_restraint', 'radi_restraint', 'diff_restraint',
                                  'nbase_restraint', 'csa_restraint', 'ang_restraint', 'pre_restraint',
                                  'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
                                  'hbond_restraint', 'geo_restraint', 'noepk_restraint',
-                                 'rdc_raw_data', 'ddc_restraint', 'csp_restraint', 'relax_restraint',
+                                 'rdc_raw_data', 'ddc_restraint', 'csp_restraint', 'auto_relax_restraint',
                                  'ccr_d_csa_restraint', 'ccr_dd_restraint', 'other_restraint',
                                  'spectral_peak', 'spectral_peak_alt', 'topology')
 
@@ -1774,7 +1776,13 @@ class NmrDpReportSequenceAlignment:
                       # 'model_poly_seq_vs_noepk_restraint',
                       'model_poly_seq_vs_mr_restraint', 'model_poly_seq_vs_mr_topology',
                       'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint',
-                      'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak', 'nmr_poly_seq_vs_spectral_peak_alt')
+                      'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak', 'nmr_poly_seq_vs_spectral_peak_alt',
+                      'nmr_poly_seq_vs_noepk_restraint', 'nmr_poly_seq_vs_jcoup_restraint',
+                      'nmr_poly_seq_vs_rdc_raw_data', 'nmr_poly_seq_vs_csa_restraint',
+                      'nmr_poly_seq_vs_ddc_restraint', 'nmr_poly_seq_vs_hvycs_restraint',
+                      'nmr_poly_seq_vs_procs_restraint', 'nmr_poly_seq_vs_csp_restraint',
+                      'nmr_poly_seq_vs_auto_relax_restraint', 'nmr_poly_seq_vs_ccr_d_csa_restraint',
+                      'nmr_poly_seq_vs_ccr_dd_restraint', 'nmr_poly_seq_vs_other_restraint')
 
         self.__contents = {item: None for item in self.items}
 

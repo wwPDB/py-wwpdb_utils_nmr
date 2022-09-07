@@ -884,7 +884,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
-            if 'identical_chain_id' in s1:
+            if 'identical_auth_chain_id' in s1:
                 hasMultimer = True
 
             seqAlign.append(seq_align)
@@ -928,7 +928,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             ref_chain_id = sa['ref_chain_id']
             test_chain_id = sa['test_chain_id']
             s1 = next(ps for ps in polySeqModel if ps['auth_chain_id'] == ref_chain_id)
-            if 'identical_chain_id' not in s1 or ref_chain_id == test_chain_id:
+            if 'identical_auth_chain_id' not in s1 or ref_chain_id == test_chain_id:
                 seqAlign.append(sa)
 
     return seqAlign, compIdMapping
@@ -1218,7 +1218,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
 
     if len(chainAssign) > 0 and len(polySeqModel) > 1:
 
-        if any(s for s in polySeqModel if 'identical_chain_id' in s):
+        if any(s for s in polySeqModel if 'identical_auth_chain_id' in s):
 
             _chainAssign = copy.copy(chainAssign)
 
@@ -1230,8 +1230,8 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                 chain_id = ca['ref_chain_id']
 
                 try:
-                    identity = next(s['identical_chain_id'] for s in polySeqModel
-                                    if s['auth_chain_id'] == chain_id and 'identical_chain_id' in s)
+                    identity = next(s['identical_auth_chain_id'] for s in polySeqModel
+                                    if s['auth_chain_id'] == chain_id and 'identical_auth_chain_id' in s)
 
                     for chain_id in identity:
 

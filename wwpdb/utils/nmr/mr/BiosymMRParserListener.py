@@ -306,7 +306,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                   and sa['test_chain_id'] == test_chain_id)
 
                         poly_seq_model = next(ps for ps in self.__polySeq
-                                              if ps['chain_id'] == ref_chain_id)
+                                              if ps['auth_chain_id'] == ref_chain_id)
                         poly_seq_rst = next(ps for ps in self.__polySeqRst
                                             if ps['chain_id'] == test_chain_id)
 
@@ -323,7 +323,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         if isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName):
 
                             poly_seq_model = next(ps for ps in self.__polySeq
-                                                  if ps['chain_id'] == ref_chain_id)
+                                                  if ps['auth_chain_id'] == ref_chain_id)
 
                             offset = None
                             for seq_id, comp_id in zip(poly_seq_rst['seq_id'], poly_seq_rst['comp_id']):

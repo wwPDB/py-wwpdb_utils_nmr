@@ -672,6 +672,8 @@ def checkCoordinates(verbose=True, log=sys.stdout,
     coordUnobsRes = None if prevCoordCheck is None or 'coord_unobs_res' not in prevCoordCheck else prevCoordCheck['coord_unobs_res']
     labelToAuthSeq = None if prevCoordCheck is None or 'label_to_auth_seq' not in prevCoordCheck else prevCoordCheck['label_to_auth_seq']
     authToLabelSeq = None if prevCoordCheck is None or 'auth_to_label_seq' not in prevCoordCheck else prevCoordCheck['auth_to_label_seq']
+    labelToAuthChain = None if prevCoordCheck is None or 'label_to_auth_chain' not in prevCoordCheck else prevCoordCheck['label_to_auth_chain']
+    authToLabelChain = None if prevCoordCheck is None or 'auth_to_label_chain' not in prevCoordCheck else prevCoordCheck['auth_to_label_chain']
 
     try:
 
@@ -755,6 +757,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                                       ])
 
             authToLabelChain = {ps['auth_chain_id']: ps['chain_id'] for ps in polySeq}
+            labelToAuthChain = {ps['chain_id']: ps['auth_chain_id'] for ps in polySeq}
 
             coordAtomSite = {}
             labelToAuthSeq = {}
@@ -847,7 +850,9 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq,
-            'auth_to_label_seq': authToLabelSeq}
+            'auth_to_label_seq': authToLabelSeq,
+            'label_to_auth_chain': labelToAuthChain,
+            'auth_to_label_chain': authToLabelChain}
 
 
 def extendCoordinatesForExactNoes(modelChainIdExt,

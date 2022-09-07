@@ -311,6 +311,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     reasonsForReParsing = {}
 
+    __cachedDictForAtomIdList = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
@@ -4153,6 +4155,9 @@ class CnsMRParserListener(ParseTreeListener):
                                 else:
                                     ccdCheck = True
 
+                            if len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1:
+                                continue
+
                             if isPolySeq and 'ambig_auth_seq_id' in ps and _seqId in ps['ambig_auth_seq_id']:
                                 continue
 
@@ -4261,6 +4266,9 @@ class CnsMRParserListener(ParseTreeListener):
         return seqKey, None
 
     def getAtomIdList(self, factor, compId, atomId):
+        key = (compId, atomId, 'alt_atom_id' in factor)
+        if key in self.__cachedDictForAtomIdList:
+            return self.__cachedDictForAtomIdList[key]
         atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
         if 'alt_atom_id' in factor and details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4269,6 +4277,7 @@ class CnsMRParserListener(ParseTreeListener):
             _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
             if _atomId != atomId:
                 atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
+        self.__cachedDictForAtomIdList[key] = atomIds
         return atomIds
 
     def intersectionFactor_expressions(self, atomSelection=None):

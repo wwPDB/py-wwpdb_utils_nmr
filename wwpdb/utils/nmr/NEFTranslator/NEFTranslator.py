@@ -636,6 +636,11 @@ class NEFTranslator:
                                  'enum': 'an enumeration value',
                                  'enum-int': 'an enumeration value restricted to integers'}
 
+        self.__cachedDictForValidStarAtomInXplor = {}
+        self.__cachedDictForValidStarAtom = {}
+        self.__cachedDictForStarAtom = {}
+        self.__cachedDictForNefAtom = {}
+
     def set_remediation(self, flag):
         """ Set remediation mode.
         """
@@ -4274,34 +4279,53 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return [], None, None
 
-        if '#' in atom_id:
-            atom_id = atom_id.replace('#', '%')
+        key = (comp_id, atom_id, details, leave_unmatched)
+        if key in self.__cachedDictForValidStarAtomInXplor:
+            return self.__cachedDictForValidStarAtomInXplor[key]
 
-        if atom_id[0] in ('1', '2', '3'):
-            atom_id = atom_id[1:] + atom_id[0]
+        atom_list = []
+        ambiguity_code = None
+        details = None
 
-        if atom_id[0] in ('H', 'Q', 'M'):
+        try:
 
-            if atom_id.endswith('1') and not self.validate_comp_atom(comp_id, atom_id):
-                _atom_id = atom_id[:-1] + '3'
-                if self.validate_comp_atom(comp_id, _atom_id):
-                    return self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+            if '#' in atom_id:
+                atom_id = atom_id.replace('#', '%')
 
-            if atom_id.endswith('1*') or atom_id.endswith('1%'):
-                _atom_id = atom_id[:-2] + '3' + atom_id[-1]
-                _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id, None, True)
-                if _details is None:
-                    if leave_unmatched:
-                        return _atom_list, _ambiguity_code, _details
-                    return self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+            if atom_id[0] in ('1', '2', '3'):
+                atom_id = atom_id[1:] + atom_id[0]
 
-                _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id[:-1], None, True)
-                if _details is None:
-                    if leave_unmatched:
-                        return _atom_list, _ambiguity_code, _details
-                    return self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+            if atom_id[0] in ('H', 'Q', 'M'):
 
-        return self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched)
+                if atom_id.endswith('1') and not self.validate_comp_atom(comp_id, atom_id):
+                    _atom_id = atom_id[:-1] + '3'
+                    if self.validate_comp_atom(comp_id, _atom_id):
+                        atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+                        return (atom_list, ambiguity_code, details)
+
+                if atom_id.endswith('1*') or atom_id.endswith('1%'):
+                    _atom_id = atom_id[:-2] + '3' + atom_id[-1]
+                    _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id, None, True)
+                    if _details is None:
+                        if leave_unmatched:
+                            atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
+                            return (atom_list, ambiguity_code, details)
+                        atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+                        return (atom_list, ambiguity_code, details)
+
+                    _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id[:-1], None, True)
+                    if _details is None:
+                        if leave_unmatched:
+                            atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
+                            return (atom_list, ambiguity_code, details)
+                        atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+                        return (atom_list, ambiguity_code, details)
+
+            atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched)
+            return (atom_list, ambiguity_code, details)
+
+        finally:
+            self.__cachedDictForValidStarAtomInXplor[key] = (atom_list, ambiguity_code, details)
 
     def get_valid_star_atom(self, comp_id, atom_id, details=None, leave_unmatched=True):
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
@@ -4312,35 +4336,54 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return [], None, None
 
-        if '#' in atom_id:
-            atom_id = atom_id.replace('#', '%')
+        key = (comp_id, atom_id, details, leave_unmatched)
+        if key in self.__cachedDictForValidStarAtom:
+            return self.__cachedDictForValidStarAtom[key]
 
-        if atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
-            return self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
+        atom_list = []
+        ambiguity_code = None
+        details = None
 
-        if atom_id.startswith('QQ'):
-            return self.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', details, leave_unmatched)
+        try:
 
-        if atom_id.startswith('QR'):
-            qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
-                                  if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
-            if len(qr_atoms) == 0:
-                return [], None, None
-            atom_list = []
-            for qr_atom in qr_atoms:
-                _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, qr_atom, details, leave_unmatched)
-                atom_list.extend(_atom_list)
-            return atom_list, ambiguity_code, details
+            if '#' in atom_id:
+                atom_id = atom_id.replace('#', '%')
 
-        if atom_id.startswith('Q') or atom_id.startswith('M'):
-            if atom_id[-1].isalnum():
-                return self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched)
-            return self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched)
+            if atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
+                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
+                return (atom_list, ambiguity_code, details)
 
-        if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
-            return self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
+            if atom_id.startswith('QQ'):
+                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', details, leave_unmatched)
+                return (atom_list, ambiguity_code, details)
 
-        return self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
+            if atom_id.startswith('QR'):
+                qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
+                                      if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
+                if len(qr_atoms) == 0:
+                    return (atom_list, ambiguity_code, details)
+                atom_list = []
+                for qr_atom in qr_atoms:
+                    _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, qr_atom, details, leave_unmatched)
+                    atom_list.extend(_atom_list)
+                return (atom_list, ambiguity_code, details)
+
+            if atom_id.startswith('Q') or atom_id.startswith('M'):
+                if atom_id[-1].isalnum():
+                    atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched)
+                    return (atom_list, ambiguity_code, details)
+                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched)
+                return (atom_list, ambiguity_code, details)
+
+            if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
+                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
+                return (atom_list, ambiguity_code, details)
+
+            atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
+            return (atom_list, ambiguity_code, details)
+
+        finally:
+            self.__cachedDictForValidStarAtom[key] = (atom_list, ambiguity_code, details)
 
     def get_star_atom(self, comp_id, nef_atom, details=None, leave_unmatched=True):
         """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
@@ -4352,6 +4395,10 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return [], None, None
 
+        key = (comp_id, nef_atom, details, leave_unmatched)
+        if key in self.__cachedDictForStarAtom:
+            return self.__cachedDictForStarAtom[key]
+
         comp_id = comp_id.upper()
         is_std_comp_id = comp_id in monDict3
 
@@ -4359,153 +4406,164 @@ class NEFTranslator:
         ambiguity_code = 1
         atoms = []
 
-        if self.__ccU.updateChemCompDict(comp_id):
-            atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
-
-        else:
-
-            if leave_unmatched:
-                details = f"Unknown non-standard residue {comp_id} found."
-            elif self.__verbose:
-                self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
-
         try:
 
-            ref_atom = re.findall(r'(\S+)([xyXY])([%*])$|(\S+)([%*])$|(\S+)([xyXY]$)|([%*])(\S+)', nef_atom)[0]
+            if self.__ccU.updateChemCompDict(comp_id):
+                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
 
-            atm_set = [ref_atom.index(i) for i in ref_atom if i != '']
+            else:
 
-            pattern = None
+                if leave_unmatched:
+                    details = f"Unknown non-standard residue {comp_id} found."
+                elif self.__verbose:
+                    self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
 
-            if atm_set == [0, 1, 2]:  # endswith [xyXY][%*]
+            try:
 
-                atom_type = ref_atom[0]
-                xy_code = ref_atom[1].lower()
+                ref_atom = re.findall(r'(\S+)([xyXY])([%*])$|(\S+)([%*])$|(\S+)([xyXY]$)|([%*])(\S+)', nef_atom)[0]
 
-                len_atom_type = len(atom_type)
+                atm_set = [ref_atom.index(i) for i in ref_atom if i != '']
 
-                pattern = re.compile(fr'{atom_type}\S\d+')
+                pattern = None
 
-                alist2 = [i for i in atoms
-                          if re.search(pattern, i) and i[len_atom_type].isdigit()]  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
+                if atm_set == [0, 1, 2]:  # endswith [xyXY][%*]
 
-                xid = sorted(set(int(i[len_atom_type]) for i in alist2))
+                    atom_type = ref_atom[0]
+                    xy_code = ref_atom[1].lower()
 
-                if xy_code == 'x':
-                    atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[0]]
-                    if len(atom_list) > 3:  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
-                        atom_list[3:] = []
+                    len_atom_type = len(atom_type)
 
-                else:
-                    atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[1]]
-                    if len(atom_list) > 3:  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
-                        atom_list[3:] = []
+                    pattern = re.compile(fr'{atom_type}\S\d+')
 
-                ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+                    alist2 = [i for i in atoms
+                              if re.search(pattern, i) and i[len_atom_type].isdigit()]  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
 
-            elif atm_set == [3, 4]:  # endswith [%*] but neither [xyXY][%*]
+                    xid = sorted(set(int(i[len_atom_type]) for i in alist2))
 
-                atom_type = ref_atom[3]
-                wc_code = ref_atom[4]
+                    if xy_code == 'x':
+                        atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[0]]
+                        if len(atom_list) > 3:  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
+                            atom_list[3:] = []
 
-                if wc_code == '%':
-                    pattern = re.compile(fr'{atom_type}\d+') if is_std_comp_id else re.compile(fr'{atom_type}\S?$')
-                elif wc_code == '*':
-                    pattern = re.compile(fr'{atom_type}\S+')
+                    else:
+                        atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[1]]
+                        if len(atom_list) > 3:  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
+                            atom_list[3:] = []
+
+                    ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+
+                elif atm_set == [3, 4]:  # endswith [%*] but neither [xyXY][%*]
+
+                    atom_type = ref_atom[3]
+                    wc_code = ref_atom[4]
+
+                    if wc_code == '%':
+                        pattern = re.compile(fr'{atom_type}\d+') if is_std_comp_id else re.compile(fr'{atom_type}\S?$')
+                    elif wc_code == '*':
+                        pattern = re.compile(fr'{atom_type}\S+')
+                    elif self.__verbose:
+                        self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+
+                    atom_list = [i for i in atoms if re.search(pattern, i)]
+
+                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+
+                    ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+
+                elif atm_set == [5, 6]:  # endswith [xyXY]
+
+                    atom_type = ref_atom[5]
+                    xy_code = ref_atom[6].lower()
+
+                    pattern = re.compile(fr'{atom_type}[^\']+')
+
+                    atom_list = [i for i in atoms if re.search(pattern, i)]
+
+                    atom_list_len = len(atom_list)
+
+                    if atom_list_len != 2:
+                        if atom_list_len > 2:
+                            atom_list = []
+                    elif xy_code == 'y':
+                        atom_list = atom_list[-1:]
+                    elif xy_code == 'x':
+                        atom_list = atom_list[:1]
+                    elif self.__verbose:
+                        self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+
+                    ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+
+                elif atm_set == [7, 8]:  # startswith [%*]
+
+                    atom_type = ref_atom[8]
+                    wc_code = ref_atom[7]
+
+                    if wc_code == '%':
+                        pattern = re.compile(fr'\d+{atom_type}') if is_std_comp_id else re.compile(fr'\S?{atom_type}')
+                    elif wc_code == '*':
+                        pattern = re.compile(fr'\S+{atom_type}')
+                    elif self.__verbose:
+                        self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+
+                    atom_list = [i for i in atoms if re.search(pattern, i)]
+
+                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+
+                    ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+
                 elif self.__verbose:
                     self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
-                atom_list = [i for i in atoms if re.search(pattern, i)]
+            except IndexError:
+                pass
 
-                methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+            if len(atom_list) == 0:
 
-                ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+                if nef_atom == 'HN' and self.__csStat.peptideLike(comp_id):
+                    atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H', 'HN converted to H.' if leave_unmatched else None, leave_unmatched)
+                    return (atom_list, ambiguity_code, details)
 
-            elif atm_set == [5, 6]:  # endswith [xyXY]
+                if self.__csStat.hasCompId(comp_id):
 
-                atom_type = ref_atom[5]
-                xy_code = ref_atom[6].lower()
+                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
-                pattern = re.compile(fr'{atom_type}[^\']+')
+                    if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
+                        atom_list, ambiguity_code, details =\
+                            self.get_star_atom(comp_id, nef_atom + '%', f"{nef_atom} converted to {nef_atom}%." if leave_unmatched else None, leave_unmatched)
+                        return (atom_list, ambiguity_code, details)
 
-                atom_list = [i for i in atoms if re.search(pattern, i)]
+                    if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
+                        atom_list, ambiguity_code, details =\
+                            self.get_star_atom(comp_id, nef_atom[:-1] + '%', f"{nef_atom} converted to {nef_atom[:-1]}%." if leave_unmatched else None, leave_unmatched)
+                        return (atom_list, ambiguity_code, details)
 
-                atom_list_len = len(atom_list)
+                    if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
+                       len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
+                        atom_list, ambiguity_code, details =\
+                            self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
+                                               f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%." if leave_unmatched else None,
+                                               leave_unmatched)
+                        return (atom_list, ambiguity_code, details)
 
-                if atom_list_len != 2:
-                    if atom_list_len > 2:
-                        atom_list = []
-                elif xy_code == 'y':
-                    atom_list = atom_list[-1:]
-                elif xy_code == 'x':
-                    atom_list = atom_list[:1]
-                elif self.__verbose:
-                    self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                    if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and nef_atom[:-1] in atoms:
+                        atom_list, ambiguity_code, details =\
+                            self.get_star_atom(comp_id, nef_atom[:-1], f"{nef_atom} converted to {nef_atom[:-1]}." if leave_unmatched else None,
+                                               leave_unmatched)
+                        return (atom_list, ambiguity_code, details)
 
-                ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+                if nef_atom in atoms:
+                    atom_list.append(nef_atom)
 
-            elif atm_set == [7, 8]:  # startswith [%*]
+                elif leave_unmatched:
+                    atom_list.append(nef_atom)
+                    ambiguity_code = None
+                    if details is None:
+                        details = f"{nef_atom} is invalid atom_id in comp_id {comp_id}."
 
-                atom_type = ref_atom[8]
-                wc_code = ref_atom[7]
+            return (atom_list, ambiguity_code, details)
 
-                if wc_code == '%':
-                    pattern = re.compile(fr'\d+{atom_type}') if is_std_comp_id else re.compile(fr'\S?{atom_type}')
-                elif wc_code == '*':
-                    pattern = re.compile(fr'\S+{atom_type}')
-                elif self.__verbose:
-                    self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
-
-                atom_list = [i for i in atoms if re.search(pattern, i)]
-
-                methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
-
-                ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
-
-            elif self.__verbose:
-                self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
-
-        except IndexError:
-            pass
-
-        if len(atom_list) == 0:
-
-            if nef_atom == 'HN' and self.__csStat.peptideLike(comp_id):
-                return self.get_star_atom(comp_id, 'H', 'HN converted to H.' if leave_unmatched else None, leave_unmatched)
-
-            if self.__csStat.hasCompId(comp_id):
-
-                methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
-
-                if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
-                    return self.get_star_atom(comp_id, nef_atom + '%',
-                                              f"{nef_atom} converted to {nef_atom}%." if leave_unmatched else None, leave_unmatched)
-
-                if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
-                    return self.get_star_atom(comp_id, nef_atom[:-1] + '%',
-                                              f"{nef_atom} converted to {nef_atom[:-1]}%." if leave_unmatched else None, leave_unmatched)
-
-                if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
-                   len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
-                    return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
-                                              f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%." if leave_unmatched else None,
-                                              leave_unmatched)
-
-                if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and nef_atom[:-1] in atoms:
-                    return self.get_star_atom(comp_id, nef_atom[:-1],
-                                              f"{nef_atom} converted to {nef_atom[:-1]}." if leave_unmatched else None,
-                                              leave_unmatched)
-
-            if nef_atom in atoms:
-                atom_list.append(nef_atom)
-
-            elif leave_unmatched:
-                atom_list.append(nef_atom)
-                ambiguity_code = None
-                if details is None:
-                    details = f"{nef_atom} is invalid atom_id in comp_id {comp_id}."
-
-        return atom_list, ambiguity_code, details
+        finally:
+            self.__cachedDictForStarAtom[key] = (atom_list, ambiguity_code, details)
 
     def get_nef_atom(self, comp_id, star_atom_list, details=None, leave_unmatched=True):
         """ Return list of all instanced atom_id of given NMR-STAR atoms with ambiguity code and CS value in a given comp_id.
@@ -4518,144 +4576,91 @@ class NEFTranslator:
 
         comp_id = comp_id.upper()
 
+        key = (comp_id, star_atom_list, details, leave_unmatched)
+        if key in self.__cachedDictForNefAtom:
+            return self.__cachedDictForNefAtom[key]
+
         atom_list = []
         atom_id_map = {}
         atoms = []
 
-        if self.__ccU.updateChemCompDict(comp_id):
-            atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
-
-        methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
-
-        proc_atom_list = set()
-
-        if details is None:
-            details = {}
-
         try:
 
-            for a in star_atom_list:
+            if self.__ccU.updateChemCompDict(comp_id):
+                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
 
-                atom_id = a['atom_id']
-                _ambig_code = a['ambig_code']
-                _value = a['value']
+            methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
-                if atom_id in proc_atom_list:
-                    continue
+            proc_atom_list = set()
 
-                if atom_id not in atoms:
+            if details is None:
+                details = {}
 
-                    _atom_id = None
+            try:
 
-                    if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
-                        _atom_id = 'H'
-                    elif atom_id.startswith('QQ'):
-                        _atom_id = 'H' + atom_id[2:] + '%'
-                    elif atom_id.startswith('QR'):
-                        qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
-                                              if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
-                        if len(qr_atoms) > 0:
-                            for qr_atom in qr_atoms:
-                                _a = copy.copy(a)
-                                _a['atom_id'] = qr_atom
-                                star_atom_list.append(_a)
-                            star_atom_list.remove(a)
-                            return self.get_nef_atom(comp_id, star_atom_list, details, leave_unmatched)
-                    elif atom_id.startswith('Q') or atom_id.startswith('M'):
-                        if atom_id[-1].isalnum():
-                            _atom_id = 'H' + atom_id[1:] + '%'
-                        else:
-                            _atom_id = 'H' + atom_id[1:-1] + '*'
-                    elif atom_id + '2' in self.__csStat.getAllAtoms(comp_id):
-                        _atom_id = atom_id + '%'
+                for a in star_atom_list:
 
-                    if _atom_id is None:
+                    atom_id = a['atom_id']
+                    _ambig_code = a['ambig_code']
+                    _value = a['value']
 
-                        if leave_unmatched:
-                            atom_list.append(atom_id)
-                            if not self.__ccU.lastStatus:
-                                details[atom_id] = f"Unknown non-standard residue {comp_id} found."
-                            else:
-                                details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
-                            atom_id_map[atom_id] = atom_id
-                        elif self.__verbose:
-                            if not self.__ccU.lastStatus:
-                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
-                            else:
-                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
-
+                    if atom_id in proc_atom_list:
                         continue
 
-                    atom_id = _atom_id
+                    if atom_id not in atoms:
 
-                if _ambig_code in emptyValue:
-                    ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                    if atom_id.endswith("'"):
-                        ambig_code = 1
-                else:
-                    ambig_code = int(_ambig_code)
+                        _atom_id = None
 
-                if ambig_code not in ALLOWED_AMBIGUITY_CODES:
+                        if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
+                            _atom_id = 'H'
+                        elif atom_id.startswith('QQ'):
+                            _atom_id = 'H' + atom_id[2:] + '%'
+                        elif atom_id.startswith('QR'):
+                            qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
+                                                  if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
+                            if len(qr_atoms) > 0:
+                                for qr_atom in qr_atoms:
+                                    _a = copy.copy(a)
+                                    _a['atom_id'] = qr_atom
+                                    star_atom_list.append(_a)
+                                star_atom_list.remove(a)
+                                atom_list, details, atom_id_map = self.get_nef_atom(comp_id, star_atom_list, details, leave_unmatched)
+                                return (atom_list, details, atom_id_map)
+                        elif atom_id.startswith('Q') or atom_id.startswith('M'):
+                            if atom_id[-1].isalnum():
+                                _atom_id = 'H' + atom_id[1:] + '%'
+                            else:
+                                _atom_id = 'H' + atom_id[1:-1] + '*'
+                        elif atom_id + '2' in self.__csStat.getAllAtoms(comp_id):
+                            _atom_id = atom_id + '%'
 
-                    if leave_unmatched:
-                        atom_list.append(atom_id)
-                        details[atom_id] = f"{atom_id} has invalid ambiguity code {ambig_code}."
-                        atom_id_map[atom_id] = atom_id
-                    elif self.__verbose:
-                        self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
-
-                    continue
-
-                if ambig_code == 1:
-
-                    if atom_id[0] == 'H' and atom_id in methyl_atoms:
-
-                        methyl_c, methyl_h_list = self.get_group(comp_id, atom_id)
-
-                        if methyl_h_list is None:
+                        if _atom_id is None:
 
                             if leave_unmatched:
                                 atom_list.append(atom_id)
-                                details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                if not self.__ccU.lastStatus:
+                                    details[atom_id] = f"Unknown non-standard residue {comp_id} found."
+                                else:
+                                    details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
                                 atom_id_map[atom_id] = atom_id
                             elif self.__verbose:
-                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+                                if not self.__ccU.lastStatus:
+                                    self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
+                                else:
+                                    self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
-                        else:
+                            continue
 
-                            has_methyl_proton = len([_a['atom_id'] for _a in star_atom_list
-                                                     if _a['atom_id'] in methyl_h_list and (_a['value'] is None or _a['value'] == _value)]) == 3
+                        atom_id = _atom_id
 
-                            if has_methyl_proton:
-
-                                name_len = [len(n) for n in methyl_h_list]
-                                max_len = max(name_len)
-                                min_len = min(name_len)
-
-                                if max_len == min_len or len(atom_id) == max_len:
-                                    nef_atom = atom_id[:-1] + '%'
-                                else:  # For example, HEM HM[A-D]
-                                    nef_atom = atom_id + '%'
-
-                                atom_list.append(nef_atom)
-                                details[nef_atom] = None
-                                for b in methyl_h_list:
-                                    atom_id_map[b] = nef_atom
-                                    proc_atom_list.add(b)
-
-                            else:
-                                atom_list.append(atom_id)
-                                details[atom_id] = None
-                                atom_id_map[atom_id] = atom_id
-
+                    if _ambig_code in emptyValue:
+                        ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                        if atom_id.endswith("'"):
+                            ambig_code = 1
                     else:
-                        atom_list.append(atom_id)
-                        details[atom_id] = None
-                        atom_id_map[atom_id] = atom_id
+                        ambig_code = int(_ambig_code)
 
-                elif ambig_code == 2:
-
-                    if self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) != 2:
+                    if ambig_code not in ALLOWED_AMBIGUITY_CODES:
 
                         if leave_unmatched:
                             atom_list.append(atom_id)
@@ -4664,12 +4669,13 @@ class NEFTranslator:
                         elif self.__verbose:
                             self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
 
-                    elif atom_id[0] == 'H':
+                        continue
 
-                        if atom_id in methyl_atoms:
+                    if ambig_code == 1:
+
+                        if atom_id[0] == 'H' and atom_id in methyl_atoms:
 
                             methyl_c, methyl_h_list = self.get_group(comp_id, atom_id)
-                            _, methyl_h_list_2 = self.get_geminal_group(comp_id, methyl_c)
 
                             if methyl_h_list is None:
 
@@ -4684,43 +4690,17 @@ class NEFTranslator:
 
                                 has_methyl_proton = len([_a['atom_id'] for _a in star_atom_list
                                                          if _a['atom_id'] in methyl_h_list and (_a['value'] is None or _a['value'] == _value)]) == 3
-                                has_methyl_proton_2 = methyl_h_list_2 is not None and len([_a['atom_id'] for _a in star_atom_list
-                                                                                           if _a['atom_id'] in methyl_h_list_2
-                                                                                           and (_a['value'] is None or _a['value'] == _value)]) == 3
 
-                                nef_atom_prefix = 'x'
-                                nef_atom_prefix_2 = 'y'
+                                if has_methyl_proton:
 
-                                if has_methyl_proton and has_methyl_proton_2:
+                                    name_len = [len(n) for n in methyl_h_list]
+                                    max_len = max(name_len)
+                                    min_len = min(name_len)
 
-                                    methyl_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list), None)
-                                    methyl_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2), None)
-
-                                    if methyl_proton_value is not None and methyl_proton_value_2 is not None\
-                                       and float(methyl_proton_value_2) < float(methyl_proton_value):
-                                        nef_atom_prefix = 'y'
-                                        nef_atom_prefix_2 = 'x'
-
-                                    nef_atom = methyl_h_list[0][:-2] + nef_atom_prefix + '%'
-
-                                    atom_list.append(nef_atom)
-                                    details[nef_atom] = None
-                                    for b in methyl_h_list:
-                                        atom_id_map[b] = nef_atom
-                                        proc_atom_list.add(b)
-
-                                    nef_atom_2 = methyl_h_list_2[0][:-2] + nef_atom_prefix_2 + '%'
-
-                                    atom_list.append(nef_atom_2)
-                                    details[nef_atom_2] = None
-                                    for b in methyl_h_list_2:
-                                        atom_id_map[b] = nef_atom_2
-                                        proc_atom_list.add(b)
-
-                                elif has_methyl_proton:
-
-                                    nef_atom_prefix = 'x' if methyl_h_list[0] < methyl_h_list_2[0] else 'y'
-                                    nef_atom = methyl_h_list[0][:-2] + nef_atom_prefix + '%'
+                                    if max_len == min_len or len(atom_id) == max_len:
+                                        nef_atom = atom_id[:-1] + '%'
+                                    else:  # For example, HEM HM[A-D]
+                                        nef_atom = atom_id + '%'
 
                                     atom_list.append(nef_atom)
                                     details[nef_atom] = None
@@ -4734,10 +4714,156 @@ class NEFTranslator:
                                     atom_id_map[atom_id] = atom_id
 
                         else:
+                            atom_list.append(atom_id)
+                            details[atom_id] = None
+                            atom_id_map[atom_id] = atom_id
 
-                            _, geminal_h_list = self.get_group(comp_id, atom_id)
+                    elif ambig_code == 2:
 
-                            if geminal_h_list is None:
+                        if self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) != 2:
+
+                            if leave_unmatched:
+                                atom_list.append(atom_id)
+                                details[atom_id] = f"{atom_id} has invalid ambiguity code {ambig_code}."
+                                atom_id_map[atom_id] = atom_id
+                            elif self.__verbose:
+                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
+
+                        elif atom_id[0] == 'H':
+
+                            if atom_id in methyl_atoms:
+
+                                methyl_c, methyl_h_list = self.get_group(comp_id, atom_id)
+                                _, methyl_h_list_2 = self.get_geminal_group(comp_id, methyl_c)
+
+                                if methyl_h_list is None:
+
+                                    if leave_unmatched:
+                                        atom_list.append(atom_id)
+                                        details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                        atom_id_map[atom_id] = atom_id
+                                    elif self.__verbose:
+                                        self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+
+                                else:
+
+                                    has_methyl_proton = len([_a['atom_id'] for _a in star_atom_list
+                                                             if _a['atom_id'] in methyl_h_list and (_a['value'] is None or _a['value'] == _value)]) == 3
+                                    has_methyl_proton_2 = methyl_h_list_2 is not None and len([_a['atom_id'] for _a in star_atom_list
+                                                                                               if _a['atom_id'] in methyl_h_list_2
+                                                                                               and (_a['value'] is None or _a['value'] == _value)]) == 3
+
+                                    nef_atom_prefix = 'x'
+                                    nef_atom_prefix_2 = 'y'
+
+                                    if has_methyl_proton and has_methyl_proton_2:
+
+                                        methyl_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list), None)
+                                        methyl_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2), None)
+
+                                        if methyl_proton_value is not None and methyl_proton_value_2 is not None\
+                                           and float(methyl_proton_value_2) < float(methyl_proton_value):
+                                            nef_atom_prefix = 'y'
+                                            nef_atom_prefix_2 = 'x'
+
+                                        nef_atom = methyl_h_list[0][:-2] + nef_atom_prefix + '%'
+
+                                        atom_list.append(nef_atom)
+                                        details[nef_atom] = None
+                                        for b in methyl_h_list:
+                                            atom_id_map[b] = nef_atom
+                                            proc_atom_list.add(b)
+
+                                        nef_atom_2 = methyl_h_list_2[0][:-2] + nef_atom_prefix_2 + '%'
+
+                                        atom_list.append(nef_atom_2)
+                                        details[nef_atom_2] = None
+                                        for b in methyl_h_list_2:
+                                            atom_id_map[b] = nef_atom_2
+                                            proc_atom_list.add(b)
+
+                                    elif has_methyl_proton:
+
+                                        nef_atom_prefix = 'x' if methyl_h_list[0] < methyl_h_list_2[0] else 'y'
+                                        nef_atom = methyl_h_list[0][:-2] + nef_atom_prefix + '%'
+
+                                        atom_list.append(nef_atom)
+                                        details[nef_atom] = None
+                                        for b in methyl_h_list:
+                                            atom_id_map[b] = nef_atom
+                                            proc_atom_list.add(b)
+
+                                    else:
+                                        atom_list.append(atom_id)
+                                        details[atom_id] = None
+                                        atom_id_map[atom_id] = atom_id
+
+                            else:
+
+                                _, geminal_h_list = self.get_group(comp_id, atom_id)
+
+                                if geminal_h_list is None:
+
+                                    if leave_unmatched:
+                                        atom_list.append(atom_id)
+                                        details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                        atom_id_map[atom_id] = atom_id
+                                    elif self.__verbose:
+                                        self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+
+                                else:
+
+                                    has_geminal_proton = len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] in geminal_h_list]) == 2
+
+                                    nef_atom_prefix = 'x'
+                                    nef_atom_prefix_2 = 'y'
+
+                                    if atom_id.endswith("'"):
+
+                                        atom_list.append(atom_id)
+                                        details[atom_id] = None
+                                        atom_id_map[atom_id] = atom_id
+
+                                    elif has_geminal_proton:
+
+                                        geminal_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[0]), None)
+                                        geminal_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[1]), None)
+
+                                        if geminal_proton_value is not None and geminal_proton_value_2 is not None\
+                                           and float(geminal_proton_value_2) < float(geminal_proton_value):
+                                            nef_atom_prefix = 'y'
+                                            nef_atom_prefix_2 = 'x'
+
+                                        nef_atom = geminal_h_list[0][:-1] + nef_atom_prefix
+
+                                        atom_list.append(nef_atom)
+                                        details[nef_atom] = None
+                                        atom_id_map[geminal_h_list[0]] = nef_atom
+
+                                        nef_atom_2 = geminal_h_list[1][:-1] + nef_atom_prefix_2
+
+                                        atom_list.append(nef_atom_2)
+                                        details[nef_atom_2] = None
+                                        atom_id_map[geminal_h_list[1]] = nef_atom_2
+
+                                        for b in geminal_h_list:
+                                            proc_atom_list.add(b)
+
+                                    else:
+
+                                        nef_atom_prefix = 'x' if (atom_id == geminal_h_list[0] and geminal_h_list[0] < geminal_h_list[1]) or\
+                                                                 (atom_id == geminal_h_list[1] and geminal_h_list[1] < geminal_h_list[0]) else 'y'
+                                        nef_atom = atom_id[:-1] + nef_atom_prefix
+
+                                        atom_list.append(nef_atom)
+                                        details[nef_atom] = None
+                                        atom_id_map[atom_id] = nef_atom
+
+                        else:
+
+                            atom_id_2, _ = self.get_geminal_group(comp_id, atom_id)
+
+                            if atom_id_2 is None:
 
                                 if leave_unmatched:
                                     atom_list.append(atom_id)
@@ -4748,46 +4874,102 @@ class NEFTranslator:
 
                             else:
 
-                                has_geminal_proton = len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] in geminal_h_list]) == 2
+                                has_atom_id_2 = len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] == atom_id_2]) == 1
 
                                 nef_atom_prefix = 'x'
                                 nef_atom_prefix_2 = 'y'
 
-                                if atom_id.endswith("'"):
+                                if has_atom_id_2:
 
-                                    atom_list.append(atom_id)
-                                    details[atom_id] = None
-                                    atom_id_map[atom_id] = atom_id
+                                    atom_id_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id), None)
+                                    atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
 
-                                elif has_geminal_proton:
-
-                                    geminal_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[0]), None)
-                                    geminal_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[1]), None)
-
-                                    if geminal_proton_value is not None and geminal_proton_value_2 is not None\
-                                       and float(geminal_proton_value_2) < float(geminal_proton_value):
+                                    if atom_id_value is not None and atom_id_value_2 is not None\
+                                       and float(atom_id_value_2) < float(atom_id_value):
                                         nef_atom_prefix = 'y'
                                         nef_atom_prefix_2 = 'x'
 
-                                    nef_atom = geminal_h_list[0][:-1] + nef_atom_prefix
+                                    nef_atom = atom_id[:-1] + nef_atom_prefix
 
                                     atom_list.append(nef_atom)
                                     details[nef_atom] = None
-                                    atom_id_map[geminal_h_list[0]] = nef_atom
+                                    atom_id_map[atom_id] = nef_atom
+                                    proc_atom_list.add(atom_id)
 
-                                    nef_atom_2 = geminal_h_list[1][:-1] + nef_atom_prefix_2
+                                    nef_atom_2 = atom_id_2[:-1] + nef_atom_prefix_2
 
                                     atom_list.append(nef_atom_2)
                                     details[nef_atom_2] = None
-                                    atom_id_map[geminal_h_list[1]] = nef_atom_2
-
-                                    for b in geminal_h_list:
-                                        proc_atom_list.add(b)
+                                    atom_id_map[atom_id_2] = nef_atom_2
+                                    proc_atom_list.add(atom_id_2)
 
                                 else:
 
-                                    nef_atom_prefix = 'x' if (atom_id == geminal_h_list[0] and geminal_h_list[0] < geminal_h_list[1]) or\
-                                                             (atom_id == geminal_h_list[1] and geminal_h_list[1] < geminal_h_list[0]) else 'y'
+                                    nef_atom_prefix = 'x' if atom_id < atom_id_2 else 'y'
+                                    nef_atom = atom_id[:-1] + nef_atom_prefix
+
+                                    atom_list.append(nef_atom)
+                                    details[nef_atom] = None
+                                    atom_id_map[atom_id] = nef_atom
+
+                    elif ambig_code == 3:
+
+                        if self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) != 3:
+
+                            if leave_unmatched:
+                                atom_list.append(atom_id)
+                                details[atom_id] = f"{atom_id} has invalid ambiguity code {ambig_code}."
+                                atom_id_map[atom_id] = atom_id
+                            elif self.__verbose:
+                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
+
+                        else:
+
+                            atom_id_2 = self.__csStat.getGeminalAtom(comp_id, atom_id)
+
+                            if atom_id_2 is None:
+
+                                if leave_unmatched:
+                                    atom_list.append(atom_id)
+                                    details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                    atom_id_map[atom_id] = atom_id
+                                elif self.__verbose:
+                                    self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+
+                            else:
+
+                                has_atom_id_2 = len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] == atom_id_2]) == 1
+
+                                nef_atom_prefix = 'x'
+                                nef_atom_prefix_2 = 'y'
+
+                                if has_atom_id_2:
+
+                                    atom_id_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id), None)
+                                    atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
+
+                                    if atom_id_value is not None and atom_id_value_2 is not None\
+                                       and float(atom_id_value_2) < float(atom_id_value):
+                                        nef_atom_prefix = 'y'
+                                        nef_atom_prefix_2 = 'x'
+
+                                    nef_atom = atom_id[:-1] + nef_atom_prefix
+
+                                    atom_list.append(nef_atom)
+                                    details[nef_atom] = None
+                                    atom_id_map[atom_id] = nef_atom
+                                    proc_atom_list.add(atom_id)
+
+                                    nef_atom_2 = atom_id_2[:-1] + nef_atom_prefix_2
+
+                                    atom_list.append(nef_atom_2)
+                                    details[nef_atom_2] = None
+                                    atom_id_map[atom_id_2] = nef_atom_2
+                                    proc_atom_list.add(atom_id_2)
+
+                                else:
+
+                                    nef_atom_prefix = 'x' if atom_id < atom_id_2 else 'y'
                                     nef_atom = atom_id[:-1] + nef_atom_prefix
 
                                     atom_list.append(nef_atom)
@@ -4796,133 +4978,19 @@ class NEFTranslator:
 
                     else:
 
-                        atom_id_2, _ = self.get_geminal_group(comp_id, atom_id)
+                        atom_list.append(atom_id)
+                        details[atom_id] = None
+                        atom_id_map[atom_id] = atom_id
 
-                        if atom_id_2 is None:
+                    proc_atom_list.add(atom_id)
 
-                            if leave_unmatched:
-                                atom_list.append(atom_id)
-                                details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
-                                atom_id_map[atom_id] = atom_id
-                            elif self.__verbose:
-                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+            except KeyError:
+                pass
 
-                        else:
+            return (atom_list, details, atom_id_map)
 
-                            has_atom_id_2 = len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] == atom_id_2]) == 1
-
-                            nef_atom_prefix = 'x'
-                            nef_atom_prefix_2 = 'y'
-
-                            if has_atom_id_2:
-
-                                atom_id_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id), None)
-                                atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
-
-                                if atom_id_value is not None and atom_id_value_2 is not None\
-                                   and float(atom_id_value_2) < float(atom_id_value):
-                                    nef_atom_prefix = 'y'
-                                    nef_atom_prefix_2 = 'x'
-
-                                nef_atom = atom_id[:-1] + nef_atom_prefix
-
-                                atom_list.append(nef_atom)
-                                details[nef_atom] = None
-                                atom_id_map[atom_id] = nef_atom
-                                proc_atom_list.add(atom_id)
-
-                                nef_atom_2 = atom_id_2[:-1] + nef_atom_prefix_2
-
-                                atom_list.append(nef_atom_2)
-                                details[nef_atom_2] = None
-                                atom_id_map[atom_id_2] = nef_atom_2
-                                proc_atom_list.add(atom_id_2)
-
-                            else:
-
-                                nef_atom_prefix = 'x' if atom_id < atom_id_2 else 'y'
-                                nef_atom = atom_id[:-1] + nef_atom_prefix
-
-                                atom_list.append(nef_atom)
-                                details[nef_atom] = None
-                                atom_id_map[atom_id] = nef_atom
-
-                elif ambig_code == 3:
-
-                    if self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) != 3:
-
-                        if leave_unmatched:
-                            atom_list.append(atom_id)
-                            details[atom_id] = f"{atom_id} has invalid ambiguity code {ambig_code}."
-                            atom_id_map[atom_id] = atom_id
-                        elif self.__verbose:
-                            self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
-
-                    else:
-
-                        atom_id_2 = self.__csStat.getGeminalAtom(comp_id, atom_id)
-
-                        if atom_id_2 is None:
-
-                            if leave_unmatched:
-                                atom_list.append(atom_id)
-                                details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
-                                atom_id_map[atom_id] = atom_id
-                            elif self.__verbose:
-                                self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
-
-                        else:
-
-                            has_atom_id_2 = len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] == atom_id_2]) == 1
-
-                            nef_atom_prefix = 'x'
-                            nef_atom_prefix_2 = 'y'
-
-                            if has_atom_id_2:
-
-                                atom_id_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id), None)
-                                atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
-
-                                if atom_id_value is not None and atom_id_value_2 is not None\
-                                   and float(atom_id_value_2) < float(atom_id_value):
-                                    nef_atom_prefix = 'y'
-                                    nef_atom_prefix_2 = 'x'
-
-                                nef_atom = atom_id[:-1] + nef_atom_prefix
-
-                                atom_list.append(nef_atom)
-                                details[nef_atom] = None
-                                atom_id_map[atom_id] = nef_atom
-                                proc_atom_list.add(atom_id)
-
-                                nef_atom_2 = atom_id_2[:-1] + nef_atom_prefix_2
-
-                                atom_list.append(nef_atom_2)
-                                details[nef_atom_2] = None
-                                atom_id_map[atom_id_2] = nef_atom_2
-                                proc_atom_list.add(atom_id_2)
-
-                            else:
-
-                                nef_atom_prefix = 'x' if atom_id < atom_id_2 else 'y'
-                                nef_atom = atom_id[:-1] + nef_atom_prefix
-
-                                atom_list.append(nef_atom)
-                                details[nef_atom] = None
-                                atom_id_map[atom_id] = nef_atom
-
-                else:
-
-                    atom_list.append(atom_id)
-                    details[atom_id] = None
-                    atom_id_map[atom_id] = atom_id
-
-                proc_atom_list.add(atom_id)
-
-        except KeyError:
-            pass
-
-        return atom_list, details, atom_id_map
+        finally:
+            self.__cachedDictForNefAtom[key] = (atom_list, details, atom_id_map)
 
     def get_group(self, comp_id, atom_id):
         """ Return heavy atom name and list of proton names bonded to the heavy atom.

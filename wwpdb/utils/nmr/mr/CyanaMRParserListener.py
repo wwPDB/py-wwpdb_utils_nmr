@@ -596,10 +596,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
             seqId1 = int(str(ctx.Integer(0)))
             compId1 = str(ctx.Simple_name(0)).upper()
-            atomId1 = self.genAtomNameSelection[0]
+            atomId1 = self.genAtomNameSelection[0].upper()
             seqId2 = int(str(ctx.Integer(1)))
             compId2 = str(ctx.Simple_name(1)).upper()
-            atomId2 = self.genAtomNameSelection[1]
+            atomId2 = self.genAtomNameSelection[1].upper()
 
             if len(compId1) == 1 and len(compId2) == 1 and compId1.isalpha() and compId2.isalpha():
                 atom_like = self.__csStat.getAtomLikeNameSet(True, True, 1)
@@ -4354,6 +4354,91 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
             else:
                 self.noepkRestraints -= 1
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by CyanaMRParser#qconvr_distance_restraints.
+    def enterQconvr_distance_restraints(self, ctx: CyanaMRParser.Qconvr_distance_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dist'
+
+    # Exit a parse tree produced by CyanaMRParser#qconvr_distance_restraints.
+    def exitQconvr_distance_restraints(self, ctx: CyanaMRParser.Qconvr_distance_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#qconvr_distance_restraint.
+    def enterQconvr_distance_restraint(self, ctx: CyanaMRParser.Qconvr_distance_restraintContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CyanaMRParser#qconvr_distance_restraint.
+    def exitQconvr_distance_restraint(self, ctx: CyanaMRParser.Qconvr_distance_restraintContext):
+
+        try:
+
+            upl = bool(ctx.NoeUpp())
+
+            seqId1 = int(str(ctx.Integer(0)))
+            compId1 = str(ctx.Simple_name(0)).upper()
+            atomId1 = str(ctx.Simple_name(1)).upper()
+            seqId2 = int(str(ctx.Integer(1)))
+            compId2 = str(ctx.Simple_name(2)).upper()
+            atomId2 = str(ctx.Simple_name(3)).upper()
+
+            target_value = None
+            lower_limit = None
+            upper_limit = None
+
+            if None in self.numberSelection:
+                return
+
+            value = self.numberSelection[0]
+            weight = 1.0
+
+            if not self.__hasPolySeq:
+                return
+
+            if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                if upl and value > self.__max_dist_value:
+                    self.__max_dist_value = value
+                if not upl and value < self.__min_dist_value:
+                    self.__min_dist_value = value
+
+            if upl:
+                upper_limit = value
+            else:
+                lower_limit = value
+
+            self.__retrieveLocalSeqScheme()
+
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq:
+                return
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        except ValueError:
+            self.distRestraints -= 1
         finally:
             self.numberSelection.clear()
 

@@ -552,6 +552,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__allowZeroUpperLimit = False
             if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) > 0\
                and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']

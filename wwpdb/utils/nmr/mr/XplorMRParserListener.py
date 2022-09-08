@@ -7419,7 +7419,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                            if self.__cur_subtype != 'plane':
+                                            if self.__cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
                                                 if seqId == 1 and _atomId in ('H', 'HN'):
                                                     if 'H1' in coordAtomSite['atom_id']:

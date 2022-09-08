@@ -1240,6 +1240,11 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                             _ca['ref_chain_id'] = chain_id
                             chainAssign.append(_ca)
 
+                            sa = next(sa for sa in seqAlign if sa['ref_chain_id'] == ca['ref_chain_id'])
+                            _sa = copy.copy(sa)
+                            _sa['ref_chain_id'] = chain_id
+                            seqAlign.append(_sa)
+
                 except StopIteration:
                     pass
 

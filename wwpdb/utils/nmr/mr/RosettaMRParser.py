@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,63,471,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,64,471,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
         7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
@@ -51,7 +51,7 @@ def serializedATN():
         27,1,27,1,27,1,27,1,27,1,28,4,28,460,8,28,11,28,12,28,461,1,29,1,
         29,1,29,1,30,1,30,1,31,1,31,1,31,0,0,32,0,2,4,6,8,10,12,14,16,18,
         20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,
-        0,8,1,0,60,61,2,0,1,2,9,9,1,0,3,4,3,0,18,18,25,25,39,40,3,0,21,22,
+        0,8,1,0,60,62,2,0,1,2,9,9,1,0,3,4,3,0,18,18,25,25,39,40,3,0,21,22,
         26,26,46,46,2,0,23,23,43,43,2,0,31,31,44,45,1,0,50,51,519,0,80,1,
         0,0,0,2,85,1,0,0,0,4,95,1,0,0,0,6,99,1,0,0,0,8,107,1,0,0,0,10,111,
         1,0,0,0,12,121,1,0,0,0,14,125,1,0,0,0,16,137,1,0,0,0,18,141,1,0,
@@ -69,7 +69,7 @@ def serializedATN():
         0,78,76,1,0,0,0,78,77,1,0,0,0,79,82,1,0,0,0,80,78,1,0,0,0,80,81,
         1,0,0,0,81,83,1,0,0,0,82,80,1,0,0,0,83,84,5,0,0,1,84,1,1,0,0,0,85,
         89,5,54,0,0,86,88,7,0,0,0,87,86,1,0,0,0,88,91,1,0,0,0,89,87,1,0,
-        0,0,89,90,1,0,0,0,90,92,1,0,0,0,91,89,1,0,0,0,92,93,5,63,0,0,93,
+        0,0,89,90,1,0,0,0,90,92,1,0,0,0,91,89,1,0,0,0,92,93,5,64,0,0,93,
         3,1,0,0,0,94,96,3,6,3,0,95,94,1,0,0,0,96,97,1,0,0,0,97,95,1,0,0,
         0,97,98,1,0,0,0,98,5,1,0,0,0,99,100,7,1,0,0,100,101,5,55,0,0,101,
         102,5,50,0,0,102,103,5,55,0,0,103,104,5,50,0,0,104,105,3,50,25,0,
@@ -230,7 +230,8 @@ class RosettaMRParser ( Parser ):
                       "TOPOUT", "ETABLE", "USOG", "SOG", "Integer", "Float", 
                       "SHARP_COMMENT", "EXCLM_COMMENT", "COMMENT", "Simple_name", 
                       "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
-                      "Atom_pair_selection", "Any_name", "SPACE_CM", "RETURN_CM" ]
+                      "Atom_pair_selection", "Atom_selection", "Any_name", 
+                      "SPACE_CM", "RETURN_CM" ]
 
     RULE_rosetta_mr = 0
     RULE_comment = 1
@@ -338,9 +339,10 @@ class RosettaMRParser ( Parser ):
     SECTION_COMMENT=58
     LINE_COMMENT=59
     Atom_pair_selection=60
-    Any_name=61
-    SPACE_CM=62
-    RETURN_CM=63
+    Atom_selection=61
+    Any_name=62
+    SPACE_CM=63
+    RETURN_CM=64
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -592,6 +594,12 @@ class RosettaMRParser ( Parser ):
             else:
                 return self.getToken(RosettaMRParser.Atom_pair_selection, i)
 
+        def Atom_selection(self, i:int=None):
+            if i is None:
+                return self.getTokens(RosettaMRParser.Atom_selection)
+            else:
+                return self.getToken(RosettaMRParser.Atom_selection, i)
+
         def Any_name(self, i:int=None):
             if i is None:
                 return self.getTokens(RosettaMRParser.Any_name)
@@ -624,10 +632,10 @@ class RosettaMRParser ( Parser ):
             self.state = 89
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==RosettaMRParser.Atom_pair_selection or _la==RosettaMRParser.Any_name:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.Atom_pair_selection) | (1 << RosettaMRParser.Atom_selection) | (1 << RosettaMRParser.Any_name))) != 0):
                 self.state = 86
                 _la = self._input.LA(1)
-                if not(_la==RosettaMRParser.Atom_pair_selection or _la==RosettaMRParser.Any_name):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.Atom_pair_selection) | (1 << RosettaMRParser.Atom_selection) | (1 << RosettaMRParser.Any_name))) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)

@@ -38,7 +38,7 @@ rosetta_mr:
 	EOF;
 
 comment:
-	COMMENT (Atom_pair_selection | Any_name)* RETURN_CM;
+	COMMENT (Atom_pair_selection | Atom_selection | Any_name)* RETURN_CM;
 
 /* Rosetta Constraint File - Constraint Types - Single constraints
  See also https://www.rosettacommons.org/docs/latest/rosetta_basics/file_types/constraint-file

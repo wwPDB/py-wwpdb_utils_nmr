@@ -119,6 +119,7 @@ LINE_COMMENT:		('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+
 mode COMMENT_MODE;
 
 Atom_pair_selection:	ALPHA+ DECIMAL SIMPLE_NAME '-' ALPHA+ DECIMAL SIMPLE_NAME;
+Atom_selection:		ALPHA+ DECIMAL SIMPLE_NAME;
 Any_name:		~[ \t\r\n]+;
 
 SPACE_CM:		[ \t]+ -> skip;

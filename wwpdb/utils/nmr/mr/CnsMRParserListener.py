@@ -467,6 +467,8 @@ class CnsMRParserListener(ParseTreeListener):
 
                     seqIdRemap = []
 
+                    cyclicPolymer = {}
+
                     for ca in self.__chainAssign:
                         ref_chain_id = ca['ref_chain_id']
                         test_chain_id = ca['test_chain_id']
@@ -490,7 +492,11 @@ class CnsMRParserListener(ParseTreeListener):
                                 except StopIteration:
                                     pass
 
-                        if isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName):
+                        if ref_chain_id not in cyclicPolymer:
+                            cyclicPolymer[ref_chain_id] =\
+                                isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+
+                        if cyclicPolymer[ref_chain_id]:
 
                             poly_seq_model = next(ps for ps in self.__polySeq
                                                   if ps['auth_chain_id'] == ref_chain_id)
@@ -4188,8 +4194,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "\
                                                                     "Please re-upload the model file.\n"
                                                 if not checked:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         # """
                                         # if self.__reasons is None and seqKey in self.__authToLabelSeq:
@@ -4205,8 +4212,9 @@ class CnsMRParserListener(ParseTreeListener):
                                         if cifCheck and self.__cur_subtype != 'plane'\
                                            and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
                                            and (self.__reasons is None or 'non_poly_remap' not in self.__reasons):
-                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                            if chainId in MAJOR_ASYM_ID_SET:
+                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 
         return foundCompId
 

@@ -40,7 +40,8 @@ try:
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+    from wwpdb.utils.nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+                                           monDict3,
                                            updatePolySeqRstFromAtomSelectionSet,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -73,7 +74,8 @@ except ImportError:
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from nmr.AlignUtil import (monDict3,
+    from nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+                               monDict3,
                                updatePolySeqRstFromAtomSelectionSet,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -2538,11 +2540,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                     "Please re-upload the model file.\n"
                                     if not checked:
-                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                        if chainId in MAJOR_ASYM_ID_SET:
+                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                 return factor
-                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                            if chainId in MAJOR_ASYM_ID_SET:
+                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                             return None
 
         if not useDefault:
@@ -2678,11 +2682,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                             "Please re-upload the model file.\n"
                                             if not checked:
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                if chainId in MAJOR_ASYM_ID_SET:
+                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return factor
-                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                    if chainId in MAJOR_ASYM_ID_SET:
+                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                     return None
 
         if not useDefault or self.__altPolySeq is None:
@@ -2874,8 +2880,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                             "Please re-upload the model file.\n"
                                             if not checked:
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                if chainId in MAJOR_ASYM_ID_SET:
+                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return True
 
                     elif 'igr' in factor:
@@ -2957,8 +2964,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                             "Please re-upload the model file.\n"
                                             if not checked:
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                if chainId in MAJOR_ASYM_ID_SET:
+                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 
                         if found:
                             return True
@@ -3080,8 +3088,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                             "Please re-upload the model file.\n"
                                             if not checked:
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                if chainId in MAJOR_ASYM_ID_SET:
+                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return True
 
                     elif 'igr' in factor:
@@ -3163,8 +3172,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                             "Please re-upload the model file.\n"
                                             if not checked:
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                if chainId in MAJOR_ASYM_ID_SET:
+                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 
                         if found:
                             return True
@@ -3342,8 +3352,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                                 "Please re-upload the model file.\n"
                                                 if not checked:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                             break
 
                         elif 'igr' in factor:
@@ -3425,8 +3436,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                                 "Please re-upload the model file.\n"
                                                 if not checked:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 
             if not found and self.__hasNonPolySeq and useDefault:
 
@@ -3531,8 +3543,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                                 "Please re-upload the model file.\n"
                                                 if not checked:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                             break
 
                         elif 'igr' in factor:
@@ -3614,8 +3627,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                                 "Please re-upload the model file.\n"
                                                 if not checked:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 
             if not found:
                 allFound = False
@@ -6964,8 +6978,9 @@ class AmberMRParserListener(ParseTreeListener):
                                     "Please re-upload the model file.\n"
                                 return
                 if enableWarning:
-                    self.warningMessage += f"[Atom not found] "\
-                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                    if chainId in MAJOR_ASYM_ID_SET:
+                        self.warningMessage += f"[Atom not found] "\
+                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
     def __getCurrentRestraint(self, dataset=None, n=None):
         if self.__cur_subtype == 'dist':

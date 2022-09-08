@@ -36,7 +36,8 @@ try:
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+    from wwpdb.utils.nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+                                           monDict3,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -73,7 +74,8 @@ except ImportError:
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from nmr.AlignUtil import (monDict3,
+    from nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+                               monDict3,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -341,6 +343,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
                     seqIdRemap = []
 
+                    cyclicPolymer = {}
+
                     for ca in self.__chainAssign:
                         ref_chain_id = ca['ref_chain_id']
                         test_chain_id = ca['test_chain_id']
@@ -364,7 +368,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                 except StopIteration:
                                     pass
 
-                        if isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName):
+                        if ref_chain_id not in cyclicPolymer:
+                            cyclicPolymer[ref_chain_id] =\
+                                isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+
+                        if cyclicPolymer[ref_chain_id]:
 
                             poly_seq_model = next(ps for ps in self.__polySeq
                                                   if ps['auth_chain_id'] == ref_chain_id)
@@ -466,7 +474,18 @@ class RosettaMRParserListener(ParseTreeListener):
             for atomSel in str(ctx.Atom_pair_selection(0)).split('-'):
                 if self.__atom_sel_comment_pattern.match(atomSel):
                     g = self.__atom_sel_comment_pattern.search(atomSel).groups()
-                    self.atomSelectionInComment.append({'chain_id': g[0], 'seq_id': int(g[1]), 'atom_id': g[2]})
+                    self.atomSelectionInComment.append({'comp_id': g[0], 'seq_id': int(g[1]), 'atom_id': g[2]})
+
+        if ctx.Atom_selection(0):
+            for idx in range(2):
+                if ctx.Atom_selection(idx):
+                    atomSel = str(ctx.Atom_selection(idx))
+                    if self.__atom_sel_comment_pattern.match(atomSel):
+                        g = self.__atom_sel_comment_pattern.search(atomSel).groups()
+                        self.atomSelectionInComment.append({'comp_id': g[0], 'seq_id': int(g[1]), 'atom_id': g[2]})
+                else:
+                    self.atomSelectionInComment.clear()
+                    break
 
     # Exit a parse tree produced by RosettaMRParser#comment.
     def exitComment(self, ctx: RosettaMRParser.CommentContext):  # pylint: disable=unused-argument
@@ -494,32 +513,33 @@ class RosettaMRParserListener(ParseTreeListener):
 
         try:
 
-            chainId1 = chainId2 = None
             seqId1 = int(str(ctx.Integer(0)))
             atomId1 = str(ctx.Simple_name(0)).upper()
             seqId2 = int(str(ctx.Integer(1)))
             atomId2 = str(ctx.Simple_name(1)).upper()
 
             if len(self.atomSelectionInComment) == 2:
-                for idx, atomSel in enumerate(self.atomSelectionInComment):
-                    if idx == 0:
-                        if 'chain_id' in atomSel:
-                            chainId1 = atomSel['chain_id']
-                        seqId1 = atomSel['seq_id']
-                        atomId1 = atomSel['atom_id']
-                    else:
-                        if 'chain_id' in atomSel:
-                            chainId2 = atomSel['chain_id']
-                        seqId2 = atomSel['seq_id']
-                        atomId2 = atomSel['atom_id']
+                matched = True
+                for atomSel in self.atomSelectionInComment:
+                    if atomSel['atom_id'] not in (atomId1, atomId2):
+                        matched = False
+                        break
+                if matched:
+                    for idx, atomSel in enumerate(self.atomSelectionInComment):
+                        if idx == 0:
+                            seqId1 = atomSel['seq_id']
+                            atomId1 = atomSel['atom_id']
+                        else:
+                            seqId2 = atomSel['seq_id']
+                            atomId2 = atomSel['atom_id']
 
             if not self.__hasPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId=chainId1)
-            chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2, fixedChainId=chainId2)
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
 
             if len(chainAssign1) == 0 or len(chainAssign2) == 0:
                 return
@@ -1199,8 +1219,9 @@ class RosettaMRParserListener(ParseTreeListener):
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file.\n"
                             return
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                if chainId in MAJOR_ASYM_ID_SET:
+                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)

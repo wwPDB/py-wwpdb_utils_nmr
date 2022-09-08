@@ -42,7 +42,8 @@ try:
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+    from wwpdb.utils.nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+                                           monDict3,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -87,7 +88,8 @@ except ImportError:
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from nmr.AlignUtil import (monDict3,
+    from nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+                               monDict3,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -411,6 +413,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     seqIdRemap = []
 
+                    cyclicPolymer = {}
+
                     for ca in self.__chainAssign:
                         ref_chain_id = ca['ref_chain_id']
                         test_chain_id = ca['test_chain_id']
@@ -434,7 +438,11 @@ class CyanaMRParserListener(ParseTreeListener):
                                 except StopIteration:
                                     pass
 
-                        if isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName):
+                        if ref_chain_id not in cyclicPolymer:
+                            cyclicPolymer[ref_chain_id] =\
+                                isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+
+                        if cyclicPolymer[ref_chain_id]:
 
                             poly_seq_model = next(ps for ps in self.__polySeq
                                                   if ps['auth_chain_id'] == ref_chain_id)
@@ -2512,8 +2520,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                 "Please re-upload the model file.\n"
                             return
                 if enableWarning:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                    if chainId in MAJOR_ASYM_ID_SET:
+                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)

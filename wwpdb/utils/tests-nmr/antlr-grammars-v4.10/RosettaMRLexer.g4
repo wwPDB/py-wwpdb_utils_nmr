@@ -93,7 +93,9 @@ fragment DECIMAL:	DEC_DIGIT+;
 
 SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
-SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
+//SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
+
+COMMENT:		';'+ -> mode(COMMENT_MODE);
 
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
@@ -112,5 +114,13 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+
+mode COMMENT_MODE;
+
+Atom_pair_selection:	ALPHA+ DECIMAL SIMPLE_NAME '-' ALPHA+ DECIMAL SIMPLE_NAME;
+Any_name:		~[ \t\r\n]+;
+
+SPACE_CM:		[ \t]+ -> skip;
+RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
 

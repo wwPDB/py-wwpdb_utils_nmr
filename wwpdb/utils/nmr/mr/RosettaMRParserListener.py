@@ -180,6 +180,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # current restraint subtype
     __cur_subtype = ''
+    __cur_comment_inlined = False
 
     # stack of function
     stackFuncs = []
@@ -192,6 +193,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # collection of number selection in function
     numberFSelection = []
+
+    # collection of atom selection in comment
+    atomSelectionInComment = []
 
     # current nested restraint type
     __cur_nest = None
@@ -280,6 +284,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         self.__dist_lb_greater_than_ub = False
         self.__dist_ub_always_positive = True
+
+        self.__atom_sel_comment_pattern = re.compile(r'([A-Za-z]+)(\d+)(\S+)$')
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -451,13 +457,30 @@ class RosettaMRParserListener(ParseTreeListener):
                 if 'dist_unusual_order' not in self.reasonsForReParsing:
                     self.reasonsForReParsing['dist_unusual_order'] = True
 
+    # Enter a parse tree produced by RosettaMRParser#comment.
+    def enterComment(self, ctx: RosettaMRParser.CommentContext):
+        if not self.__cur_comment_inlined:
+            return
+
+        if ctx.Atom_pair_selection(0):
+            for atomSel in str(ctx.Atom_pair_selection(0)).split('-'):
+                if self.__atom_sel_comment_pattern.match(atomSel):
+                    g = self.__atom_sel_comment_pattern.search(atomSel).groups()
+                    self.atomSelectionInComment.append({'chain_id': g[0], 'seq_id': int(g[1]), 'atom_id': g[2]})
+
+    # Exit a parse tree produced by RosettaMRParser#comment.
+    def exitComment(self, ctx: RosettaMRParser.CommentContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by RosettaMRParser#atom_pair_restraints.
     def enterAtom_pair_restraints(self, ctx: RosettaMRParser.Atom_pair_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
 
+        self.__cur_comment_inlined = True
+
     # Exit a parse tree produced by RosettaMRParser#atom_pair_restraints.
     def exitAtom_pair_restraints(self, ctx: RosettaMRParser.Atom_pair_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        self.__cur_comment_inlined = False
 
     # Enter a parse tree produced by RosettaMRParser#atom_pair_restraint.
     def enterAtom_pair_restraint(self, ctx: RosettaMRParser.Atom_pair_restraintContext):  # pylint: disable=unused-argument
@@ -468,60 +491,80 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#atom_pair_restraint.
     def exitAtom_pair_restraint(self, ctx: RosettaMRParser.Atom_pair_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        atomId1 = str(ctx.Simple_name(0)).upper()
-        seqId2 = int(str(ctx.Integer(1)))
-        atomId2 = str(ctx.Simple_name(1)).upper()
 
-        if not self.__hasPolySeq:
-            return
+        try:
 
-        self.__retrieveLocalSeqScheme()
+            chainId1 = chainId2 = None
+            seqId1 = int(str(ctx.Integer(0)))
+            atomId1 = str(ctx.Simple_name(0)).upper()
+            seqId2 = int(str(ctx.Integer(1)))
+            atomId2 = str(ctx.Simple_name(1)).upper()
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
+            if len(self.atomSelectionInComment) == 2:
+                for idx, atomSel in enumerate(self.atomSelectionInComment):
+                    if idx == 0:
+                        if 'chain_id' in atomSel:
+                            chainId1 = atomSel['chain_id']
+                        seqId1 = atomSel['seq_id']
+                        atomId1 = atomSel['atom_id']
+                    else:
+                        if 'chain_id' in atomSel:
+                            chainId2 = atomSel['chain_id']
+                        seqId2 = atomSel['seq_id']
+                        atomId2 = atomSel['atom_id']
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
+            if not self.__hasPolySeq:
+                return
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
+            self.__retrieveLocalSeqScheme()
 
-        if len(self.atomSelectionSet) < 2:
-            return
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId=chainId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2, fixedChainId=chainId2)
 
-        self.__allowZeroUpperLimit = False
-        if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
-           and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
-            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
 
-            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
 
-            if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-               and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                    or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
-                self.__allowZeroUpperLimit = True
+            if len(self.atomSelectionSet) < 2:
+                return
 
-        dstFunc = self.validateDistanceRange(1.0)
+            self.__allowZeroUpperLimit = False
+            if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-        self.__allowZeroUpperLimit = False
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-        if dstFunc is None:
-            return
+                if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                   and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                    self.__allowZeroUpperLimit = True
 
-        if self.__cur_nest is not None:
-            if self.__debug:
-                print(f"NESTED: {self.__cur_nest}")
+            dstFunc = self.validateDistanceRange(1.0)
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+            self.__allowZeroUpperLimit = False
+
+            if dstFunc is None:
+                return
+
+            if self.__cur_nest is not None:
+                if self.__debug:
+                    print(f"NESTED: {self.__cur_nest}")
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+
+        finally:
+            self.atomSelectionInComment.clear()
 
     def validateDistanceRange(self, weight):
         """ Validate distance value range.

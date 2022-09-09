@@ -86,7 +86,7 @@
 # 02-May-2022  M. Yokochi - remediate inconsistent _Atom_chem_shift.Chem_comp_ID tag values in reference to _Atom_chem_shift.Seq_ID (v3.1.3, NMR restraint remediation)
 # 04-Jul-2022  M. Yokochi - add support for old XPLOR atom nomenclature, i.e. 1HB (v3.1.4, NMR restraint remediation)
 # 01-Sep-2022  M. Yokochi - fix NEF atom name conversion for excess wild card (v3.1.5, NMR restraint remediation)
-# 01-Sep-2022  M. Yokochi - add support for NEF atom name conversion starting with wild card, i.e. '%HN' (v3.2.0, NMR restraint remediation)
+# 09-Sep-2022  M. Yokochi - add support for NEF atom name conversion starting with wild card, i.e. '%HN' (v3.2.0, NMR restraint remediation)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -4457,12 +4457,33 @@ class NEFTranslator:
                     atom_type = ref_atom[3]
                     wc_code = ref_atom[4]
 
-                    if wc_code == '%':
-                        pattern = re.compile(fr'{atom_type}\d+') if is_std_comp_id else re.compile(fr'{atom_type}\S?$')
-                    elif wc_code == '*':
-                        pattern = re.compile(fr'{atom_type}\S+')
-                    elif self.__verbose:
-                        self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                    if atom_type[0] not in ('%', '*'):
+                        if wc_code == '%':
+                            pattern = re.compile(fr'{atom_type}\d+') if is_std_comp_id else re.compile(fr'{atom_type}\S?$')
+                        elif wc_code == '*':
+                            pattern = re.compile(fr'{atom_type}\S+')
+                        elif self.__verbose:
+                            self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                    else:
+                        _wc_code = atom_type[0]
+                        atom_type = atom_type[1:]
+
+                        if _wc_code == '%':
+                            if wc_code == '%':
+                                pattern = re.compile(fr'\d+{atom_type}\d+') if is_std_comp_id else re.compile(fr'\S?{atom_type}\S?$')
+                            elif wc_code == '*':
+                                pattern = re.compile(fr'\d+{atom_type}\S+') if is_std_comp_id else re.compile(fr'\S?{atom_type}\S+$')
+                            elif self.__verbose:
+                                self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                        elif _wc_code == '*':
+                            if wc_code == '%':
+                                pattern = re.compile(fr'\S+{atom_type}\d+') if is_std_comp_id else re.compile(fr'\S+{atom_type}\S?$')
+                            elif wc_code == '*':
+                                pattern = re.compile(fr'\S+{atom_type}\S+')
+                            elif self.__verbose:
+                                self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                        elif self.__verbose:
+                            self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                     atom_list = [i for i in atoms if re.search(pattern, i)]
 

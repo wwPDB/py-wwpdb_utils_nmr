@@ -7431,6 +7431,17 @@ class XplorMRParserListener(ParseTreeListener):
                             if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and _atomId not in XPLOR_NITROXIDE_NAMES:
                                 _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
                                 if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
+                                    if len(origAtomId) > 1:
+                                        typeSymbols = set()
+                                        for _atomId_ in origAtomId:
+                                            typeSymbol = next((cca[self.__ccU.ccaTypeSymbol] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId_), None)
+                                            if typeSymbol is not None:
+                                                typeSymbols.add(typeSymbol)
+                                                if len(typeSymbols) > 1:
+                                                    break
+                                        print(typeSymbols)
+                                        if len(typeSymbols) > 1:
+                                            continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})

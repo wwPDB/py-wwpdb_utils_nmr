@@ -4993,7 +4993,8 @@ class CyanaMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         try:
-            seqId1, seqId2 = str(ctx.Ssbond_resids()).split('-')
+            _seqId1, _seqId2 = str(ctx.Ssbond_resids()).split('-')
+            seqId1, seqId2 = int(_seqId1), int(_seqId2)
         except ValueError:
             self.geoRestraints -= 1
             return

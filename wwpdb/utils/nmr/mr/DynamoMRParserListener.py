@@ -3312,6 +3312,7 @@ class DynamoMRParserListener(ParseTreeListener):
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
             self.__preferAuthSeq = False
+            # self.__authSeqId = 'label_seq_id'
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)

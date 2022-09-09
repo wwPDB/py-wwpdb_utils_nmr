@@ -3168,98 +3168,104 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
     def exitDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):
-        try:
-            seqId1 = int(str(ctx.Integer(0)))
-            seqId2 = int(str(ctx.Integer(1)))
-        except ValueError:
-            self.geoRestraints -= 1
-            return
-
-        if not self.__hasPolySeq:
-            return
-
-        self.__retrieveLocalSeqScheme()
-
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2)
-
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
-
-        self.selectCoordAtoms(chainAssign1, seqId1, 'SG')
-        self.selectCoordAtoms(chainAssign2, seqId2, 'SG')
-
-        if len(self.atomSelectionSet) < 2:
-            return
-
-        for atom1 in self.atomSelectionSet[0]:
-            if atom1['comp_id'] != 'CYS':
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
-                return
-
-        for atom2 in self.atomSelectionSet[1]:
-            if atom2['comp_id'] != 'CYS':
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
-                return
-
-        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
         try:
 
-            _head =\
-                self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
-                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
-                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
-                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
-                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                  'value': self.__representativeModelId},
-                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
-                                                 ])
+            try:
+                seqId1 = int(str(ctx.Integer(0)))
+                seqId2 = int(str(ctx.Integer(1)))
+            except ValueError:
+                self.geoRestraints -= 1
+                return
 
-            _tail =\
-                self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
-                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
-                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
-                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
-                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                  'value': self.__representativeModelId},
-                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
-                                                 ])
+            if not self.__hasPolySeq:
+                return
 
-            if len(_head) == 1 and len(_tail) == 1:
-                distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
-                if distance > 2.4:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The distance of the disulfide bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
-                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+            self.__retrieveLocalSeqScheme()
 
-        except Exception as e:
-            if self.__verbose:
-                self.__lfh.write(f"+RosettaMRParserListener.exitDisulfide_bond_linkage() ++ Error  - {str(e)}\n")
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2)
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (CS-ROSETTA: disulfide bond linkage) id={self.geoRestraints} "
-                      f"atom1={atom1} atom2={atom2}")
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, 'SG')
+            self.selectCoordAtoms(chainAssign2, seqId2, 'SG')
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            for atom1 in self.atomSelectionSet[0]:
+                if atom1['comp_id'] != 'CYS':
+                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                        f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+                    return
+
+            for atom2 in self.atomSelectionSet[1]:
+                if atom2['comp_id'] != 'CYS':
+                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                        f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+                    return
+
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            try:
+
+                _head =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                     ],
+                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
+                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
+                                                     ])
+
+                _tail =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                     ],
+                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
+                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
+                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
+                                                     ])
+
+                if len(_head) == 1 and len(_tail) == 1:
+                    distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
+                    if distance > 2.4:
+                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                            f"The distance of the disulfide bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
+                            f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+RosettaMRParserListener.exitDisulfide_bond_linkage() ++ Error  - {str(e)}\n")
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (CS-ROSETTA: disulfide bond linkage) id={self.geoRestraints} "
+                          f"atom1={atom1} atom2={atom2}")
+
+        finally:
+            self.atomSelectionSet.clear()
 
     # Enter a parse tree produced by RosettaMRParser#number.
     def enterNumber(self, ctx: RosettaMRParser.NumberContext):  # pylint: disable=unused-argument
@@ -3327,6 +3333,7 @@ class RosettaMRParserListener(ParseTreeListener):
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
             self.__preferAuthSeq = False
+            self.__authSeqId = 'label_seq_id'
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)

@@ -4988,287 +4988,311 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterSsbond_macro(self, ctx: CyanaMRParser.Ssbond_macroContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'geo'
 
+        self.atomSelectionSet.clear()
+
     # Exit a parse tree produced by CyanaMRParser#ssbond_macro.
     def exitSsbond_macro(self, ctx: CyanaMRParser.Ssbond_macroContext):
-        self.geoRestraints += 1
-
-        try:
-            _seqId1, _seqId2 = str(ctx.Ssbond_resids()).split('-')
-            seqId1, seqId2 = int(_seqId1), int(_seqId2)
-        except ValueError:
-            self.geoRestraints -= 1
-            return
-
-        if not self.__hasPolySeq:
-            return
-
-        compId = 'CYSS'
-        atomId = 'SG'
-
-        self.__retrieveLocalSeqScheme()
-
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId, atomId)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId, atomId)
-
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
-
-        self.selectCoordAtoms(chainAssign1, seqId1, compId, atomId)
-        self.selectCoordAtoms(chainAssign2, seqId2, compId, atomId)
-
-        if len(self.atomSelectionSet) < 2:
-            return
-
-        for atom1 in self.atomSelectionSet[0]:
-            if atom1['comp_id'] != 'CYS':
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
-                self.geoRestraints -= 1
-                return
-
-        for atom2 in self.atomSelectionSet[1]:
-            if atom2['comp_id'] != 'CYS':
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
-                self.geoRestraints -= 1
-                return
-
-        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
         try:
 
-            _head =\
-                self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
-                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
-                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
-                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
-                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                  'value': self.__representativeModelId},
-                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
-                                                 ])
+            self.geoRestraints += 1
 
-            _tail =\
-                self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
-                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
-                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
-                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
-                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                  'value': self.__representativeModelId},
-                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
-                                                 ])
+            try:
+                _seqId1, _seqId2 = str(ctx.Ssbond_resids()).split('-')
+                seqId1, seqId2 = int(_seqId1), int(_seqId2)
+            except ValueError:
+                self.geoRestraints -= 1
+                return
 
-            if len(_head) == 1 and len(_tail) == 1:
-                distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
-                if distance > 2.4:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The distance of the disulfide bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
-                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+            if not self.__hasPolySeq:
+                return
 
-        except Exception as e:
-            if self.__verbose:
-                self.__lfh.write(f"+CyanaMRParserListener.exitSsbond_macro() ++ Error  - {str(e)}\n")
+            compId = 'CYSS'
+            atomId = 'SG'
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (CYANA macro: disulfide bond linkage) id={self.geoRestraints} "
-                      f"atom1={atom1} atom2={atom2}")
+            self.__retrieveLocalSeqScheme()
+
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId, atomId)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId, atomId)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId, atomId)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId, atomId)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            for atom1 in self.atomSelectionSet[0]:
+                if atom1['comp_id'] != 'CYS':
+                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                        f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+                    self.geoRestraints -= 1
+                    return
+
+            for atom2 in self.atomSelectionSet[1]:
+                if atom2['comp_id'] != 'CYS':
+                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
+                        f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+                    self.geoRestraints -= 1
+                    return
+
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            try:
+
+                _head =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                     ],
+                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
+                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
+                                                     ])
+
+                _tail =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                     ],
+                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
+                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
+                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
+                                                     ])
+
+                if len(_head) == 1 and len(_tail) == 1:
+                    distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
+                    if distance > 2.4:
+                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                            f"The distance of the disulfide bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
+                            f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+CyanaMRParserListener.exitSsbond_macro() ++ Error  - {str(e)}\n")
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (CYANA macro: disulfide bond linkage) id={self.geoRestraints} "
+                          f"atom1={atom1} atom2={atom2}")
+
+        finally:
+            self.atomSelectionSet.clear()
 
     # Enter a parse tree produced by CyanaMRParser#hbond_macro.
     def enterHbond_macro(self, ctx: CyanaMRParser.Hbond_macroContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'hbond'
 
+        self.atomSelectionSet.clear()
+
     # Exit a parse tree produced by CyanaMRParser#hbond_macro.
     def exitHbond_macro(self, ctx: CyanaMRParser.Hbond_macroContext):
-        self.hbondRestraints += 1
-
-        seqId1 = int(str(ctx.Integer_HB(0)))
-        seqId2 = int(str(ctx.Integer_HB(1)))
-        atomId1 = str(ctx.Simple_name_HB(0))
-        atomId2 = str(ctx.Simple_name_HB(1))
-
-        if not self.__hasPolySeq:
-            return
-
-        self.__retrieveLocalSeqScheme()
-
-        chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
-
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
-
-        self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
-
-        if len(self.atomSelectionSet) < 2:
-            return
-
-        if not self.areUniqueCoordAtoms('a hydrogen bond linkage'):
-            return
-
-        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
         try:
 
-            _head =\
-                self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
-                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
-                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
-                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
-                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                  'value': self.__representativeModelId},
-                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
-                                                 ])
+            self.hbondRestraints += 1
 
-            _tail =\
-                self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
-                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
-                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
-                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
-                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                  'value': self.__representativeModelId},
-                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
-                                                 ])
+            seqId1 = int(str(ctx.Integer_HB(0)))
+            seqId2 = int(str(ctx.Integer_HB(1)))
+            atomId1 = str(ctx.Simple_name_HB(0))
+            atomId2 = str(ctx.Simple_name_HB(1))
 
-            if len(_head) == 1 and len(_tail) == 1:
-                distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
-                if distance > (3.4 if atom_id_1[0] != 'H' and atom_id_2[0] != 'H' else 2.4):
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
-                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+            if not self.__hasPolySeq:
+                return
 
-        except Exception as e:
-            if self.__verbose:
-                self.__lfh.write(f"+CyanaMRParserListener.exitHbond_macro() ++ Error  - {str(e)}\n")
+            self.__retrieveLocalSeqScheme()
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (CYANA macro: hydrogen bond linkage) id={self.hbondRestraints} "
-                      f"atom1={atom1} atom2={atom2}")
+            chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            if not self.areUniqueCoordAtoms('a hydrogen bond linkage'):
+                return
+
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            try:
+
+                _head =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                     ],
+                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
+                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
+                                                     ])
+
+                _tail =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                     ],
+                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
+                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
+                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
+                                                     ])
+
+                if len(_head) == 1 and len(_tail) == 1:
+                    distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
+                    if distance > (3.4 if atom_id_1[0] != 'H' and atom_id_2[0] != 'H' else 2.4):
+                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                            f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
+                            f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+CyanaMRParserListener.exitHbond_macro() ++ Error  - {str(e)}\n")
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (CYANA macro: hydrogen bond linkage) id={self.hbondRestraints} "
+                          f"atom1={atom1} atom2={atom2}")
+
+        finally:
+            self.atomSelectionSet.clear()
 
     # Enter a parse tree produced by CyanaMRParser#link_statement.
     def enterLink_statement(self, ctx: CyanaMRParser.Link_statementContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'geo'
 
+        self.atomSelectionSet.clear()
+
     # Exit a parse tree produced by CyanaMRParser#link_statement.
     def exitLink_statement(self, ctx: CyanaMRParser.Link_statementContext):
-        self.geoRestraints += 1
-
-        seqId1 = int(str(ctx.Integer(0)))
-        seqId2 = int(str(ctx.Integer(1)))
-        atomId1 = str(ctx.Simple_name(0))
-        atomId2 = str(ctx.Simple_name(1))
-
-        if not self.__hasPolySeq:
-            return
-
-        self.__retrieveLocalSeqScheme()
-
-        chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
-
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
-
-        self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
-
-        if len(self.atomSelectionSet) < 2:
-            return
-
-        if not self.areUniqueCoordAtoms('a covalent bond linkage'):
-            return
-
-        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
         try:
 
-            _head =\
-                self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
-                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
-                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
-                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
-                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                  'value': self.__representativeModelId},
-                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
-                                                 ])
+            self.geoRestraints += 1
 
-            _tail =\
-                self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
-                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
-                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
-                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
-                                                 {'name': self.__modelNumName, 'type': 'int',
-                                                  'value': self.__representativeModelId},
-                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
-                                                 ])
+            seqId1 = int(str(ctx.Integer(0)))
+            seqId2 = int(str(ctx.Integer(1)))
+            atomId1 = str(ctx.Simple_name(0))
+            atomId2 = str(ctx.Simple_name(1))
 
-            if len(_head) == 1 and len(_tail) == 1:
-                distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
-                if distance > (3.4 if atom_id_1[0] != 'H' and atom_id_2[0] != 'H' else 2.4):
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The distance of the covalent bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
-                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+            if not self.__hasPolySeq:
+                return
 
-        except Exception as e:
-            if self.__verbose:
-                self.__lfh.write(f"+CyanaMRParserListener.exitLink_statement() ++ Error  - {str(e)}\n")
+            self.__retrieveLocalSeqScheme()
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (CYANA statement: covalent bond linkage) id={self.geoRestraints} "
-                      f"atom1={atom1} atom2={atom2}")
+            chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            if not self.areUniqueCoordAtoms('a covalent bond linkage'):
+                return
+
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            try:
+
+                _head =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                     ],
+                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
+                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
+                                                     ])
+
+                _tail =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                     ],
+                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
+                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
+                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
+                                                     ])
+
+                if len(_head) == 1 and len(_tail) == 1:
+                    distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
+                    if distance > (3.4 if atom_id_1[0] != 'H' and atom_id_2[0] != 'H' else 2.4):
+                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                            f"The distance of the covalent bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
+                            f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+
+            except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write(f"+CyanaMRParserListener.exitLink_statement() ++ Error  - {str(e)}\n")
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (CYANA statement: covalent bond linkage) id={self.geoRestraints} "
+                          f"atom1={atom1} atom2={atom2}")
+
+        finally:
+            self.atomSelectionSet.clear()
 
     # Enter a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
     def enterUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext):
@@ -5501,6 +5525,7 @@ class CyanaMRParserListener(ParseTreeListener):
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
             self.__preferAuthSeq = False
+            self.__authSeqId = 'label_seq_id'
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)

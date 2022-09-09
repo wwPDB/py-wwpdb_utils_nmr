@@ -7439,7 +7439,6 @@ class XplorMRParserListener(ParseTreeListener):
                                                 typeSymbols.add(typeSymbol)
                                                 if len(typeSymbols) > 1:
                                                     break
-                                        print(typeSymbols)
                                         if len(typeSymbols) > 1:
                                             continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)

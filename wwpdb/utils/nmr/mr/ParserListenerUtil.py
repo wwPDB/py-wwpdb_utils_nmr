@@ -31,6 +31,9 @@ MAX_ERR_LINENUM_REPORT = 20
 REPRESENTATIVE_MODEL_ID = 1
 
 
+MAX_PREF_LABEL_SCHEME_COUNT = 100
+
+
 DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 

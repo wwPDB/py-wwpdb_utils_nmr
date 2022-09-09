@@ -22,6 +22,7 @@ try:
                                                        translateToStdAtomName,
                                                        isCyclicPolymer,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       MAX_PREF_LABEL_SCHEME_COUNT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -56,6 +57,7 @@ except ImportError:
                                            translateToStdAtomName,
                                            isCyclicPolymer,
                                            REPRESENTATIVE_MODEL_ID,
+                                           MAX_PREF_LABEL_SCHEME_COUNT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -242,6 +244,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
+        self.__preferLabelSeqCount = 0
 
         self.distRestraints = 0      # BIOSYM: Distance restraints
         self.dihedRestraints = 0     # BIOSYM: Dihedral angle restraints
@@ -790,19 +793,19 @@ class BiosymMRParserListener(ParseTreeListener):
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
                 if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                    offset = 1
-                    while seqId + offset <= max_auth_seq_id:
-                        if seqId + offset in ps['auth_seq_id']:
+                    _seqId_ = seqId + 1
+                    while _seqId_ <= max_auth_seq_id:
+                        if _seqId_ in ps['auth_seq_id']:
                             break
-                        offset += 1
-                    if seqId + offset not in ps['auth_seq_id']:
-                        offset = -1
-                        while seqId + offset >= min_auth_seq_id:
-                            if seqId + offset in ps['auth_seq_id']:
+                        _seqId_ += 1
+                    if _seqId_ not in ps['auth_seq_id']:
+                        _seqId_ = seqId - 1
+                        while _seqId_ >= min_auth_seq_id:
+                            if _seqId_ in ps['auth_seq_id']:
                                 break
-                            offset -= 1
-                    if seqId + offset in ps['auth_seq_id']:
-                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                            _seqId_ -= 1
+                    if _seqId_ in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
                         try:
                             seqId_ = ps['auth_seq_id'][idx]
                             cifCompId = ps['comp_id'][idx]
@@ -1610,9 +1613,16 @@ class BiosymMRParserListener(ParseTreeListener):
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = self.__preferAuthSeq
         elif self.__cur_subtype == 'geo':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
+        if not self.__preferAuthSeq:
+            self.__preferLabelSeqCount += 1
+            if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
+                self.reasonsForReParsing['label_seq_scheme'] = True
 
     def __retrieveLocalSeqScheme(self):
         if self.__reasons is None or 'local_seq_scheme' not in self.__reasons:
+            return
+        if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+            self.__preferAuthSeq = False
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)

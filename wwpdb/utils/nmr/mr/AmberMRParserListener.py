@@ -2418,19 +2418,19 @@ class AmberMRParserListener(ParseTreeListener):
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
                 if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                    offset = 1
-                    while seqId + offset <= max_auth_seq_id:
-                        if seqId + offset in ps['auth_seq_id']:
+                    _seqId_ = seqId + 1
+                    while _seqId_ <= max_auth_seq_id:
+                        if _seqId_ in ps['auth_seq_id']:
                             break
-                        offset += 1
-                    if seqId + offset not in ps['auth_seq_id']:
-                        offset = -1
-                        while seqId + offset >= min_auth_seq_id:
-                            if seqId + offset in ps['auth_seq_id']:
+                        _seqId_ += 1
+                    if _seqId_ not in ps['auth_seq_id']:
+                        _seqId_ = seqId - 1
+                        while _seqId_ >= min_auth_seq_id:
+                            if _seqId_ in ps['auth_seq_id']:
                                 break
-                            offset -= 1
-                    if seqId + offset in ps['auth_seq_id']:
-                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                            _seqId_ -= 1
+                    if _seqId_ in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
                         try:
                             seqId = ps['auth_seq_id'][idx]
                         except IndexError:

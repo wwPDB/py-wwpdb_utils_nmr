@@ -30,6 +30,7 @@ try:
                                                        getTypeOfDihedralRestraint,
                                                        isCyclicPolymer,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       MAX_PREF_LABEL_SCHEME_COUNT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -79,6 +80,7 @@ except ImportError:
                                            getTypeOfDihedralRestraint,
                                            isCyclicPolymer,
                                            REPRESENTATIVE_MODEL_ID,
+                                           MAX_PREF_LABEL_SCHEME_COUNT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -389,6 +391,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
+        self.__preferLabelSeqCount = 0
 
         self.distRestraints = 0      # CNS: Distance restraints
         self.dihedRestraints = 0     # CNS: Dihedral angle restraints
@@ -3907,19 +3910,19 @@ class CnsMRParserListener(ParseTreeListener):
                         min_auth_seq_id = ps['auth_seq_id'][0]
                         max_auth_seq_id = ps['auth_seq_id'][-1]
                         if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                            offset = 1
-                            while seqId + offset <= max_auth_seq_id:
-                                if seqId + offset in ps['auth_seq_id']:
+                            _seqId_ = seqId + 1
+                            while _seqId_ <= max_auth_seq_id:
+                                if _seqId_ in ps['auth_seq_id']:
                                     break
-                                offset += 1
-                            if seqId + offset not in ps['auth_seq_id']:
-                                offset = -1
-                                while seqId + offset >= min_auth_seq_id:
-                                    if seqId + offset in ps['auth_seq_id']:
+                                _seqId_ += 1
+                            if _seqId_ not in ps['auth_seq_id']:
+                                _seqId_ = seqId - 1
+                                while _seqId_ >= min_auth_seq_id:
+                                    if _seqId_ in ps['auth_seq_id']:
                                         break
-                                    offset -= 1
-                            if seqId + offset in ps['auth_seq_id']:
-                                idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                                    _seqId_ -= 1
+                            if _seqId_ in ps['auth_seq_id']:
+                                idx = ps['auth_seq_id'].index(_seqId_) - _seqId_ - seqId
                                 try:
                                     seqId = ps['auth_seq_id'][idx]
                                     compId = ps['comp_id'][idx]
@@ -3963,40 +3966,8 @@ class CnsMRParserListener(ParseTreeListener):
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _seqId == seqId)
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
-                    if not isPolySeq and isChainSpecified:
-                        _ps_ = next((_ps_ for _ps_ in self.__polySeq if _ps_['auth_chain_id'] == _factor['chain_id'][0]), None)
-                        if _ps_ is not None:
-                            _chainId_ = _ps_['chain_id']
-                            _seqKey_ = (_chainId_, _seqId_)
-                            if _seqKey_ in self.__labelToAuthSeq:
-                                if self.__labelToAuthSeq[_seqKey_] != _seqKey_:
-                                    if self.__labelToAuthSeq[_seqKey_] in self.__coordUnobsRes:
-                                        continue
-                                else:
-                                    min_label_seq_id = ps['seq_id'][0]
-                                    max_label_seq_id = ps['seq_id'][-1]
-                                    offset = 1
-                                    while _seqId_ + offset <= max_label_seq_id:
-                                        if _seqId_ + offset in _ps_['seq_id']:
-                                            _seqKey_ = (_chainId_, _seqId_ + offset)
-                                            if _seqKey_ in self.__labelToAuthSeq and self.__labelToAuthSeq[_seqKey_] != _seqKey_:
-                                                break
-                                        offset += 1
-                                    if _seqId_ + offset not in _ps_['seq_id']:
-                                        offset = -1
-                                        while _seqId_ + offset >= min_label_seq_id:
-                                            if _seqId_ + offset in _ps_['seq_id']:
-                                                _seqKey_ = (_chainId_, _seqId_ + offset)
-                                                if _seqKey_ in self.__labelToAuthSeq and self.__labelToAuthSeq[_seqKey_] != _seqKey_:
-                                                    break
-                                            offset -= 1
-                                    if _seqId_ + offset in _ps_['seq_id']:
-                                        _seqKey_ = (_chainId_, _seqId_ + offset)
-                                        if _seqKey_ in self.__labelToAuthSeq and self.__labelToAuthSeq[_seqKey_] != _seqKey_:
-                                            __chainId__, __seqId__ = self.__labelToAuthSeq[_seqKey_]
-                                            __seqKey__ = (__chainId__, __seqId__ - offset)
-                                            if __seqKey__ in self.__coordUnobsRes:
-                                                continue
+                    if not isPolySeq and isChainSpecified and self.doesNonPolySeqIdMatchWithPolySeqUnobs(_factor['chain_id'][0], _seqId_):
+                        continue
 
                     foundCompId = True
 
@@ -4239,7 +4210,10 @@ class CnsMRParserListener(ParseTreeListener):
                                                                 or chainId not in self.reasonsForReParsing['label_seq_offset']):
                                                             if 'label_seq_offset' not in self.reasonsForReParsing:
                                                                 self.reasonsForReParsing['label_seq_offset'] = {}
-                                                            self.reasonsForReParsing['label_seq_offset'][chainId] = self.getLabelSeqOffsetDueToUnobs(ps)
+                                                            offset = self.getLabelSeqOffsetDueToUnobs(ps)
+                                                            self.reasonsForReParsing['label_seq_offset'][chainId] = offset
+                                                            if offset != 0:
+                                                                self.reasonsForReParsing['label_seq_scheme'] = True
                                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
@@ -4266,14 +4240,15 @@ class CnsMRParserListener(ParseTreeListener):
     def getOrigSeqId(self, ps, seqId, isPolySeq=True):
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
         if not self.__preferAuthSeq:
+            chainId = ps['chain_id']
             offset = 0
-            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and ps['chain_id'] in self.__reasons['label_seq_offset']:
-                offset = self.__reasons['label_seq_offset'][ps['chain_id']]
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+                offset = self.__reasons['label_seq_offset'][chainId]
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__authToLabelSeq:
                 _chainId, _seqId = self.__authToLabelSeq[seqKey]
                 if _seqId in ps['seq_id']:
-                    return _seqId - offset
+                    return _seqId + offset
         if seqId in ps['auth_seq_id']:
             return seqId
         # if seqId in ps['seq_id']:
@@ -4283,14 +4258,15 @@ class CnsMRParserListener(ParseTreeListener):
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
         if not self.__preferAuthSeq:
+            chainId = ps['chain_id']
             offset = 0
-            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and ps['chain_id'] in self.__reasons['label_seq_offset']:
-                offset = self.__reasons['label_seq_offset'][ps['chain_id']]
-            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+                offset = self.__reasons['label_seq_offset'][chainId]
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
-                    return _seqId + offset
+                    return _seqId
         if seqId in ps['auth_seq_id']:
             return seqId
         # if seqId in ps['seq_id']:
@@ -4346,6 +4322,42 @@ class CnsMRParserListener(ParseTreeListener):
             if seqKey not in self.__coordUnobsRes:
                 return labelSeqId - 1
         return ps['seq_id'][-1] - 1
+
+    def doesNonPolySeqIdMatchWithPolySeqUnobs(self, chainId, seqId):
+        _ps_ = next((_ps_ for _ps_ in self.__polySeq if _ps_['auth_chain_id'] == chainId), None)
+        if _ps_ is not None:
+            _chainId_ = _ps_['chain_id']
+            _seqKey_ = (_chainId_, seqId)
+            if _seqKey_ in self.__labelToAuthSeq:
+                if self.__labelToAuthSeq[_seqKey_] != _seqKey_:
+                    if self.__labelToAuthSeq[_seqKey_] in self.__coordUnobsRes:
+                        return True
+                else:
+                    max_label_seq_id = _ps_['seq_id'][-1]
+                    _seqId_ = seqId + 1
+                    while _seqId_ <= max_label_seq_id:
+                        if _seqId_ in _ps_['seq_id']:
+                            _seqKey_ = (_chainId_, _seqId_)
+                            if _seqKey_ in self.__labelToAuthSeq and self.__labelToAuthSeq[_seqKey_] != _seqKey_:
+                                break
+                        _seqId_ += 1
+                    if _seqId_ not in _ps_['seq_id']:
+                        min_label_seq_id = _ps_['seq_id'][0]
+                        _seqId_ = seqId - 1
+                        while _seqId_ >= min_label_seq_id:
+                            if _seqId_ in _ps_['seq_id']:
+                                _seqKey_ = (_chainId_, _seqId_)
+                                if _seqKey_ in self.__labelToAuthSeq and self.__labelToAuthSeq[_seqKey_] != _seqKey_:
+                                    break
+                            _seqId_ -= 1
+                    if _seqId_ in _ps_['seq_id']:
+                        _seqKey_ = (_chainId_, _seqId_)
+                        if _seqKey_ in self.__labelToAuthSeq and self.__labelToAuthSeq[_seqKey_] != _seqKey_:
+                            __chainId__, __seqId__ = self.__labelToAuthSeq[_seqKey_]
+                            __seqKey__ = (__chainId__, __seqId__ - (_seqId_ - seqId))
+                            if __seqKey__ in self.__coordUnobsRes:
+                                return True
+        return False
 
     def intersectionFactor_expressions(self, atomSelection=None):
         self.consumeFactor_expressions(cifCheck=False)
@@ -6952,9 +6964,16 @@ class CnsMRParserListener(ParseTreeListener):
         #     self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.angRestraints)] = self.__preferAuthSeq
         elif self.__cur_subtype == 'geo':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
+        if not self.__preferAuthSeq:
+            self.__preferLabelSeqCount += 1
+            if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
+                self.reasonsForReParsing['label_seq_scheme'] = True
 
     def __retrieveLocalSeqScheme(self):
         if self.__reasons is None or 'local_seq_scheme' not in self.__reasons:
+            return
+        if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+            self.__preferAuthSeq = False
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)

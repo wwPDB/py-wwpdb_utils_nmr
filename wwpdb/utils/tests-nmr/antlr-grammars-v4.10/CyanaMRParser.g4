@@ -80,7 +80,7 @@ rdc_restraints:
 	rdc_restraint+;
 
 rdc_parameter:
-	Integer Float Float Integer;
+	Integer number number Integer;
 
 rdc_restraint:
 	comment*
@@ -97,7 +97,7 @@ pcs_restraints:
 	pcs_restraint+;
 
 pcs_parameter:
-	Integer Float Float Integer;
+	Integer number number Integer;
 
 pcs_restraint:
 	comment*

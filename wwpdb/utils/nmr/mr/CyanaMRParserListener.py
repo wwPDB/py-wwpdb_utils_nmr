@@ -2646,7 +2646,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign = self.assignCoordPolymerSequence(seqId, compId, 'CA')
                 if len(chainAssign) > 0:
                     ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainAssign[0][0])
-                    if 'type' in ps and polypeptide in ps['type']:
+                    if 'type' in ps and 'polypeptide' in ps['type']:
                         peptide = True
                         nucleotide = carbohydrate = False
 
@@ -2957,9 +2957,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#rdc_parameter.
     def enterRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#rdc_parameter.
+    def exitRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):
         orientation = self.__cur_rdc_orientation = int(str(ctx.Integer(0)))
-        magnitude = float(str(ctx.Float(0)))
-        rhombicity = float(str(ctx.Float(1)))
+        magnitude = self.numberSelection[0]
+        rhombicity = self.numberSelection[1]
         orientationCenterSeqId = int(str(ctx.Integer(1)))
 
         self.rdcParameterDict[orientation] = {'magnitude': magnitude,
@@ -2970,9 +2974,7 @@ class CyanaMRParserListener(ParseTreeListener):
             print(f"subtype={self.__cur_subtype} orientation={orientation} "
                   f"parameters={self.rdcParameterDict[orientation]}")
 
-    # Exit a parse tree produced by CyanaMRParser#rdc_parameter.
-    def exitRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):  # pylint: disable=unused-argument
-        pass
+        self.numberSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
@@ -3242,10 +3244,14 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__cur_comment_inlined = False
 
     # Enter a parse tree produced by CyanaMRParser#pcs_parameter.
-    def enterPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):
+    def enterPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#pcs_parameter.
+    def exitPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):
         orientation = int(str(ctx.Integer(0)))
-        magnitude = float(str(ctx.Float(0)))
-        rhombicity = float(str(ctx.Float(1)))
+        magnitude = self.numberSelection[0]
+        rhombicity = self.numberSelection[1]
         orientationCenterSeqId = int(str(ctx.Integer(1)))
 
         self.pcsParameterDict[orientation] = {'magnitude': magnitude,
@@ -3256,9 +3262,7 @@ class CyanaMRParserListener(ParseTreeListener):
             print(f"subtype={self.__cur_subtype} orientation={orientation} "
                   f"parameters={self.pcsParameterDict[orientation]}")
 
-    # Exit a parse tree produced by CyanaMRParser#pcs_parameter.
-    def exitPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):  # pylint: disable=unused-argument
-        pass
+        self.numberSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument

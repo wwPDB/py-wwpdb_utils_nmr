@@ -5433,7 +5433,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(_head) == 1 and len(_tail) == 1:
                     distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
                     if distance > 2.4:
-                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                             f"The distance of the disulfide bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                             f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
 
@@ -5531,7 +5531,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(_head) == 1 and len(_tail) == 1:
                     distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
                     if distance > (3.4 if atom_id_1[0] != 'H' and atom_id_2[0] != 'H' else 2.4):
-                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                             f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                             f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
 
@@ -5629,7 +5629,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(_head) == 1 and len(_tail) == 1:
                     distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
                     if distance > (3.4 if atom_id_1[0] != 'H' and atom_id_2[0] != 'H' else 2.4):
-                        self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                             f"The distance of the covalent bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                             f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
 

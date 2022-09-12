@@ -190,7 +190,7 @@ class BMRBChemShiftStat:
             results = [False] * 3
 
             if self.__ccU.updateChemCompDict(comp_id):
-                ctype = self.__ccU.lastChemCompDict['_chem_comp.type']
+                ctype = self.__ccU.lastChemCompDict['_chem_comp.type'].upper()
 
                 if 'PEPTIDE' in ctype:
                     results[0] = True

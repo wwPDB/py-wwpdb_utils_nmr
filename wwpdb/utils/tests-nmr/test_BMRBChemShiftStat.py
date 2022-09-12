@@ -39,6 +39,7 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('5MC')[1], True)
         self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('NAG')[2], True)
         self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('GLC')[2], True)
+        self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('MK8')[0], True)
 
     def test_bb_atoms(self):
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('GLY'), ['C', 'CA', 'H', 'HA2', 'HA3', 'N'])

@@ -35,6 +35,7 @@ cyana_mr:
 	distance_w_chain2_restraints |
 	distance_w_chain3_restraints |
 	torsion_angle_restraints |
+	torsion_angle_w_chain_restraints |
 	rdc_restraints |
 	pcs_restraints |
 	cco_restraints |
@@ -196,6 +197,14 @@ distance_w_chain3_restraint:
 	Simple_name Simple_name Integer Simple_name
 	Simple_name Simple_name Integer Simple_name
 	number number? number?;
+
+/* CYANA (undocumented) - arbitrary order among chain_id, comp_id, and atom_id
+*/
+torsion_angle_w_chain_restraints:
+	torsion_angle_w_chain_restraint+;
+
+torsion_angle_w_chain_restraint:
+	Simple_name Integer Simple_name Simple_name number number number?;
 
 /* CYANA (undocumented) - Scalar coupling constant restraint
 */

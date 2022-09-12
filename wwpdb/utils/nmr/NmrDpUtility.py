@@ -4191,27 +4191,51 @@ class NmrDpUtility:
         self.__warn_template_for_missing_mandatory_sf_tag = "The mandatory saveframe tag %r is missing. Please verify the value and re-upload the %s file."
 
         # auxiliary loop categories
-        self.aux_lp_categories = {'nef': {'entry_info': [],
+        self.aux_lp_categories = {'nef': {'entry_info': None,
                                           'poly_seq': ['_nef_covalent_links', '_nef_sequence'],
-                                          'entity': [],
-                                          'chem_shift': [],
-                                          'chem_shift_ref': [],
-                                          'dist_restraint': [],
-                                          'dihed_restraint': [],
-                                          'rdc_restraint': [],
+                                          'entity': None,
+                                          'chem_shift': None,
+                                          'chem_shift_ref': None,
+                                          'dist_restraint': None,
+                                          'dihed_restraint': None,
+                                          'rdc_restraint': None,
                                           'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer'],
-                                          'spectral_peak_alt': []
+                                          'spectral_peak_alt': None,
+                                          'noepk_restraint': None,
+                                          'jcoup_restraint': None,
+                                          'rdc_raw_data': None,
+                                          'csa_restraint': None,
+                                          'ddc_restraint': None,
+                                          'hvycs_restraint': None,
+                                          'procs_restraint': None,
+                                          'csp_restraint': None,
+                                          'auto_relax_restraint': None,
+                                          'ccr_d_csa_restraint': None,
+                                          'ccr_dd_restraint': None,
+                                          'other_restraint': None
                                           },
-                                  'nmr-star': {'entry_info': [],
+                                  'nmr-star': {'entry_info': None,
                                                'poly_seq': ['_Bond', '_Entity_deleted_atom'],
                                                'entity': ['_Entity_poly_seq'],
                                                'chem_shift': ['_Ambiguous_atom_chem_shift'],
-                                               'chem_shift_ref': [],
-                                               'dist_restraint': [],
-                                               'dihed_restraint': [],
-                                               'rdc_restraint': [],
+                                               'chem_shift_ref': None,
+                                               'dist_restraint': None,
+                                               'dihed_restraint': None,
+                                               'rdc_restraint': None,
                                                'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer'],
-                                               'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift']
+                                               'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift'],
+                                               'noepk_restraint': None,
+                                               'jcoup_restraint': None,
+                                               'rdc_raw_data': None,
+                                               'csa_restraint': None,
+                                               'ddc_restraint': None,
+                                               'hvycs_restraint': None,
+                                               'procs_restraint': None,
+                                               'csp_restraint': None,
+                                               'auto_relax_restraint': None,
+                                               'ccr_d_csa_restraint': None,
+                                               'ccr_dd_restraint': None,
+                                               'other_restraint': None
                                                }
                                   }
 
@@ -4225,7 +4249,19 @@ class NmrDpUtility:
                                              'dihed_restraint': ['_nef_dihedral_restraint'],
                                              'rdc_restraint': ['_nef_rdc_restraint'],
                                              'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer', '_nef_peak'],
-                                             'spectral_peak_alt': []
+                                             'spectral_peak_alt': [],
+                                             'noepk_restraint': [],
+                                             'jcoup_restraint': [],
+                                             'rdc_raw_data': [],
+                                             'csa_restraint': [],
+                                             'ddc_restraint': [],
+                                             'hvycs_restraint': [],
+                                             'procs_restraint': [],
+                                             'csp_restraint': [],
+                                             'auto_relax_restraint': [],
+                                             'ccr_d_csa_restraint': [],
+                                             'ccr_dd_restraint': [],
+                                             'other_restraint': []
                                              },
                                      'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author',
                                                                  '_SG_project', '_Entry_src', '_Struct_keywords', '_Data_set',
@@ -4364,7 +4400,21 @@ class NmrDpUtility:
                                                                         '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift',
                                                                         '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char',
                                                                         '_Spectral_transition_char', '_Assigned_spectral_transition',
-                                                                        '_Gen_dist_constraint', '_Dist_constraint_value']
+                                                                        '_Gen_dist_constraint', '_Dist_constraint_value'],
+                                                  'noepk_restraint': ['Homonucl_NOE_experiment', 'Homonucl_NOE_software', 'Homonucl_NOE'],
+                                                  'jcoup_restraint': ['Coupling_constant_experiment', 'Coupling_constant_software', 'Coupling_constant'],
+                                                  'rdc_raw_data': ['RDC_experiment', 'RDC_software', 'RDC'],
+                                                  'csa_restraint': ['CS_anisotroty_experiment', 'CS_anisotroty_software', 'CS_anisotroty'],
+                                                  'ddc_restraint': ['Dipolar_coupling_experiment', 'Dipolar_coupling_software', 'Dipolar_coupling'],
+                                                  'hvycs_restraint': ['CA_CB_constraint_expt', 'CA_CB_constraint_software', 'CA_CB_constraint'],
+                                                  'procs_restraint': ['H_chem_shift_constraint_expt', 'H_chem_shift_constraint_software', 'H_chem_shift_constraint'],
+                                                  'csp_restraint': ['Chem_shift_perturbation_experiment', 'Chem_shift_perturbation_software',
+                                                                    'Chem_shift_perturbation'],
+                                                  'auto_relax_restraint': ['Auto_relaxation_experiment', 'Auto_relaxation_software', 'Auto_relaxation'],
+                                                  'ccr_d_csa_restraint': ['Cross_correlation_D_CSA_experiment', 'Cross_correlation_D_CSA_software',
+                                                                          'Cross_correlation_D_CSA'],
+                                                  'ccr_dd_restraint': ['Cross_correlation_DD_experiment', 'Cross_correlation_DD_software', 'Cross_correlation_DD'],
+                                                  'other_restraint': ['Other_data_experiment', 'Other_data_software', 'Other_data']
                                                   }
                                      }
 
@@ -4398,7 +4448,19 @@ class NmrDpUtility:
                                                                                {'name': 'dimension_2', 'type': 'positive-int'},
                                                                                ]
                                       },
-                                      'spectral_peak_alt': None
+                                      'spectral_peak_alt': None,
+                                      'noepk_restraint': None,
+                                      'jcoup_restraint': None,
+                                      'rdc_raw_data': None,
+                                      'csa_restraint': None,
+                                      'ddc_restraint': None,
+                                      'hvycs_restraint': None,
+                                      'procs_restraint': None,
+                                      'csp_restraint': None,
+                                      'auto_relax_restraint': None,
+                                      'ccr_d_csa_restraint': None,
+                                      'ccr_dd_restraint': None,
+                                      'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': None,
                                            'poly_seq': {
@@ -4452,7 +4514,19 @@ class NmrDpUtility:
                                                '_Peak_general_char': [],
                                                '_Peak_char': [],
                                                '_Assigned_peak_chem_shift': []
-                                           }
+                                           },
+                                           'noepk_restraint': None,
+                                           'jcoup_restraint': None,
+                                           'rdc_raw_data': None,
+                                           'csa_restraint': None,
+                                           'ddc_restraint': None,
+                                           'hvycs_restraint': None,
+                                           'procs_restraint': None,
+                                           'csp_restraint': None,
+                                           'auto_relax_restraint': None,
+                                           'ccr_d_csa_restraint': None,
+                                           'ccr_dd_restraint': None,
+                                           'other_restraint': None
                                            }
                               }
 
@@ -4494,7 +4568,19 @@ class NmrDpUtility:
                                                                                 {'name': 'is_indirect', 'type': 'bool', 'mandatory': False}
                                                                                 ]
                                        },
-                                       'spectral_peak_alt': None
+                                       'spectral_peak_alt': None,
+                                       'noepk_restraint': None,
+                                       'jcoup_restraint': None,
+                                       'rdc_raw_data': None,
+                                       'csa_restraint': None,
+                                       'ddc_restraint': None,
+                                       'hvycs_restraint': None,
+                                       'procs_restraint': None,
+                                       'csp_restraint': None,
+                                       'auto_relax_restraint': None,
+                                       'ccr_d_csa_restraint': None,
+                                       'ccr_dd_restraint': None,
+                                       'other_restraint': None
                                        },
                                'nmr-star': {'entry_info': None,
                                             'poly_seq': {
@@ -4615,7 +4701,19 @@ class NmrDpUtility:
                                                                               {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                                                'default-from': 'parent'}
                                                                               ]
-                                            }
+                                            },
+                                            'noepk_restraint': None,
+                                            'jcoup_restraint': None,
+                                            'rdc_raw_data': None,
+                                            'csa_restraint': None,
+                                            'ddc_restraint': None,
+                                            'hvycs_restraint': None,
+                                            'procs_restraint': None,
+                                            'csp_restraint': None,
+                                            'auto_relax_restraint': None,
+                                            'ccr_d_csa_restraint': None,
+                                            'ccr_dd_restraint': None,
+                                            'other_restraint': None
                                             }
                                }
 
@@ -4639,7 +4737,19 @@ class NmrDpUtility:
                                                                          'absolute_peak_positions', 'is_acquisition'],
                                              '_nef_spectrum_dimension_transfer': ['dimension_1', 'dimension_2', 'transfer_type', 'is_indirect']
                                          },
-                                         'spectral_peak_alt': None
+                                         'spectral_peak_alt': None,
+                                         'noepk_restraint': None,
+                                         'jcoup_restraint': None,
+                                         'rdc_raw_data': None,
+                                         'csa_restraint': None,
+                                         'ddc_restraint': None,
+                                         'hvycs_restraint': None,
+                                         'procs_restraint': None,
+                                         'csp_restraint': None,
+                                         'auto_relax_restraint': None,
+                                         'ccr_d_csa_restraint': None,
+                                         'ccr_dd_restraint': None,
+                                         'other_restraint': None
                                          },
                                  'nmr-star': {'entry_info': None,
                                               'poly_seq': {
@@ -4695,7 +4805,19 @@ class NmrDpUtility:
                                                                                 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Auth_ambiguity_code',
                                                                                 'Auth_ambiguity_set_ID', 'Auth_amb_atom_grp_ID', 'Resonance_ID', 'Details',
                                                                                 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
-                                              }
+                                              },
+                                              'noepk_restraint': None,
+                                              'jcoup_restraint': None,
+                                              'rdc_raw_data': None,
+                                              'csa_restraint': None,
+                                              'ddc_restraint': None,
+                                              'hvycs_restraint': None,
+                                              'procs_restraint': None,
+                                              'csp_restraint': None,
+                                              'auto_relax_restraint': None,
+                                              'ccr_d_csa_restraint': None,
+                                              'ccr_dd_restraint': None,
+                                              'other_restraint': None
                                               }
                                  }
 
@@ -18687,6 +18809,9 @@ class NmrDpUtility:
                         if lp_category in self.lp_categories[file_type][content_subtype]:
                             continue
 
+                        if self.aux_lp_categories[file_type][content_subtype] is None:
+                            continue
+
                         if lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
                             key_items = self.aux_key_items[file_type][content_subtype][lp_category]
@@ -19516,33 +19641,35 @@ class NmrDpUtility:
 
                         break
 
-            for lp_category in self.aux_lp_categories[file_type][content_subtype]:
+            if self.aux_lp_categories[file_type][content_subtype] is not None:
 
-                aux_data = next((l['data'] for l in self.__aux_data[content_subtype]
-                                 if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)  # noqa: E741
+                for lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
-                if aux_data is not None:
-                    for i in aux_data:
-                        if child_key_name in i and i[child_key_name] != parent_key:
+                    aux_data = next((l['data'] for l in self.__aux_data[content_subtype]
+                                     if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)  # noqa: E741
 
-                            if index_tag is None:
-                                err = f"{child_key_name} {str(i[child_key_name])!r} must be {parent_key}."
-                            else:
-                                err = f"[Check row of {index_tag} {i[index_tag]}] {child_key_name} {i[child_key_name]!r} must be {parent_key}."
+                    if aux_data is not None:
+                        for i in aux_data:
+                            if child_key_name in i and i[child_key_name] != parent_key:
 
-                            if i[child_key_name] in sf_framecode_dict:
-                                err = err[0:-1] + f" to point the parent {sf_framecode!r} saveframe. "\
-                                    f"The pointer has been reserved for the {sf_framecode_dict[i[child_key_name]]!r} saveframe."
+                                if index_tag is None:
+                                    err = f"{child_key_name} {str(i[child_key_name])!r} must be {parent_key}."
+                                else:
+                                    err = f"[Check row of {index_tag} {i[index_tag]}] {child_key_name} {i[child_key_name]!r} must be {parent_key}."
 
-                            self.report.error.appendDescription('invalid_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                 'description': err})
-                            self.report.setError()
+                                if i[child_key_name] in sf_framecode_dict:
+                                    err = err[0:-1] + f" to point the parent {sf_framecode!r} saveframe. "\
+                                        f"The pointer has been reserved for the {sf_framecode_dict[i[child_key_name]]!r} saveframe."
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testParentChildRelation() ++ ValueError  - {err}\n")
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                     'description': err})
+                                self.report.setError()
 
-                            break
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__testParentChildRelation() ++ ValueError  - {err}\n")
+
+                                break
 
         except Exception as e:
 
@@ -33546,6 +33673,9 @@ class NmrDpUtility:
                     if lp_category in self.lp_categories[file_type][content_subtype]:
                         continue
 
+                    if self.aux_lp_categories[file_type][content_subtype] is None:
+                        continue
+
                     if lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
                         key_items = self.aux_key_items[file_type][content_subtype][lp_category]
@@ -38986,6 +39116,9 @@ class NmrDpUtility:
 
                     # main content of loop has been processed in __resetBoolValueInLoop()
                     if lp_category in self.lp_categories[file_type][content_subtype]:
+                        continue
+
+                    if self.aux_lp_categories[file_type][content_subtype] is None:
                         continue
 
                     if lp_category in self.aux_lp_categories[file_type][content_subtype]:

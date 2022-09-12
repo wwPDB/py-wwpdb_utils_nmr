@@ -2646,7 +2646,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign = self.assignCoordPolymerSequence(seqId, compId, 'CA')
                 if len(chainAssign) > 0:
                     ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainAssign[0][0])
-                    if 'polypeptide' in ps['type']:
+                    if 'type' in ps and polypeptide in ps['type']:
                         peptide = True
                         nucleotide = carbohydrate = False
 

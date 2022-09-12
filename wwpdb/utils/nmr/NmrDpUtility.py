@@ -12911,6 +12911,11 @@ class NmrDpUtility:
                     if designated:
                         continue
 
+                    cor_dst_file = dst_file + '-corrected'
+
+                    if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
+                        dst_file = cor_dst_file
+
                     has_spectral_peak = False
 
                     with open(dst_file, 'r') as ifp:
@@ -13202,11 +13207,6 @@ class NmrDpUtility:
                                     pass
 
                             continue
-
-                    cor_dst_file = dst_file + '-corrected'
-
-                    if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
-                        dst_file = cor_dst_file
 
                     file_name = os.path.basename(dst_file)
 

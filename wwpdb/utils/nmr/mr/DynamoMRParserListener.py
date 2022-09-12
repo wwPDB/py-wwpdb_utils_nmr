@@ -3038,7 +3038,11 @@ class DynamoMRParserListener(ParseTreeListener):
 
                 if not isinstance(atomId, str):
                     self.__ccU.updateChemCompDict(compId)
-                    atomId = next(cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId]))
+                    atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+                    if atomId is None:
+                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                            f"{seqId}:{compId} is not present in the coordinates.\n"
+                        return
 
                 self.__retrieveLocalSeqScheme()
 
@@ -3192,7 +3196,11 @@ class DynamoMRParserListener(ParseTreeListener):
 
                 if not isinstance(atomId, str):
                     self.__ccU.updateChemCompDict(compId)
-                    atomId = next(cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId]))
+                    atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+                    if atomId is None:
+                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                            f"{seqId}:{compId} is not present in the coordinates.\n"
+                        return
 
                 self.__retrieveLocalSeqScheme()
 

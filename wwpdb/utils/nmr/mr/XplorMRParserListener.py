@@ -6154,13 +6154,13 @@ class XplorMRParserListener(ParseTreeListener):
 
             if len(_donor) == 1 and len(_hydrogen) == 1 and len(_acceptor) == 1:
                 distance = numpy.linalg.norm(toNpArray(_hydrogen[0]) - toNpArray(_acceptor[0]))
-                if distance > 2.4:
+                if distance > 2.5:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                         f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
 
                 distance = numpy.linalg.norm(toNpArray(_donor[0]) - toNpArray(_acceptor[0]))
-                if distance > 3.4:
+                if distance > 3.5:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                         f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
@@ -6278,7 +6278,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             if len(_hydrogen) == 1 and len(_acceptor) == 1:
                 distance = numpy.linalg.norm(toNpArray(_hydrogen[0]) - toNpArray(_acceptor[0]))
-                if distance > 2.4:
+                if distance > 2.5:
                     self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                         f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"

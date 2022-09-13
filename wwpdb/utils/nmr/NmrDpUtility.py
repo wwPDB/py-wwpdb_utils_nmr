@@ -160,6 +160,7 @@
 # 05-Aug-2022  M. Yokochi - do not add a saveframe tag if there is already the tag (DAOTHER-7947)
 # 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
 # 06-Sep-2022  M. Yokochi - add support for branched entity (NMR restraint remediation)
+# 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -254,6 +255,7 @@ try:
     from wwpdb.utils.nmr.mr.GromacsPTReader import GromacsPTReader
     from wwpdb.utils.nmr.mr.DynamoMRReader import DynamoMRReader
     from wwpdb.utils.nmr.mr.SybylMRReader import SybylMRReader
+    from wwpdb.utils.nmr.mr.IsdMRReader import IsdMRReader
 
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -326,6 +328,7 @@ except ImportError:
     from nmr.mr.GromacsPTReader import GromacsPTReader
     from nmr.mr.DynamoMRReader import DynamoMRReader
     from nmr.mr.SybylMRReader import SybylMRReader
+    from nmr.mr.IsdMRReader import IsdMRReader
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -8099,12 +8102,15 @@ class NmrDpUtility:
             elif file_type == 'nm-res-syb':
                 mr_format_name = 'SYBYL'
                 a_mr_format_name = 'a ' + mr_format_name
+            elif file_type == 'nm-res-isd':
+                mr_format_name = 'ISD'
+                a_mr_format_name = 'an ' + mr_format_name
             else:
                 mr_format_name = 'other'
 
             atom_like_names =\
                 self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                                                                                 'nm-res-oth') or is_aux_amb or is_aux_gro else 1))
+                                                                                 'nm-res-isd', 'nm-res-oth') or is_aux_amb or is_aux_gro else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
@@ -8524,7 +8530,7 @@ class NmrDpUtility:
                                     in_igr2 = False
 
             elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                               'nm-res-oth') or is_aux_amb or is_aux_gro:
+                               'nm-res-isd', 'nm-res-oth') or is_aux_amb or is_aux_gro:
 
                 if is_aux_amb:
 
@@ -8963,7 +8969,7 @@ class NmrDpUtility:
                         has_topology = True
 
             if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                             'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
+                             'nm-res-isd', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='utf-8') as ifp:
 
@@ -9027,12 +9033,14 @@ class NmrDpUtility:
             try:
 
                 if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
-                                 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn', 'nm-res-syb'):
+                                 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
+                                 'nm-res-syb', 'nm-res-isd'):
                     reader = self.__getSimpleMRPTFileReader(file_type, self.__verbose)
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                    if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb'):
+                    if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn',
+                                                              'nm-res-syb', 'nm-res-isd'):
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
@@ -9653,6 +9661,10 @@ class NmrDpUtility:
             return SybylMRReader(verbose, self.__lfh, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT,
                                  reasons)
+        if file_type == 'nm-res-isd':
+            return IsdMRReader(verbose, self.__lfh, None, None, None, None,
+                               self.__ccU, self.__csStat, self.__nefT,
+                               reasons)
 
         return None
 
@@ -9714,6 +9726,9 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-syb':
             # mr_format_name = 'SYBYL'
+            pass
+        elif file_type == 'nm-res-isd':
+            # mr_format_name = 'ISD'
             pass
         else:
             return False
@@ -10704,7 +10719,8 @@ class NmrDpUtility:
                 return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset) | corrected
 
             for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
-                                   'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn', 'nm-res-syb']:
+                                   'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
+                                   'nm-res-syb', 'nm-res-isd']:
 
                 if test_file_type == file_type:
                     continue
@@ -11076,6 +11092,9 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-syb':
             # mr_format_name = 'SYBYL'
+            pass
+        elif file_type == 'nm-res-isd':
+            # mr_format_name = 'ISD'
             pass
         else:
             return False
@@ -11602,7 +11621,8 @@ class NmrDpUtility:
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
             if listener is not None:
-                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb'):
+                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn',
+                                 'nm-res-syb', 'nm-res-isd'):
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -11791,6 +11811,17 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
+        if (not is_valid or multiple_check) and file_type != 'nm-res-isd':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-isd')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
         if len(genuine_type) != 1:
             _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
             _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
@@ -11822,6 +11853,8 @@ class NmrDpUtility:
             mr_format_name = 'DYNAMO/PALES/TALOS'
         elif file_type == 'nm-res-syb':
             mr_format_name = 'SYBYL'
+        elif file_type == 'nm-res-isd':
+            mr_format_name = 'ISD'
         elif file_type == 'nm-res-mr':
             mr_format_name = 'MR'
         else:
@@ -11860,6 +11893,9 @@ class NmrDpUtility:
         elif _file_type == 'nm-res-syb':
             _mr_format_name = 'SYBYL'
             _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-res-isd':
+            _mr_format_name = 'ISD'
+            _a_mr_format_name = 'an ' + _mr_format_name + ' restraint'
 
         is_valid = False
         err = ''
@@ -12072,7 +12108,8 @@ class NmrDpUtility:
             designated = False
 
             for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
-                               'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn', 'nm-res-syb'):
+                               'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
+                               'nm-res-syb', 'nm-res-isd'):
 
                 sel_res_file = src_basename + f'-selected-as-res-{_file_type[-3:]}.mr'
 
@@ -12893,7 +12930,8 @@ class NmrDpUtility:
                     designated = False
 
                     for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
-                                       'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn', 'nm-res-syb'):
+                                       'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
+                                       'nm-res-syb', 'nm-res-isd'):
 
                         sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -13231,7 +13269,8 @@ class NmrDpUtility:
                         designated = False
 
                         for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
-                                           'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn', 'nm-res-syb'):
+                                           'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
+                                           'nm-res-syb', 'nm-res-isd'):
 
                             sel_res_file = _dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -24646,6 +24685,128 @@ class NmrDpUtility:
                                                self.__cR, cC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
+                                self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom nomenclature]'):
+                                self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Enum mismatch ignorable]'):
+                                self.report.warning.appendDescription('enum_mismatch_ignorable',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Range value error]'):
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]'):
+                                self.report.warning.appendDescription('inconsistent_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                            #     """ defer to sequence alignment error
+                            # elif warn.startswith('[Unmatched residue name]'):
+                            #     self.report.warning.appendDescription('conflicted_mr_data',
+                            #                                           {'file_name': file_name, 'description': warn})
+                            #     self.report.setWarning()
+
+                            #     if self.__verbose:
+                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                            #     """
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+            elif file_type == 'nm-res-isd':
+                reader = IsdMRReader(self.__verbose, self.__lfh,
+                                     self.__representative_model_id,
+                                     self.__mr_atom_name_mapping,
+                                     self.__cR, cC,
+                                     self.__ccU, self.__csStat, self.__nefT)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = IsdMRReader(self.__verbose, self.__lfh,
+                                             self.__representative_model_id,
+                                             self.__mr_atom_name_mapping,
+                                             self.__cR, cC,
+                                             self.__ccU, self.__csStat, self.__nefT,
+                                             reasons)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath)
 

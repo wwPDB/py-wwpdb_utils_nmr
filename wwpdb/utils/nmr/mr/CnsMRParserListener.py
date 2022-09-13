@@ -3984,8 +3984,11 @@ class CnsMRParserListener(ParseTreeListener):
 
                         atomId = atomId.upper()
 
-                        if compId not in monDict3 and self.__mrAtomNameMapping is not None and _seqId in ps['auth_seq_id']:
-                            authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
+                        if compId not in monDict3 and self.__mrAtomNameMapping is not None and (_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id']):
+                            if _seqId in ps['auth_seq_id']:
+                                authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
+                            else:
+                                authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId_)]
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
                             if coordAtomSite is not None and atomId not in coordAtomSite['atom_id']:
                                 if self.__reasons is not None and 'branch_remap' in self.__reasons:

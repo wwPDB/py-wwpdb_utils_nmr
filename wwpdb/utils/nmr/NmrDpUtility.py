@@ -12743,8 +12743,8 @@ class NmrDpUtility:
                     else:
                         file_ext = os.path.basename(split_ext[0]).lower()
 
-                    if file_ext in ('x', 'crd', 'rst', 'inp', 'inpcrd', 'restrt')\
-                       or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:  # AMBER coordinate file extensions
+                    if file_ext in ('x', 'rc', 'crd', 'rst', 'inp', 'inpcrd', 'restrt')\
+                       or 'rc' in file_ext or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:  # AMBER coordinate file extensions
                         is_crd = False
                         with open(dst_file, 'r') as ifp:
                             for pos, line in enumerate(ifp, start=1):
@@ -23370,6 +23370,7 @@ class NmrDpUtility:
 
         amberAtomNumberDict = None
         gromacsAtomNumberDict = None
+        _amberAtomNumberDict = {}
 
         has_nm_aux_gro_file = False
 
@@ -23893,7 +23894,7 @@ class NmrDpUtility:
                                        self.__mr_atom_name_mapping,
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT,
-                                       amberAtomNumberDict)
+                                       amberAtomNumberDict, _amberAtomNumberDict)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -23981,6 +23982,15 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+                    cur_dict = listener.getAtomNumberDict()
+                    if cur_dict is not None:
+                        if len(_amberAtomNumberDict) == 0:
+                            _amberAtomNumberDict = cur_dict
+                        else:
+                            for k, v in cur_dict.items():
+                                if k not in _amberAtomNumberDict:
+                                    _amberAtomNumberDict[k] = v
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:

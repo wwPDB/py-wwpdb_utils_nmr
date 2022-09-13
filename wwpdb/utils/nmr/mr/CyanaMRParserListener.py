@@ -22,6 +22,7 @@ try:
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        isLongRangeRestraint,
+                                                       hasIntraChainResraint,
                                                        isCyclicPolymer,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -69,6 +70,7 @@ except ImportError:
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            isLongRangeRestraint,
+                                           hasIntraChainResraint,
                                            isCyclicPolymer,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -863,8 +865,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
+                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -1225,8 +1231,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
+                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -3548,8 +3558,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -3749,8 +3763,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -3891,8 +3909,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -4043,8 +4065,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -4244,8 +4270,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -4386,8 +4416,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -4480,8 +4514,12 @@ class CyanaMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -5456,8 +5494,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     self.__lfh.write(f"+CyanaMRParserListener.exitSsbond_macro() ++ Error  - {str(e)}\n")
 
+            has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CYANA macro: disulfide bond linkage) id={self.geoRestraints} "
                           f"atom1={atom1} atom2={atom2}")
@@ -5554,8 +5596,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     self.__lfh.write(f"+CyanaMRParserListener.exitHbond_macro() ++ Error  - {str(e)}\n")
 
+            has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CYANA macro: hydrogen bond linkage) id={self.hbondRestraints} "
                           f"atom1={atom1} atom2={atom2}")
@@ -5652,8 +5698,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     self.__lfh.write(f"+CyanaMRParserListener.exitLink_statement() ++ Error  - {str(e)}\n")
 
+            has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CYANA statement: covalent bond linkage) id={self.geoRestraints} "
                           f"atom1={atom1} atom2={atom2}")

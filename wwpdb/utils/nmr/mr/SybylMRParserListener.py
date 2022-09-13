@@ -20,6 +20,7 @@ try:
                                                        extendCoordinatesForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       hasIntraChainResraint,
                                                        isCyclicPolymer,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -52,6 +53,7 @@ except ImportError:
                                            extendCoordinatesForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           hasIntraChainResraint,
                                            isCyclicPolymer,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -471,8 +473,12 @@ class SybylMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -1073,7 +1079,7 @@ class SybylMRParserListener(ParseTreeListener):
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
     def getContentSubtype(self):
-        """ Return content subtype of CYANA MR file.
+        """ Return content subtype of SYBYL MR file.
         """
 
         contentSubtype = {'dist_restraint': self.distRestraints

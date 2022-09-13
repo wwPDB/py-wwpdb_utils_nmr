@@ -1022,6 +1022,18 @@ def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):
     return False
 
 
+def hasIntraChainResraint(atomSelectionSet):
+    """ Return whether intra-chain distance restraints in the atom selection.
+    """
+
+    for atom1, atom2 in itertools.product(atomSelectionSet[0],
+                                          atomSelectionSet[1]):
+        if atom1['chain_id'] == atom2['chain_id']:
+            return True
+
+    return False
+
+
 def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms):
     """ Return type of dihedral angle restraint.
     """

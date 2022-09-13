@@ -18,6 +18,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
                                                        extendCoordinatesForExactNoes,
                                                        isLongRangeRestraint,
+                                                       hasIntraChainResraint,
                                                        getTypeOfDihedralRestraint,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
@@ -59,6 +60,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
                                            extendCoordinatesForExactNoes,
                                            isLongRangeRestraint,
+                                           hasIntraChainResraint,
                                            getTypeOfDihedralRestraint,
                                            translateToStdResName,
                                            translateToStdAtomName,
@@ -587,8 +589,12 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}, group={group}) "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")

@@ -1640,7 +1640,7 @@ class BiosymMRParserListener(ParseTreeListener):
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
     def getContentSubtype(self):
-        """ Return content subtype of CYANA MR file.
+        """ Return content subtype of BIOSYM MR file.
         """
 
         contentSubtype = {'dist_restraint': self.distRestraints,

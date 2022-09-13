@@ -22,6 +22,7 @@ try:
                                                        checkCoordinates,
                                                        extendCoordinatesForExactNoes,
                                                        isLongRangeRestraint,
+                                                       hasIntraChainResraint,
                                                        getTypeOfDihedralRestraint,
                                                        translateToStdAtomName,
                                                        isCyclicPolymer,
@@ -61,6 +62,7 @@ except ImportError:
                                            checkCoordinates,
                                            extendCoordinatesForExactNoes,
                                            isLongRangeRestraint,
+                                           hasIntraChainResraint,
                                            getTypeOfDihedralRestraint,
                                            translateToStdAtomName,
                                            isCyclicPolymer,
@@ -581,8 +583,12 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
 
+            has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -1735,8 +1741,12 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
 
+            has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (Coordinate) id={self.geoRestraints} "
                           f"atom={atom1} refAtom={atom2} coord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
@@ -3260,8 +3270,12 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     self.__lfh.write(f"+RosettaMRParserListener.exitDisulfide_bond_linkage() ++ Error  - {str(e)}\n")
 
+            has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CS-ROSETTA: disulfide bond linkage) id={self.geoRestraints} "
                           f"atom1={atom1} atom2={atom2}")

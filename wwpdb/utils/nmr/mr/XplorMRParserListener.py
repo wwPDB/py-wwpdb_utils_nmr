@@ -1492,12 +1492,13 @@ class XplorMRParserListener(ParseTreeListener):
             lower_linear_limit = None
             upper_linear_limit = None
 
-            if exponent in (2, 4):
-                lower_limit = target - delta
-                upper_limit = target + delta
-            else:
-                lower_linear_limit = target - delta
-                upper_linear_limit = target + delta
+            if delta > 0.0:
+                if exponent in (2, 4):
+                    lower_limit = target - delta
+                    upper_limit = target + delta
+                else:
+                    lower_linear_limit = target - delta
+                    upper_linear_limit = target + delta
 
             dstFunc = self.validateAngleRange(self.scale if exponent > 0 else 0.0, {'energy_const': energyConst, 'exponent': exponent},
                                               target_value, lower_limit, upper_limit,
@@ -1723,7 +1724,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
                 if len(self.numberSelection) > 2:
@@ -2155,7 +2156,7 @@ class XplorMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if self.potential == 'square':
+                if self.potential == 'square' and delta > 0.0:
                     target_value = target
                     lower_limit = target - delta
                     upper_limit = target + delta
@@ -2652,7 +2653,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -2804,7 +2805,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -3173,7 +3174,7 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:  # can't decide whether VEAN or COUP wo the coordinates
                 return
 
-            if self.potential != 'harmonic':
+            if self.potential != 'harmonic' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -3193,7 +3194,7 @@ class XplorMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if self.potential != 'harmonic':
+                if self.potential != 'harmonic' and delta > 0.0:
                     lower_limit = target - delta
                     upper_limit = target + delta
 
@@ -4056,7 +4057,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -5001,7 +5002,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -5272,8 +5273,12 @@ class XplorMRParserListener(ParseTreeListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = target - delta
-            upper_limit = target + delta
+            lower_limit = None
+            upper_limit = None
+
+            if delta > 0.0:
+                lower_limit = target - delta
+                upper_limit = target + delta
 
             if len(self.numberSelection) > 2:
                 error_less = delta
@@ -5493,8 +5498,12 @@ class XplorMRParserListener(ParseTreeListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = target - delta
-            upper_limit = target + delta
+            lower_limit = None
+            upper_limit = None
+
+            if delta > 0.0:
+                lower_limit = target - delta
+                upper_limit = target + delta
 
             dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
                                             target_value, lower_limit, upper_limit)
@@ -5760,8 +5769,12 @@ class XplorMRParserListener(ParseTreeListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = target - delta
-            upper_limit = target + delta
+            lower_limit = None
+            upper_limit = None
+
+            if delta > 0.0:
+                lower_limit = target - delta
+                upper_limit = target + delta
 
             dstFunc = self.validateCcrRange(1.0,
                                             target_value, lower_limit, upper_limit)

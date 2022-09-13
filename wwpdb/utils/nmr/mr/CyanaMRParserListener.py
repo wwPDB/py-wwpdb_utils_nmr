@@ -686,8 +686,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 elif delta is not None:
                     target_value = value
-                    lower_limit = value - delta
-                    upper_limit = value + delta
+                    if delta > 0.0:
+                        lower_limit = value - delta
+                        upper_limit = value + delta
 
                 elif self.__upl_or_lol is None:
                     if self.__cur_dist_type == 'upl':
@@ -1066,8 +1067,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 elif delta is not None:
                     target_value = value
-                    lower_limit = value - delta
-                    upper_limit = value + delta
+                    if delta > 0.0:
+                        lower_limit = value - delta
+                        upper_limit = value + delta
 
                 elif self.__upl_or_lol is None:
                     if self.__cur_dist_type == 'upl':
@@ -2585,8 +2587,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if self.__remediate and self.__reasons is not None and 'dihed_unusual_order' in self.__reasons:
                 target_value, deviation = lower_limit, upper_limit
-                lower_limit = target_value - deviation
-                upper_limit = target_value + deviation
+                if deviation > 0.0:
+                    lower_limit = target_value - deviation
+                    upper_limit = target_value + deviation
+                else:
+                    lower_limit = upper_limit = None
 
             weight = 1.0
             if len(self.numberSelection) > 2:
@@ -3664,8 +3669,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif delta is not None:
                         target_value = value
-                        lower_limit = value - delta
-                        upper_limit = value + delta
+                        if delta > 0.0:
+                            lower_limit = value - delta
+                            upper_limit = value + delta
 
                     elif self.__upl_or_lol is None:
                         if self.__cur_dist_type == 'upl':
@@ -4158,8 +4164,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif delta is not None:
                         target_value = value
-                        lower_limit = value - delta
-                        upper_limit = value + delta
+                        if delta > 0.0:
+                            lower_limit = value - delta
+                            upper_limit = value + delta
 
                     elif self.__upl_or_lol is None:
                         if self.__cur_dist_type == 'upl':
@@ -4628,8 +4635,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
             elif delta is not None:
                 target_value = value
-                lower_limit = value - delta
-                upper_limit = value + delta
+                if delta > 0.0:
+                    lower_limit = value - delta
+                    upper_limit = value + delta
 
             elif self.__upl_or_lol is None:
                 if self.__cur_dist_type == 'upl':
@@ -4893,8 +4901,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if self.__remediate and self.__reasons is not None and 'dihed_unusual_order' in self.__reasons:
                 target_value, deviation = lower_limit, upper_limit
-                lower_limit = target_value - deviation
-                upper_limit = target_value + deviation
+                if deviation > 0.0:
+                    lower_limit = target_value - deviation
+                    upper_limit = target_value + deviation
+                else:
+                    lower_limit = upper_limit = None
 
             weight = 1.0
             if len(self.numberSelection) > 2:

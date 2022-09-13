@@ -1232,12 +1232,13 @@ class CnsMRParserListener(ParseTreeListener):
             lower_linear_limit = None
             upper_linear_limit = None
 
-            if exponent in (2, 4):
-                lower_limit = target - delta
-                upper_limit = target + delta
-            else:
-                lower_linear_limit = target - delta
-                upper_linear_limit = target + delta
+            if delta > 0.0:
+                if exponent in (2, 4):
+                    lower_limit = target - delta
+                    upper_limit = target + delta
+                else:
+                    lower_linear_limit = target - delta
+                    upper_linear_limit = target + delta
 
             dstFunc = self.validateAngleRange(self.scale if exponent > 0 else 0.0, {'energy_const': energyConst, 'exponent': exponent},
                                               target_value, lower_limit, upper_limit,
@@ -1594,7 +1595,7 @@ class CnsMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
                 if len(self.numberSelection) > 2:
@@ -1973,7 +1974,7 @@ class CnsMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential != 'harmonic':
+            if self.potential != 'harmonic' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -1993,7 +1994,7 @@ class CnsMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if self.potential != 'harmonic':
+                if self.potential != 'harmonic' and delta > 0.0:
                     lower_limit = target - delta
                     upper_limit = target + delta
 
@@ -2784,7 +2785,7 @@ class CnsMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 

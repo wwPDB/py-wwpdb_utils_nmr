@@ -452,8 +452,11 @@ class GromacsMRParserListener(ParseTreeListener):
             delta = self.numberSelection[1]
             weight = self.numberSelection[2]
 
-            lower_limit = target_value - delta
-            upper_limit = target_value + delta
+            if delta > 0.0:
+                lower_limit = target_value - delta
+                upper_limit = target_value + delta
+            else:
+                lower_limit = upper_limit = None
 
             if funct != 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -875,8 +878,11 @@ class GromacsMRParserListener(ParseTreeListener):
             delta = self.numberSelection[1]
             weight = 1.0
 
-            lower_limit = target_value - delta
-            upper_limit = target_value + delta
+            if delta > 0.0:
+                lower_limit = target_value - delta
+                upper_limit = target_value + delta
+            else:
+                lower_limit = upper_limit = None
 
             len_atom_sorts = len(set(ai, aj, ak, al))
 
@@ -1019,8 +1025,11 @@ class GromacsMRParserListener(ParseTreeListener):
             delta = self.numberSelection[1]
             weight = 1.0
 
-            lower_limit = target_value - delta
-            upper_limit = target_value + delta
+            if delta > 0.0:
+                lower_limit = target_value - delta
+                upper_limit = target_value + delta
+            else:
+                lower_limit = upper_limit = None
 
             if ai == aj:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\

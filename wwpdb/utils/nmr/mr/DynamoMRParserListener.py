@@ -3026,12 +3026,18 @@ class DynamoMRParserListener(ParseTreeListener):
 
                 if angleName == 'PHI':
                     target_value = phi_target_value
-                    lower_limit = phi_target_value - delta_phi_value
-                    upper_limit = phi_target_value + delta_phi_value
+                    if delta_phi_value > 0.0:
+                        lower_limit = phi_target_value - delta_phi_value
+                        upper_limit = phi_target_value + delta_phi_value
+                    else:
+                        lower_limit = upper_limit = None
                 else:
                     target_value = psi_target_value
-                    lower_limit = psi_target_value - delta_psi_value
-                    upper_limit = psi_target_value + delta_psi_value
+                    if delta_psi_value > 0.0:
+                        lower_limit = psi_target_value - delta_psi_value
+                        upper_limit = psi_target_value + delta_psi_value
+                    else:
+                        lower_limit = upper_limit = None
 
                 dstFunc = self.validateAngleRange(None, 1.0, target_value, lower_limit, upper_limit)
 
@@ -3184,12 +3190,18 @@ class DynamoMRParserListener(ParseTreeListener):
 
                 if angleName == 'PHI':
                     target_value = phi_target_value
-                    lower_limit = phi_target_value - delta_phi_value
-                    upper_limit = phi_target_value + delta_phi_value
+                    if delta_phi_value > 0.0:
+                        lower_limit = phi_target_value - delta_phi_value
+                        upper_limit = phi_target_value + delta_phi_value
+                    else:
+                        lower_limit = upper_limit = None
                 else:
                     target_value = psi_target_value
-                    lower_limit = psi_target_value - delta_psi_value
-                    upper_limit = psi_target_value + delta_psi_value
+                    if delta_psi_value > 0.0:
+                        lower_limit = psi_target_value - delta_psi_value
+                        upper_limit = psi_target_value + delta_psi_value
+                    else:
+                        lower_limit = upper_limit = None
 
                 dstFunc = self.validateAngleRange(None, 1.0, target_value, lower_limit, upper_limit)
 

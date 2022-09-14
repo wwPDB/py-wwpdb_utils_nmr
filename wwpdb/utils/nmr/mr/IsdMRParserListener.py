@@ -409,9 +409,10 @@ class IsdMRParserListener(ParseTreeListener):
     def enterDistance_restraints(self, ctx: IsdMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
 
-        self.distRestraints += 1
+        if ctx.Distance():
+            self.distRestraints += 1
 
-        self.__cur_dist_upper_limit = float(str(ctx.Float()))
+            self.__cur_dist_upper_limit = float(str(ctx.Distance()).split('=')[1])
 
     # Exit a parse tree produced by IsdMRParser#distance_restraints.
     def exitDistance_restraints(self, ctx: IsdMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument

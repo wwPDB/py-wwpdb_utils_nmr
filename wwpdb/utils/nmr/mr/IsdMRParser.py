@@ -10,14 +10,13 @@ else:
 
 def serializedATN():
     return [
-        4,1,12,26,2,0,7,0,2,1,7,1,2,2,7,2,1,0,5,0,8,8,0,10,0,12,0,11,9,0,
-        1,0,1,0,1,1,1,1,1,1,1,1,4,1,19,8,1,11,1,12,1,20,1,2,1,2,1,2,1,2,
-        0,0,3,0,2,4,0,0,24,0,9,1,0,0,0,2,14,1,0,0,0,4,22,1,0,0,0,6,8,3,2,
-        1,0,7,6,1,0,0,0,8,11,1,0,0,0,9,7,1,0,0,0,9,10,1,0,0,0,10,12,1,0,
-        0,0,11,9,1,0,0,0,12,13,5,0,0,1,13,1,1,0,0,0,14,15,5,1,0,0,15,16,
-        5,2,0,0,16,18,5,4,0,0,17,19,3,4,2,0,18,17,1,0,0,0,19,20,1,0,0,0,
-        20,18,1,0,0,0,20,21,1,0,0,0,21,3,1,0,0,0,22,23,5,8,0,0,23,24,5,8,
-        0,0,24,5,1,0,0,0,2,9,20
+        4,1,11,24,2,0,7,0,2,1,7,1,2,2,7,2,1,0,5,0,8,8,0,10,0,12,0,11,9,0,
+        1,0,1,0,1,1,1,1,4,1,17,8,1,11,1,12,1,18,1,2,1,2,1,2,1,2,0,0,3,0,
+        2,4,0,0,22,0,9,1,0,0,0,2,14,1,0,0,0,4,20,1,0,0,0,6,8,3,2,1,0,7,6,
+        1,0,0,0,8,11,1,0,0,0,9,7,1,0,0,0,9,10,1,0,0,0,10,12,1,0,0,0,11,9,
+        1,0,0,0,12,13,5,0,0,1,13,1,1,0,0,0,14,16,5,1,0,0,15,17,3,4,2,0,16,
+        15,1,0,0,0,17,18,1,0,0,0,18,16,1,0,0,0,18,19,1,0,0,0,19,3,1,0,0,
+        0,20,21,5,7,0,0,21,22,5,7,0,0,22,5,1,0,0,0,2,9,18
     ]
 
 class IsdMRParser ( Parser ):
@@ -30,12 +29,11 @@ class IsdMRParser ( Parser ):
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "'DISTANCE'", "'='" ]
+    literalNames = [  ]
 
-    symbolicNames = [ "<INVALID>", "Distance", "Equ_op", "Integer", "Float", 
-                      "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                      "Atom_selection", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
-                      "LINE_COMMENT" ]
+    symbolicNames = [ "<INVALID>", "Distance", "Integer", "Float", "SHARP_COMMENT", 
+                      "EXCLM_COMMENT", "SMCLN_COMMENT", "Atom_selection", 
+                      "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", "LINE_COMMENT" ]
 
     RULE_isd_mr = 0
     RULE_distance_restraints = 1
@@ -45,17 +43,16 @@ class IsdMRParser ( Parser ):
 
     EOF = Token.EOF
     Distance=1
-    Equ_op=2
-    Integer=3
-    Float=4
-    SHARP_COMMENT=5
-    EXCLM_COMMENT=6
-    SMCLN_COMMENT=7
-    Atom_selection=8
-    SPACE=9
-    ENCLOSE_COMMENT=10
-    SECTION_COMMENT=11
-    LINE_COMMENT=12
+    Integer=2
+    Float=3
+    SHARP_COMMENT=4
+    EXCLM_COMMENT=5
+    SMCLN_COMMENT=6
+    Atom_selection=7
+    SPACE=8
+    ENCLOSE_COMMENT=9
+    SECTION_COMMENT=10
+    LINE_COMMENT=11
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -135,12 +132,6 @@ class IsdMRParser ( Parser ):
         def Distance(self):
             return self.getToken(IsdMRParser.Distance, 0)
 
-        def Equ_op(self):
-            return self.getToken(IsdMRParser.Equ_op, 0)
-
-        def Float(self):
-            return self.getToken(IsdMRParser.Float, 0)
-
         def distance_restraint(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(IsdMRParser.Distance_restraintContext)
@@ -171,17 +162,13 @@ class IsdMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 14
             self.match(IsdMRParser.Distance)
-            self.state = 15
-            self.match(IsdMRParser.Equ_op)
-            self.state = 16
-            self.match(IsdMRParser.Float)
-            self.state = 18 
+            self.state = 16 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 17
+                self.state = 15
                 self.distance_restraint()
-                self.state = 20 
+                self.state = 18 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==IsdMRParser.Atom_selection):
@@ -229,9 +216,9 @@ class IsdMRParser ( Parser ):
         self.enterRule(localctx, 4, self.RULE_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 22
+            self.state = 20
             self.match(IsdMRParser.Atom_selection)
-            self.state = 23
+            self.state = 21
             self.match(IsdMRParser.Atom_selection)
         except RecognitionException as re:
             localctx.exception = re

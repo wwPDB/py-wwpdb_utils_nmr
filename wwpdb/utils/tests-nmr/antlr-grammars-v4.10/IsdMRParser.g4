@@ -25,7 +25,7 @@ isd_mr:
 /* ISD - Distance restraints
 */
 distance_restraints:
-	Distance Equ_op Float
+	Distance
 	distance_restraint+;
 
 distance_restraint:

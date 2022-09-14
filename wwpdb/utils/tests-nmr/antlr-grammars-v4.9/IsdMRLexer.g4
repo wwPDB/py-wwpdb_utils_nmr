@@ -46,9 +46,7 @@ fragment X:		[xX];
 fragment Y:		[yY];
 fragment Z:		[zZ];
 
-Distance:		D I S T A N C E;
-
-Equ_op:			'=';
+Distance:		D I S T A N C E '=' Float;
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);

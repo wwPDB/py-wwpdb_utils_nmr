@@ -1290,6 +1290,9 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
                if item['original_seq_id'] == seqId
                and compId in (item['original_comp_id'], item['auth_comp_id'])]
 
+    if len(mapping) == 0:
+        return seqId, compId, atomId
+
     if elemName in ('Q', 'M'):
 
         item = next((item for item in mapping
@@ -1481,6 +1484,9 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
     mapping = [item for item in mrAtomNameMapping
                if item['auth_seq_id'] == cifSeqId
                and cifCompId in (item['auth_comp_id'], item['original_comp_id'])]
+
+    if len(mapping) == 0:
+        return atomId
 
     if elemName in ('Q', 'M'):
 

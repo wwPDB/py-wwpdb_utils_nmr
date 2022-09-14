@@ -18,9 +18,7 @@ lexer grammar IsdMRLexer;
 
 options { caseInsensitive=true; }
 
-Distance:		'DISTANCE';
-
-Equ_op:			'=';
+Distance:		'DISTANCE=' Float;
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);

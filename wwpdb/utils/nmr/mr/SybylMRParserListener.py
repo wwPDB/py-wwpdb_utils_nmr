@@ -235,7 +235,7 @@ class SybylMRParserListener(ParseTreeListener):
 
         self.distRestraints = 0      # SYBYL: Distance restraints
 
-        self.atom_sele_pat = re.compile(r'(\S*[A-Z])(\d+).(\S)')
+        self.atom_sele_pat = re.compile(r'(\S*[A-Z])(\d+)\.(\S*)')
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -427,6 +427,9 @@ class SybylMRParserListener(ParseTreeListener):
             seqId1, compId1, atomId1 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
             seqId2, compId2, atomId2 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
 
+            if atomId1 is None or atomId2 is None:  # syntax error
+                return
+
             if None in self.numberSelection:
                 return
 
@@ -497,6 +500,8 @@ class SybylMRParserListener(ParseTreeListener):
             return int(g[1]), g[0], g[2]
 
         except ValueError:
+            return None, None, None
+        except AttributeError:
             return None, None, None
 
     def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):

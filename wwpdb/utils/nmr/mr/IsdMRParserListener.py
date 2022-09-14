@@ -427,6 +427,9 @@ class IsdMRParserListener(ParseTreeListener):
         seqId1, compId1, atomId1 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
         seqId2, compId2, atomId2 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
 
+        if atomId1 is None or atomId2 is None:  # syntax error
+            return
+
         target_value = None
         lower_limit = None
         upper_limit = self.__cur_dist_upper_limit
@@ -491,6 +494,8 @@ class IsdMRParserListener(ParseTreeListener):
             return int(g[1]), g[0], g[2]
 
         except ValueError:
+            return None, None, None
+        except AttributeError:
             return None, None, None
 
     def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):

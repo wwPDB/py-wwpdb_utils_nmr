@@ -127,6 +127,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __remediate = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
+    __correctCircularShift = True
 
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
@@ -1375,25 +1376,26 @@ class RosettaMRParserListener(ParseTreeListener):
         validRange = True
         dstFunc = {'weight': weight}
 
-        _array = numpy.array([target_value, lower_limit, upper_limit, lower_linear_limit, upper_linear_limit],
-                             dtype=float)
+        if self.__correctCircularShift:
+            _array = numpy.array([target_value, lower_limit, upper_limit, lower_linear_limit, upper_linear_limit],
+                                 dtype=float)
 
-        shift = None
-        if numpy.nanmin(_array) >= 270.0:
-            shift = -(numpy.nanmax(_array) // 360) * 360
-        elif numpy.nanmax(_array) <= -270.0:
-            shift = -(numpy.nanmin(_array) // 360) * 360
-        if shift is not None:
-            if target_value is not None:
-                target_value += shift
-            if lower_limit is not None:
-                lower_limit += shift
-            if upper_limit is not None:
-                upper_limit += shift
-            if lower_linear_limit is not None:
-                upper_linear_limit += shift
-            if upper_linear_limit is not None:
-                upper_linear_limit += shift
+            shift = None
+            if numpy.nanmin(_array) >= 270.0:
+                shift = -(numpy.nanmax(_array) // 360) * 360
+            elif numpy.nanmax(_array) <= -270.0:
+                shift = -(numpy.nanmin(_array) // 360) * 360
+            if shift is not None:
+                if target_value is not None:
+                    target_value += shift
+                if lower_limit is not None:
+                    lower_limit += shift
+                if upper_limit is not None:
+                    upper_limit += shift
+                if lower_linear_limit is not None:
+                    upper_linear_limit += shift
+                if upper_linear_limit is not None:
+                    upper_linear_limit += shift
 
         if target_value is not None:
             if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:

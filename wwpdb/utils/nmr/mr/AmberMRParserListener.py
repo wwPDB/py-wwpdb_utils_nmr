@@ -595,6 +595,11 @@ class AmberMRParserListener(ParseTreeListener):
                                           r'(\d+) (\S+) (\S+) '
                                           r'([-+]?\d*\.?\d+).*')
 
+        self.dist_sander_pat2 = re.compile(r'(\d+) (\S+) (\S+) '
+                                           r'(\d+) (\S+) (\S+) '
+                                           r'([-+]?\d*\.?\d+) '
+                                           r'([-+]?\d*\.?\d+).*')
+
         self.ang_sander_pat = re.compile(r'(\d+) (\S+) (\S+): '
                                          r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
                                          r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
@@ -1262,7 +1267,17 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    'iat': self.iat[_col]
                                                                    }
                                                         if self.updateSanderAtomNumberDict(_factor):
-                                                            factor = self.getNeighborCandidateAtom(factor, self.__sanderAtomNumberDict[self.iat[_col]], float(g[6]) + 1.0)
+                                                            around = float(g[6]) + 1.0
+
+                                                            g2 = None\
+                                                                if self.lastComment is None or not self.dist_sander_pat2.match(self.lastComment)\
+                                                                else self.dist_sander_pat2.search(self.lastComment).groups()
+
+                                                            if g2 is not None:
+                                                                _around = max(float(g2[6]), float(g2[7]))
+                                                                around = max(around, _around)
+
+                                                            factor = self.getNeighborCandidateAtom(factor, self.__sanderAtomNumberDict[self.iat[_col]], around)
                                                             if factor is not None:
                                                                 if self.updateSanderAtomNumberDict(factor):
                                                                     continue
@@ -3801,10 +3816,15 @@ class AmberMRParserListener(ParseTreeListener):
                 return None
 
             neighbor = [atom for atom in _neighbor if numpy.linalg.norm(toNpArray(atom) - origin) < around
-                        and atom['comp_id'] == factor['auth_comp_id']
+                        and translateToStdResName(factor['auth_comp_id']) in (atom['comp_id'], translateToStdResName(atom['comp_id']))
                         and atom['atom_id'][0] == factor['auth_atom_id'][0]]
 
-            if len(neighbor) == 1:
+            len_neighbor = len(neighbor)
+
+            if len_neighbor == 0:
+                return None
+
+            if len_neighbor == 1:
                 factor['auth_atom_id'] = neighbor[0]['atom_id']
                 return factor
 

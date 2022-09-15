@@ -2313,6 +2313,24 @@ class AmberMRParserListener(ParseTreeListener):
         validRange = True
         dstFunc = {'weight': wt}
 
+        _array = numpy.array([self.lowerLimit, self.upperLimit, self.lowerLinearLimit, self.upperLinearLimit],
+                             dtype=float)
+
+        shift = None
+        if numpy.nanmin(_array) >= 270.0:
+            shift = -(numpy.nanmax(_array) // 360) * 360
+        elif numpy.nanmax(_array) <= -270.0:
+            shift = -(numpy.nanmin(_array) // 360) * 360
+        if shift is not None:
+            if self.lowerLimit is not None:
+                self.lowerLimit += shift
+            if self.upperLimit is not None:
+                self.upperLimit += shift
+            if self.lowerLinearLimit is not None:
+                self.lowerLinearLimit += shift
+            if self.upperLinearLimit is not None:
+                self.upperLinearLimit += shift
+
         if self.lowerLimit is not None:
             if ANGLE_ERROR_MIN <= self.lowerLimit < ANGLE_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{self.lowerLimit}"

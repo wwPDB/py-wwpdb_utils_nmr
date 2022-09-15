@@ -2909,6 +2909,22 @@ class CyanaMRParserListener(ParseTreeListener):
         validRange = True
         dstFunc = {'weight': weight}
 
+        _array = numpy.array([target_value, lower_limit, upper_limit],
+                             dtype=float)
+
+        shift = None
+        if numpy.nanmin(_array) >= 270.0:
+            shift = -(numpy.nanmax(_array) // 360) * 360
+        elif numpy.nanmax(_array) <= -270.0:
+            shift = -(numpy.nanmin(_array) // 360) * 360
+        if shift is not None:
+            if target_value is not None:
+                target_value += shift
+            if lower_limit is not None:
+                lower_limit += shift
+            if upper_limit is not None:
+                upper_limit += shift
+
         if target_value is not None:
             if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
                 dstFunc['target_value'] = f"{target_value:.3f}"

@@ -326,6 +326,8 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__reasons = reasons
         self.__preferLabelSeqCount = 0
 
+        self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
+
         self.__upl_or_lol = upl_or_lol
 
         if upl_or_lol not in (None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl'):

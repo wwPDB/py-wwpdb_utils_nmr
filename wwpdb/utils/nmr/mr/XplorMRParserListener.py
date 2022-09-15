@@ -459,6 +459,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.__reasons = reasons
         self.__preferLabelSeqCount = 0
 
+        self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
+
         self.distRestraints = 0      # XPLOR-NIH: Distance restraints
         self.dihedRestraints = 0     # XPLOR-NIH: Dihedral angle restraints
         self.rdcRestraints = 0       # XPLOR-NIH: Residual dipolar coupling restraints

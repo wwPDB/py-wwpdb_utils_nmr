@@ -393,6 +393,8 @@ class CnsMRParserListener(ParseTreeListener):
         self.__reasons = reasons
         self.__preferLabelSeqCount = 0
 
+        self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
+
         self.distRestraints = 0      # CNS: Distance restraints
         self.dihedRestraints = 0     # CNS: Dihedral angle restraints
         self.rdcRestraints = 0       # CNS: Suscetibility anisotropy restraints

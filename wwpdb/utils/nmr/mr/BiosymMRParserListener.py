@@ -246,6 +246,8 @@ class BiosymMRParserListener(ParseTreeListener):
         self.__reasons = reasons
         self.__preferLabelSeqCount = 0
 
+        self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
+
         self.distRestraints = 0      # BIOSYM: Distance restraints
         self.dihedRestraints = 0     # BIOSYM: Dihedral angle restraints
         self.geoRestraints = 0       # BIOSYM: Chirality/prochirality constraints

@@ -287,6 +287,18 @@ class AmberMRReader:
 if __name__ == "__main__":
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7n7e/dihedral.amber',
+                 '../../tests-nmr/mock-data-remediation/7n7e/7n7e.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7n7e/distance.amber-corrected',
+                 '../../tests-nmr/mock-data-remediation/7n7e/7n7e.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2llj/2llj-corrected.mr',
                  '../../tests-nmr/mock-data-remediation/2llj/2llj.cif',
                  None)

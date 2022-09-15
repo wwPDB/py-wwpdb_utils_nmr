@@ -233,6 +233,8 @@ class IsdMRParserListener(ParseTreeListener):
         self.__reasons = reasons
         self.__preferLabelSeqCount = 0
 
+        self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
+
         self.distRestraints = 0      # ISD: Distance restraints
 
         self.atom_sele_pat = re.compile(r'([A-Z]+)(\d+)([A-Z][A-Z0-9]*)')

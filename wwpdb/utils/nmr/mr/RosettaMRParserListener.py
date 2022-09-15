@@ -281,6 +281,8 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__reasons = reasons
         self.__preferLabelSeqCount = 0
 
+        self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
+
         self.distRestraints = 0      # ROSETTA: Distance restraints
         self.angRestraints = 0       # ROSETTA: Angle restraints
         self.dihedRestraints = 0     # ROSETTA: Dihedral angle restraints

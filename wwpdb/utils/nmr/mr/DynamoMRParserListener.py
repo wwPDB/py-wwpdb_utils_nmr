@@ -285,6 +285,8 @@ class DynamoMRParserListener(ParseTreeListener):
         self.__reasons = reasons
         self.__preferLabelSeqCount = 0
 
+        self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
+
         self.distRestraints = 0      # DYNAMO: Distance restraints
         self.dihedRestraints = 0     # DYNAMO/TALOS: Torsion angle restraints
         self.rdcRestraints = 0       # DYNAMO/PALES: Residual dipolar coupling restraints

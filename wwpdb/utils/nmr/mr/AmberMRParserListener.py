@@ -467,6 +467,8 @@ class AmberMRParserListener(ParseTreeListener):
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
+        self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
+
         if atomNumberDict is not None:
             self.__atomNumberDict = atomNumberDict
         else:
@@ -2528,6 +2530,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         found = False
 
+        enforceAuthSeq = self.__reasons is not None and 'auth_seq_scheme' in self.__reasons
+
         for ps in (self.__polySeq if useDefault else self.__altPolySeq):
             chainId = ps['auth_chain_id']
 
@@ -2554,9 +2558,9 @@ class AmberMRParserListener(ParseTreeListener):
                             pass
 
             if seqId in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
-                idx = ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)
+                idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
-                cifSeqId = None if useDefault else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                cifSeqId = None if useDefault and not enforceAuthSeq else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
 
@@ -2660,10 +2664,14 @@ class AmberMRParserListener(ParseTreeListener):
                                         if chainId in MAJOR_ASYM_ID_SET:
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                            if 'auth_seq_scheme' not in self.reasonsForReParsing:
+                                                self.reasonsForReParsing['auth_seq_scheme'] = True
                                 return factor
                             if chainId in MAJOR_ASYM_ID_SET:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                if 'auth_seq_scheme' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['auth_seq_scheme'] = True
                             return None
 
         if not useDefault:
@@ -2802,10 +2810,14 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if chainId in MAJOR_ASYM_ID_SET:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                    if 'auth_seq_scheme' not in self.reasonsForReParsing:
+                                                        self.reasonsForReParsing['auth_seq_scheme'] = True
                                         return factor
                                     if chainId in MAJOR_ASYM_ID_SET:
                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                        if 'auth_seq_scheme' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['auth_seq_scheme'] = True
                                     return None
 
         if not useDefault or self.__altPolySeq is None:
@@ -2854,6 +2866,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         found = False
 
+        enforceAuthSeq = self.__reasons is not None and 'auth_seq_scheme' in self.__reasons
+
         for ps in (self.__polySeq if useDefault else self.__altPolySeq):
             chainId = ps['auth_chain_id']
             seqId = factor['auth_seq_id']
@@ -2880,8 +2894,8 @@ class AmberMRParserListener(ParseTreeListener):
                         except IndexError:
                             pass
 
-            if seqId in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
-                idx = ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)
+            if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
+                idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
                 cifSeqId = None if useDefault else ps['seq_id'][idx]
@@ -3333,6 +3347,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         allFound = True
 
+        enforceAuthSeq = self.__reasons is not None and 'auth_seq_scheme' in self.__reasons
+
         for atom in atomIdList:
             chainId = atom['chain_id']
             seqId = atom['seq_id']
@@ -3367,8 +3383,8 @@ class AmberMRParserListener(ParseTreeListener):
                             except IndexError:
                                 pass
 
-                if seqId in (ps['seq_id'] if useDefault else ps['auth_seq_id']):
-                    idx = ps['seq_id'].index(seqId) if useDefault else ps['auth_seq_id'].index(seqId)
+                if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
+                    idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
                     cifSeqId = None if useDefault else ps['seq_id'][idx]
@@ -3760,10 +3776,14 @@ class AmberMRParserListener(ParseTreeListener):
         return self.updateSanderAtomNumberDictWithAmbigCode(factor, cifCheck, False)
 
     def getNeighborCandidateAtom(self, factor, src_atom, around):
-        """ Try to find neighbor atom from given condistions.
+        """ Try to find neighbor atom from given conditions.
         """
         if not self.__hasCoord:
             return None
+
+        if self.__reasons is not None and 'auth_seq_scheme' in self.__reasons:
+            self.__authAsymId = 'auth_asym_id'
+            self.__authSeqId = 'auth_seq_id'
 
         try:
 

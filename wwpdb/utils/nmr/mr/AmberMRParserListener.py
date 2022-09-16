@@ -2326,6 +2326,9 @@ class AmberMRParserListener(ParseTreeListener):
             elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmin(_array) // 360) * 360
             if shift is not None:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    "The limit values for an angle restraint have been circularly shifted "\
+                    f"to fit within range {ANGLE_RESTRAINT_ERROR}.\n"
                 if self.lowerLimit is not None:
                     self.lowerLimit += shift
                 if self.upperLimit is not None:

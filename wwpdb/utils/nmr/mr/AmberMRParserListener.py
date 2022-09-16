@@ -2670,7 +2670,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                     checked = False
                                     if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
-                                        if 'H1' in coordAtomSite['atom_id']:
+                                        if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                             checked = True
                                     if _atomId[0] == 'H':
                                         ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -2816,7 +2816,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
-                                                if 'H1' in coordAtomSite['atom_id']:
+                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] == 'H':
                                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -3020,7 +3020,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
-                                                if 'H1' in coordAtomSite['atom_id']:
+                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] == 'H':
                                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -3104,7 +3104,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
-                                                if 'H1' in coordAtomSite['atom_id']:
+                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] == 'H':
                                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -3228,7 +3228,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
-                                                if 'H1' in coordAtomSite['atom_id']:
+                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] == 'H':
                                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -3312,7 +3312,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
-                                                if 'H1' in coordAtomSite['atom_id']:
+                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] == 'H':
                                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -3494,7 +3494,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
                                                 if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
-                                                    if 'H1' in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] == 'H':
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -3578,7 +3578,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
                                                 if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
-                                                    if 'H1' in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] == 'H':
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -3685,7 +3685,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
                                                 if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
-                                                    if 'H1' in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] == 'H':
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -3769,7 +3769,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
                                                 if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
-                                                    if 'H1' in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] == 'H':
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds

@@ -7490,7 +7490,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             if self.__cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
                                                 if seqId == 1 and _atomId in ('H', 'HN'):
-                                                    if 'H1' in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] == 'H':
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds

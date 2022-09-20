@@ -510,7 +510,7 @@ vector_func_call:
 vector_show_property:
 	(Average_VS | Element_VS | Max_VS | Min_VS | Norm_VS | Rms_VS | Sum_VS) L_paren_VS Atom_properties_VS R_paren_VS;
 
-/* CNS: Gloval statement/Evaluate statement - Syntax_
+/* CNS: Global statement/Evaluate statement - Syntax_
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 evaluate_statement:

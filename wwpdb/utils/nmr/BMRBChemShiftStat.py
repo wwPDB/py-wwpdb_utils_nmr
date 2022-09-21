@@ -24,7 +24,6 @@ import re
 import copy
 import pickle
 import collections
-import hashlib
 
 try:
     from wwpdb.utils.nmr.AlignUtil import emptyValue
@@ -185,6 +184,9 @@ class BMRBChemShiftStat:
         if comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
             return False, True, False
 
+        if comp_id in self.__cachedDictForTypeOfCompId:
+            return self.__cachedDictForTypeOfCompId[comp_id]
+
         try:
 
             results = [False] * 3
@@ -222,10 +224,9 @@ class BMRBChemShiftStat:
             @return: the most similar comp_id, otherwise None
         """
 
-        md5hash = hashlib.md5(','.join(atom_ids).encode()).hexdigest()
-
-        if md5hash in self.__cachedDictForSimilarCompId:
-            return self.__cachedDictForSimilarCompId[md5hash]
+        key = str(atom_ids)
+        if key in self.__cachedDictForSimilarCompId:
+            return self.__cachedDictForSimilarCompId[key]
 
         aa_bb = set(['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'])
         dn_bb = set(["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", 'P'])
@@ -345,7 +346,7 @@ class BMRBChemShiftStat:
             return comp_id
 
         finally:
-            self.__cachedDictForSimilarCompId[md5hash] = comp_id
+            self.__cachedDictForSimilarCompId[key] = comp_id
 
     def hasEnoughStat(self, comp_id, primary=True):
         """ Return whether a given comp_id has enough chemical shift statistics.

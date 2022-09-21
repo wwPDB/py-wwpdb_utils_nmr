@@ -4598,7 +4598,7 @@ class NEFTranslator:
 
         comp_id = comp_id.upper()
 
-        key = (comp_id, star_atom_list, details, leave_unmatched)
+        key = (comp_id, str(star_atom_list), str(details), leave_unmatched)
         if key in self.__cachedDictForNefAtom:
             return self.__cachedDictForNefAtom[key]
 

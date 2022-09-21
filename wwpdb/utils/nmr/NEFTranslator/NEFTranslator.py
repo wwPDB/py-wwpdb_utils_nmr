@@ -2120,11 +2120,12 @@ class NEFTranslator:
 
                     if code >= 4:
                         if i[3] in emptyValue and l < len_loop_data:
-                            r = {}
-                            for j, t in enumerate(loop.tags):
-                                r[t] = loop.data[l][j]
-                            user_warn_msg += f"[Invalid data] {ambig_set_id} must not be empty for {ambig_code} {code}. "\
-                                f"#_of_row {l + 1}, data_of_row {r}.\n"
+                            if code in (4, 5):
+                                r = {}
+                                for j, t in enumerate(loop.tags):
+                                    r[t] = loop.data[l][j]
+                                user_warn_msg += f"[Invalid data] {ambig_set_id} must not be empty for {ambig_code} {code}. "\
+                                    f"#_of_row {l + 1}, data_of_row {r}.\n"
                         else:
                             try:
                                 int(i[3])

@@ -20992,16 +20992,18 @@ class NmrDpUtility:
 
                             if ambig_set_id in emptyValue:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                    + f"] {ambig_code_name} {str(ambig_code)!r} requires {ambig_set_id_name} value."
+                                if ambig_code in (4, 5):
 
-                                self.report.warning.appendDescription('missing_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                       'description': warn})
-                                self.report.setWarning()
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                        + f"] {ambig_code_name} {str(ambig_code)!r} requires {ambig_set_id_name} value."
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ Warning  - {warn}\n")
+                                    self.report.warning.appendDescription('missing_data',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                           'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ Warning  - {warn}\n")
 
                             else:
 

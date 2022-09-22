@@ -3961,6 +3961,16 @@ class CnsMRParserListener(ParseTreeListener):
                     else:
                         compId = None
 
+                    if not isPolySeq and compId is None:
+                        if 'alt_auth_seq_id' in ps and seqId in ps['alt_auth_seq_id']:
+                            idx = ps['alt_auth_seq_id'].index(seqId)
+                            seqId = ps['seq_id'][idx]
+                            compId = ps['comp_id'][idx]
+                        elif seqId in ps['seq_id']:
+                            idx = ps['seq_id'].index(seqId)
+                            compId = ps['comp_id'][idx]
+                            _seqId_ = ps['auth_seq_id'][idx]
+
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
                     if compId is None and seqKey in self.__authToLabelSeq:
@@ -4025,6 +4035,8 @@ class CnsMRParserListener(ParseTreeListener):
                                     _seqId_ = retrieveOriginalSeqIdFromMRMap(self.__reasons['branch_remap'], chainId, seqId)
                                     if _seqId_ != seqId:
                                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId_, authCompId, atomId, coordAtomSite)
+                                elif seqId != _seqId:
+                                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
 

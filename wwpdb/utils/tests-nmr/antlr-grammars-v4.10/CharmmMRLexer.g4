@@ -260,7 +260,7 @@ NContact:		'NCON' 'T'? 'A'? 'C'? 'T'?;
 //Weight:		'WEIG' 'H'? 'T'?;
 
 /* CHARMM: Atom selection
- See also https://charmm-gui.org/charmmdoc/cons.html
+ See also https://charmm-gui.org/charmmdoc/select.html
 */
 Selection:		'SELE' 'C'? 'T'? 'I'? 'O'? 'N'?;
 //Show:			'SHOW';
@@ -363,7 +363,7 @@ SPACE:			[ \t\r\n]+ -> skip;
 CONTINUE:		'-'+ SPACE -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
 //SET_VARIABLE:		Set ([\r\n]*)? ~[\r\n]* ([\r\n]*)? End -> channel(HIDDEN);
 
 mode VECTOR_EXPR_MODE;

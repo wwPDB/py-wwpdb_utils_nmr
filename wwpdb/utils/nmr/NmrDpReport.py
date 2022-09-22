@@ -72,6 +72,7 @@
 # 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
 # 06-Sep-2022  M. Yokochi - add support for branched entity and extra restraints in NMR-STAR format (NMR restraint remediation)
 # 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (NMR restraint remediation)
+# 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1670,7 +1671,7 @@ class NmrDpReportInputSource:
                            'nef', 'nmr-star',
                            'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth',
                            'nm-aux-amb', 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro',
-                           'nm-res-dyn', 'nm-res-syb', 'nm-res-isd',
+                           'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-res-cha',
                            'nm-res-mr', 'nm-pea-any')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',

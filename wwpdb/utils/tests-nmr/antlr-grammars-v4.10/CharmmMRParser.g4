@@ -93,11 +93,14 @@ noe_statement:
 	KMin number_s |
 	RMin number_s |
 	KMax number_s |
+	RMax number_s |
 	FMax number_s |
 	MinDist |
 	RSwi number_s |
 	SExp number_s |
 	SumR |
+	TCon number_s |
+	RExp number_s |
 	MPNoe INoe Integer TnoX number_s TnoY number_s TnoZ number_s |
 	NMPNoe Integer |
 	Read Unit Integer |
@@ -115,6 +118,7 @@ pnoe_statement:
 	KMin number_s |
 	RMin number_s |
 	KMax number_s |
+	RMax number_s |
 	FMax number_s |
 	CnoX number_s |
 	CnoY number_s |
@@ -123,6 +127,8 @@ pnoe_statement:
 	RSwi number_s |
 	SExp number_s |
 	SumR |
+	TCon number_s |
+	RExp number_s |
 	MPNoe INoe Integer TnoX number_s TnoY number_s TnoZ number_s |
 	NMPNoe Integer |
 	Read Unit Integer |
@@ -149,37 +155,37 @@ dihedral_statement:
 dihedral_assign:
 	(selection selection selection selection) |
 	(ByNumber Integer Integer Integer Integer) |
+	(Integer Simple_name Integer Simple_name Integer Simple_name Integer Simple_name) |
 	(Simple_name? Integer Simple_name Simple_name? Integer Simple_name Simple_name? Integer Simple_name Simple_name? Integer Simple_name);
 
 /* CHARMM: CONSTRAINTS - Holding atoms in place
  See also https://charmm-gui.org/charmmdoc/cons.html
 */
 harmonic_statement:
-	(Absolute? absolute_spec force_const_spec coordinate_spec) |
-	(Bestfit bestfit_spec force_const_spec coordinate_spec) |
-	(Relative bestfit_spec force_const_spec selection ) |
+	(Absolute? absolute_spec* force_const_spec* selection force_const_spec* coordinate_spec?) |
+	(Bestfit bestfit_spec? force_const_spec* coordinate_spec?) |
+	(Relative bestfit_spec? force_const_spec* selection force_const_spec* selection) |
 	Clear;
 
 absolute_spec:
-	(Exponent Integer)?
-	(XScale number)?
-	(YScale number)?
-	(ZScale number)?;
+	(Exponent Integer) |
+	(XScale number) |
+	(YScale number) |
+	(ZScale number);
 
 force_const_spec:
-	(Force number)?
-	selection
-	Mass?
-	Weight?;
+	Force number |
+	Mass |
+	Weight;
 
 bestfit_spec:
-	NoRotation? |
-	NoTranslation?;
+	NoRotation |
+	NoTranslation;
 
 coordinate_spec:
-	Main?
-	Comp?
-	Keep?;
+	Main |
+	Comp |
+	Keep;
 
 /* CHARMM: CONSTRAINTS - Holding Internal Coordinates near selected values
  See also https://charmm-gui.org/charmmdoc/cons.html
@@ -304,7 +310,7 @@ distance_matrix_statement:
 	selection;
 
 /* CHARMM: Atom selection
- See also https://charmm-gui.org/charmmdoc/cons.html
+ See also https://charmm-gui.org/charmmdoc/select.html
 */
 selection:
 	Selection selection_expression Show? End;
@@ -352,10 +358,6 @@ number_f:
 number_s:
 	Real | Integer | Symbol_name;
 
-/* number expression in annotation */
-number_a:
-	Real | Integer;
-
 set_statement:
-	Set Simple_name_VE Equ_op_VE? (Integer | Real | Simple_name)* RETURN_VE;
+	Set Simple_name_VE Equ_op_VE? (Real_VE | Integer_VE | Simple_name_VE) RETURN_VE;
 

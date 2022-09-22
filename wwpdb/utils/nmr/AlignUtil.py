@@ -980,6 +980,9 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
     elif fileType == 'nm-res-isd':
         _mr_format_name = 'ISD'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
+    elif fileType == 'nm-res-cha':
+        _mr_format_name = 'CHARMM'
+        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
     else:
         _mr_format_name = 'MR'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'

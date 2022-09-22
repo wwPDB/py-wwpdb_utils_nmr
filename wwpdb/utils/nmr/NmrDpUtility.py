@@ -161,6 +161,7 @@
 # 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
 # 06-Sep-2022  M. Yokochi - add support for branched entity (NMR restraint remediation)
 # 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (NMR restraint remediation)
+# 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -256,6 +257,7 @@ try:
     from wwpdb.utils.nmr.mr.DynamoMRReader import DynamoMRReader
     from wwpdb.utils.nmr.mr.SybylMRReader import SybylMRReader
     from wwpdb.utils.nmr.mr.IsdMRReader import IsdMRReader
+    from wwpdb.utils.nmr.mr.CharmmMRReader import CharmmMRReader
 
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -329,6 +331,7 @@ except ImportError:
     from nmr.mr.DynamoMRReader import DynamoMRReader
     from nmr.mr.SybylMRReader import SybylMRReader
     from nmr.mr.IsdMRReader import IsdMRReader
+    from nmr.mr.CharmmMRReader import CharmmMRReader
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -8105,6 +8108,9 @@ class NmrDpUtility:
             elif file_type == 'nm-res-isd':
                 mr_format_name = 'ISD'
                 a_mr_format_name = 'an ' + mr_format_name
+            elif file_type == 'nm-res-cha':
+                mr_format_name = 'CHARMM'
+                a_mr_format_name = 'a ' + mr_format_name
             else:
                 mr_format_name = 'other'
 
@@ -9034,13 +9040,13 @@ class NmrDpUtility:
 
                 if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
                                  'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
-                                 'nm-res-syb', 'nm-res-isd'):
+                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
                     reader = self.__getSimpleMRPTFileReader(file_type, self.__verbose)
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn',
-                                                              'nm-res-syb', 'nm-res-isd'):
+                                                              'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
@@ -9665,6 +9671,10 @@ class NmrDpUtility:
             return IsdMRReader(verbose, self.__lfh, None, None, None, None,
                                self.__ccU, self.__csStat, self.__nefT,
                                reasons)
+        if file_type == 'nm-res-cha':
+            return CharmmMRReader(verbose, self.__lfh, None, None, None, None,
+                                  self.__ccU, self.__csStat, self.__nefT,
+                                  reasons)
 
         return None
 
@@ -9729,6 +9739,9 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-isd':
             # mr_format_name = 'ISD'
+            pass
+        elif file_type == 'nm-res-cha':
+            # mr_format_name = 'CHARMM'
             pass
         else:
             return False
@@ -10608,6 +10621,8 @@ class NmrDpUtility:
             if set_valid_types == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl'])\
                or set_valid_types == set(['nm-res-isd', 'nm-res-cns', 'nm-res-xpl']):
                 file_type = 'nm-res-xpl'
+            if set_valid_types == set(['nm-res-cha', 'nm-res-cns', 'nm-res-xpl']):
+                file_type = 'nm-res-cha'
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
@@ -10723,7 +10738,7 @@ class NmrDpUtility:
 
             for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
                                    'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
-                                   'nm-res-syb', 'nm-res-isd']:
+                                   'nm-res-syb', 'nm-res-isd', 'nm-res-cha']:
 
                 if test_file_type == file_type:
                     continue
@@ -11047,6 +11062,8 @@ class NmrDpUtility:
             if set_valid_types == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl'])\
                or set_valid_types == set(['nm-res-isd', 'nm-res-cns', 'nm-res-xpl']):
                 file_type = 'nm-res-xpl'
+            if set_valid_types == set(['nm-res-cha', 'nm-res-cns', 'nm-res-xpl']):
+                file_type = 'nm-res-cha'
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
@@ -11101,6 +11118,9 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-isd':
             # mr_format_name = 'ISD'
+            pass
+        elif file_type == 'nm-res-cha':
+            # mr_format_name = 'CHARMM'
             pass
         else:
             return False
@@ -11609,6 +11629,8 @@ class NmrDpUtility:
             if set_valid_types == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl'])\
                or set_valid_types == set(['nm-res-isd', 'nm-res-cns', 'nm-res-xpl']):
                 file_type = 'nm-res-xpl'
+            if set_valid_types == set(['nm-res-cha', 'nm-res-cns', 'nm-res-xpl']):
+                file_type = 'nm-res-cha'
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
@@ -11631,7 +11653,7 @@ class NmrDpUtility:
 
             if listener is not None:
                 if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn',
-                                 'nm-res-syb', 'nm-res-isd'):
+                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -11831,6 +11853,17 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
+        if (not is_valid or multiple_check) and file_type != 'nm-res-cha':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
         if len(genuine_type) != 1:
             _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
             _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
@@ -11864,6 +11897,8 @@ class NmrDpUtility:
             mr_format_name = 'SYBYL'
         elif file_type == 'nm-res-isd':
             mr_format_name = 'ISD'
+        elif file_type == 'nm-res-cha':
+            mr_format_name = 'CHARMM'
         elif file_type == 'nm-res-mr':
             mr_format_name = 'MR'
         else:
@@ -11905,6 +11940,9 @@ class NmrDpUtility:
         elif _file_type == 'nm-res-isd':
             _mr_format_name = 'ISD'
             _a_mr_format_name = 'an ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-res-cha':
+            _mr_format_name = 'CHARMM'
+            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
 
         is_valid = False
         err = ''
@@ -12118,7 +12156,7 @@ class NmrDpUtility:
 
             for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
                                'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
-                               'nm-res-syb', 'nm-res-isd'):
+                               'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
 
                 sel_res_file = src_basename + f'-selected-as-res-{_file_type[-3:]}.mr'
 
@@ -12682,6 +12720,12 @@ class NmrDpUtility:
                             _ar['file_type'] = 'nm-res-xpl'
                             split_file_list.append(_ar)
 
+                        elif len_valid_types == 3\
+                                and set(valid_types) == set(['nm-res-cha', 'nm-res-cns', 'nm-res-xpl']):
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-cha'
+                            split_file_list.append(_ar)
+
                         else:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = valid_types[0]
@@ -12942,7 +12986,7 @@ class NmrDpUtility:
 
                     for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
                                        'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
-                                       'nm-res-syb', 'nm-res-isd'):
+                                       'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
 
                         sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -13281,7 +13325,7 @@ class NmrDpUtility:
 
                         for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
                                            'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
-                                           'nm-res-syb', 'nm-res-isd'):
+                                           'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
 
                             sel_res_file = _dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -13367,6 +13411,14 @@ class NmrDpUtility:
                                          or set(valid_types) == set(['nm-res-isd', 'nm-res-cns', 'nm-res-xpl'])):
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-xpl'
+                                if distict:
+                                    _ar['original_file_name'] = file_name
+                                split_file_list.append(_ar)
+
+                            elif len_valid_types == 3\
+                                    and set(valid_types) == set(['nm-res-cha', 'nm-res-cns', 'nm-res-xpl']):
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = 'nm-res-cha'
                                 if distict:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
@@ -24909,6 +24961,136 @@ class NmrDpUtility:
                             #     if self.__verbose:
                             #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
                             #     """
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+            elif file_type == 'nm-res-cha':
+                reader = CharmmMRReader(self.__verbose, self.__lfh,
+                                        self.__representative_model_id,
+                                        self.__mr_atom_name_mapping,
+                                        self.__cR, cC,
+                                        self.__ccU, self.__csStat, self.__nefT)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = CharmmMRReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, cC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
+                                self.report.error.appendDescription('atom_not_found',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Enum mismatch ignorable]'):
+                                self.report.warning.appendDescription('enum_mismatch_ignorable',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Range value error]'):
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]'):
+                                self.report.warning.appendDescription('inconsistent_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Insufficient atom selection]'):
+                                self.report.warning.appendDescription('insufficient_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Anomalous RDC vector]'):
+                                self.report.warning.appendDescription('anomalous_rdc_vector',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Unsupported data]'):
+                                self.report.warning.appendDescription('unsupported_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
                                 self.report.setError()

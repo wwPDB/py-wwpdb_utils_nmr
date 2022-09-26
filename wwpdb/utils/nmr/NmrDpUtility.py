@@ -15624,7 +15624,7 @@ class NmrDpUtility:
                             # """
                             matched = mid_code.count('|')
 
-                            if self.__tolerant_seq_align and seq_mismatch and len(polymer_sequence) > 1:  # and not alt_chain:
+                            if self.__tolerant_seq_align and len(polymer_sequence) > 1:  # and not alt_chain:
                                 if 0 < matched < 4 and unmapped // matched > 20:
                                     continue
 
@@ -15954,7 +15954,7 @@ class NmrDpUtility:
                             # """
                             matched = mid_code.count('|')
 
-                            if self.__tolerant_seq_align and seq_mismatch and len(polymer_sequence) > 1:  # and not alt_chain:
+                            if self.__tolerant_seq_align and len(polymer_sequence) > 1:  # and not alt_chain:
                                 if 0 < matched < 4 and unmapped // matched > 20:
                                     continue
 

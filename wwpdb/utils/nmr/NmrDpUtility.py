@@ -12317,6 +12317,11 @@ class NmrDpUtility:
 
                                 ofp.write(line)
 
+                        _mrPath = os.path.splitext(src_file)[0] + '-corrected.str'
+
+                        if os.path.exists(_mrPath):  # in case manually corrected NMR-STAR file exists
+                            mrPath = _mrPath
+
                         mr_file_path_list = 'restraint_file_path_list'
 
                         if mr_file_path_list not in self.__inputParamDict:

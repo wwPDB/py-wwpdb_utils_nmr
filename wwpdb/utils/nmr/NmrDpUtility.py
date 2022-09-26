@@ -5554,7 +5554,7 @@ class NmrDpUtility:
 
                     csPath = _csPath
 
-                if self.__op == 'nmr-cs-mr-merge':
+                if self.__op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
 
                     _csPath = csPath + '.cif2str'
 
@@ -5787,7 +5787,7 @@ class NmrDpUtility:
 
                     csPath = _csPath
 
-                if self.__op == 'nmr-cs-mr-merge':
+                if self.__op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
 
                     _csPath = csPath + '.cif2str'
 

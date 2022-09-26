@@ -15624,6 +15624,10 @@ class NmrDpUtility:
                             # """
                             matched = mid_code.count('|')
 
+                            if self.__tolerant_seq_align and seq_mismatch and len(polymer_sequence) > 1:  # and not alt_chain:
+                                if 0 < matched < 4 and unmapped // matched > 20:
+                                    continue
+
                             seq_align = {'list_id': ps_in_loop['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id, 'length': ref_length,
                                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                                          'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
@@ -15949,6 +15953,10 @@ class NmrDpUtility:
                             #     update_poly_seq = True
                             # """
                             matched = mid_code.count('|')
+
+                            if self.__tolerant_seq_align and seq_mismatch and len(polymer_sequence) > 1:  # and not alt_chain:
+                                if 0 < matched < 4 and unmapped // matched > 20:
+                                    continue
 
                             seq_align = {'list_id': ps_in_loop['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id, 'length': ref_length,
                                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,

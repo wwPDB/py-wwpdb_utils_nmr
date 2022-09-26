@@ -2430,7 +2430,7 @@ class NEFTranslator:
                                     missing_tags = list(set_cw - set(loop.tags))
                                     raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
-                    elif group['member-with'] is not None and 'mandatory' in d and d['mandatory']:
+                    elif group['member-with'] is not None:
                         has_member = False
                         for mw in group['member-with']:
                             if mw in loop.tags:
@@ -3400,7 +3400,7 @@ class NEFTranslator:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                              + f"Data item {name} {ent[name]!r} must not be equal to {ne} {ent[ne]!r}.")
 
-                        elif group['member-with'] is not None and 'mandatory' in d and d['mandatory']:
+                        elif group['member-with'] is not None:
                             has_member = False
                             for mw in group['member-with']:
                                 if mw in ent and ent[mw] is not None:
@@ -3746,7 +3746,7 @@ class NEFTranslator:
                                 missing_tags = list(set_cw - set(sf_tags.keys()))
                                 raise LookupError(f"Missing mandatory {missing_tags} saveframe tag(s).")
 
-                elif group['member-with'] is not None and 'mandatory' in t and t['mandatory']:
+                elif group['member-with'] is not None:
                     has_member = False
                     for mw in group['member-with']:
                         if mw in sf_tags.keys():
@@ -3965,7 +3965,7 @@ class NEFTranslator:
                                     if ent[name] == ent[ne]:
                                         raise ValueError(f"Tag item {name} {ent[name]!r} must not be equal to {ne} {ent[ne]!r}.")
 
-                    elif group['member-with'] is not None and 'mandatory' in t and t['mandatory']:
+                    elif group['member-with'] is not None:
                         has_member = False
                         for mw in group['member-with']:
                             if mw in ent and ent[mw] is not None:

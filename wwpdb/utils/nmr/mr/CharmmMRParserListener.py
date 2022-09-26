@@ -326,7 +326,6 @@ class CharmmMRParserListener(ParseTreeListener):
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
-        print(reasons)
         self.__preferLabelSeqCount = 0
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
@@ -341,6 +340,12 @@ class CharmmMRParserListener(ParseTreeListener):
         self.dist_comment_pat2 = re.compile('.*:'
                                             r'([A-Z]+):([A-Za-z]+)(\d+):(\S+)-'
                                             r'([A-Z]+):([A-Za-z]+)(\d+):(\S+).*')
+
+        self.dihed_comment_pat = re.compile('.*:'
+                                            r'([A-Za-z]+)(\d+):(\S+)-'
+                                            r'([A-Za-z]+)(\d+):(\S+)-'
+                                            r'([A-Za-z]+)(\d+):(\S+)-'
+                                            r'([A-Za-z]+)(\d+):(\S+).*')
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -1683,6 +1688,21 @@ class CharmmMRParserListener(ParseTreeListener):
                         # _factor['comp_id'] = [g[offset + 1]]
                         _factor['seq_id'] = [int(g[offset + 2])]
                         _factor['atom_id'] = [g[offset + 3]]
+                elif self.__cur_subtype == 'dihed':
+                    if self.dihed_comment_pat.match(self.lastComment):
+                        g = self.dihed_comment_pat.search(self.lastComment).groups()
+                        offset = len(self.atomSelectionSet) * 3
+                        # _factor['comp_id'] = [g[offset]]
+                        _factor['seq_id'] = [int(g[offset + 1])]
+                        _factor['atom_id'] = [g[offset + 2]]
+                        _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq if _factor['seq_id'][0] in ps['seq_id']]
+                        if self.__hasNonPolySeq:
+                            for np in self.__nonPolySeq:
+                                _chainId = np['auth_chain_id']
+                                if _chainId not in _factor['chain_id'] and _factor['seq_id'][0] in np['seq_id']:
+                                    _factor['chain_id'].append(_chainId)
+                        if len(_factor['chain_id']) == 0:
+                            del _factor['chain_id']
             if g is None:
                 _factor['atom_id'] = [None]
                 if 'chain_id' in _factor:

@@ -11850,8 +11850,8 @@ class NmrDpUtility:
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
+                valid_types.update(_valid_types)
+                possible_types.update(_possible_types)
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-cha':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
@@ -11861,8 +11861,8 @@ class NmrDpUtility:
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
+                valid_types.update(_valid_types)
+                possible_types.update(_possible_types)
 
         if len(genuine_type) != 1:
             _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]

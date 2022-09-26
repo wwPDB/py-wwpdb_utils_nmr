@@ -21630,20 +21630,27 @@ class NmrDpUtility:
 
                     if cs_list not in emptyValue:
 
-                        err = f"Assigned chemical shifts are mandatory. Referred {cs_list!r} saveframe does not exist."
+                        if fileListId == 0:
 
-                        self.report.error.appendDescription('missing_mandatory_content',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                             'description': err})
-                        self.report.setError()
+                            err = "Assigned chemical shifts are required to verify the consistensy of assigned peak list. "\
+                                f"Referred {cs_list!r} saveframe containing the assigned chemical shift does not exist."
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - {err}\n")
+                            self.report.error.appendDescription('missing_mandatory_content',
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                 'description': err})
+                            self.report.setError()
 
-                        continue
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - {err}\n")
+
+                            continue
+
+                        cs_input_source = self.report.input_sources[0]
+                        cs_input_source_dic = cs_input_source.get()
+                        cs_file_name = cs_input_source_dic['file_name']
 
                     try:
-                        cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name)  # noqa: E741
+                        cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == cs_file_name)  # noqa: E741
                     except StopIteration:
                         continue
 
@@ -22088,6 +22095,9 @@ class NmrDpUtility:
 
                 cs_data = None
 
+                cs_file_name = file_name
+                csFileListId = fileListId
+
                 try:
 
                     cs_list = get_first_sf_tag(sf_data, self.cs_list_sf_tag_name[file_type])
@@ -22102,17 +22112,25 @@ class NmrDpUtility:
 
                         if cs_list not in emptyValue:
 
-                            err = f"Assigned chemical shifts are mandatory. Referred {cs_list!r} saveframe does not exist."
+                            if fileListId == 0:
 
-                            self.report.error.appendDescription('missing_mandatory_content',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': err})
-                            self.report.setError()
+                                err = "Assigned chemical shifts are required to verify the consistensy of assigned peak lists. "\
+                                    f"Referred {cs_list!r} saveframe containing the assigned chemical shift does not exist."
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Error  - {err}\n")
+                                self.report.error.appendDescription('missing_mandatory_content',
+                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                     'description': err})
+                                self.report.setError()
 
-                            continue
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Error  - {err}\n")
+
+                                continue
+
+                            cs_input_source = self.report.input_sources[0]
+                            cs_input_source_dic = cs_input_source.get()
+                            cs_file_name = cs_input_source_dic['file_name']
+                            csFileListId = 0
 
                 except:  # noqa: E722 pylint: disable=bare-except
                     pass
@@ -22121,7 +22139,7 @@ class NmrDpUtility:
 
                     try:
 
-                        cs = next(l for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name)  # noqa: E741
+                        cs = next(l for l in self.__lp_data['chem_shift'] if l['file_name'] == cs_file_name)  # noqa: E741
 
                     except StopIteration:
                         continue
@@ -22129,7 +22147,7 @@ class NmrDpUtility:
                     cs_data = cs['data']
                     cs_list = cs['sf_framecode']
 
-                    cs_sf_data = self.__getSaveframeByName(fileListId, cs_list)
+                    cs_sf_data = self.__getSaveframeByName(csFileListId, cs_list)
 
                     if cs_sf_data is None:
                         continue
@@ -22272,7 +22290,7 @@ class NmrDpUtility:
                                         cs_data = l['data']
                                         cs_list = l['sf_framecode']
 
-                                        cs_sf_data = self.__getSaveframeByName(fileListId, cs_list)
+                                        cs_sf_data = self.__getSaveframeByName(csFileListId, cs_list)
 
                                         if cs_sf_data is None:
                                             continue

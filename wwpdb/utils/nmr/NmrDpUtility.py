@@ -1016,6 +1016,8 @@ class NmrDpUtility:
         # temporary file path to be removed (release mode)
         self.__tmpPath = None
 
+        self.__dirPath = None
+
         # auxiliary input resource
         self.__inputParamDict = {}
 
@@ -5729,6 +5731,8 @@ class NmrDpUtility:
 
         if self.__combined_mode:
 
+            self.__dirPath = os.path.dirname(srcPath)
+
             codec = detect_bom(srcPath, 'utf-8')
 
             srcPath_ = None
@@ -5816,6 +5820,9 @@ class NmrDpUtility:
             cs_file_path_list = 'chem_shift_file_path_list'
 
             for csListId, csPath in enumerate(self.__inputParamDict[cs_file_path_list]):
+
+                if csListId == 0:
+                    self.__dirPath = os.path.dirname(csPath)
 
                 if csPath.endswith('.gz'):
 
@@ -7826,7 +7833,7 @@ class NmrDpUtility:
 
             input_source = self.report.input_sources[fileListId]
 
-            self.__detectContentSubType__(fileListId, input_source)
+            self.__detectContentSubType__(fileListId, input_source, self.__dirPath)
 
         return not self.report.isError()
 

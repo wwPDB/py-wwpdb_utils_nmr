@@ -180,12 +180,12 @@ class CharmmMRReader:
             if self.__verbose:
                 self.__lfh.write(f"+CharmmMRReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
-            """
+
         except Exception as e:
             if self.__verbose and isFilePath:
                 self.__lfh.write(f"+CharmmMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
-            """
+
         finally:
             if isFilePath and ifp is not None:
                 ifp.close()

@@ -9515,18 +9515,20 @@ class NmrDpUtility:
 
                 elif 'chem_shift' not in content_subtype:
 
-                    err = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
-                        "However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
+                    if not self.__remediation_mode:
 
-                    self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                                 {'file_name': file_name, 'description': err}})
+                        err = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
+                            "However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
 
-                    # self.report.error.appendDescription('content_mismatch',
-                    #                                     {'file_name': file_name, 'description': err})
-                    # self.report.setError()
+                        self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                                     {'file_name': file_name, 'description': err}})
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+                        # self.report.error.appendDescription('content_mismatch',
+                        #                                     {'file_name': file_name, 'description': err})
+                        # self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
         md5_set = set(md5_list)
 

@@ -58,7 +58,8 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                              PARAMAGNETIC_ELEMENTS,
-                                                             FERROMAGNETIC_ELEMENTS)
+                                                             FERROMAGNETIC_ELEMENTS,
+                                                             LANTHANOID_ELEMENTS)
     from wwpdb.utils.nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
                                            MAJOR_ASYM_ID_SET,
                                            monDict3,
@@ -119,7 +120,8 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                  PARAMAGNETIC_ELEMENTS,
-                                                 FERROMAGNETIC_ELEMENTS)
+                                                 FERROMAGNETIC_ELEMENTS,
+                                                 LANTHANOID_ELEMENTS)
     from nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
                                MAJOR_ASYM_ID_SET,
                                monDict3,
@@ -7112,7 +7114,8 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__with_axis and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
             if self.__with_para and (('comp_id' in _factor and _factor['atom_id'][0] == _factor['comp_id'][0] and _factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                     or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+                                     or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS
+                                     or _factor['atom_id'][0] in LANTHANOID_ELEMENTS):
                 return _factor
             if self.__cur_subtype == 'dist' and _factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
                 return _factor
@@ -7274,7 +7277,7 @@ class XplorMRParserListener(ParseTreeListener):
                             if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                 continue
                         if self.__with_para:
-                            if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS):
+                            if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS or atomId in LANTHANOID_ELEMENTS):
                                 continue
 
                         if self.__with_axis or self.__with_para:
@@ -8884,7 +8887,7 @@ class XplorMRParserListener(ParseTreeListener):
                         if self.__with_axis and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
                         if self.__with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                                 or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+                                                 or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
@@ -9160,7 +9163,7 @@ class XplorMRParserListener(ParseTreeListener):
                             pass
                         if self.__with_para and 'atom_id' in __factor\
                            and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
@@ -9217,7 +9220,7 @@ class XplorMRParserListener(ParseTreeListener):
                             pass
                         if self.__with_para and 'atom_id' in __factor\
                            and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
@@ -9337,7 +9340,7 @@ class XplorMRParserListener(ParseTreeListener):
                             pass
                         if self.__with_para and 'atom_id' in __factor\
                            and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass

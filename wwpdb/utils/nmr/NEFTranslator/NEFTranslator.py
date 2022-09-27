@@ -156,6 +156,10 @@ PARAMAGNETIC_ELEMENTS = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN
 FERROMAGNETIC_ELEMENTS = ('CR', 'FE', 'CO', 'NI')
 
 
+# lanthanoid elements
+LANTHANOID_ELEMENTS = ('LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU')
+
+
 # non-metal elements
 NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
 

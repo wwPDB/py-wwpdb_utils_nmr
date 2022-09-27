@@ -23435,6 +23435,9 @@ class NmrDpUtility:
                                                     + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
                                                     + f") which is a {variant_name} {_variant_!r} is not properly instantiated in the coordinate. Please re-upload the model file."
 
+                                    if self.__remediation_mode and checked:
+                                        continue
+
                                     self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                          'description': err})
@@ -23898,20 +23901,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
@@ -24031,20 +24036,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
@@ -24151,20 +24158,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
@@ -24295,20 +24304,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -24430,20 +24441,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -24552,20 +24565,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -24664,20 +24679,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
@@ -24770,20 +24787,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -24900,20 +24919,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -25022,20 +25043,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -25144,20 +25167,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
@@ -33947,6 +33972,9 @@ class NmrDpUtility:
                                             + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
                                                                             comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
                                             + ") is not properly instantiated in the coordinates. Please re-upload the model file."
+
+                            if self.__remediation_mode and checked:
+                                continue
 
                             self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,

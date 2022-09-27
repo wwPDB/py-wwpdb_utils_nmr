@@ -23934,7 +23934,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -23942,7 +23942,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -24069,7 +24069,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -24077,7 +24077,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -24191,7 +24191,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -24199,7 +24199,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -24353,7 +24353,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -24361,7 +24361,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -24482,7 +24482,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -24490,7 +24490,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -24606,7 +24606,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -24614,7 +24614,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -24712,7 +24712,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -24720,7 +24720,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -24836,7 +24836,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -24844,7 +24844,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -24960,7 +24960,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -24968,7 +24968,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -25084,7 +25084,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -25092,7 +25092,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -25200,7 +25200,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -25208,7 +25208,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()

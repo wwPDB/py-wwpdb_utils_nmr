@@ -363,6 +363,7 @@ ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
 
 RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 
+bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr\d+_3.str$')
 
 datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
 sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
@@ -7967,6 +7968,41 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
+        if self.__remediation_mode and not self.__bmrb_only:
+
+            if content_type == 'nmr-restraints':
+
+                for content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref'):
+
+                    sf_category = self.sf_categories[file_type][content_subtype]
+
+                    if sf_category is None or lp_counts[content_subtype] == 0:
+                        continue
+
+                    for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                        sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                        self.__star_data[file_list_id].remove_saveframe(sf_framecode)
+
+                    lp_counts[content_subtype] = 0
+
+            elif content_type == 'nmr-chemical-shifts' and bmrb_nmr_star_file_name_pattern.match(file_name):
+
+                for content_subtype in self.nmr_content_subtypes:
+
+                    if content_subtype == 'chem_shift':
+                        continue
+
+                    sf_category = self.sf_categories[file_type][content_subtype]
+
+                    if sf_category is None or lp_counts[content_subtype] == 0:
+                        continue
+
+                    for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                        sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                        self.__star_data[file_list_id].remove_saveframe(sf_framecode)
+
+                    lp_counts[content_subtype] = 0
+
         content_subtype = 'chem_shift'
 
         if lp_counts[content_subtype] == 0 and self.__combined_mode:
@@ -8071,21 +8107,6 @@ class NmrDpUtility:
                 if not os.path.exists(touch_file):
                     with open(os.path.join(dir_path, '.entry_with_pk'), 'w') as ofp:
                         ofp.write('')
-
-        if self.__remediation_mode and content_type == 'nmr-restraints' and not self.__bmrb_only:
-
-            for content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref'):
-
-                sf_category = self.sf_categories[file_type][content_subtype]
-
-                if sf_category is None or lp_counts[content_subtype] == 0:
-                    continue
-
-                for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
-                    self.__star_data[file_list_id].remove_saveframe(sf_framecode)
-
-                lp_counts[content_subtype] = 0
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 

@@ -1506,13 +1506,37 @@ class NmrDpUtility:
                                         'dihed_restraint': 'restraint_id',
                                         'rdc_restraint': 'restraint_id',
                                         'spectral_peak': 'peak_id',
-                                        'spectral_peak_alt': None
+                                        'spectral_peak_alt': None,
+                                        'noepk_restraint': None,
+                                        'jcoup_restraint': None,
+                                        'rdc_raw_data': None,
+                                        'csa_restraint': None,
+                                        'ddc_restraint': None,
+                                        'hvycs_restraint': None,
+                                        'procs_restraint': None,
+                                        'csp_restraint': None,
+                                        'auto_relax_restraint': None,
+                                        'ccr_d_csa_restraint': None,
+                                        'ccr_dd_restraint': None,
+                                        'other_restraint': None
                                         },
                                 'nmr-star': {'dist_restraint': 'ID',
                                              'dihed_restraint': 'ID',
                                              'rdc_restraint': 'ID',
                                              'spectral_peak': 'ID',
-                                             'spectral_peak_alt': 'ID'
+                                             'spectral_peak_alt': 'ID',
+                                             'noepk_restraint': 'ID',
+                                             'jcoup_restraint': 'ID',
+                                             'rdc_raw_data': 'ID',
+                                             'csa_restraint': 'ID',
+                                             'ddc_restraint': 'ID',
+                                             'hvycs_restraint': 'ID',
+                                             'procs_restraint': 'ID',
+                                             'csp_restraint': 'ID',
+                                             'auto_relax_restraint': 'ID',
+                                             'ccr_d_csa_restraint': 'ID',
+                                             'ccr_dd_restraint': 'ID',
+                                             'other_restraint': 'ID'
                                              }
                                 }
 
@@ -1605,7 +1629,7 @@ class NmrDpUtility:
                                                           {'name': 'Atom_isotope_number', 'type': 'enum-int', 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                            'enforce-enum': True},
                                                           {'name': 'Mol_common_name', 'type': 'str'}],
-                                       'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'dist_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
                                                           {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1615,7 +1639,7 @@ class NmrDpUtility:
                                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                                           ],
-                                       'dihed_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'dihed_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1633,7 +1657,7 @@ class NmrDpUtility:
                                                            {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
-                                       'rdc_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'rdc_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                          {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1644,10 +1668,10 @@ class NmrDpUtility:
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
                                                          ],
                                        'spectral_peak': None,
-                                       'spectral_peak_alt': [{'name': 'ID', 'type': 'positive-int'},
+                                       'spectral_peak_alt': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                              {'name': 'Spectral_peak_list_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'}
                                                              ],
-                                       'noepk_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'noepk_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1657,7 +1681,7 @@ class NmrDpUtility:
                                                            {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_2', 'type': 'str'}
                                                            ],
-                                       'jcoup_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'jcoup_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1667,7 +1691,7 @@ class NmrDpUtility:
                                                            {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_2', 'type': 'str'}
                                                            ],
-                                       'rdc_raw_data': [{'name': 'ID', 'type': 'positive-int'},
+                                       'rdc_raw_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                         {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                         {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1677,13 +1701,13 @@ class NmrDpUtility:
                                                         {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                         {'name': 'Atom_ID_2', 'type': 'str'}
                                                         ],
-                                       'csa_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                          {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
                                                          {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                                          {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID', 'type': 'str'}
                                                          ],
-                                       'ddc_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'ddc_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                          {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1693,7 +1717,7 @@ class NmrDpUtility:
                                                          {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
                                                          ],
-                                       'hvycs_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'hvycs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1715,25 +1739,25 @@ class NmrDpUtility:
                                                            {'name': 'Comp_ID_5', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_5', 'type': 'str'}
                                                            ],
-                                       'procs_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'procs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                            {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID'},
                                                            {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                                            {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID', 'type': 'str'}
                                                            ],
-                                       'csp_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'csp_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                          {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
                                                          {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                                          {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID', 'type': 'str'}
                                                          ],
-                                       'auto_relax_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'auto_relax_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                                 {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
                                                                 {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                                                 {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                                 {'name': 'Atom_ID', 'type': 'str'}
                                                                 ],
-                                       'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                                {'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                                {'name': 'Dipole_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_seq_ID_1'},
                                                                {'name': 'Dipole_comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1751,7 +1775,7 @@ class NmrDpUtility:
                                                                {'name': 'CSA_comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                {'name': 'CSA_atom_ID_2', 'type': 'str'}
                                                                ],
-                                       'ccr_dd_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'ccr_dd_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                             {'name': 'Dipole_1_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                             {'name': 'Dipole_1_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_1_seq_ID_1'},
                                                             {'name': 'Dipole_1_comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1769,7 +1793,7 @@ class NmrDpUtility:
                                                             {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
                                                             {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}
                                                             ],
-                                       'other_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'other_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                            {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
                                                            {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                                            {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
@@ -18136,6 +18160,7 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - {str(e)}\n")
+
         # """
         # if (lp_data is not None) and len(lp_data) == 0 and self.__check_empty_loop:
 
@@ -25546,7 +25571,7 @@ class NmrDpUtility:
         elif content_subtype == 'chem_shift_ref':
             ent['loop'] = lp_data
             ent['saveframe_tag'] = sf_tag_data
-
+            """
         else:
 
             err = f"Not found a module for calculation of statistics on content subtype {content_subtype}."
@@ -25558,7 +25583,7 @@ class NmrDpUtility:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - {err}\n")
 
             return
-
+            """
         has_err = self.report.error.exists(file_name, sf_framecode)
         has_warn = self.report.warning.exists(file_name, sf_framecode)
 

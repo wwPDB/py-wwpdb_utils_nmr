@@ -2354,6 +2354,10 @@ class NEFTranslator:
                             for row in loop.data:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
+                        elif 'auto-increment' in k and k['auto-increment']:
+                            for lv, row in enumerate(loop.data, start=1):
+                                row.append(lv)
+                            loop.add_tag(k['name'])
                         else:
                             raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
@@ -2370,6 +2374,10 @@ class NEFTranslator:
                         elif 'default' in k:
                             for row in loop.data:
                                 row.append(k['default'])
+                            loop.add_tag(k['name'])
+                        elif 'auto-increment' in k and k['auto-increment']:
+                            for lv, row in enumerate(loop.data, start=1):
+                                row.append(lv)
                             loop.add_tag(k['name'])
                         else:
                             raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
@@ -2406,6 +2414,10 @@ class NEFTranslator:
                                         ref = row[from_col]
                                         row.append(ref)
                                     loop.add_tag(d['name'])
+                        elif 'auto-increment' in d and d['auto-increment']:
+                            for lv, row in enumerate(loop.data, start=1):
+                                row.append(lv)
+                            loop.add_tag(d['name'])
 
             if disallowed_tags is not None:
                 if len(set(loop.tags) & set(disallowed_tags)) > 0:
@@ -2524,7 +2536,7 @@ class NEFTranslator:
 
                     key = ''
                     for j in range(key_len):
-                        key += ' ' + i[j]
+                        key += ' ' + str(i[j])
                     key.rstrip()
 
                     if key in keys:
@@ -2543,7 +2555,7 @@ class NEFTranslator:
                         else:
                             msg = ''
                             for j in range(key_len):
-                                msg += key_names[j] + ' ' + i[j] + ', '
+                                msg += key_names[j] + ' ' + str(i[j]) + ', '
 
                             idx_msg = ''
 
@@ -2554,11 +2566,11 @@ class NEFTranslator:
                                     for _i in tag_data:
                                         _key = ''
                                         for j in range(key_len):
-                                            _key += " " + _i[j]
+                                            _key += ' ' + str(_i[j])
                                             _key.rstrip()
 
                                         if key == _key:
-                                            idx_msg += _i[_j] + ' vs '
+                                            idx_msg += str(_i[_j]) + ' vs '
 
                                     idx_msg = idx_msg[:-4] + ', '
 
@@ -2577,19 +2589,19 @@ class NEFTranslator:
 
                         key = ''
                         for j in range(key_len):
-                            key += ' ' + i[j]
+                            key += ' ' + str(i[j])
                         for j in relax_key_ids:
-                            key += ' ' + i[j]
+                            key += ' ' + str(i[j])
                         key.rstrip()
 
                         if key in keys:
 
                             msg = ''
                             for j in range(key_len):
-                                msg += key_names[j] + ' ' + i[j] + ', '
+                                msg += key_names[j] + ' ' + str(i[j]) + ', '
                             for j in relax_key_ids:
                                 if i[j] not in emptyValue:
-                                    msg += tags[j] + ' ' + i[j] + ', '
+                                    msg += tags[j] + ' ' + str(i[j]) + ', '
 
                             idx_msg = ''
 
@@ -2600,13 +2612,13 @@ class NEFTranslator:
                                     for _i in tag_data:
                                         _key = ''
                                         for j in range(key_len):
-                                            _key += " " + _i[j]
+                                            _key += ' ' + str(_i[j])
                                         for j in relax_key_ids:
-                                            _key += " " + _i[j]
+                                            _key += ' ' + str(_i[j])
                                             _key.rstrip()
 
                                         if key == _key:
-                                            idx_msg += _i[_j] + ' vs '
+                                            idx_msg += str(_i[_j]) + ' vs '
 
                                     idx_msg = idx_msg[:-4] + ', '
 

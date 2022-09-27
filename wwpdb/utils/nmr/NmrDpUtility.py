@@ -9520,6 +9520,10 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
+                    if self.__remediation_mode:
+                        file_path_2 = self.__inputParamDict[ar_file_path_list][j]['file_name']
+                        shutil.copyfile(file_path_2, file_path_2 + '-ignored')
+
         # restart using format issue resolved input files
         if self.__remediation_mode and corrected:
 

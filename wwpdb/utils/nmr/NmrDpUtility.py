@@ -7830,7 +7830,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __detectContentSubType__(self, file_list_id, input_source):
+    def __detectContentSubType__(self, file_list_id, input_source, dir_path=None):
         """ Detect content subtype of NMR data file in any STAR format.
         """
 
@@ -8058,6 +8058,12 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+
+            if self.__remediation_mode and dir_path is not None:
+                touch_file = os.path.join(dir_path, '.entry_with_pk')
+                if not os.path.exists(touch_file):
+                    with open(os.path.join(dir_path, '.entry_with_pk'), 'w') as ofp:
+                        ofp.write('')
 
         if self.__remediation_mode and content_type == 'nmr-restraints' and not self.__bmrb_only:
 
@@ -12475,7 +12481,7 @@ class NmrDpUtility:
                                     self.__rescueImmatureStr(insert_index)
 
                                 if _is_done:
-                                    self.__detectContentSubType__(insert_index, input_source)
+                                    self.__detectContentSubType__(insert_index, input_source, dir_path)
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
@@ -12646,7 +12652,7 @@ class NmrDpUtility:
                                     self.__rescueImmatureStr(insert_index)
 
                                 if _is_done:
-                                    self.__detectContentSubType__(insert_index, input_source)
+                                    self.__detectContentSubType__(insert_index, input_source, dir_path)
 
                         elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                             pass
@@ -13227,7 +13233,7 @@ class NmrDpUtility:
                                         self.__rescueImmatureStr(insert_index)
 
                                     if _is_done:
-                                        self.__detectContentSubType__(insert_index, input_source)
+                                        self.__detectContentSubType__(insert_index, input_source, dir_path)
 
                             elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                                 pass

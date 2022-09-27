@@ -1005,11 +1005,22 @@ class RosettaMRParserListener(ParseTreeListener):
             if atomId is not None:
                 if seqId == 1 and atomId in ('H', 'HN'):
                     return self.assignCoordPolymerSequence(seqId, 'H1', fixedChainId)
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{atomId} is not present in the coordinates.\n"
+                if seqId < 1 and len(self.__polySeq) == 1:
+                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                        f"{_seqId}:{atomId} is not present in the coordinates. "\
+                        f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "\
+                        "Please update the sequence in the Macromolecules page.\n"
+                else:
+                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                        f"{_seqId}:{atomId} is not present in the coordinates.\n"
             else:
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId} is not present in the coordinates.\n"
+                if seqId < 1 and len(self.__polySeq) == 1:
+                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                        f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "\
+                        "Please update the sequence in the Macromolecules page.\n"
+                else:
+                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                        f"The residue number '{_seqId}' is not present in the coordinates.\n"
 
         return chainAssign
 

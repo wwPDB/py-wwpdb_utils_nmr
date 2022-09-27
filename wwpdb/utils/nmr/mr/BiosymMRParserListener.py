@@ -950,8 +950,14 @@ class BiosymMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0:
             if seqId == 1 and atomId in ('H', 'HN'):
                 return self.assignCoordPolymerSequence(refChainId, seqId, compId, 'H1')
-            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+            if seqId < 1 and len(self.__polySeq) == 1:
+                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                    f"{_seqId}:{compId}:{atomId} is not present in the coordinates. "\
+                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "\
+                    "Please update the sequence in the Macromolecules page.\n"
+            else:
+                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                    f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
         return chainAssign
 

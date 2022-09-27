@@ -7529,8 +7529,14 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.reasonsForReParsing['label_seq_offset'][chainId] = offset
                                                             if offset != 0:
                                                                 self.reasonsForReParsing['label_seq_scheme'] = True
-                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                                        if seqId < 1 and len(self.__polySeq) == 1:
+                                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\
+                                                                f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                                                "Please update the sequence in the Macromolecules page.\n"
+                                                        else:
+                                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         # """
                                         # if self.__reasons is None and seqKey in self.__authToLabelSeq:
@@ -7547,8 +7553,14 @@ class XplorMRParserListener(ParseTreeListener):
                                            and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
                                            and (self.__reasons is None or 'non_poly_remap' not in self.__reasons):
                                             if chainId in MAJOR_ASYM_ID_SET:
-                                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                                if seqId < 1 and len(self.__polySeq) == 1:
+                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\
+                                                        f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                                        "Please update the sequence in the Macromolecules page.\n"
+                                                else:
+                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 
         return foundCompId
 

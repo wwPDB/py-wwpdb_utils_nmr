@@ -5558,7 +5558,7 @@ class NmrDpUtility:
         if srcPath is None:
             srcPath = self.__srcPath
 
-        self.report = NmrDpReport()
+        self.report = NmrDpReport(self.__verbose, self.__lfh)
 
         input_source = None
 
@@ -34041,10 +34041,10 @@ class NmrDpUtility:
         if os.path.getsize(fPath) == 0:
             raise IOError(f"+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find any content in file path {fPath}.")
 
-        self.report = NmrDpReport()
+        self.report = NmrDpReport(self.__verbose, self.__lfh)
         self.report.loadFile(fPath)
 
-        self.report_prev = NmrDpReport()
+        self.report_prev = NmrDpReport(self.__verbose, self.__lfh)
         self.report_prev.loadFile(fPath)
 
         return True

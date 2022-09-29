@@ -64,6 +64,9 @@ mode DATA_MODE;
 
 First_resid:		'FIRST_RESID';
 Sequence:		'SEQUENCE' -> pushMode(SEQ_MODE);
+Db_name:		'DB_NAME';
+Tab_name:		'TAB_NAME';
+Tab_id:			'TAB_ID';
 
 Pales_mode:		'PALES_MODE';
 Tensor_mode:		'TENSOR_MODE';

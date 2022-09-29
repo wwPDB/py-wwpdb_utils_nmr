@@ -194,9 +194,9 @@ class DynamoMRReader:
 if __name__ == "__main__":
     reader = DynamoMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/1qvx/1qvx-trimmed-div_ext.mr',
+    reader.parse('../../tests-nmr/mock-data-remediation/1qvx/1qvx-trimmed-div_dst-div_src.mr',
                  '../../tests-nmr/mock-data-remediation/1qvx/1qvx.cif')
-    """
+
     reader = DynamoMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2ju5/2ju5-trimmed-div_dst.mr',
@@ -211,4 +211,3 @@ if __name__ == "__main__":
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7kn0/dObsA_ngel2.tab',
                  '../../tests-nmr/mock-data-remediation/7kn0/7kn0.cif')
-    """

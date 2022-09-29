@@ -513,7 +513,7 @@ Weip:			'WEIP';					// One_or_Zero
 /* XPLOR-NIH: Hydrogen bond geometry restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node452.html
 */
-//Hbda:			'HBDA';					// Hbda { hbda_statement } End
+Hbda:			'HBDA';					// Hbda { hbda_statement } End
 //Assign:		'ASSI' 'G'? 'N'?;			// selection selection selection
 //Classification:	'CLAS' 'S'? 'I'? 'F'? 'I'? 'C'? 'A'? 'T'? 'I'? 'O'? 'N'?;	// Class_name
 //ForceConstant:	'FORC' 'E'? 'C'? 'O'? 'N'? 'S'? 'T'? 'A'? 'N'? 'T'?;		// Real
@@ -525,7 +525,7 @@ Weip:			'WEIP';					// One_or_Zero
 /* XPLOR-NIH: Hydrogen bond database restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node454.html
 */
-//Hbdb:			'HBDB';					// Hbdb { hbdb_statement } End
+Hbdb:			'HBDB';					// Hbdb { hbdb_statement } End
 //Assign:		'ASSI' 'G'? 'N'?;			// selection selection
 Kdir:			'KDIR';					// = Real
 Klin:			'KLIN';					// = Reala
@@ -682,9 +682,6 @@ Integers:		(WILDCARD | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
 //Atom_names:		(WILDCARD | WILDCARD* Atom_name WILDCARD+) POST_WC_CHAR*;
 //Atom_type:		ALPHA ATM_TYPE_CHAR*;
 //Atom_types:		(WILDCARD | WILDCARD* Atom_type WILDCARD+) POST_WC_CHAR*;
-
-Hbda:			'HBDA';					// Hbda { hbda_statement } End
-Hbdb:			'HBDB';					// Hbdb { hbdb_statement } End
 
 /* Wildcard - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node19.html

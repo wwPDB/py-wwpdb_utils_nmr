@@ -6307,13 +6307,13 @@ class XplorMRParserListener(ParseTreeListener):
         acceptor = self.atomSelectionSet[self.acceptor_columnSel][0]
         donor = self.atomSelectionSet[self.donor_columnSel][0]
 
-        if acceptor['atom_id'][0] not in ('N', 'O', 'F'):
+        if donor['atom_id'][0] not in ('N', 'O', 'F'):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "\
                 f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}.\n"
             return
 
-        if donor['atom_id'][0] != 'H':
+        if acceptor['atom_id'][0] != 'H':
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "The acceptor atom type should be Hydrogen; "\
                 f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}.\n"

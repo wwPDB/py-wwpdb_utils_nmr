@@ -1669,7 +1669,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def areUniqueCoordAtoms(self, subtype_name, skip_col=None):
+    def areUniqueCoordAtoms(self, subtype_name, skip_col=None, allow_ambig=False, allow_ambig_warn_title=''):
         """ Check whether atom selection sets are uniquely assigned.
         """
 
@@ -1688,6 +1688,11 @@ class XplorMRParserListener(ParseTreeListener):
                 if atom1['chain_id'] != atom2['chain_id']:
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
+                    continue
+                if allow_ambig:
+                    self.warningMessage += f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"\
+                        f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
+                        f"{atom2['atom_id']}' found in {subtype_name} restraint.\n"
                     continue
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
@@ -2216,7 +2221,8 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
-            if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS):
+            if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS,
+                                            allow_ambig=True, allow_ambig_warn_title='Anomalous RDC vector'):
                 if len(self.__warningInAtomSelection) > 0:
                     self.warningMessage += self.__warningInAtomSelection
                 return
@@ -2233,23 +2239,25 @@ class XplorMRParserListener(ParseTreeListener):
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in 1H-1H dipolar coupling vector; "\
+                    f"Non-magnetic susceptible spin appears in RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                     f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
+
+            spin_system = f'{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_1[0]][0]}{atom_id_1[0]}-{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_2[0]][0]}{atom_id_2[0]}'
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain 1H-1H dipolar coupling vector; "\
+                        f"Found inter-chain {spin_system} dipolar coupling vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue 1H-1H dipolar coupling vector; "\
+                    f"Found inter-residue {spin_system} dipolar coupling vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
@@ -2264,22 +2272,21 @@ class XplorMRParserListener(ParseTreeListener):
 
                 else:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue 1H-1H dipolar coupling vector; "\
+                        f"Found inter-residue {spin_system} dipolar coupling vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero 1H-1H dipolar coupling vector; "\
+                    f"Found zero {spin_system} dipolar coupling vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
             else:
                 if atom_id_1[0] != 'H' or atom_id_2[0] != 'H':
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Not an 1H-1H dipolar coupling vector in the 'XDIPolar' statement; "\
+                    self.warningMessage += f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"\
+                        f"Found {spin_system} dipolar coupling vector in the 'XDIPolar' statement, which usually accepts 1H-1H dipolar coupling; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):

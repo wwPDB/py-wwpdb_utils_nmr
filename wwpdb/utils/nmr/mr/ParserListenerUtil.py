@@ -348,6 +348,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                 return 'O'
             if atomId == 'O2':
                 return 'OXT'
+            if atomId.startswith('HT') and len(atomId) > 2:
+                return 'H' + atomId[2:]
 
     if atomId.endswith("O'1"):
         atomId = atomId[:len(atomId) - 3] + "O1'"

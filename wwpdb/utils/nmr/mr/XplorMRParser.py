@@ -1448,7 +1448,7 @@ class XplorMRParser ( Parser ):
                       "Tensor", "Anisotropy", "Planar", "Group", "Initialize", 
                       "Selection", "Weight", "Harmonic", "Exponent", "Normal", 
                       "Xadc", "Expectation", "Size", "Zero", "Coupling", 
-                      "DegEnergy", "Carbon", "PhiStep", "PsiStep", "Rcoil", 
+                      "Degeneracy", "Carbon", "PhiStep", "PsiStep", "Rcoil", 
                       "Proton", "Observed", "Amides", "Nitrogens", "Oxygens", 
                       "RingAtoms", "AlphasAndAmides", "Error", "Ramachandran", 
                       "Gaussian", "Phase", "Quartic", "Shape", "Sort", "Dimensions", 
@@ -1737,7 +1737,7 @@ class XplorMRParser ( Parser ):
     Size=62
     Zero=63
     Coupling=64
-    DegEnergy=65
+    Degeneracy=65
     Carbon=66
     PhiStep=67
     PsiStep=68
@@ -3310,7 +3310,7 @@ class XplorMRParser ( Parser ):
             self.state = 424
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 4)) & ~0x3f) == 0 and ((1 << (_la - 4)) & ((1 << (XplorMRParser.Assign - 4)) | (1 << (XplorMRParser.Classification - 4)) | (1 << (XplorMRParser.Nrestraints - 4)) | (1 << (XplorMRParser.Potential - 4)) | (1 << (XplorMRParser.Print - 4)) | (1 << (XplorMRParser.Reset - 4)) | (1 << (XplorMRParser.Coefficients - 4)) | (1 << (XplorMRParser.ForceConstant - 4)) | (1 << (XplorMRParser.Cv - 4)) | (1 << (XplorMRParser.Partition - 4)) | (1 << (XplorMRParser.DegEnergy - 4)))) != 0) or _la==XplorMRParser.For:
+            while ((((_la - 4)) & ~0x3f) == 0 and ((1 << (_la - 4)) & ((1 << (XplorMRParser.Assign - 4)) | (1 << (XplorMRParser.Classification - 4)) | (1 << (XplorMRParser.Nrestraints - 4)) | (1 << (XplorMRParser.Potential - 4)) | (1 << (XplorMRParser.Print - 4)) | (1 << (XplorMRParser.Reset - 4)) | (1 << (XplorMRParser.Coefficients - 4)) | (1 << (XplorMRParser.ForceConstant - 4)) | (1 << (XplorMRParser.Cv - 4)) | (1 << (XplorMRParser.Partition - 4)) | (1 << (XplorMRParser.Degeneracy - 4)))) != 0) or _la==XplorMRParser.For:
                 self.state = 421
                 self.coupling_statement()
                 self.state = 426
@@ -3438,7 +3438,7 @@ class XplorMRParser ( Parser ):
             self.state = 442
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Classification) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Anisotropy))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (XplorMRParser.DegEnergy - 65)) | (1 << (XplorMRParser.Carbon - 65)) | (1 << (XplorMRParser.Rcoil - 65)) | (1 << (XplorMRParser.Observed - 65)) | (1 << (XplorMRParser.Amides - 65)) | (1 << (XplorMRParser.Nitrogens - 65)) | (1 << (XplorMRParser.Oxygens - 65)) | (1 << (XplorMRParser.RingAtoms - 65)) | (1 << (XplorMRParser.AlphasAndAmides - 65)) | (1 << (XplorMRParser.Error - 65)))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Classification) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Anisotropy))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (XplorMRParser.Degeneracy - 65)) | (1 << (XplorMRParser.Carbon - 65)) | (1 << (XplorMRParser.Rcoil - 65)) | (1 << (XplorMRParser.Observed - 65)) | (1 << (XplorMRParser.Amides - 65)) | (1 << (XplorMRParser.Nitrogens - 65)) | (1 << (XplorMRParser.Oxygens - 65)) | (1 << (XplorMRParser.RingAtoms - 65)) | (1 << (XplorMRParser.AlphasAndAmides - 65)) | (1 << (XplorMRParser.Error - 65)))) != 0):
                 self.state = 439
                 self.proton_shift_statement()
                 self.state = 444
@@ -7502,8 +7502,8 @@ class XplorMRParser ( Parser ):
         def Equ_op(self):
             return self.getToken(XplorMRParser.Equ_op, 0)
 
-        def DegEnergy(self):
-            return self.getToken(XplorMRParser.DegEnergy, 0)
+        def Degeneracy(self):
+            return self.getToken(XplorMRParser.Degeneracy, 0)
 
         def ForceConstant(self):
             return self.getToken(XplorMRParser.ForceConstant, 0)
@@ -7601,10 +7601,10 @@ class XplorMRParser ( Parser ):
                 self.state = 1114
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.DegEnergy]:
+            elif token in [XplorMRParser.Degeneracy]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1115
-                self.match(XplorMRParser.DegEnergy)
+                self.match(XplorMRParser.Degeneracy)
                 self.state = 1116
                 self.match(XplorMRParser.Integer)
                 pass
@@ -8198,8 +8198,8 @@ class XplorMRParser ( Parser ):
                 return self.getTypedRuleContext(XplorMRParser.Number_sContext,i)
 
 
-        def DegEnergy(self):
-            return self.getToken(XplorMRParser.DegEnergy, 0)
+        def Degeneracy(self):
+            return self.getToken(XplorMRParser.Degeneracy, 0)
 
         def Integer(self):
             return self.getToken(XplorMRParser.Integer, 0)
@@ -8311,10 +8311,10 @@ class XplorMRParser ( Parser ):
                 self.state = 1227
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.DegEnergy]:
+            elif token in [XplorMRParser.Degeneracy]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1228
-                self.match(XplorMRParser.DegEnergy)
+                self.match(XplorMRParser.Degeneracy)
                 self.state = 1229
                 self.match(XplorMRParser.Integer)
                 pass

@@ -356,7 +356,7 @@ coupling_statement:
 	classification |
 	Coefficients number_s number_s number_s number_s |
 	Cv Equ_op? Integer |
-	DegEnergy Integer |
+	Degeneracy Integer |
 	ForceConstant number_s number_s? |
 	Nrestraints Equ_op? Integer |
 	Partition Equ_op? Integer |
@@ -405,7 +405,7 @@ proton_shift_statement:
 	proton_shift_alphas_and_amides |
 	classification |
 	Error number_s |
-	DegEnergy Integer |
+	Degeneracy Integer |
 	ForceConstant number_s number_s? |
 	Potential Equ_op_PT? Potential_types |
 	Print Threshold number_s (All | classification) Simple_name |

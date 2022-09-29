@@ -245,7 +245,7 @@ Coupling:		C O U P L? I? N? G?;			// Coupling { coupling_statement } End
 //Classification:	C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
 //Coefficients:		C O E F F? I? C? I? E? N? T? S?;	// Real Real Real Real
 //Cv:			C V;					// = Integer
-DegEnergy:		D E G E N? E? R? G? Y?;			// Number_of_couplings
+Degeneracy:		D E G E N? E? R? A? C? Y?;		// Number_of_couplings
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real [ Real ]
 //Nrestraints:		N R E S T? R? A? I? N? T? S?;		// Integer
 //Partition:		P A R T I? T? I? O? N?;			// = Integer
@@ -290,7 +290,7 @@ RingAtoms:		R I N G A? T? O? M? S?;			// Ring_resname selection selection select
 AlphasAndAmides:	A L P H A? S? A? N? D? A? M? I? D? E? S?;	// selection
 //Classification:	C L A S S? I? F? I? C? A? T? I? O? N?;	// Class_name
 Error:			E R R O R?;				// Real
-//DegEnergy:		D E G E N? E? R? G? Y?;			// Number_of_shifts
+//Degeneracy:		D E G E N? E? R? A? C? Y?;		// Number_of_shifts
 //ForceConstant:	F O R C E? C? O? N? S? T? A? N? T?;	// Real [ Real ]
 //Potential:		P O T E N? T? I? A? L? -> pushMode(POTE_MODE);	// Coupling_potential
 //Print:		P R I N T?;

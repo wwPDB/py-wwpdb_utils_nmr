@@ -217,7 +217,7 @@ Coupling:		'COUP' 'L'? 'I'? 'N'? 'G'?;		// Coupling { coupling_statement } End
 //Classification:	'CLAS' 'S'? 'I'? 'F'? 'I'? 'C'? 'A'? 'T'? 'I'? 'O'? 'N'?;	// Class_name
 //Coefficients:		'COEF' 'F'? 'I'? 'C'? 'I'? 'E'? 'N'? 'T'? 'S'?;			// Real Real Real Real
 //Cv:			'CV';					// = Integer
-DegEnergy:		'DEGE' 'N'? 'E'? 'R'? 'G'? 'Y'?;	// Number_of_couplings
+Degeneracy:		'DEGE' 'N'? 'E'? 'R'? 'A'? 'C'? 'Y'?;	// Number_of_couplings
 //ForceConstant:	'FORC' 'E'? 'C'? 'O'? 'N'? 'S'? 'T'? 'A'? 'N'? 'T'?;		// Real [ Real ]
 //Nrestraints:		'NRES' 'T'? 'R'? 'A'? 'I'? 'N'? 'T'? 'S'?;			// Integer
 //Partition:		'PART' 'I'? 'T'? 'I'? 'O'? 'N'?;	// = Integer
@@ -262,7 +262,7 @@ RingAtoms:		'RING' 'A'? 'T'? 'O'? 'M'? 'S'?;	// Ring_resname selection selection
 AlphasAndAmides:	'ALPH' 'A'? 'S'? 'A'? 'N'? 'D'? 'A'? 'M'? 'I'? 'D'? 'E'? 'S'?;	// selection
 //Classification:	'CLAS' 'S'? 'I'? 'F'? 'I'? 'C'? 'A'? 'T'? 'I'? 'O'? 'N'?;	// Class_name
 Error:			'ERRO' 'R'?;				// Real
-//DegEnergy:		'DEGE' 'N'? 'E'? 'R'? 'G'? 'Y'?;	// Number_of_shifts
+//Degeneracy:		'DEGE' 'N'? 'E'? 'R'? 'A'? 'C'? 'Y'?;	// Number_of_shifts
 //ForceConstant:	'FORC' 'E'? 'C'? 'O'? 'N'? 'S'? 'T'? 'A'? 'N'? 'T'?;		// Real [ Real ]
 //Potential:		'POTE' 'N'? 'T'? 'I'? 'A'? 'L'? -> pushMode(POTE_MODE);		// Coupling_potential
 //Print:		'PRIN' 'T'?;

@@ -32181,6 +32181,7 @@ class NmrDpUtility:
                         _s1 = fillInnerBlankCompId(_s1)
                 """
                 if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    _s2 = self.__compensateLadderHistidinTag2(chain_id, _s1, _s2)
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
@@ -32195,7 +32196,7 @@ class NmrDpUtility:
 
                     _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                    if _conflict == 0:  # and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
                         conflict = 0
                         offset_1 = _offset_1
                         offset_2 = _offset_2
@@ -32330,6 +32331,7 @@ class NmrDpUtility:
                         _s1 = fillInnerBlankCompId(_s1)
                 """
                 if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    _s1 = self.__compensateLadderHistidinTag2(chain_id, _s2, _s1)
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
@@ -32344,7 +32346,7 @@ class NmrDpUtility:
 
                     _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if _conflict == 0 and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
+                    if _conflict == 0:  # and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
                         conflict = 0
                         offset_1 = _offset_1
                         offset_2 = _offset_2
@@ -32438,6 +32440,55 @@ class NmrDpUtility:
             self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', seq_align_set)
 
         return True
+
+    def __compensateLadderHistidinTag2(self, chainId, polySeq1, polySeq2):
+        """ Compensate ladder-like Histidin tag in polymer sequence 2.
+        """
+
+        self.__pA.setReferenceSequence(polySeq1['comp_id'], 'REF' + chainId)
+        self.__pA.addTestSequence(polySeq2['comp_id'], chainId)
+        self.__pA.doAlign()
+
+        myAlign = self.__pA.getAlignment(chainId)
+
+        length = len(myAlign)
+
+        his_tag_seq_ids = []
+
+        aligned = has_his_tag = False
+
+        idx2 = 0
+        for p in range(length):
+            myPr = myAlign[p]
+            myPr0 = str(myPr[0])
+            myPr1 = str(myPr[1])
+
+            if myPr0 == myPr1:
+                aligned = True
+
+            if not aligned or myPr0 == myPr1:
+                if myPr1 != '.':
+                    idx2 += 1
+                continue
+
+            if myPr0 == 'HIS' and myPr1 == '.':
+                has_his_tag = True
+                his_tag_seq_ids.append(polySeq2['seq_id'][idx2])
+
+            elif has_his_tag:
+                if myPr0 != 'HIS':
+                    aligned = has_his_tag = False
+
+            if myPr1 != '.':
+                idx2 += 1
+
+        if len(his_tag_seq_ids) == 0:
+            return polySeq2
+
+        for seq_id2 in his_tag_seq_ids:
+            polySeq2['comp_id'][polySeq2['seq_id'].index(seq_id2)] = 'HIS'
+
+        return polySeq2
 
     def __assignCoordPolymerSequence(self):
         """ Assign polymer sequences of coordinate file.

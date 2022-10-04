@@ -1,4 +1,4 @@
-# Generated from CnsMRParser.g4 by ANTLR 4.10.1
+# Generated from CnsMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -1309,7 +1309,7 @@ class CnsMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -1581,7 +1581,7 @@ class CnsMRParser ( Parser ):
             self.state = 197
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Noe) | (1 << CnsMRParser.Assign) | (1 << CnsMRParser.Classification) | (1 << CnsMRParser.Reset) | (1 << CnsMRParser.Initialize) | (1 << CnsMRParser.Restraints) | (1 << CnsMRParser.Dihedral) | (1 << CnsMRParser.Print_any) | (1 << CnsMRParser.Plane) | (1 << CnsMRParser.Group) | (1 << CnsMRParser.Harmonic) | (1 << CnsMRParser.Sanisotropy) | (1 << CnsMRParser.Coupling) | (1 << CnsMRParser.Carbon))) != 0) or ((((_la - 69)) & ~0x3f) == 0 and ((1 << (_la - 69)) & ((1 << (CnsMRParser.Proton - 69)) | (1 << (CnsMRParser.Observed - 69)) | (1 << (CnsMRParser.Conformation - 69)) | (1 << (CnsMRParser.Danisotropy - 69)) | (1 << (CnsMRParser.OneBond - 69)) | (1 << (CnsMRParser.AngleDb - 69)) | (1 << (CnsMRParser.Ncs - 69)) | (1 << (CnsMRParser.Flags - 69)) | (1 << (CnsMRParser.BondedTo - 69)) | (1 << (CnsMRParser.Vector - 69)) | (1 << (CnsMRParser.Evaluate_Lp - 69)) | (1 << (CnsMRParser.Patch - 69)) | (1 << (CnsMRParser.Parameter - 69)))) != 0) or ((((_la - 135)) & ~0x3f) == 0 and ((1 << (_la - 135)) & ((1 << (CnsMRParser.HBonded - 135)) | (1 << (CnsMRParser.Improper - 135)) | (1 << (CnsMRParser.NBFix - 135)) | (1 << (CnsMRParser.NonB - 135)) | (1 << (CnsMRParser.VDWOff - 135)) | (1 << (CnsMRParser.Verbose - 135)) | (1 << (CnsMRParser.For - 135)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -3946560614033259480) != 0 or (((_la - 69)) & ~0x3f) == 0 and ((1 << (_la - 69)) & -7457960982855958013) != 0 or (((_la - 135)) & ~0x3f) == 0 and ((1 << (_la - 135)) & 127) != 0:
                 self.state = 195
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -1877,7 +1877,7 @@ class CnsMRParser ( Parser ):
             self.state = 212
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.Restraints:
+            if _la==48:
                 self.state = 211
                 self.match(CnsMRParser.Restraints)
 
@@ -1887,7 +1887,7 @@ class CnsMRParser ( Parser ):
             self.state = 218
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Assign) | (1 << CnsMRParser.Cv) | (1 << CnsMRParser.Partition) | (1 << CnsMRParser.Reset) | (1 << CnsMRParser.Scale) | (1 << CnsMRParser.Nassign) | (1 << CnsMRParser.Print_any))) != 0) or _la==CnsMRParser.Vector or _la==CnsMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3377700057124896) != 0 or _la==124 or _la==141:
                 self.state = 215
                 self.dihedral_statement()
                 self.state = 220
@@ -1952,7 +1952,7 @@ class CnsMRParser ( Parser ):
             self.state = 224
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.Restraints:
+            if _la==48:
                 self.state = 223
                 self.match(CnsMRParser.Restraints)
 
@@ -1962,7 +1962,7 @@ class CnsMRParser ( Parser ):
             self.state = 230
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Initialize) | (1 << CnsMRParser.Print_any) | (1 << CnsMRParser.Group))) != 0) or _la==CnsMRParser.Vector or _la==CnsMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 11259033428164608) != 0 or _la==124 or _la==141:
                 self.state = 227
                 self.plane_statement()
                 self.state = 232
@@ -2027,7 +2027,7 @@ class CnsMRParser ( Parser ):
             self.state = 236
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.Restraints:
+            if _la==48:
                 self.state = 235
                 self.match(CnsMRParser.Restraints)
 
@@ -2037,7 +2037,7 @@ class CnsMRParser ( Parser ):
             self.state = 242
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.Exponent or _la==CnsMRParser.Normal or _la==CnsMRParser.Vector:
+            while _la==57 or _la==58 or _la==124:
                 self.state = 239
                 self.harmonic_statement()
                 self.state = 244
@@ -2101,7 +2101,7 @@ class CnsMRParser ( Parser ):
             self.state = 251
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Assign) | (1 << CnsMRParser.Classification) | (1 << CnsMRParser.Nrestraints) | (1 << CnsMRParser.Potential) | (1 << CnsMRParser.Print) | (1 << CnsMRParser.Reset) | (1 << CnsMRParser.Coefficients) | (1 << CnsMRParser.ForceConstant))) != 0) or _la==CnsMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513898398752) != 0 or _la==141:
                 self.state = 248
                 self.sani_statement()
                 self.state = 253
@@ -2165,7 +2165,7 @@ class CnsMRParser ( Parser ):
             self.state = 260
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Assign) | (1 << CnsMRParser.Classification) | (1 << CnsMRParser.Cv) | (1 << CnsMRParser.Nrestraints) | (1 << CnsMRParser.Partition) | (1 << CnsMRParser.Potential) | (1 << CnsMRParser.Print) | (1 << CnsMRParser.Reset) | (1 << CnsMRParser.Coefficients) | (1 << CnsMRParser.ForceConstant))) != 0) or _la==CnsMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513899451424) != 0 or _la==141:
                 self.state = 257
                 self.coupling_statement()
                 self.state = 262
@@ -2229,7 +2229,7 @@ class CnsMRParser ( Parser ):
             self.state = 269
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 5)) & ~0x3f) == 0 and ((1 << (_la - 5)) & ((1 << (CnsMRParser.Assign - 5)) | (1 << (CnsMRParser.Classification - 5)) | (1 << (CnsMRParser.Nrestraints - 5)) | (1 << (CnsMRParser.Potential - 5)) | (1 << (CnsMRParser.Print - 5)) | (1 << (CnsMRParser.Reset - 5)) | (1 << (CnsMRParser.ForceConstant - 5)) | (1 << (CnsMRParser.Expectation - 5)) | (1 << (CnsMRParser.PhiStep - 5)) | (1 << (CnsMRParser.PsiStep - 5)) | (1 << (CnsMRParser.Rcoil - 5)) | (1 << (CnsMRParser.Zero - 5)))) != 0) or _la==CnsMRParser.For:
+            while (((_la - 5)) & ~0x3f) == 0 and ((1 << (_la - 5)) & -504403158263062495) != 0 or _la==141:
                 self.state = 266
                 self.carbon_shift_statement()
                 self.state = 271
@@ -2293,7 +2293,7 @@ class CnsMRParser ( Parser ):
             self.state = 278
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Classification) | (1 << CnsMRParser.Potential) | (1 << CnsMRParser.Print) | (1 << CnsMRParser.Reset) | (1 << CnsMRParser.ForceConstant) | (1 << CnsMRParser.Carbon))) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & ((1 << (CnsMRParser.Rcoil - 67)) | (1 << (CnsMRParser.Observed - 67)) | (1 << (CnsMRParser.Anisotropy - 67)) | (1 << (CnsMRParser.Amides - 67)) | (1 << (CnsMRParser.Nitrogens - 67)) | (1 << (CnsMRParser.Oxygens - 67)) | (1 << (CnsMRParser.RingAtoms - 67)) | (1 << (CnsMRParser.AlphasAndAmides - 67)) | (1 << (CnsMRParser.Error - 67)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -6917529027563486208) != 0 or (((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 2041) != 0:
                 self.state = 275
                 self.proton_shift_statement()
                 self.state = 280
@@ -2357,7 +2357,7 @@ class CnsMRParser ( Parser ):
             self.state = 287
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Assign) | (1 << CnsMRParser.Classification) | (1 << CnsMRParser.Nrestraints) | (1 << CnsMRParser.Potential) | (1 << CnsMRParser.Print) | (1 << CnsMRParser.Reset) | (1 << CnsMRParser.ForceConstant))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (CnsMRParser.Expectation - 64)) | (1 << (CnsMRParser.Zero - 64)) | (1 << (CnsMRParser.Error - 64)) | (1 << (CnsMRParser.Compressed - 64)) | (1 << (CnsMRParser.Phase - 64)) | (1 << (CnsMRParser.Size - 64)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 2305843009291551776) != 0 or (((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 237585) != 0:
                 self.state = 284
                 self.conformation_statement()
                 self.state = 289
@@ -2421,7 +2421,7 @@ class CnsMRParser ( Parser ):
             self.state = 296
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Assign) | (1 << CnsMRParser.Classification) | (1 << CnsMRParser.Nrestraints) | (1 << CnsMRParser.Potential) | (1 << CnsMRParser.Print) | (1 << CnsMRParser.Reset) | (1 << CnsMRParser.Coefficients) | (1 << CnsMRParser.ForceConstant))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513898398752) != 0:
                 self.state = 293
                 self.diffusion_statement()
                 self.state = 298
@@ -2485,7 +2485,7 @@ class CnsMRParser ( Parser ):
             self.state = 305
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Assign) | (1 << CnsMRParser.Classification) | (1 << CnsMRParser.Nrestraints) | (1 << CnsMRParser.Potential) | (1 << CnsMRParser.Print) | (1 << CnsMRParser.Reset) | (1 << CnsMRParser.Coefficients) | (1 << CnsMRParser.ForceConstant))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513898398752) != 0:
                 self.state = 302
                 self.one_bond_coupling_statement()
                 self.state = 307
@@ -2549,7 +2549,7 @@ class CnsMRParser ( Parser ):
             self.state = 314
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Assign) | (1 << CnsMRParser.Classification) | (1 << CnsMRParser.Nrestraints) | (1 << CnsMRParser.Potential) | (1 << CnsMRParser.Print) | (1 << CnsMRParser.Reset) | (1 << CnsMRParser.ForceConstant))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (CnsMRParser.Expectation - 64)) | (1 << (CnsMRParser.Zero - 64)) | (1 << (CnsMRParser.Error - 64)) | (1 << (CnsMRParser.Size - 64)) | (1 << (CnsMRParser.DerivFlag - 64)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 2305843009291551776) != 0 or (((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 4333585) != 0:
                 self.state = 311
                 self.angle_db_statement()
                 self.state = 316
@@ -2763,7 +2763,7 @@ class CnsMRParser ( Parser ):
                 self.state = 321
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 320
                     self.match(CnsMRParser.Equ_op)
 
@@ -2821,7 +2821,7 @@ class CnsMRParser ( Parser ):
                 self.state = 339
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 338
                     self.match(CnsMRParser.Equ_op)
 
@@ -2851,7 +2851,7 @@ class CnsMRParser ( Parser ):
                 self.state = 347
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 346
                     self.match(CnsMRParser.Equ_op)
 
@@ -2879,7 +2879,7 @@ class CnsMRParser ( Parser ):
                 self.state = 356
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 355
                     self.match(CnsMRParser.Equ_op)
 
@@ -2891,7 +2891,7 @@ class CnsMRParser ( Parser ):
                 self.state = 361
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 360
                     self.match(CnsMRParser.Equ_op)
 
@@ -2956,7 +2956,7 @@ class CnsMRParser ( Parser ):
                 self.state = 387
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 386
                     self.match(CnsMRParser.Equ_op)
 
@@ -2978,7 +2978,7 @@ class CnsMRParser ( Parser ):
                 self.state = 393
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 392
                     self.match(CnsMRParser.Equ_op)
 
@@ -3016,7 +3016,7 @@ class CnsMRParser ( Parser ):
                 self.state = 406
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 405
                     self.match(CnsMRParser.Equ_op)
 
@@ -3136,7 +3136,7 @@ class CnsMRParser ( Parser ):
                 self.state = 452
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 451
                     self.match(CnsMRParser.Equ_op)
 
@@ -3235,7 +3235,7 @@ class CnsMRParser ( Parser ):
             self.state = 465
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & ((1 << (CnsMRParser.Integer - 150)) | (1 << (CnsMRParser.Real - 150)) | (1 << (CnsMRParser.Symbol_name - 150)))) != 0):
+            if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
                 self.state = 464
                 self.number()
 
@@ -3254,13 +3254,13 @@ class CnsMRParser ( Parser ):
             self.state = 490
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.Or_op:
+            while _la==145:
                 self.state = 473
                 self.match(CnsMRParser.Or_op)
                 self.state = 475
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Assign:
+                if _la==5:
                     self.state = 474
                     self.match(CnsMRParser.Assign)
 
@@ -3288,7 +3288,7 @@ class CnsMRParser ( Parser ):
                 self.state = 486
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & ((1 << (CnsMRParser.Integer - 150)) | (1 << (CnsMRParser.Real - 150)) | (1 << (CnsMRParser.Symbol_name - 150)))) != 0):
+                if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
                     self.state = 485
                     self.number()
 
@@ -3359,14 +3359,14 @@ class CnsMRParser ( Parser ):
             self.state = 507
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Cutoff]:
+            if token in [39]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 493
                 self.match(CnsMRParser.Cutoff)
                 self.state = 495
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 494
                     self.match(CnsMRParser.Equ_op)
 
@@ -3374,14 +3374,14 @@ class CnsMRParser ( Parser ):
                 self.state = 497
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Cuton]:
+            elif token in [40]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 498
                 self.match(CnsMRParser.Cuton)
                 self.state = 500
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 499
                     self.match(CnsMRParser.Equ_op)
 
@@ -3389,14 +3389,14 @@ class CnsMRParser ( Parser ):
                 self.state = 502
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.From]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 503
                 self.match(CnsMRParser.From)
                 self.state = 504
                 self.selection()
                 pass
-            elif token in [CnsMRParser.To]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 505
                 self.match(CnsMRParser.To)
@@ -3473,14 +3473,14 @@ class CnsMRParser ( Parser ):
             self.state = 544
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Peak]:
+            if token in [43]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 509
                 self.match(CnsMRParser.Peak)
                 self.state = 511
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 510
                     self.match(CnsMRParser.Equ_op)
 
@@ -3488,14 +3488,14 @@ class CnsMRParser ( Parser ):
                 self.state = 513
                 self.number_a()
                 pass
-            elif token in [CnsMRParser.Spectrum]:
+            elif token in [44]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 514
                 self.match(CnsMRParser.Spectrum)
                 self.state = 516
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 515
                     self.match(CnsMRParser.Equ_op)
 
@@ -3503,14 +3503,14 @@ class CnsMRParser ( Parser ):
                 self.state = 518
                 self.number_a()
                 pass
-            elif token in [CnsMRParser.Weight]:
+            elif token in [55]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 519
                 self.match(CnsMRParser.Weight)
                 self.state = 521
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 520
                     self.match(CnsMRParser.Equ_op)
 
@@ -3518,14 +3518,14 @@ class CnsMRParser ( Parser ):
                 self.state = 523
                 self.number_a()
                 pass
-            elif token in [CnsMRParser.Volume]:
+            elif token in [45]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 524
                 self.match(CnsMRParser.Volume)
                 self.state = 526
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 525
                     self.match(CnsMRParser.Equ_op)
 
@@ -3533,14 +3533,14 @@ class CnsMRParser ( Parser ):
                 self.state = 528
                 self.number_a()
                 pass
-            elif token in [CnsMRParser.Ppm1]:
+            elif token in [46]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 529
                 self.match(CnsMRParser.Ppm1)
                 self.state = 531
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 530
                     self.match(CnsMRParser.Equ_op)
 
@@ -3548,14 +3548,14 @@ class CnsMRParser ( Parser ):
                 self.state = 533
                 self.number_a()
                 pass
-            elif token in [CnsMRParser.Ppm2]:
+            elif token in [47]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 534
                 self.match(CnsMRParser.Ppm2)
                 self.state = 536
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 535
                     self.match(CnsMRParser.Equ_op)
 
@@ -3563,14 +3563,14 @@ class CnsMRParser ( Parser ):
                 self.state = 538
                 self.number_a()
                 pass
-            elif token in [CnsMRParser.Cv]:
+            elif token in [12]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 539
                 self.match(CnsMRParser.Cv)
                 self.state = 541
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 540
                     self.match(CnsMRParser.Equ_op)
 
@@ -3660,29 +3660,29 @@ class CnsMRParser ( Parser ):
             self.state = 571
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Vector]:
+            if token in [124]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 546
                 self.vector_statement()
                 pass
-            elif token in [CnsMRParser.Assign]:
+            elif token in [5]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 547
                 self.dihedral_assign()
                 pass
-            elif token in [CnsMRParser.For]:
+            elif token in [141]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 548
                 self.dihedral_assign_loop()
                 pass
-            elif token in [CnsMRParser.Cv]:
+            elif token in [12]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 549
                 self.match(CnsMRParser.Cv)
                 self.state = 551
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 550
                     self.match(CnsMRParser.Equ_op)
 
@@ -3690,14 +3690,14 @@ class CnsMRParser ( Parser ):
                 self.state = 553
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Nassign]:
+            elif token in [50]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 554
                 self.match(CnsMRParser.Nassign)
                 self.state = 556
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 555
                     self.match(CnsMRParser.Equ_op)
 
@@ -3705,14 +3705,14 @@ class CnsMRParser ( Parser ):
                 self.state = 558
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Partition]:
+            elif token in [20]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 559
                 self.match(CnsMRParser.Partition)
                 self.state = 561
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 560
                     self.match(CnsMRParser.Equ_op)
 
@@ -3720,19 +3720,19 @@ class CnsMRParser ( Parser ):
                 self.state = 563
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Reset]:
+            elif token in [26]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 564
                 self.match(CnsMRParser.Reset)
                 pass
-            elif token in [CnsMRParser.Scale]:
+            elif token in [28]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 565
                 self.match(CnsMRParser.Scale)
                 self.state = 567
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 566
                     self.match(CnsMRParser.Equ_op)
 
@@ -3740,7 +3740,7 @@ class CnsMRParser ( Parser ):
                 self.state = 569
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Print_any]:
+            elif token in [51]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 570
                 self.match(CnsMRParser.Print_any)
@@ -3878,27 +3878,27 @@ class CnsMRParser ( Parser ):
             self.state = 588
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Vector]:
+            if token in [124]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 583
                 self.vector_statement()
                 pass
-            elif token in [CnsMRParser.Group]:
+            elif token in [53]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 584
                 self.plane_group()
                 pass
-            elif token in [CnsMRParser.For]:
+            elif token in [141]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 585
                 self.plane_group_loop()
                 pass
-            elif token in [CnsMRParser.Initialize]:
+            elif token in [35]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 586
                 self.match(CnsMRParser.Initialize)
                 pass
-            elif token in [CnsMRParser.Print_any]:
+            elif token in [51]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 587
                 self.match(CnsMRParser.Print_any)
@@ -3961,7 +3961,7 @@ class CnsMRParser ( Parser ):
             self.state = 594
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.Selection or _la==CnsMRParser.Weight:
+            while _la==54 or _la==55:
                 self.state = 591
                 self.group_statement()
                 self.state = 596
@@ -4026,14 +4026,14 @@ class CnsMRParser ( Parser ):
             self.state = 609
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Selection]:
+            if token in [54]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 599
                 self.match(CnsMRParser.Selection)
                 self.state = 601
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 600
                     self.match(CnsMRParser.Equ_op)
 
@@ -4041,14 +4041,14 @@ class CnsMRParser ( Parser ):
                 self.state = 603
                 self.selection()
                 pass
-            elif token in [CnsMRParser.Weight]:
+            elif token in [55]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 604
                 self.match(CnsMRParser.Weight)
                 self.state = 606
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 605
                     self.match(CnsMRParser.Equ_op)
 
@@ -4149,19 +4149,19 @@ class CnsMRParser ( Parser ):
             self.state = 651
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Vector]:
+            if token in [124]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 611
                 self.vector_statement()
                 pass
-            elif token in [CnsMRParser.Exponent]:
+            elif token in [57]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 612
                 self.match(CnsMRParser.Exponent)
                 self.state = 614
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 613
                     self.match(CnsMRParser.Equ_op)
 
@@ -4169,14 +4169,14 @@ class CnsMRParser ( Parser ):
                 self.state = 616
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Normal]:
+            elif token in [58]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 617
                 self.match(CnsMRParser.Normal)
                 self.state = 619
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 618
                     self.match(CnsMRParser.Equ_op)
 
@@ -4186,13 +4186,13 @@ class CnsMRParser ( Parser ):
                 self.state = 647
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Integer, CnsMRParser.Real, CnsMRParser.Symbol_name]:
+                if token in [150, 152, 169]:
                     self.state = 622
                     self.number_s()
                     self.state = 624
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==CnsMRParser.Comma:
+                    if _la==148:
                         self.state = 623
                         self.match(CnsMRParser.Comma)
 
@@ -4202,7 +4202,7 @@ class CnsMRParser ( Parser ):
                     self.state = 628
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==CnsMRParser.Comma:
+                    if _la==148:
                         self.state = 627
                         self.match(CnsMRParser.Comma)
 
@@ -4210,13 +4210,13 @@ class CnsMRParser ( Parser ):
                     self.state = 630
                     self.number_s()
                     pass
-                elif token in [CnsMRParser.Tail]:
+                elif token in [143]:
                     self.state = 632
                     self.match(CnsMRParser.Tail)
                     self.state = 634
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==CnsMRParser.Equ_op:
+                    if _la==163:
                         self.state = 633
                         self.match(CnsMRParser.Equ_op)
 
@@ -4226,7 +4226,7 @@ class CnsMRParser ( Parser ):
                     self.state = 638
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==CnsMRParser.Comma:
+                    if _la==148:
                         self.state = 637
                         self.match(CnsMRParser.Comma)
 
@@ -4234,13 +4234,13 @@ class CnsMRParser ( Parser ):
                     self.state = 645
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==CnsMRParser.Head:
+                    if _la==144:
                         self.state = 640
                         self.match(CnsMRParser.Head)
                         self.state = 642
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if _la==CnsMRParser.Equ_op:
+                        if _la==163:
                             self.state = 641
                             self.match(CnsMRParser.Equ_op)
 
@@ -4410,22 +4410,22 @@ class CnsMRParser ( Parser ):
             self.state = 686
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Assign]:
+            if token in [5]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 659
                 self.sani_assign()
                 pass
-            elif token in [CnsMRParser.For]:
+            elif token in [141]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 660
                 self.sani_assign_loop()
                 pass
-            elif token in [CnsMRParser.Classification]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 661
                 self.classification()
                 pass
-            elif token in [CnsMRParser.Coefficients]:
+            elif token in [60]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 662
                 self.match(CnsMRParser.Coefficients)
@@ -4436,14 +4436,14 @@ class CnsMRParser ( Parser ):
                 self.state = 665
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.ForceConstant]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 667
                 self.match(CnsMRParser.ForceConstant)
                 self.state = 669
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 668
                     self.match(CnsMRParser.Equ_op)
 
@@ -4451,14 +4451,14 @@ class CnsMRParser ( Parser ):
                 self.state = 671
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Nrestraints]:
+            elif token in [18]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 672
                 self.match(CnsMRParser.Nrestraints)
                 self.state = 674
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 673
                     self.match(CnsMRParser.Equ_op)
 
@@ -4466,14 +4466,14 @@ class CnsMRParser ( Parser ):
                 self.state = 676
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Potential]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 677
                 self.match(CnsMRParser.Potential)
                 self.state = 679
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_PT:
+                if _la==182:
                     self.state = 678
                     self.match(CnsMRParser.Equ_op_PT)
 
@@ -4481,7 +4481,7 @@ class CnsMRParser ( Parser ):
                 self.state = 681
                 self.match(CnsMRParser.Potential_types)
                 pass
-            elif token in [CnsMRParser.Print]:
+            elif token in [23]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 682
                 self.match(CnsMRParser.Print)
@@ -4490,7 +4490,7 @@ class CnsMRParser ( Parser ):
                 self.state = 684
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Reset]:
+            elif token in [26]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 685
                 self.match(CnsMRParser.Reset)
@@ -4579,7 +4579,7 @@ class CnsMRParser ( Parser ):
             self.state = 700
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & ((1 << (CnsMRParser.Integer - 150)) | (1 << (CnsMRParser.Real - 150)) | (1 << (CnsMRParser.Symbol_name - 150)))) != 0):
+            if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
                 self.state = 699
                 self.number()
 
@@ -4684,22 +4684,22 @@ class CnsMRParser ( Parser ):
             self.state = 744
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Assign]:
+            if token in [5]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 702
                 self.coup_assign()
                 pass
-            elif token in [CnsMRParser.For]:
+            elif token in [141]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 703
                 self.coup_assign_loop()
                 pass
-            elif token in [CnsMRParser.Classification]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 704
                 self.classification()
                 pass
-            elif token in [CnsMRParser.Coefficients]:
+            elif token in [60]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 705
                 self.match(CnsMRParser.Coefficients)
@@ -4712,14 +4712,14 @@ class CnsMRParser ( Parser ):
                 self.state = 709
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Cv]:
+            elif token in [12]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 711
                 self.match(CnsMRParser.Cv)
                 self.state = 713
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 712
                     self.match(CnsMRParser.Equ_op)
 
@@ -4727,7 +4727,7 @@ class CnsMRParser ( Parser ):
                 self.state = 715
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.ForceConstant]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 716
                 self.match(CnsMRParser.ForceConstant)
@@ -4736,20 +4736,20 @@ class CnsMRParser ( Parser ):
                 self.state = 719
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & ((1 << (CnsMRParser.Integer - 150)) | (1 << (CnsMRParser.Real - 150)) | (1 << (CnsMRParser.Symbol_name - 150)))) != 0):
+                if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
                     self.state = 718
                     self.number_s()
 
 
                 pass
-            elif token in [CnsMRParser.Nrestraints]:
+            elif token in [18]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 721
                 self.match(CnsMRParser.Nrestraints)
                 self.state = 723
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 722
                     self.match(CnsMRParser.Equ_op)
 
@@ -4757,14 +4757,14 @@ class CnsMRParser ( Parser ):
                 self.state = 725
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Partition]:
+            elif token in [20]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 726
                 self.match(CnsMRParser.Partition)
                 self.state = 728
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 727
                     self.match(CnsMRParser.Equ_op)
 
@@ -4772,14 +4772,14 @@ class CnsMRParser ( Parser ):
                 self.state = 730
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Potential]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 731
                 self.match(CnsMRParser.Potential)
                 self.state = 733
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_PT:
+                if _la==182:
                     self.state = 732
                     self.match(CnsMRParser.Equ_op_PT)
 
@@ -4787,7 +4787,7 @@ class CnsMRParser ( Parser ):
                 self.state = 735
                 self.match(CnsMRParser.Potential_types)
                 pass
-            elif token in [CnsMRParser.Print]:
+            elif token in [23]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 736
                 self.match(CnsMRParser.Print)
@@ -4798,11 +4798,11 @@ class CnsMRParser ( Parser ):
                 self.state = 741
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.All]:
+                if token in [91]:
                     self.state = 739
                     self.match(CnsMRParser.All)
                     pass
-                elif token in [CnsMRParser.Classification]:
+                elif token in [10]:
                     self.state = 740
                     self.classification()
                     pass
@@ -4810,7 +4810,7 @@ class CnsMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CnsMRParser.Reset]:
+            elif token in [26]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 743
                 self.match(CnsMRParser.Reset)
@@ -4885,7 +4885,7 @@ class CnsMRParser ( Parser ):
             self.state = 756
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.L_paren:
+            if _la==160:
                 self.state = 751
                 self.selection()
                 self.state = 752
@@ -4903,7 +4903,7 @@ class CnsMRParser ( Parser ):
             self.state = 763
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & ((1 << (CnsMRParser.Integer - 150)) | (1 << (CnsMRParser.Real - 150)) | (1 << (CnsMRParser.Symbol_name - 150)))) != 0):
+            if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
                 self.state = 760
                 self.number()
                 self.state = 761
@@ -5017,22 +5017,22 @@ class CnsMRParser ( Parser ):
             self.state = 806
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Assign]:
+            if token in [5]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 765
                 self.carbon_shift_assign()
                 pass
-            elif token in [CnsMRParser.For]:
+            elif token in [141]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 766
                 self.carbon_shift_assign_loop()
                 pass
-            elif token in [CnsMRParser.Classification]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 767
                 self.classification()
                 pass
-            elif token in [CnsMRParser.Expectation]:
+            elif token in [64]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 768
                 self.match(CnsMRParser.Expectation)
@@ -5047,14 +5047,14 @@ class CnsMRParser ( Parser ):
                 self.state = 773
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.ForceConstant]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 775
                 self.match(CnsMRParser.ForceConstant)
                 self.state = 777
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 776
                     self.match(CnsMRParser.Equ_op)
 
@@ -5062,14 +5062,14 @@ class CnsMRParser ( Parser ):
                 self.state = 779
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Nrestraints]:
+            elif token in [18]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 780
                 self.match(CnsMRParser.Nrestraints)
                 self.state = 782
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 781
                     self.match(CnsMRParser.Equ_op)
 
@@ -5077,14 +5077,14 @@ class CnsMRParser ( Parser ):
                 self.state = 784
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.PhiStep]:
+            elif token in [65]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 785
                 self.match(CnsMRParser.PhiStep)
                 self.state = 787
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 786
                     self.match(CnsMRParser.Equ_op)
 
@@ -5092,14 +5092,14 @@ class CnsMRParser ( Parser ):
                 self.state = 789
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.PsiStep]:
+            elif token in [66]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 790
                 self.match(CnsMRParser.PsiStep)
                 self.state = 792
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 791
                     self.match(CnsMRParser.Equ_op)
 
@@ -5107,14 +5107,14 @@ class CnsMRParser ( Parser ):
                 self.state = 794
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Potential]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 795
                 self.match(CnsMRParser.Potential)
                 self.state = 797
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_PT:
+                if _la==182:
                     self.state = 796
                     self.match(CnsMRParser.Equ_op_PT)
 
@@ -5122,7 +5122,7 @@ class CnsMRParser ( Parser ):
                 self.state = 799
                 self.match(CnsMRParser.Potential_types)
                 pass
-            elif token in [CnsMRParser.Print]:
+            elif token in [23]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 800
                 self.match(CnsMRParser.Print)
@@ -5131,17 +5131,17 @@ class CnsMRParser ( Parser ):
                 self.state = 802
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Rcoil]:
+            elif token in [67]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 803
                 self.carbon_shift_rcoil()
                 pass
-            elif token in [CnsMRParser.Reset]:
+            elif token in [26]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 804
                 self.match(CnsMRParser.Reset)
                 pass
-            elif token in [CnsMRParser.Zero]:
+            elif token in [68]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 805
                 self.match(CnsMRParser.Zero)
@@ -5392,64 +5392,64 @@ class CnsMRParser ( Parser ):
             self.state = 854
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Observed]:
+            if token in [70]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 822
                 self.observed()
                 pass
-            elif token in [CnsMRParser.Rcoil]:
+            elif token in [67]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 823
                 self.proton_shift_rcoil()
                 pass
-            elif token in [CnsMRParser.Anisotropy]:
+            elif token in [71]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 824
                 self.proton_shift_anisotropy()
                 pass
-            elif token in [CnsMRParser.Amides]:
+            elif token in [72]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 825
                 self.proton_shift_amides()
                 pass
-            elif token in [CnsMRParser.Carbon]:
+            elif token in [63]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 826
                 self.proton_shift_carbons()
                 pass
-            elif token in [CnsMRParser.Nitrogens]:
+            elif token in [73]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 827
                 self.proton_shift_nitrogens()
                 pass
-            elif token in [CnsMRParser.Oxygens]:
+            elif token in [74]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 828
                 self.proton_shift_oxygens()
                 pass
-            elif token in [CnsMRParser.RingAtoms]:
+            elif token in [75]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 829
                 self.proton_shift_ring_atoms()
                 pass
-            elif token in [CnsMRParser.AlphasAndAmides]:
+            elif token in [76]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 830
                 self.proton_shift_alphas_and_amides()
                 pass
-            elif token in [CnsMRParser.Classification]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 831
                 self.classification()
                 pass
-            elif token in [CnsMRParser.Error]:
+            elif token in [77]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 832
                 self.match(CnsMRParser.Error)
                 self.state = 834
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 833
                     self.match(CnsMRParser.Equ_op)
 
@@ -5457,7 +5457,7 @@ class CnsMRParser ( Parser ):
                 self.state = 836
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.ForceConstant]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 837
                 self.match(CnsMRParser.ForceConstant)
@@ -5466,20 +5466,20 @@ class CnsMRParser ( Parser ):
                 self.state = 840
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & ((1 << (CnsMRParser.Integer - 150)) | (1 << (CnsMRParser.Real - 150)) | (1 << (CnsMRParser.Symbol_name - 150)))) != 0):
+                if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
                     self.state = 839
                     self.number_s()
 
 
                 pass
-            elif token in [CnsMRParser.Potential]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 842
                 self.match(CnsMRParser.Potential)
                 self.state = 843
                 self.match(CnsMRParser.Potential_types)
                 pass
-            elif token in [CnsMRParser.Print]:
+            elif token in [23]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 844
                 self.match(CnsMRParser.Print)
@@ -5490,11 +5490,11 @@ class CnsMRParser ( Parser ):
                 self.state = 849
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.All]:
+                if token in [91]:
                     self.state = 847
                     self.match(CnsMRParser.All)
                     pass
-                elif token in [CnsMRParser.Classification]:
+                elif token in [10]:
                     self.state = 848
                     self.classification()
                     pass
@@ -5504,7 +5504,7 @@ class CnsMRParser ( Parser ):
                 self.state = 851
                 self.match(CnsMRParser.Simple_name)
                 pass
-            elif token in [CnsMRParser.Reset]:
+            elif token in [26]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 853
                 self.match(CnsMRParser.Reset)
@@ -5573,7 +5573,7 @@ class CnsMRParser ( Parser ):
             self.state = 859
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.L_paren:
+            if _la==160:
                 self.state = 858
                 self.selection()
 
@@ -5583,7 +5583,7 @@ class CnsMRParser ( Parser ):
             self.state = 863
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & ((1 << (CnsMRParser.Integer - 150)) | (1 << (CnsMRParser.Real - 150)) | (1 << (CnsMRParser.Symbol_name - 150)))) != 0):
+            if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
                 self.state = 862
                 self.number()
 
@@ -5710,7 +5710,7 @@ class CnsMRParser ( Parser ):
             self.state = 875
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.Logical:
+            if _la==151:
                 self.state = 874
                 self.match(CnsMRParser.Logical)
 
@@ -5972,7 +5972,7 @@ class CnsMRParser ( Parser ):
             self.state = 899
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.L_paren:
+            if _la==160:
                 self.state = 898
                 self.selection()
 
@@ -6132,22 +6132,22 @@ class CnsMRParser ( Parser ):
             self.state = 979
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Assign]:
+            if token in [5]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 904
                 self.conf_assign()
                 pass
-            elif token in [CnsMRParser.Classification]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 905
                 self.classification()
                 pass
-            elif token in [CnsMRParser.Compressed]:
+            elif token in [79]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 906
                 self.match(CnsMRParser.Compressed)
                 pass
-            elif token in [CnsMRParser.Expectation]:
+            elif token in [64]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 907
                 self.match(CnsMRParser.Expectation)
@@ -6180,14 +6180,14 @@ class CnsMRParser ( Parser ):
                 self.state = 918
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Error]:
+            elif token in [77]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 919
                 self.match(CnsMRParser.Error)
                 self.state = 921
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 920
                     self.match(CnsMRParser.Equ_op)
 
@@ -6195,14 +6195,14 @@ class CnsMRParser ( Parser ):
                 self.state = 923
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.ForceConstant]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 924
                 self.match(CnsMRParser.ForceConstant)
                 self.state = 926
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 925
                     self.match(CnsMRParser.Equ_op)
 
@@ -6210,14 +6210,14 @@ class CnsMRParser ( Parser ):
                 self.state = 928
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Nrestraints]:
+            elif token in [18]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 929
                 self.match(CnsMRParser.Nrestraints)
                 self.state = 931
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 930
                     self.match(CnsMRParser.Equ_op)
 
@@ -6225,7 +6225,7 @@ class CnsMRParser ( Parser ):
                 self.state = 933
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Phase]:
+            elif token in [80]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 934
                 self.match(CnsMRParser.Phase)
@@ -6262,7 +6262,7 @@ class CnsMRParser ( Parser ):
                 self.state = 951
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Integer:
+                if _la==150:
                     self.state = 948
                     self.match(CnsMRParser.Integer)
                     self.state = 949
@@ -6272,14 +6272,14 @@ class CnsMRParser ( Parser ):
 
 
                 pass
-            elif token in [CnsMRParser.Potential]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 953
                 self.match(CnsMRParser.Potential)
                 self.state = 955
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_PT:
+                if _la==182:
                     self.state = 954
                     self.match(CnsMRParser.Equ_op_PT)
 
@@ -6287,7 +6287,7 @@ class CnsMRParser ( Parser ):
                 self.state = 957
                 self.match(CnsMRParser.Potential_types)
                 pass
-            elif token in [CnsMRParser.Print]:
+            elif token in [23]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 958
                 self.match(CnsMRParser.Print)
@@ -6298,11 +6298,11 @@ class CnsMRParser ( Parser ):
                 self.state = 963
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.All]:
+                if token in [91]:
                     self.state = 961
                     self.match(CnsMRParser.All)
                     pass
-                elif token in [CnsMRParser.Classification]:
+                elif token in [10]:
                     self.state = 962
                     self.classification()
                     pass
@@ -6310,12 +6310,12 @@ class CnsMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CnsMRParser.Reset]:
+            elif token in [26]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 965
                 self.match(CnsMRParser.Reset)
                 pass
-            elif token in [CnsMRParser.Size]:
+            elif token in [81]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 966
                 self.match(CnsMRParser.Size)
@@ -6342,13 +6342,13 @@ class CnsMRParser ( Parser ):
                 self.state = 976
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Integer:
+                if _la==150:
                     self.state = 975
                     self.match(CnsMRParser.Integer)
 
 
                 pass
-            elif token in [CnsMRParser.Zero]:
+            elif token in [68]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 978
                 self.match(CnsMRParser.Zero)
@@ -6444,7 +6444,7 @@ class CnsMRParser ( Parser ):
             self.state = 1005
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.L_paren:
+            if _la==160:
                 self.state = 1000
                 self.selection()
                 self.state = 1001
@@ -6542,17 +6542,17 @@ class CnsMRParser ( Parser ):
             self.state = 1035
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Assign]:
+            if token in [5]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1007
                 self.dani_assign()
                 pass
-            elif token in [CnsMRParser.Classification]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1008
                 self.classification()
                 pass
-            elif token in [CnsMRParser.Coefficients]:
+            elif token in [60]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1009
                 self.match(CnsMRParser.Coefficients)
@@ -6567,14 +6567,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1014
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.ForceConstant]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1016
                 self.match(CnsMRParser.ForceConstant)
                 self.state = 1018
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1017
                     self.match(CnsMRParser.Equ_op)
 
@@ -6582,14 +6582,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1020
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Nrestraints]:
+            elif token in [18]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1021
                 self.match(CnsMRParser.Nrestraints)
                 self.state = 1023
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1022
                     self.match(CnsMRParser.Equ_op)
 
@@ -6597,14 +6597,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1025
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Potential]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1026
                 self.match(CnsMRParser.Potential)
                 self.state = 1028
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_PT:
+                if _la==182:
                     self.state = 1027
                     self.match(CnsMRParser.Equ_op_PT)
 
@@ -6612,7 +6612,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1030
                 self.match(CnsMRParser.Potential_types)
                 pass
-            elif token in [CnsMRParser.Print]:
+            elif token in [23]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1031
                 self.match(CnsMRParser.Print)
@@ -6621,7 +6621,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1033
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Reset]:
+            elif token in [26]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1034
                 self.match(CnsMRParser.Reset)
@@ -6702,7 +6702,7 @@ class CnsMRParser ( Parser ):
             self.state = 1046
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & ((1 << (CnsMRParser.Integer - 150)) | (1 << (CnsMRParser.Real - 150)) | (1 << (CnsMRParser.Symbol_name - 150)))) != 0):
+            if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
                 self.state = 1045
                 self.number()
 
@@ -6794,17 +6794,17 @@ class CnsMRParser ( Parser ):
             self.state = 1078
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Assign]:
+            if token in [5]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1048
                 self.one_bond_assign()
                 pass
-            elif token in [CnsMRParser.Classification]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1049
                 self.classification()
                 pass
-            elif token in [CnsMRParser.Coefficients]:
+            elif token in [60]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1050
                 self.match(CnsMRParser.Coefficients)
@@ -6823,14 +6823,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1057
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.ForceConstant]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1059
                 self.match(CnsMRParser.ForceConstant)
                 self.state = 1061
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1060
                     self.match(CnsMRParser.Equ_op)
 
@@ -6838,14 +6838,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1063
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Nrestraints]:
+            elif token in [18]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1064
                 self.match(CnsMRParser.Nrestraints)
                 self.state = 1066
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1065
                     self.match(CnsMRParser.Equ_op)
 
@@ -6853,14 +6853,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1068
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Potential]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1069
                 self.match(CnsMRParser.Potential)
                 self.state = 1071
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_PT:
+                if _la==182:
                     self.state = 1070
                     self.match(CnsMRParser.Equ_op_PT)
 
@@ -6868,7 +6868,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1073
                 self.match(CnsMRParser.Potential_types)
                 pass
-            elif token in [CnsMRParser.Print]:
+            elif token in [23]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1074
                 self.match(CnsMRParser.Print)
@@ -6877,7 +6877,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1076
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Reset]:
+            elif token in [26]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1077
                 self.match(CnsMRParser.Reset)
@@ -7071,24 +7071,24 @@ class CnsMRParser ( Parser ):
             self.state = 1136
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Assign]:
+            if token in [5]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1092
                 self.angle_db_assign()
                 pass
-            elif token in [CnsMRParser.Classification]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1093
                 self.classification()
                 pass
-            elif token in [CnsMRParser.DerivFlag]:
+            elif token in [86]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1094
                 self.match(CnsMRParser.DerivFlag)
                 self.state = 1096
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1095
                     self.match(CnsMRParser.Equ_op)
 
@@ -7096,7 +7096,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1098
                 self.match(CnsMRParser.Simple_name)
                 pass
-            elif token in [CnsMRParser.Expectation]:
+            elif token in [64]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1099
                 self.match(CnsMRParser.Expectation)
@@ -7107,14 +7107,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1102
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Error]:
+            elif token in [77]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1103
                 self.match(CnsMRParser.Error)
                 self.state = 1105
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1104
                     self.match(CnsMRParser.Equ_op)
 
@@ -7122,14 +7122,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1107
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.ForceConstant]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1108
                 self.match(CnsMRParser.ForceConstant)
                 self.state = 1110
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1109
                     self.match(CnsMRParser.Equ_op)
 
@@ -7137,14 +7137,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1112
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Nrestraints]:
+            elif token in [18]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1113
                 self.match(CnsMRParser.Nrestraints)
                 self.state = 1115
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1114
                     self.match(CnsMRParser.Equ_op)
 
@@ -7152,14 +7152,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1117
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Potential]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1118
                 self.match(CnsMRParser.Potential)
                 self.state = 1120
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op_PT:
+                if _la==182:
                     self.state = 1119
                     self.match(CnsMRParser.Equ_op_PT)
 
@@ -7167,7 +7167,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1122
                 self.match(CnsMRParser.Potential_types)
                 pass
-            elif token in [CnsMRParser.Print]:
+            elif token in [23]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1123
                 self.match(CnsMRParser.Print)
@@ -7178,11 +7178,11 @@ class CnsMRParser ( Parser ):
                 self.state = 1128
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.All]:
+                if token in [91]:
                     self.state = 1126
                     self.match(CnsMRParser.All)
                     pass
-                elif token in [CnsMRParser.Classification]:
+                elif token in [10]:
                     self.state = 1127
                     self.classification()
                     pass
@@ -7190,18 +7190,18 @@ class CnsMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CnsMRParser.Reset]:
+            elif token in [26]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1130
                 self.match(CnsMRParser.Reset)
                 pass
-            elif token in [CnsMRParser.Size]:
+            elif token in [81]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1131
                 self.match(CnsMRParser.Size)
                 self.state = 1132
                 _la = self._input.LA(1)
-                if not(_la==CnsMRParser.Dihedral or _la==CnsMRParser.AngleDb):
+                if not(_la==49 or _la==85):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -7211,7 +7211,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1134
                 self.match(CnsMRParser.Integer)
                 pass
-            elif token in [CnsMRParser.Zero]:
+            elif token in [68]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1135
                 self.match(CnsMRParser.Zero)
@@ -7293,7 +7293,7 @@ class CnsMRParser ( Parser ):
             self.state = 1151
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.L_paren:
+            if _la==160:
                 self.state = 1150
                 self.selection()
 
@@ -7358,7 +7358,7 @@ class CnsMRParser ( Parser ):
             self.state = 1158
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Initialize) | (1 << CnsMRParser.Print_any) | (1 << CnsMRParser.Group))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 11259033428164608) != 0:
                 self.state = 1155
                 self.ncs_statement()
                 self.state = 1160
@@ -7425,14 +7425,14 @@ class CnsMRParser ( Parser ):
             self.state = 1173
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Group]:
+            if token in [53]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1163
                 self.match(CnsMRParser.Group)
                 self.state = 1167
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((((_la - 55)) & ~0x3f) == 0 and ((1 << (_la - 55)) & ((1 << (CnsMRParser.Weight - 55)) | (1 << (CnsMRParser.Equivalence - 55)) | (1 << (CnsMRParser.Sigb - 55)))) != 0):
+                while (((_la - 55)) & ~0x3f) == 0 and ((1 << (_la - 55)) & 25769803777) != 0:
                     self.state = 1164
                     self.ncs_group_statement()
                     self.state = 1169
@@ -7442,12 +7442,12 @@ class CnsMRParser ( Parser ):
                 self.state = 1170
                 self.match(CnsMRParser.End)
                 pass
-            elif token in [CnsMRParser.Initialize]:
+            elif token in [35]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1171
                 self.match(CnsMRParser.Initialize)
                 pass
-            elif token in [CnsMRParser.Print_any]:
+            elif token in [51]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1172
                 self.match(CnsMRParser.Print_any)
@@ -7514,14 +7514,14 @@ class CnsMRParser ( Parser ):
             self.state = 1190
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Equivalence]:
+            if token in [88]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1175
                 self.match(CnsMRParser.Equivalence)
                 self.state = 1177
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1176
                     self.match(CnsMRParser.Equ_op)
 
@@ -7529,14 +7529,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1179
                 self.selection()
                 pass
-            elif token in [CnsMRParser.Sigb]:
+            elif token in [89]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1180
                 self.match(CnsMRParser.Sigb)
                 self.state = 1182
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1181
                     self.match(CnsMRParser.Equ_op)
 
@@ -7544,14 +7544,14 @@ class CnsMRParser ( Parser ):
                 self.state = 1184
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Weight]:
+            elif token in [55]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1185
                 self.match(CnsMRParser.Weight)
                 self.state = 1187
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1186
                     self.match(CnsMRParser.Equ_op)
 
@@ -7669,7 +7669,7 @@ class CnsMRParser ( Parser ):
             self.state = 1201
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.Or_op:
+            while _la==145:
                 self.state = 1197
                 self.match(CnsMRParser.Or_op)
                 self.state = 1198
@@ -7733,7 +7733,7 @@ class CnsMRParser ( Parser ):
             self.state = 1209
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.And_op:
+            while _la==146:
                 self.state = 1205
                 self.match(CnsMRParser.And_op)
                 self.state = 1206
@@ -7993,21 +7993,21 @@ class CnsMRParser ( Parser ):
                 self.match(CnsMRParser.Atom)
                 self.state = 1219
                 _la = self._input.LA(1)
-                if not(_la==CnsMRParser.Simple_name or _la==CnsMRParser.Simple_names):
+                if not(_la==157 or _la==158):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 1220
                 _la = self._input.LA(1)
-                if not(_la==CnsMRParser.Integer or _la==CnsMRParser.Integers):
+                if not(_la==150 or _la==159):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 1221
                 _la = self._input.LA(1)
-                if not(_la==CnsMRParser.Simple_name or _la==CnsMRParser.Simple_names):
+                if not(_la==157 or _la==158):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -8020,7 +8020,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1224
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Abs:
+                if _la==175:
                     self.state = 1223
                     self.match(CnsMRParser.Abs)
 
@@ -8060,11 +8060,11 @@ class CnsMRParser ( Parser ):
                 self.state = 1243
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Simple_names]:
+                if token in [158]:
                     self.state = 1236
                     self.match(CnsMRParser.Simple_names)
                     pass
-                elif token in [CnsMRParser.Simple_name]:
+                elif token in [157]:
                     self.state = 1237
                     self.match(CnsMRParser.Simple_name)
                     self.state = 1240
@@ -8078,7 +8078,7 @@ class CnsMRParser ( Parser ):
 
 
                     pass
-                elif token in [CnsMRParser.Symbol_name]:
+                elif token in [169]:
                     self.state = 1242
                     self.match(CnsMRParser.Symbol_name)
                     pass
@@ -8127,11 +8127,11 @@ class CnsMRParser ( Parser ):
                 self.state = 1270
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Simple_names]:
+                if token in [158]:
                     self.state = 1258
                     self.match(CnsMRParser.Simple_names)
                     pass
-                elif token in [CnsMRParser.Simple_name]:
+                elif token in [157]:
                     self.state = 1259
                     self.match(CnsMRParser.Simple_name)
                     self.state = 1262
@@ -8145,7 +8145,7 @@ class CnsMRParser ( Parser ):
 
 
                     pass
-                elif token in [CnsMRParser.Double_quote_string]:
+                elif token in [153]:
                     self.state = 1264
                     self.match(CnsMRParser.Double_quote_string)
                     self.state = 1267
@@ -8159,7 +8159,7 @@ class CnsMRParser ( Parser ):
 
 
                     pass
-                elif token in [CnsMRParser.Symbol_name]:
+                elif token in [169]:
                     self.state = 1269
                     self.match(CnsMRParser.Symbol_name)
                     pass
@@ -8190,7 +8190,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1279
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Comma:
+                if _la==148:
                     self.state = 1278
                     self.match(CnsMRParser.Comma)
 
@@ -8200,7 +8200,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1283
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Comma:
+                if _la==148:
                     self.state = 1282
                     self.match(CnsMRParser.Comma)
 
@@ -8225,7 +8225,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1294
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Equ_op:
+                if _la==163:
                     self.state = 1293
                     self.match(CnsMRParser.Equ_op)
 
@@ -8235,7 +8235,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1298
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Comma:
+                if _la==148:
                     self.state = 1297
                     self.match(CnsMRParser.Comma)
 
@@ -8243,13 +8243,13 @@ class CnsMRParser ( Parser ):
                 self.state = 1305
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Head:
+                if _la==144:
                     self.state = 1300
                     self.match(CnsMRParser.Head)
                     self.state = 1302
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==CnsMRParser.Equ_op:
+                    if _la==163:
                         self.state = 1301
                         self.match(CnsMRParser.Equ_op)
 
@@ -8282,11 +8282,11 @@ class CnsMRParser ( Parser ):
                 self.state = 1321
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Integers]:
+                if token in [159]:
                     self.state = 1314
                     self.match(CnsMRParser.Integers)
                     pass
-                elif token in [CnsMRParser.Integer]:
+                elif token in [150]:
                     self.state = 1315
                     self.match(CnsMRParser.Integer)
                     self.state = 1318
@@ -8300,7 +8300,7 @@ class CnsMRParser ( Parser ):
 
 
                     pass
-                elif token in [CnsMRParser.Symbol_name]:
+                elif token in [169]:
                     self.state = 1320
                     self.match(CnsMRParser.Symbol_name)
                     pass
@@ -8315,11 +8315,11 @@ class CnsMRParser ( Parser ):
                 self.state = 1331
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Simple_names]:
+                if token in [158]:
                     self.state = 1324
                     self.match(CnsMRParser.Simple_names)
                     pass
-                elif token in [CnsMRParser.Simple_name]:
+                elif token in [157]:
                     self.state = 1325
                     self.match(CnsMRParser.Simple_name)
                     self.state = 1328
@@ -8333,7 +8333,7 @@ class CnsMRParser ( Parser ):
 
 
                     pass
-                elif token in [CnsMRParser.Symbol_name]:
+                elif token in [169]:
                     self.state = 1330
                     self.match(CnsMRParser.Symbol_name)
                     pass
@@ -8348,11 +8348,11 @@ class CnsMRParser ( Parser ):
                 self.state = 1346
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Simple_names]:
+                if token in [158]:
                     self.state = 1334
                     self.match(CnsMRParser.Simple_names)
                     pass
-                elif token in [CnsMRParser.Simple_name]:
+                elif token in [157]:
                     self.state = 1335
                     self.match(CnsMRParser.Simple_name)
                     self.state = 1338
@@ -8366,7 +8366,7 @@ class CnsMRParser ( Parser ):
 
 
                     pass
-                elif token in [CnsMRParser.Double_quote_string]:
+                elif token in [153]:
                     self.state = 1340
                     self.match(CnsMRParser.Double_quote_string)
                     self.state = 1343
@@ -8380,7 +8380,7 @@ class CnsMRParser ( Parser ):
 
 
                     pass
-                elif token in [CnsMRParser.Symbol_name]:
+                elif token in [169]:
                     self.state = 1345
                     self.match(CnsMRParser.Symbol_name)
                     pass
@@ -8548,7 +8548,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1379
             _la = self._input.LA(1)
-            if not(((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & ((1 << (CnsMRParser.Integer - 150)) | (1 << (CnsMRParser.Real - 150)) | (1 << (CnsMRParser.Symbol_name - 150)))) != 0)):
+            if not((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -8598,7 +8598,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1381
             _la = self._input.LA(1)
-            if not(_la==CnsMRParser.Integer or _la==CnsMRParser.Real):
+            if not(_la==150 or _la==152):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -8651,7 +8651,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1383
             _la = self._input.LA(1)
-            if not(((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & ((1 << (CnsMRParser.Integer - 150)) | (1 << (CnsMRParser.Real - 150)) | (1 << (CnsMRParser.Symbol_name - 150)))) != 0)):
+            if not((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -8701,7 +8701,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1385
             _la = self._input.LA(1)
-            if not(_la==CnsMRParser.Integer or _la==CnsMRParser.Real):
+            if not(_la==150 or _la==152):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -8758,7 +8758,7 @@ class CnsMRParser ( Parser ):
             self.state = 1389
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.Equ_op:
+            if _la==163:
                 self.state = 1388
                 self.match(CnsMRParser.Equ_op)
 
@@ -8825,7 +8825,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1393
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Noe) | (1 << CnsMRParser.Restraints) | (1 << CnsMRParser.Dihedral))) != 0) or ((((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & ((1 << (CnsMRParser.AngleDb - 85)) | (1 << (CnsMRParser.HBonded - 85)) | (1 << (CnsMRParser.Improper - 85)))) != 0) or _la==CnsMRParser.Simple_name):
+            if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 844424930131976) != 0 or (((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 3377699720527873) != 0 or _la==157):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -8893,17 +8893,17 @@ class CnsMRParser ( Parser ):
             self.state = 1406
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.Exclude:
+            if _la==188:
                 self.state = 1396
                 self.match(CnsMRParser.Exclude)
                 self.state = 1404
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Include, CnsMRParser.Class_name]:
+                if token in [189, 191]:
                     self.state = 1400
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    while _la==CnsMRParser.Class_name:
+                    while _la==191:
                         self.state = 1397
                         self.match(CnsMRParser.Class_name)
                         self.state = 1402
@@ -8911,7 +8911,7 @@ class CnsMRParser ( Parser ):
                         _la = self._input.LA(1)
 
                     pass
-                elif token in [CnsMRParser.Any_class]:
+                elif token in [192]:
                     self.state = 1403
                     self.match(CnsMRParser.Any_class)
                     pass
@@ -8925,7 +8925,7 @@ class CnsMRParser ( Parser ):
             self.state = 1412
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.Class_name:
+            while _la==191:
                 self.state = 1409
                 self.match(CnsMRParser.Class_name)
                 self.state = 1414
@@ -9046,11 +9046,11 @@ class CnsMRParser ( Parser ):
             self.state = 1427
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Do_Lp, CnsMRParser.Identity_Lp]:
+            if token in [125, 126]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1421
                 _la = self._input.LA(1)
-                if not(_la==CnsMRParser.Do_Lp or _la==CnsMRParser.Identity_Lp):
+                if not(_la==125 or _la==126):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -9060,7 +9060,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1423
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Show]:
+            elif token in [127]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1425
                 self.match(CnsMRParser.Show)
@@ -9122,7 +9122,7 @@ class CnsMRParser ( Parser ):
             self.state = 1432
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.Equ_op_VE:
+            if _la==195:
                 self.state = 1430
                 self.match(CnsMRParser.Equ_op_VE)
                 self.state = 1431
@@ -9194,10 +9194,10 @@ class CnsMRParser ( Parser ):
             self.state = 1437
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & ((1 << (CnsMRParser.Add_op_VE - 196)) | (1 << (CnsMRParser.Sub_op_VE - 196)) | (1 << (CnsMRParser.Mul_op_VE - 196)) | (1 << (CnsMRParser.Div_op_VE - 196)) | (1 << (CnsMRParser.Exp_op_VE - 196)))) != 0):
+            if (((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0:
                 self.state = 1435
                 _la = self._input.LA(1)
-                if not(((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & ((1 << (CnsMRParser.Add_op_VE - 196)) | (1 << (CnsMRParser.Sub_op_VE - 196)) | (1 << (CnsMRParser.Mul_op_VE - 196)) | (1 << (CnsMRParser.Div_op_VE - 196)) | (1 << (CnsMRParser.Exp_op_VE - 196)))) != 0)):
+                if not((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -9266,37 +9266,37 @@ class CnsMRParser ( Parser ):
             self.state = 1446
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Atom_properties_VE]:
+            if token in [204]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1439
                 self.match(CnsMRParser.Atom_properties_VE)
                 pass
-            elif token in [CnsMRParser.Abs_VE, CnsMRParser.Acos_VE, CnsMRParser.Cos_VE, CnsMRParser.Decode_VE, CnsMRParser.Encode_VE, CnsMRParser.Exp_VE, CnsMRParser.Gauss_VE, CnsMRParser.Heavy_VE, CnsMRParser.Int_VE, CnsMRParser.Log10_VE, CnsMRParser.Log_VE, CnsMRParser.Max_VE, CnsMRParser.Maxw_VE, CnsMRParser.Min_VE, CnsMRParser.Mod_VE, CnsMRParser.Norm_VE, CnsMRParser.Random_VE, CnsMRParser.Sign_VE, CnsMRParser.Sin_VE, CnsMRParser.Sqrt_VE, CnsMRParser.Tan_VE]:
+            elif token in [205, 206, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1440
                 self.vector_func_call()
                 pass
-            elif token in [CnsMRParser.Integer_VE]:
+            elif token in [202]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1441
                 self.match(CnsMRParser.Integer_VE)
                 pass
-            elif token in [CnsMRParser.Real_VE]:
+            elif token in [203]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1442
                 self.match(CnsMRParser.Real_VE)
                 pass
-            elif token in [CnsMRParser.Simple_name_VE]:
+            elif token in [228]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1443
                 self.match(CnsMRParser.Simple_name_VE)
                 pass
-            elif token in [CnsMRParser.Symbol_name_VE]:
+            elif token in [227]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1444
                 self.match(CnsMRParser.Symbol_name_VE)
                 pass
-            elif token in [CnsMRParser.Double_quote_string_VE]:
+            elif token in [229]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1445
                 self.match(CnsMRParser.Double_quote_string_VE)
@@ -9425,7 +9425,7 @@ class CnsMRParser ( Parser ):
             self.state = 1567
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.Abs_VE]:
+            if token in [205]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1448
                 self.match(CnsMRParser.Abs_VE)
@@ -9436,7 +9436,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1451
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Acos_VE]:
+            elif token in [206]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1453
                 self.match(CnsMRParser.Acos_VE)
@@ -9447,7 +9447,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1456
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Cos_VE]:
+            elif token in [208]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1458
                 self.match(CnsMRParser.Cos_VE)
@@ -9458,7 +9458,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1461
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Decode_VE]:
+            elif token in [209]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1463
                 self.match(CnsMRParser.Decode_VE)
@@ -9469,7 +9469,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1466
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Encode_VE]:
+            elif token in [210]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1468
                 self.match(CnsMRParser.Encode_VE)
@@ -9480,7 +9480,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1471
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Exp_VE]:
+            elif token in [211]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1473
                 self.match(CnsMRParser.Exp_VE)
@@ -9491,7 +9491,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1476
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Gauss_VE]:
+            elif token in [212]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1478
                 self.match(CnsMRParser.Gauss_VE)
@@ -9502,7 +9502,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1481
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Heavy_VE]:
+            elif token in [213]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1483
                 self.match(CnsMRParser.Heavy_VE)
@@ -9513,7 +9513,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1486
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Int_VE]:
+            elif token in [214]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1488
                 self.match(CnsMRParser.Int_VE)
@@ -9524,7 +9524,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1491
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Log10_VE]:
+            elif token in [215]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1493
                 self.match(CnsMRParser.Log10_VE)
@@ -9535,7 +9535,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1496
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Log_VE]:
+            elif token in [216]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1498
                 self.match(CnsMRParser.Log_VE)
@@ -9546,7 +9546,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1501
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Max_VE]:
+            elif token in [217]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1503
                 self.match(CnsMRParser.Max_VE)
@@ -9557,7 +9557,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1510
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Comma_VE:
+                while _la==201:
                     self.state = 1506
                     self.match(CnsMRParser.Comma_VE)
                     self.state = 1507
@@ -9569,7 +9569,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1513
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Maxw_VE]:
+            elif token in [218]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1515
                 self.match(CnsMRParser.Maxw_VE)
@@ -9580,7 +9580,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1518
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Min_VE]:
+            elif token in [219]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1520
                 self.match(CnsMRParser.Min_VE)
@@ -9591,7 +9591,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1527
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Comma_VE:
+                while _la==201:
                     self.state = 1523
                     self.match(CnsMRParser.Comma_VE)
                     self.state = 1524
@@ -9603,7 +9603,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1530
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Mod_VE]:
+            elif token in [220]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1532
                 self.match(CnsMRParser.Mod_VE)
@@ -9618,7 +9618,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1537
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Norm_VE]:
+            elif token in [221]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 1539
                 self.match(CnsMRParser.Norm_VE)
@@ -9629,7 +9629,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1542
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Random_VE]:
+            elif token in [222]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 1544
                 self.match(CnsMRParser.Random_VE)
@@ -9638,7 +9638,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1546
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Sign_VE]:
+            elif token in [223]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 1547
                 self.match(CnsMRParser.Sign_VE)
@@ -9649,7 +9649,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1550
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Sin_VE]:
+            elif token in [224]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 1552
                 self.match(CnsMRParser.Sin_VE)
@@ -9660,7 +9660,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1555
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Sqrt_VE]:
+            elif token in [225]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 1557
                 self.match(CnsMRParser.Sqrt_VE)
@@ -9671,7 +9671,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1560
                 self.match(CnsMRParser.R_paren_VE)
                 pass
-            elif token in [CnsMRParser.Tan_VE]:
+            elif token in [226]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 1562
                 self.match(CnsMRParser.Tan_VE)
@@ -9754,7 +9754,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1569
             _la = self._input.LA(1)
-            if not(((((_la - 235)) & ~0x3f) == 0 and ((1 << (_la - 235)) & ((1 << (CnsMRParser.Average_VS - 235)) | (1 << (CnsMRParser.Element_VS - 235)) | (1 << (CnsMRParser.Max_VS - 235)) | (1 << (CnsMRParser.Min_VS - 235)) | (1 << (CnsMRParser.Norm_VS - 235)) | (1 << (CnsMRParser.Rms_VS - 235)) | (1 << (CnsMRParser.Sum_VS - 235)))) != 0)):
+            if not((((_la - 235)) & ~0x3f) == 0 and ((1 << (_la - 235)) & 127) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -9892,10 +9892,10 @@ class CnsMRParser ( Parser ):
             self.state = 1583
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & ((1 << (CnsMRParser.Add_op_VE - 196)) | (1 << (CnsMRParser.Sub_op_VE - 196)) | (1 << (CnsMRParser.Mul_op_VE - 196)) | (1 << (CnsMRParser.Div_op_VE - 196)) | (1 << (CnsMRParser.Exp_op_VE - 196)))) != 0):
+            if (((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0:
                 self.state = 1581
                 _la = self._input.LA(1)
-                if not(((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & ((1 << (CnsMRParser.Add_op_VE - 196)) | (1 << (CnsMRParser.Sub_op_VE - 196)) | (1 << (CnsMRParser.Mul_op_VE - 196)) | (1 << (CnsMRParser.Div_op_VE - 196)) | (1 << (CnsMRParser.Exp_op_VE - 196)))) != 0)):
+                if not((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -9987,7 +9987,7 @@ class CnsMRParser ( Parser ):
             self.state = 1587
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Noe) | (1 << CnsMRParser.Restraints) | (1 << CnsMRParser.Dihedral))) != 0) or ((((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & ((1 << (CnsMRParser.AngleDb - 85)) | (1 << (CnsMRParser.HBonded - 85)) | (1 << (CnsMRParser.Improper - 85)))) != 0) or _la==CnsMRParser.Simple_name:
+            if ((_la) & ~0x3f) == 0 and ((1 << _la) & 844424930131976) != 0 or (((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 3377699720527873) != 0 or _la==157:
                 self.state = 1586
                 self.class_name()
 
@@ -9998,7 +9998,7 @@ class CnsMRParser ( Parser ):
             self.match(CnsMRParser.Equ_op)
             self.state = 1591
             _la = self._input.LA(1)
-            if not(_la==CnsMRParser.Nil or _la==CnsMRParser.Integer):
+            if not(_la==131 or _la==150):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -10010,14 +10010,14 @@ class CnsMRParser ( Parser ):
             self.state = 1599
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CnsMRParser.Reference:
+            if _la==130:
                 self.state = 1594
                 self.match(CnsMRParser.Reference)
                 self.state = 1595
                 self.match(CnsMRParser.Equ_op)
                 self.state = 1596
                 _la = self._input.LA(1)
-                if not(_la==CnsMRParser.Nil or _la==CnsMRParser.Integer):
+                if not(_la==131 or _la==150):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -10085,7 +10085,7 @@ class CnsMRParser ( Parser ):
             self.state = 1607
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.Reset or _la==CnsMRParser.Dihedral or ((((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & ((1 << (CnsMRParser.AngleDb - 85)) | (1 << (CnsMRParser.BondedTo - 85)) | (1 << (CnsMRParser.HBonded - 85)) | (1 << (CnsMRParser.Improper - 85)) | (1 << (CnsMRParser.NBFix - 85)) | (1 << (CnsMRParser.NonB - 85)) | (1 << (CnsMRParser.VDWOff - 85)) | (1 << (CnsMRParser.Verbose - 85)))) != 0):
+            while _la==26 or _la==49 or (((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 70931694131086337) != 0:
                 self.state = 1604
                 self.parameter_statement()
                 self.state = 1609
@@ -10194,7 +10194,7 @@ class CnsMRParser ( Parser ):
             self.state = 1667
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CnsMRParser.AngleDb]:
+            if token in [85]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1612
                 self.match(CnsMRParser.AngleDb)
@@ -10211,7 +10211,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1622
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.UB:
+                if _la==133:
                     self.state = 1618
                     self.match(CnsMRParser.UB)
                     self.state = 1619
@@ -10221,7 +10221,7 @@ class CnsMRParser ( Parser ):
 
 
                 pass
-            elif token in [CnsMRParser.BondedTo]:
+            elif token in [95]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1624
                 self.match(CnsMRParser.BondedTo)
@@ -10234,11 +10234,11 @@ class CnsMRParser ( Parser ):
                 self.state = 1628
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Dihedral, CnsMRParser.Improper]:
+            elif token in [49, 136]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1630
                 _la = self._input.LA(1)
-                if not(_la==CnsMRParser.Dihedral or _la==CnsMRParser.Improper):
+                if not(_la==49 or _la==136):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -10254,7 +10254,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1637
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CnsMRParser.Mult:
+                if _la==134:
                     self.state = 1635
                     self.match(CnsMRParser.Mult)
                     self.state = 1636
@@ -10268,7 +10268,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1641
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.HBonded]:
+            elif token in [135]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1643
                 self.match(CnsMRParser.HBonded)
@@ -10281,7 +10281,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1647
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.NBFix]:
+            elif token in [137]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1649
                 self.match(CnsMRParser.NBFix)
@@ -10298,7 +10298,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1655
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.NonB]:
+            elif token in [138]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1657
                 self.match(CnsMRParser.NonB)
@@ -10313,11 +10313,11 @@ class CnsMRParser ( Parser ):
                 self.state = 1662
                 self.number_s()
                 pass
-            elif token in [CnsMRParser.Reset, CnsMRParser.VDWOff]:
+            elif token in [26, 139]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1664
                 _la = self._input.LA(1)
-                if not(_la==CnsMRParser.Reset or _la==CnsMRParser.VDWOff):
+                if not(_la==26 or _la==139):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -10325,7 +10325,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1665
                 self.match(CnsMRParser.Simple_name)
                 pass
-            elif token in [CnsMRParser.Verbose]:
+            elif token in [140]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1666
                 self.match(CnsMRParser.Verbose)
@@ -10454,7 +10454,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1676
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Integer_CF:
+                while _la==247:
                     self.state = 1673
                     self.match(CnsMRParser.Integer_CF)
                     self.state = 1678
@@ -10467,7 +10467,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1682
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Real_CF:
+                while _la==248:
                     self.state = 1679
                     self.match(CnsMRParser.Real_CF)
                     self.state = 1684
@@ -10480,7 +10480,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1688
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Simple_name_CF:
+                while _la==250:
                     self.state = 1685
                     self.match(CnsMRParser.Simple_name_CF)
                     self.state = 1690
@@ -10499,19 +10499,19 @@ class CnsMRParser ( Parser ):
             self.state = 1701
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.Noe or _la==CnsMRParser.Assign or _la==CnsMRParser.Evaluate_Lp:
+            while _la==3 or _la==5 or _la==128:
                 self.state = 1699
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Evaluate_Lp]:
+                if token in [128]:
                     self.state = 1696
                     self.evaluate_statement()
                     pass
-                elif token in [CnsMRParser.Assign]:
+                elif token in [5]:
                     self.state = 1697
                     self.noe_assign()
                     pass
-                elif token in [CnsMRParser.Noe]:
+                elif token in [3]:
                     self.state = 1698
                     self.distance_restraint()
                     pass
@@ -10649,7 +10649,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1715
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Integer_CF:
+                while _la==247:
                     self.state = 1712
                     self.match(CnsMRParser.Integer_CF)
                     self.state = 1717
@@ -10662,7 +10662,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1721
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Real_CF:
+                while _la==248:
                     self.state = 1718
                     self.match(CnsMRParser.Real_CF)
                     self.state = 1723
@@ -10675,7 +10675,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1727
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Simple_name_CF:
+                while _la==250:
                     self.state = 1724
                     self.match(CnsMRParser.Simple_name_CF)
                     self.state = 1729
@@ -10694,19 +10694,19 @@ class CnsMRParser ( Parser ):
             self.state = 1740
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Assign) | (1 << CnsMRParser.Restraints) | (1 << CnsMRParser.Dihedral))) != 0) or _la==CnsMRParser.Evaluate_Lp:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 844424930132000) != 0 or _la==128:
                 self.state = 1738
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Evaluate_Lp]:
+                if token in [128]:
                     self.state = 1735
                     self.evaluate_statement()
                     pass
-                elif token in [CnsMRParser.Assign]:
+                elif token in [5]:
                     self.state = 1736
                     self.dihedral_assign()
                     pass
-                elif token in [CnsMRParser.Restraints, CnsMRParser.Dihedral]:
+                elif token in [48, 49]:
                     self.state = 1737
                     self.dihedral_angle_restraint()
                     pass
@@ -10844,7 +10844,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1754
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Integer_CF:
+                while _la==247:
                     self.state = 1751
                     self.match(CnsMRParser.Integer_CF)
                     self.state = 1756
@@ -10857,7 +10857,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1760
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Real_CF:
+                while _la==248:
                     self.state = 1757
                     self.match(CnsMRParser.Real_CF)
                     self.state = 1762
@@ -10870,7 +10870,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1766
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Simple_name_CF:
+                while _la==250:
                     self.state = 1763
                     self.match(CnsMRParser.Simple_name_CF)
                     self.state = 1768
@@ -10889,19 +10889,19 @@ class CnsMRParser ( Parser ):
             self.state = 1779
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.Assign or _la==CnsMRParser.Sanisotropy or _la==CnsMRParser.Evaluate_Lp:
+            while _la==5 or _la==59 or _la==128:
                 self.state = 1777
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Evaluate_Lp]:
+                if token in [128]:
                     self.state = 1774
                     self.evaluate_statement()
                     pass
-                elif token in [CnsMRParser.Assign]:
+                elif token in [5]:
                     self.state = 1775
                     self.sani_assign()
                     pass
-                elif token in [CnsMRParser.Sanisotropy]:
+                elif token in [59]:
                     self.state = 1776
                     self.rdc_restraint()
                     pass
@@ -11039,7 +11039,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1793
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Integer_CF:
+                while _la==247:
                     self.state = 1790
                     self.match(CnsMRParser.Integer_CF)
                     self.state = 1795
@@ -11052,7 +11052,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1799
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Real_CF:
+                while _la==248:
                     self.state = 1796
                     self.match(CnsMRParser.Real_CF)
                     self.state = 1801
@@ -11065,7 +11065,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1805
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Simple_name_CF:
+                while _la==250:
                     self.state = 1802
                     self.match(CnsMRParser.Simple_name_CF)
                     self.state = 1807
@@ -11084,19 +11084,19 @@ class CnsMRParser ( Parser ):
             self.state = 1818
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.Assign or _la==CnsMRParser.Coupling or _la==CnsMRParser.Evaluate_Lp:
+            while _la==5 or _la==62 or _la==128:
                 self.state = 1816
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Evaluate_Lp]:
+                if token in [128]:
                     self.state = 1813
                     self.evaluate_statement()
                     pass
-                elif token in [CnsMRParser.Assign]:
+                elif token in [5]:
                     self.state = 1814
                     self.coup_assign()
                     pass
-                elif token in [CnsMRParser.Coupling]:
+                elif token in [62]:
                     self.state = 1815
                     self.coupling_restraint()
                     pass
@@ -11234,7 +11234,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1832
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Integer_CF:
+                while _la==247:
                     self.state = 1829
                     self.match(CnsMRParser.Integer_CF)
                     self.state = 1834
@@ -11247,7 +11247,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1838
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Real_CF:
+                while _la==248:
                     self.state = 1835
                     self.match(CnsMRParser.Real_CF)
                     self.state = 1840
@@ -11260,7 +11260,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1844
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Simple_name_CF:
+                while _la==250:
                     self.state = 1841
                     self.match(CnsMRParser.Simple_name_CF)
                     self.state = 1846
@@ -11279,19 +11279,19 @@ class CnsMRParser ( Parser ):
             self.state = 1857
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CnsMRParser.Assign or _la==CnsMRParser.Carbon or _la==CnsMRParser.Evaluate_Lp:
+            while _la==5 or _la==63 or _la==128:
                 self.state = 1855
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Evaluate_Lp]:
+                if token in [128]:
                     self.state = 1852
                     self.evaluate_statement()
                     pass
-                elif token in [CnsMRParser.Assign]:
+                elif token in [5]:
                     self.state = 1853
                     self.carbon_shift_assign()
                     pass
-                elif token in [CnsMRParser.Carbon]:
+                elif token in [63]:
                     self.state = 1854
                     self.carbon_shift_restraint()
                     pass
@@ -11429,7 +11429,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1871
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Integer_CF:
+                while _la==247:
                     self.state = 1868
                     self.match(CnsMRParser.Integer_CF)
                     self.state = 1873
@@ -11442,7 +11442,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1877
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Real_CF:
+                while _la==248:
                     self.state = 1874
                     self.match(CnsMRParser.Real_CF)
                     self.state = 1879
@@ -11455,7 +11455,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1883
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==CnsMRParser.Simple_name_CF:
+                while _la==250:
                     self.state = 1880
                     self.match(CnsMRParser.Simple_name_CF)
                     self.state = 1885
@@ -11474,19 +11474,19 @@ class CnsMRParser ( Parser ):
             self.state = 1896
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CnsMRParser.Restraints) | (1 << CnsMRParser.Plane) | (1 << CnsMRParser.Group))) != 0) or _la==CnsMRParser.Evaluate_Lp:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 13792273858822144) != 0 or _la==128:
                 self.state = 1894
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CnsMRParser.Evaluate_Lp]:
+                if token in [128]:
                     self.state = 1891
                     self.evaluate_statement()
                     pass
-                elif token in [CnsMRParser.Group]:
+                elif token in [53]:
                     self.state = 1892
                     self.plane_group()
                     pass
-                elif token in [CnsMRParser.Restraints, CnsMRParser.Plane]:
+                elif token in [48, 52]:
                     self.state = 1893
                     self.plane_restraint()
                     pass

@@ -1,4 +1,4 @@
-# Generated from XplorMRParser.g4 by ANTLR 4.10.1
+# Generated from XplorMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -1978,7 +1978,7 @@ class XplorMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -2418,7 +2418,7 @@ class XplorMRParser ( Parser ):
             self.state = 319
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Noe) | (1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Restraints) | (1 << XplorMRParser.Dihedral) | (1 << XplorMRParser.Print_any) | (1 << XplorMRParser.Sanisotropy) | (1 << XplorMRParser.Xdipolar) | (1 << XplorMRParser.Dipolar) | (1 << XplorMRParser.VeAngle) | (1 << XplorMRParser.Tensor) | (1 << XplorMRParser.Anisotropy) | (1 << XplorMRParser.Planar) | (1 << XplorMRParser.Group) | (1 << XplorMRParser.Initialize) | (1 << XplorMRParser.Harmonic) | (1 << XplorMRParser.Xadc))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (XplorMRParser.Coupling - 64)) | (1 << (XplorMRParser.Carbon - 64)) | (1 << (XplorMRParser.Proton - 64)) | (1 << (XplorMRParser.Observed - 64)) | (1 << (XplorMRParser.Ramachandran - 64)) | (1 << (XplorMRParser.Collapse - 64)) | (1 << (XplorMRParser.Danisotropy - 64)) | (1 << (XplorMRParser.Orient - 64)) | (1 << (XplorMRParser.Dcsa - 64)) | (1 << (XplorMRParser.Pcsa - 64)) | (1 << (XplorMRParser.OneBond - 64)) | (1 << (XplorMRParser.AngleDb - 64)) | (1 << (XplorMRParser.PMagnetic - 64)) | (1 << (XplorMRParser.Xpcs - 64)) | (1 << (XplorMRParser.Xrdcoupling - 64)) | (1 << (XplorMRParser.Xangle - 64)) | (1 << (XplorMRParser.Xccr - 64)) | (1 << (XplorMRParser.Hbda - 64)) | (1 << (XplorMRParser.Hbdb - 64)))) != 0) or ((((_la - 134)) & ~0x3f) == 0 and ((1 << (_la - 134)) & ((1 << (XplorMRParser.Ncs - 134)) | (1 << (XplorMRParser.Flags - 134)) | (1 << (XplorMRParser.BondedTo - 134)) | (1 << (XplorMRParser.Vector - 134)) | (1 << (XplorMRParser.Evaluate_Lp - 134)) | (1 << (XplorMRParser.Patch - 134)) | (1 << (XplorMRParser.Parameter - 134)) | (1 << (XplorMRParser.HBonded - 134)) | (1 << (XplorMRParser.Improper - 134)) | (1 << (XplorMRParser.NBFix - 134)) | (1 << (XplorMRParser.NonB - 134)) | (1 << (XplorMRParser.VDWOff - 134)) | (1 << (XplorMRParser.Verbose - 134)) | (1 << (XplorMRParser.For - 134)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 1332108570988642840) != 0 or (((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 30962534813024453) != 0 or (((_la - 134)) & ~0x3f) == 0 and ((1 << (_la - 134)) & 4473655115383049) != 0:
                 self.state = 317
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -2769,7 +2769,7 @@ class XplorMRParser ( Parser ):
             self.state = 328
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Asymptote) | (1 << XplorMRParser.Average) | (1 << XplorMRParser.Bhig) | (1 << XplorMRParser.Ceiling) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.CountViol) | (1 << XplorMRParser.Distribute) | (1 << XplorMRParser.Monomers) | (1 << XplorMRParser.Ncount) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Predict) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Rswitch) | (1 << XplorMRParser.Scale) | (1 << XplorMRParser.SoExponent) | (1 << XplorMRParser.SqConstant) | (1 << XplorMRParser.SqExponent) | (1 << XplorMRParser.SqOffset) | (1 << XplorMRParser.Temperature))) != 0) or _la==XplorMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 133955568) != 0 or _la==185:
                 self.state = 325
                 self.noe_statement()
                 self.state = 330
@@ -2834,7 +2834,7 @@ class XplorMRParser ( Parser ):
             self.state = 334
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.Restraints:
+            if _la==36:
                 self.state = 333
                 self.match(XplorMRParser.Restraints)
 
@@ -2844,7 +2844,7 @@ class XplorMRParser ( Parser ):
             self.state = 340
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Scale) | (1 << XplorMRParser.Nassign) | (1 << XplorMRParser.Print_any))) != 0) or _la==XplorMRParser.Vector or _la==XplorMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 824636342288) != 0 or _la==168 or _la==185:
                 self.state = 337
                 self.dihedral_statement()
                 self.state = 342
@@ -2948,14 +2948,14 @@ class XplorMRParser ( Parser ):
             self.state = 385
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Sanisotropy]:
+            if token in [40]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 345
                 self.match(XplorMRParser.Sanisotropy)
                 self.state = 349
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Coefficients) | (1 << XplorMRParser.ForceConstant))) != 0) or _la==XplorMRParser.For:
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070471696) != 0 or _la==185:
                     self.state = 346
                     self.sani_statement()
                     self.state = 351
@@ -2965,11 +2965,11 @@ class XplorMRParser ( Parser ):
                 self.state = 352
                 self.match(XplorMRParser.End)
                 pass
-            elif token in [XplorMRParser.Xdipolar, XplorMRParser.Dipolar]:
+            elif token in [43, 44]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 353
                 _la = self._input.LA(1)
-                if not(_la==XplorMRParser.Xdipolar or _la==XplorMRParser.Dipolar):
+                if not(_la==43 or _la==44):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2977,7 +2977,7 @@ class XplorMRParser ( Parser ):
                 self.state = 357
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Average) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Scale) | (1 << XplorMRParser.Coefficients) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Type) | (1 << XplorMRParser.Sign))) != 0):
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 112150188835408) != 0:
                     self.state = 354
                     self.xdip_statement()
                     self.state = 359
@@ -2987,14 +2987,14 @@ class XplorMRParser ( Parser ):
                 self.state = 360
                 self.match(XplorMRParser.End)
                 pass
-            elif token in [XplorMRParser.VeAngle]:
+            elif token in [47]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 361
                 self.match(XplorMRParser.VeAngle)
                 self.state = 365
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Cv) | (1 << XplorMRParser.Partition))) != 0):
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 848822977315344) != 0:
                     self.state = 362
                     self.vean_statement()
                     self.state = 367
@@ -3004,14 +3004,14 @@ class XplorMRParser ( Parser ):
                 self.state = 368
                 self.match(XplorMRParser.End)
                 pass
-            elif token in [XplorMRParser.Tensor]:
+            elif token in [50]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 369
                 self.match(XplorMRParser.Tensor)
                 self.state = 373
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Coefficients))) != 0):
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023960592) != 0:
                     self.state = 370
                     self.tenso_statement()
                     self.state = 375
@@ -3021,14 +3021,14 @@ class XplorMRParser ( Parser ):
                 self.state = 376
                 self.match(XplorMRParser.End)
                 pass
-            elif token in [XplorMRParser.Anisotropy]:
+            elif token in [51]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 377
                 self.match(XplorMRParser.Anisotropy)
                 self.state = 381
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Coefficients) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Type))) != 0):
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 41781442560528) != 0:
                     self.state = 378
                     self.anis_statement()
                     self.state = 383
@@ -3097,7 +3097,7 @@ class XplorMRParser ( Parser ):
             self.state = 388
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.Restraints:
+            if _la==36:
                 self.state = 387
                 self.match(XplorMRParser.Restraints)
 
@@ -3107,7 +3107,7 @@ class XplorMRParser ( Parser ):
             self.state = 394
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Print_any) | (1 << XplorMRParser.Group) | (1 << XplorMRParser.Initialize))) != 0) or _la==XplorMRParser.Vector or _la==XplorMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 27022147520036864) != 0 or _la==168 or _la==185:
                 self.state = 391
                 self.planar_statement()
                 self.state = 396
@@ -3172,7 +3172,7 @@ class XplorMRParser ( Parser ):
             self.state = 400
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.Restraints:
+            if _la==36:
                 self.state = 399
                 self.match(XplorMRParser.Restraints)
 
@@ -3182,7 +3182,7 @@ class XplorMRParser ( Parser ):
             self.state = 406
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Exponent or _la==XplorMRParser.Normal or _la==XplorMRParser.Vector:
+            while _la==58 or _la==59 or _la==168:
                 self.state = 403
                 self.harmonic_statement()
                 self.state = 408
@@ -3246,7 +3246,7 @@ class XplorMRParser ( Parser ):
             self.state = 415
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Expectation) | (1 << XplorMRParser.Size) | (1 << XplorMRParser.Zero))) != 0) or _la==XplorMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -2305838611166510576) != 0 or _la==185:
                 self.state = 412
                 self.antidistance_statement()
                 self.state = 417
@@ -3310,7 +3310,7 @@ class XplorMRParser ( Parser ):
             self.state = 424
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 4)) & ~0x3f) == 0 and ((1 << (_la - 4)) & ((1 << (XplorMRParser.Assign - 4)) | (1 << (XplorMRParser.Classification - 4)) | (1 << (XplorMRParser.Nrestraints - 4)) | (1 << (XplorMRParser.Potential - 4)) | (1 << (XplorMRParser.Print - 4)) | (1 << (XplorMRParser.Reset - 4)) | (1 << (XplorMRParser.Coefficients - 4)) | (1 << (XplorMRParser.ForceConstant - 4)) | (1 << (XplorMRParser.Cv - 4)) | (1 << (XplorMRParser.Partition - 4)) | (1 << (XplorMRParser.Degeneracy - 4)))) != 0) or _la==XplorMRParser.For:
+            while (((_la - 4)) & ~0x3f) == 0 and ((1 << (_la - 4)) & 2305896198088731681) != 0 or _la==185:
                 self.state = 421
                 self.coupling_statement()
                 self.state = 426
@@ -3374,7 +3374,7 @@ class XplorMRParser ( Parser ):
             self.state = 433
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Expectation) | (1 << XplorMRParser.Zero))) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & ((1 << (XplorMRParser.PhiStep - 67)) | (1 << (XplorMRParser.PsiStep - 67)) | (1 << (XplorMRParser.Rcoil - 67)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -6917524629593865712) != 0 or (((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 7) != 0:
                 self.state = 430
                 self.carbon_shift_statement()
                 self.state = 435
@@ -3438,7 +3438,7 @@ class XplorMRParser ( Parser ):
             self.state = 442
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Classification) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Anisotropy))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (XplorMRParser.Degeneracy - 65)) | (1 << (XplorMRParser.Carbon - 65)) | (1 << (XplorMRParser.Rcoil - 65)) | (1 << (XplorMRParser.Observed - 65)) | (1 << (XplorMRParser.Amides - 65)) | (1 << (XplorMRParser.Nitrogens - 65)) | (1 << (XplorMRParser.Oxygens - 65)) | (1 << (XplorMRParser.RingAtoms - 65)) | (1 << (XplorMRParser.AlphasAndAmides - 65)) | (1 << (XplorMRParser.Error - 65)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 2256197860884992) != 0 or (((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & 8147) != 0:
                 self.state = 439
                 self.proton_shift_statement()
                 self.state = 444
@@ -3502,7 +3502,7 @@ class XplorMRParser ( Parser ):
             self.state = 451
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Scale) | (1 << XplorMRParser.Cutoff) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Size) | (1 << XplorMRParser.Zero))) != 0) or ((((_la - 79)) & ~0x3f) == 0 and ((1 << (_la - 79)) & ((1 << (XplorMRParser.Gaussian - 79)) | (1 << (XplorMRParser.Phase - 79)) | (1 << (XplorMRParser.Quartic - 79)) | (1 << (XplorMRParser.Shape - 79)) | (1 << (XplorMRParser.Sort - 79)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -4611681620243889648) != 0 or (((_la - 79)) & ~0x3f) == 0 and ((1 << (_la - 79)) & 31) != 0:
                 self.state = 448
                 self.ramachandran_statement()
                 self.state = 453
@@ -3566,7 +3566,7 @@ class XplorMRParser ( Parser ):
             self.state = 460
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Scale))) != 0) or _la==XplorMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 2752528) != 0 or _la==185:
                 self.state = 457
                 self.collapse_statement()
                 self.state = 462
@@ -3630,7 +3630,7 @@ class XplorMRParser ( Parser ):
             self.state = 469
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Coefficients) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Type))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 41781442560528) != 0:
                 self.state = 466
                 self.diffusion_statement()
                 self.state = 471
@@ -3694,7 +3694,7 @@ class XplorMRParser ( Parser ):
             self.state = 478
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Cutoff) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Size) | (1 << XplorMRParser.Zero))) != 0) or ((((_la - 79)) & ~0x3f) == 0 and ((1 << (_la - 79)) & ((1 << (XplorMRParser.Gaussian - 79)) | (1 << (XplorMRParser.Quartic - 79)) | (1 << (XplorMRParser.Height - 79)) | (1 << (XplorMRParser.MaxGaussians - 79)) | (1 << (XplorMRParser.NewGaussian - 79)))) != 0) or _la==XplorMRParser.Residue:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -4611681620245986800) != 0 or (((_la - 79)) & ~0x3f) == 0 and ((1 << (_la - 79)) & 3589) != 0 or _la==154:
                 self.state = 475
                 self.orientation_statement()
                 self.state = 480
@@ -3758,7 +3758,7 @@ class XplorMRParser ( Parser ):
             self.state = 487
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Scale) | (1 << XplorMRParser.Coefficients) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Type))) != 0) or _la==XplorMRParser.Sigma or _la==XplorMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 41781444657680) != 0 or _la==92 or _la==185:
                 self.state = 484
                 self.csa_statement()
                 self.state = 489
@@ -3822,7 +3822,7 @@ class XplorMRParser ( Parser ):
             self.state = 496
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Scale) | (1 << XplorMRParser.Coefficients) | (1 << XplorMRParser.ForceConstant))) != 0) or _la==XplorMRParser.Sigma:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597072568848) != 0 or _la==92:
                 self.state = 493
                 self.pcsa_statement()
                 self.state = 498
@@ -3886,7 +3886,7 @@ class XplorMRParser ( Parser ):
             self.state = 505
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Coefficients) | (1 << XplorMRParser.ForceConstant))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070471696) != 0:
                 self.state = 502
                 self.one_bond_coupling_statement()
                 self.state = 507
@@ -3950,7 +3950,7 @@ class XplorMRParser ( Parser ):
             self.state = 514
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.ForceConstant) | (1 << XplorMRParser.Expectation) | (1 << XplorMRParser.Size) | (1 << XplorMRParser.Zero))) != 0) or _la==XplorMRParser.Error or _la==XplorMRParser.DerivFlag:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -2305838611166477808) != 0 or _la==77 or _la==96:
                 self.state = 511
                 self.angle_db_statement()
                 self.state = 516
@@ -4014,7 +4014,7 @@ class XplorMRParser ( Parser ):
             self.state = 523
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Potential) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.ForceConstant))) != 0) or ((((_la - 98)) & ~0x3f) == 0 and ((1 << (_la - 98)) & ((1 << (XplorMRParser.Kconst - 98)) | (1 << (XplorMRParser.Omega - 98)) | (1 << (XplorMRParser.Tauc - 98)) | (1 << (XplorMRParser.Debug - 98)))) != 0) or _la==XplorMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 4398047216144) != 0 or (((_la - 98)) & ~0x3f) == 0 and ((1 << (_la - 98)) & 15) != 0 or _la==185:
                 self.state = 520
                 self.pre_statement()
                 self.state = 525
@@ -4078,7 +4078,7 @@ class XplorMRParser ( Parser ):
             self.state = 532
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Coefficients) | (1 << XplorMRParser.ForceConstant))) != 0) or ((((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & ((1 << (XplorMRParser.Tolerance - 103)) | (1 << (XplorMRParser.Save - 103)) | (1 << (XplorMRParser.Fmed - 103)) | (1 << (XplorMRParser.ErrOn - 103)) | (1 << (XplorMRParser.ErrOff - 103)) | (1 << (XplorMRParser.Fon - 103)) | (1 << (XplorMRParser.Foff - 103)) | (1 << (XplorMRParser.Son - 103)) | (1 << (XplorMRParser.Soff - 103)) | (1 << (XplorMRParser.Frun - 103)))) != 0) or _la==XplorMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070438928) != 0 or (((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & 1023) != 0 or _la==185:
                 self.state = 529
                 self.pcs_statement()
                 self.state = 534
@@ -4142,7 +4142,7 @@ class XplorMRParser ( Parser ):
             self.state = 541
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Coefficients) | (1 << XplorMRParser.ForceConstant))) != 0) or ((((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & ((1 << (XplorMRParser.Tolerance - 103)) | (1 << (XplorMRParser.Save - 103)) | (1 << (XplorMRParser.Fmed - 103)) | (1 << (XplorMRParser.ErrOn - 103)) | (1 << (XplorMRParser.ErrOff - 103)) | (1 << (XplorMRParser.Fon - 103)) | (1 << (XplorMRParser.Foff - 103)) | (1 << (XplorMRParser.Son - 103)) | (1 << (XplorMRParser.Soff - 103)) | (1 << (XplorMRParser.Frun - 103)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070438928) != 0 or (((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & 1023) != 0:
                 self.state = 538
                 self.prdc_statement()
                 self.state = 543
@@ -4206,7 +4206,7 @@ class XplorMRParser ( Parser ):
             self.state = 550
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.ForceConstant))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 4398047183376) != 0:
                 self.state = 547
                 self.porientation_statement()
                 self.state = 552
@@ -4270,7 +4270,7 @@ class XplorMRParser ( Parser ):
             self.state = 559
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.Coefficients) | (1 << XplorMRParser.ForceConstant))) != 0) or _la==XplorMRParser.Frun or _la==XplorMRParser.Weip:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070438928) != 0 or _la==112 or _la==116:
                 self.state = 556
                 self.pccr_statement()
                 self.state = 561
@@ -4334,7 +4334,7 @@ class XplorMRParser ( Parser ):
             self.state = 568
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Classification) | (1 << XplorMRParser.Nrestraints) | (1 << XplorMRParser.Print) | (1 << XplorMRParser.Reset) | (1 << XplorMRParser.ForceConstant))) != 0) or _la==XplorMRParser.For:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 4398047183376) != 0 or _la==185:
                 self.state = 565
                 self.hbond_statement()
                 self.state = 570
@@ -4398,7 +4398,7 @@ class XplorMRParser ( Parser ):
             self.state = 577
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Assign or ((((_la - 119)) & ~0x3f) == 0 and ((1 << (_la - 119)) & ((1 << (XplorMRParser.Kdir - 119)) | (1 << (XplorMRParser.Klin - 119)) | (1 << (XplorMRParser.Nseg - 119)) | (1 << (XplorMRParser.Nmin - 119)) | (1 << (XplorMRParser.Nmax - 119)) | (1 << (XplorMRParser.Segm - 119)) | (1 << (XplorMRParser.Ohcut - 119)) | (1 << (XplorMRParser.Coh1cut - 119)) | (1 << (XplorMRParser.Coh2cut - 119)) | (1 << (XplorMRParser.Ohncut - 119)) | (1 << (XplorMRParser.Updfrq - 119)) | (1 << (XplorMRParser.Prnfrq - 119)) | (1 << (XplorMRParser.Freemode - 119)))) != 0) or _la==XplorMRParser.For:
+            while _la==4 or (((_la - 119)) & ~0x3f) == 0 and ((1 << (_la - 119)) & 8191) != 0 or _la==185:
                 self.state = 574
                 self.hbond_db_statement()
                 self.state = 579
@@ -4557,17 +4557,17 @@ class XplorMRParser ( Parser ):
             self.state = 664
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 582
                 self.noe_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 583
                 self.noe_assign_loop()
                 pass
-            elif token in [XplorMRParser.Asymptote]:
+            elif token in [5]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 584
                 self.match(XplorMRParser.Asymptote)
@@ -4576,7 +4576,7 @@ class XplorMRParser ( Parser ):
                 self.state = 586
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Average]:
+            elif token in [6]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 588
                 self.match(XplorMRParser.Average)
@@ -4585,7 +4585,7 @@ class XplorMRParser ( Parser ):
                 self.state = 590
                 self.match(XplorMRParser.Averaging_methods)
                 pass
-            elif token in [XplorMRParser.Bhig]:
+            elif token in [7]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 591
                 self.match(XplorMRParser.Bhig)
@@ -4594,14 +4594,14 @@ class XplorMRParser ( Parser ):
                 self.state = 593
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Ceiling]:
+            elif token in [8]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 595
                 self.match(XplorMRParser.Ceiling)
                 self.state = 597
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 596
                     self.match(XplorMRParser.Equ_op)
 
@@ -4609,19 +4609,19 @@ class XplorMRParser ( Parser ):
                 self.state = 599
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 600
                 self.classification()
                 pass
-            elif token in [XplorMRParser.CountViol]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 601
                 self.match(XplorMRParser.CountViol)
                 self.state = 602
                 self.class_name()
                 pass
-            elif token in [XplorMRParser.Distribute]:
+            elif token in [11]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 603
                 self.match(XplorMRParser.Distribute)
@@ -4632,7 +4632,7 @@ class XplorMRParser ( Parser ):
                 self.state = 606
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Monomers]:
+            elif token in [12]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 608
                 self.match(XplorMRParser.Monomers)
@@ -4641,7 +4641,7 @@ class XplorMRParser ( Parser ):
                 self.state = 610
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Ncount]:
+            elif token in [13]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 612
                 self.match(XplorMRParser.Ncount)
@@ -4650,14 +4650,14 @@ class XplorMRParser ( Parser ):
                 self.state = 614
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 616
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 618
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 617
                     self.match(XplorMRParser.Equ_op)
 
@@ -4665,7 +4665,7 @@ class XplorMRParser ( Parser ):
                 self.state = 620
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 621
                 self.match(XplorMRParser.Potential)
@@ -4674,7 +4674,7 @@ class XplorMRParser ( Parser ):
                 self.state = 623
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Predict]:
+            elif token in [16]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 624
                 self.match(XplorMRParser.Predict)
@@ -4683,7 +4683,7 @@ class XplorMRParser ( Parser ):
                 self.state = 626
                 self.match(XplorMRParser.End)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 628
                 self.match(XplorMRParser.Print)
@@ -4692,7 +4692,7 @@ class XplorMRParser ( Parser ):
                 self.state = 631
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 630
                     self.match(XplorMRParser.Equ_op)
 
@@ -4700,12 +4700,12 @@ class XplorMRParser ( Parser ):
                 self.state = 633
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 634
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Rswitch]:
+            elif token in [20]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 635
                 self.match(XplorMRParser.Rswitch)
@@ -4714,7 +4714,7 @@ class XplorMRParser ( Parser ):
                 self.state = 637
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Scale]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 639
                 self.match(XplorMRParser.Scale)
@@ -4723,7 +4723,7 @@ class XplorMRParser ( Parser ):
                 self.state = 641
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.SoExponent]:
+            elif token in [22]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 643
                 self.match(XplorMRParser.SoExponent)
@@ -4732,7 +4732,7 @@ class XplorMRParser ( Parser ):
                 self.state = 645
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.SqConstant]:
+            elif token in [23]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 647
                 self.match(XplorMRParser.SqConstant)
@@ -4741,7 +4741,7 @@ class XplorMRParser ( Parser ):
                 self.state = 649
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.SqExponent]:
+            elif token in [24]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 651
                 self.match(XplorMRParser.SqExponent)
@@ -4750,7 +4750,7 @@ class XplorMRParser ( Parser ):
                 self.state = 653
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.SqOffset]:
+            elif token in [25]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 655
                 self.match(XplorMRParser.SqOffset)
@@ -4759,14 +4759,14 @@ class XplorMRParser ( Parser ):
                 self.state = 657
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Temperature]:
+            elif token in [26]:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 659
                 self.match(XplorMRParser.Temperature)
                 self.state = 661
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 660
                     self.match(XplorMRParser.Equ_op)
 
@@ -4866,7 +4866,7 @@ class XplorMRParser ( Parser ):
             self.state = 674
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 673
                 self.number()
 
@@ -4874,7 +4874,7 @@ class XplorMRParser ( Parser ):
             self.state = 679
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Peak) | (1 << XplorMRParser.Spectrum) | (1 << XplorMRParser.Volume) | (1 << XplorMRParser.Ppm1) | (1 << XplorMRParser.Ppm2) | (1 << XplorMRParser.Cv) | (1 << XplorMRParser.Weight))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 72339135586631680) != 0:
                 self.state = 676
                 self.noe_annotation()
                 self.state = 681
@@ -4884,13 +4884,13 @@ class XplorMRParser ( Parser ):
             self.state = 699
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Or_op:
+            while _la==189:
                 self.state = 682
                 self.match(XplorMRParser.Or_op)
                 self.state = 684
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Assign:
+                if _la==4:
                     self.state = 683
                     self.match(XplorMRParser.Assign)
 
@@ -4918,7 +4918,7 @@ class XplorMRParser ( Parser ):
                 self.state = 695
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                     self.state = 694
                     self.number()
 
@@ -4989,14 +4989,14 @@ class XplorMRParser ( Parser ):
             self.state = 716
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Cutoff]:
+            if token in [27]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 702
                 self.match(XplorMRParser.Cutoff)
                 self.state = 704
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 703
                     self.match(XplorMRParser.Equ_op)
 
@@ -5004,14 +5004,14 @@ class XplorMRParser ( Parser ):
                 self.state = 706
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Cuton]:
+            elif token in [28]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 707
                 self.match(XplorMRParser.Cuton)
                 self.state = 709
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 708
                     self.match(XplorMRParser.Equ_op)
 
@@ -5019,14 +5019,14 @@ class XplorMRParser ( Parser ):
                 self.state = 711
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.From]:
+            elif token in [29]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 712
                 self.match(XplorMRParser.From)
                 self.state = 713
                 self.selection()
                 pass
-            elif token in [XplorMRParser.To]:
+            elif token in [30]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 714
                 self.match(XplorMRParser.To)
@@ -5103,14 +5103,14 @@ class XplorMRParser ( Parser ):
             self.state = 753
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Peak]:
+            if token in [31]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 718
                 self.match(XplorMRParser.Peak)
                 self.state = 720
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 719
                     self.match(XplorMRParser.Equ_op)
 
@@ -5118,14 +5118,14 @@ class XplorMRParser ( Parser ):
                 self.state = 722
                 self.number_a()
                 pass
-            elif token in [XplorMRParser.Spectrum]:
+            elif token in [32]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 723
                 self.match(XplorMRParser.Spectrum)
                 self.state = 725
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 724
                     self.match(XplorMRParser.Equ_op)
 
@@ -5133,14 +5133,14 @@ class XplorMRParser ( Parser ):
                 self.state = 727
                 self.number_a()
                 pass
-            elif token in [XplorMRParser.Weight]:
+            elif token in [56]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 728
                 self.match(XplorMRParser.Weight)
                 self.state = 730
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 729
                     self.match(XplorMRParser.Equ_op)
 
@@ -5148,14 +5148,14 @@ class XplorMRParser ( Parser ):
                 self.state = 732
                 self.number_a()
                 pass
-            elif token in [XplorMRParser.Volume]:
+            elif token in [33]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 733
                 self.match(XplorMRParser.Volume)
                 self.state = 735
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 734
                     self.match(XplorMRParser.Equ_op)
 
@@ -5163,14 +5163,14 @@ class XplorMRParser ( Parser ):
                 self.state = 737
                 self.number_a()
                 pass
-            elif token in [XplorMRParser.Ppm1]:
+            elif token in [34]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 738
                 self.match(XplorMRParser.Ppm1)
                 self.state = 740
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 739
                     self.match(XplorMRParser.Equ_op)
 
@@ -5178,14 +5178,14 @@ class XplorMRParser ( Parser ):
                 self.state = 742
                 self.number_a()
                 pass
-            elif token in [XplorMRParser.Ppm2]:
+            elif token in [35]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 743
                 self.match(XplorMRParser.Ppm2)
                 self.state = 745
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 744
                     self.match(XplorMRParser.Equ_op)
 
@@ -5193,14 +5193,14 @@ class XplorMRParser ( Parser ):
                 self.state = 747
                 self.number_a()
                 pass
-            elif token in [XplorMRParser.Cv]:
+            elif token in [48]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 748
                 self.match(XplorMRParser.Cv)
                 self.state = 750
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 749
                     self.match(XplorMRParser.Equ_op)
 
@@ -5284,29 +5284,29 @@ class XplorMRParser ( Parser ):
             self.state = 770
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Vector]:
+            if token in [168]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 755
                 self.vector_statement()
                 pass
-            elif token in [XplorMRParser.Assign]:
+            elif token in [4]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 756
                 self.dihedral_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 757
                 self.dihedral_assign_loop()
                 pass
-            elif token in [XplorMRParser.Nassign]:
+            elif token in [38]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 758
                 self.match(XplorMRParser.Nassign)
                 self.state = 760
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 759
                     self.match(XplorMRParser.Equ_op)
 
@@ -5314,19 +5314,19 @@ class XplorMRParser ( Parser ):
                 self.state = 762
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 763
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Scale]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 764
                 self.match(XplorMRParser.Scale)
                 self.state = 766
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 765
                     self.match(XplorMRParser.Equ_op)
 
@@ -5334,7 +5334,7 @@ class XplorMRParser ( Parser ):
                 self.state = 768
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Print_any]:
+            elif token in [39]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 769
                 self.match(XplorMRParser.Print_any)
@@ -5507,22 +5507,22 @@ class XplorMRParser ( Parser ):
             self.state = 809
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 782
                 self.sani_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 783
                 self.sani_assign_loop()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 784
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 785
                 self.match(XplorMRParser.Coefficients)
@@ -5533,14 +5533,14 @@ class XplorMRParser ( Parser ):
                 self.state = 788
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 790
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 792
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 791
                     self.match(XplorMRParser.Equ_op)
 
@@ -5548,14 +5548,14 @@ class XplorMRParser ( Parser ):
                 self.state = 794
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 795
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 797
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 796
                     self.match(XplorMRParser.Equ_op)
 
@@ -5563,14 +5563,14 @@ class XplorMRParser ( Parser ):
                 self.state = 799
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 800
                 self.match(XplorMRParser.Potential)
                 self.state = 802
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 801
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -5578,7 +5578,7 @@ class XplorMRParser ( Parser ):
                 self.state = 804
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 805
                 self.match(XplorMRParser.Print)
@@ -5587,7 +5587,7 @@ class XplorMRParser ( Parser ):
                 self.state = 807
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 808
                 self.match(XplorMRParser.Reset)
@@ -5676,7 +5676,7 @@ class XplorMRParser ( Parser ):
             self.state = 823
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 822
                 self.number()
 
@@ -5789,31 +5789,31 @@ class XplorMRParser ( Parser ):
             self.state = 862
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 825
                 self.xdip_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 826
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Type]:
+            elif token in [45]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 827
                 self.match(XplorMRParser.Type)
                 self.state = 828
                 self.match(XplorMRParser.Rdc_dist_fix_types)
                 pass
-            elif token in [XplorMRParser.Scale]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 829
                 self.match(XplorMRParser.Scale)
                 self.state = 831
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 830
                     self.match(XplorMRParser.Equ_op)
 
@@ -5821,21 +5821,21 @@ class XplorMRParser ( Parser ):
                 self.state = 833
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Sign]:
+            elif token in [46]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 834
                 self.match(XplorMRParser.Sign)
                 self.state = 835
                 self.match(XplorMRParser.Logical)
                 pass
-            elif token in [XplorMRParser.Average]:
+            elif token in [6]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 836
                 self.match(XplorMRParser.Average)
                 self.state = 837
                 self.match(XplorMRParser.Averaging_methods)
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 838
                 self.match(XplorMRParser.Coefficients)
@@ -5846,14 +5846,14 @@ class XplorMRParser ( Parser ):
                 self.state = 841
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 843
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 845
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 844
                     self.match(XplorMRParser.Equ_op)
 
@@ -5861,14 +5861,14 @@ class XplorMRParser ( Parser ):
                 self.state = 847
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 848
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 850
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 849
                     self.match(XplorMRParser.Equ_op)
 
@@ -5876,14 +5876,14 @@ class XplorMRParser ( Parser ):
                 self.state = 852
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 853
                 self.match(XplorMRParser.Potential)
                 self.state = 855
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 854
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -5891,7 +5891,7 @@ class XplorMRParser ( Parser ):
                 self.state = 857
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 858
                 self.match(XplorMRParser.Print)
@@ -5900,7 +5900,7 @@ class XplorMRParser ( Parser ):
                 self.state = 860
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 861
                 self.match(XplorMRParser.Reset)
@@ -6078,19 +6078,19 @@ class XplorMRParser ( Parser ):
             self.state = 909
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 881
                 self.vean_assign()
                 pass
-            elif token in [XplorMRParser.Cv]:
+            elif token in [48]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 882
                 self.match(XplorMRParser.Cv)
                 self.state = 884
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 883
                     self.match(XplorMRParser.Equ_op)
 
@@ -6098,19 +6098,19 @@ class XplorMRParser ( Parser ):
                 self.state = 886
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 887
                 self.classification()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 888
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 890
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 889
                     self.match(XplorMRParser.Equ_op)
 
@@ -6120,14 +6120,14 @@ class XplorMRParser ( Parser ):
                 self.state = 893
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 895
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 897
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 896
                     self.match(XplorMRParser.Equ_op)
 
@@ -6135,14 +6135,14 @@ class XplorMRParser ( Parser ):
                 self.state = 899
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Partition]:
+            elif token in [49]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 900
                 self.match(XplorMRParser.Partition)
                 self.state = 902
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 901
                     self.match(XplorMRParser.Equ_op)
 
@@ -6150,7 +6150,7 @@ class XplorMRParser ( Parser ):
                 self.state = 904
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 905
                 self.match(XplorMRParser.Print)
@@ -6159,7 +6159,7 @@ class XplorMRParser ( Parser ):
                 self.state = 907
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 908
                 self.match(XplorMRParser.Reset)
@@ -6238,7 +6238,7 @@ class XplorMRParser ( Parser ):
             self.state = 921
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 918
                 self.number()
                 self.state = 919
@@ -6326,31 +6326,31 @@ class XplorMRParser ( Parser ):
             self.state = 941
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 923
                 self.tenso_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 924
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 925
                 self.match(XplorMRParser.Coefficients)
                 self.state = 926
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 927
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 929
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 928
                     self.match(XplorMRParser.Equ_op)
 
@@ -6358,14 +6358,14 @@ class XplorMRParser ( Parser ):
                 self.state = 931
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 932
                 self.match(XplorMRParser.Potential)
                 self.state = 934
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 933
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -6373,7 +6373,7 @@ class XplorMRParser ( Parser ):
                 self.state = 936
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 937
                 self.match(XplorMRParser.Print)
@@ -6382,7 +6382,7 @@ class XplorMRParser ( Parser ):
                 self.state = 939
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 940
                 self.match(XplorMRParser.Reset)
@@ -6455,7 +6455,7 @@ class XplorMRParser ( Parser ):
             self.state = 948
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 947
                 self.number()
 
@@ -6553,17 +6553,17 @@ class XplorMRParser ( Parser ):
             self.state = 979
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 950
                 self.anis_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 951
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 952
                 self.match(XplorMRParser.Coefficients)
@@ -6576,14 +6576,14 @@ class XplorMRParser ( Parser ):
                 self.state = 956
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 958
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 960
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 959
                     self.match(XplorMRParser.Equ_op)
 
@@ -6591,14 +6591,14 @@ class XplorMRParser ( Parser ):
                 self.state = 962
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 963
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 965
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 964
                     self.match(XplorMRParser.Equ_op)
 
@@ -6606,14 +6606,14 @@ class XplorMRParser ( Parser ):
                 self.state = 967
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 968
                 self.match(XplorMRParser.Potential)
                 self.state = 970
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 969
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -6621,7 +6621,7 @@ class XplorMRParser ( Parser ):
                 self.state = 972
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 973
                 self.match(XplorMRParser.Print)
@@ -6630,12 +6630,12 @@ class XplorMRParser ( Parser ):
                 self.state = 975
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 976
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Type]:
+            elif token in [45]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 977
                 self.match(XplorMRParser.Type)
@@ -6714,7 +6714,7 @@ class XplorMRParser ( Parser ):
             self.state = 988
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 987
                 self.number()
 
@@ -6775,27 +6775,27 @@ class XplorMRParser ( Parser ):
             self.state = 995
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Vector]:
+            if token in [168]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 990
                 self.vector_statement()
                 pass
-            elif token in [XplorMRParser.Group]:
+            elif token in [53]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 991
                 self.planar_group()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 992
                 self.planar_group_loop()
                 pass
-            elif token in [XplorMRParser.Initialize]:
+            elif token in [54]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 993
                 self.match(XplorMRParser.Initialize)
                 pass
-            elif token in [XplorMRParser.Print_any]:
+            elif token in [39]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 994
                 self.match(XplorMRParser.Print_any)
@@ -6858,7 +6858,7 @@ class XplorMRParser ( Parser ):
             self.state = 1001
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Selection or _la==XplorMRParser.Weight:
+            while _la==55 or _la==56:
                 self.state = 998
                 self.group_statement()
                 self.state = 1003
@@ -6923,14 +6923,14 @@ class XplorMRParser ( Parser ):
             self.state = 1016
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Selection]:
+            if token in [55]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1006
                 self.match(XplorMRParser.Selection)
                 self.state = 1008
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1007
                     self.match(XplorMRParser.Equ_op)
 
@@ -6938,14 +6938,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1010
                 self.selection()
                 pass
-            elif token in [XplorMRParser.Weight]:
+            elif token in [56]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1011
                 self.match(XplorMRParser.Weight)
                 self.state = 1013
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1012
                     self.match(XplorMRParser.Equ_op)
 
@@ -7046,19 +7046,19 @@ class XplorMRParser ( Parser ):
             self.state = 1058
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Vector]:
+            if token in [168]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1018
                 self.vector_statement()
                 pass
-            elif token in [XplorMRParser.Exponent]:
+            elif token in [58]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1019
                 self.match(XplorMRParser.Exponent)
                 self.state = 1021
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1020
                     self.match(XplorMRParser.Equ_op)
 
@@ -7066,14 +7066,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1023
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Normal]:
+            elif token in [59]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1024
                 self.match(XplorMRParser.Normal)
                 self.state = 1026
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1025
                     self.match(XplorMRParser.Equ_op)
 
@@ -7083,13 +7083,13 @@ class XplorMRParser ( Parser ):
                 self.state = 1054
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Integer, XplorMRParser.Real, XplorMRParser.Symbol_name]:
+                if token in [194, 196, 213]:
                     self.state = 1029
                     self.number_s()
                     self.state = 1031
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==XplorMRParser.Comma:
+                    if _la==192:
                         self.state = 1030
                         self.match(XplorMRParser.Comma)
 
@@ -7099,7 +7099,7 @@ class XplorMRParser ( Parser ):
                     self.state = 1035
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==XplorMRParser.Comma:
+                    if _la==192:
                         self.state = 1034
                         self.match(XplorMRParser.Comma)
 
@@ -7107,13 +7107,13 @@ class XplorMRParser ( Parser ):
                     self.state = 1037
                     self.number_s()
                     pass
-                elif token in [XplorMRParser.Tail]:
+                elif token in [187]:
                     self.state = 1039
                     self.match(XplorMRParser.Tail)
                     self.state = 1041
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==XplorMRParser.Equ_op:
+                    if _la==207:
                         self.state = 1040
                         self.match(XplorMRParser.Equ_op)
 
@@ -7123,7 +7123,7 @@ class XplorMRParser ( Parser ):
                     self.state = 1045
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==XplorMRParser.Comma:
+                    if _la==192:
                         self.state = 1044
                         self.match(XplorMRParser.Comma)
 
@@ -7131,13 +7131,13 @@ class XplorMRParser ( Parser ):
                     self.state = 1052
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==XplorMRParser.Head:
+                    if _la==188:
                         self.state = 1047
                         self.match(XplorMRParser.Head)
                         self.state = 1049
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if _la==XplorMRParser.Equ_op:
+                        if _la==207:
                             self.state = 1048
                             self.match(XplorMRParser.Equ_op)
 
@@ -7304,22 +7304,22 @@ class XplorMRParser ( Parser ):
             self.state = 1095
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1066
                 self.xadc_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1067
                 self.xadc_assign_loop()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1068
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Expectation]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1069
                 self.match(XplorMRParser.Expectation)
@@ -7328,14 +7328,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1071
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1072
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1074
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1073
                     self.match(XplorMRParser.Equ_op)
 
@@ -7343,14 +7343,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1076
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1077
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1079
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1078
                     self.match(XplorMRParser.Equ_op)
 
@@ -7358,7 +7358,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1081
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1082
                 self.match(XplorMRParser.Print)
@@ -7369,11 +7369,11 @@ class XplorMRParser ( Parser ):
                 self.state = 1087
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.All]:
+                if token in [138]:
                     self.state = 1085
                     self.match(XplorMRParser.All)
                     pass
-                elif token in [XplorMRParser.Classification]:
+                elif token in [9]:
                     self.state = 1086
                     self.classification()
                     pass
@@ -7381,12 +7381,12 @@ class XplorMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1089
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Size]:
+            elif token in [62]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1090
                 self.match(XplorMRParser.Size)
@@ -7395,7 +7395,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1092
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Zero]:
+            elif token in [63]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1094
                 self.match(XplorMRParser.Zero)
@@ -7558,22 +7558,22 @@ class XplorMRParser ( Parser ):
             self.state = 1145
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1101
                 self.coup_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1102
                 self.coup_assign_loop()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1103
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1104
                 self.match(XplorMRParser.Coefficients)
@@ -7586,14 +7586,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1108
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Cv]:
+            elif token in [48]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1110
                 self.match(XplorMRParser.Cv)
                 self.state = 1112
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1111
                     self.match(XplorMRParser.Equ_op)
 
@@ -7601,14 +7601,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1114
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Degeneracy]:
+            elif token in [65]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1115
                 self.match(XplorMRParser.Degeneracy)
                 self.state = 1116
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1117
                 self.match(XplorMRParser.ForceConstant)
@@ -7617,20 +7617,20 @@ class XplorMRParser ( Parser ):
                 self.state = 1120
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                     self.state = 1119
                     self.number_s()
 
 
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1122
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1124
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1123
                     self.match(XplorMRParser.Equ_op)
 
@@ -7638,14 +7638,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1126
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Partition]:
+            elif token in [49]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1127
                 self.match(XplorMRParser.Partition)
                 self.state = 1129
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1128
                     self.match(XplorMRParser.Equ_op)
 
@@ -7653,14 +7653,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1131
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1132
                 self.match(XplorMRParser.Potential)
                 self.state = 1134
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 1133
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -7668,7 +7668,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1136
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1137
                 self.match(XplorMRParser.Print)
@@ -7679,11 +7679,11 @@ class XplorMRParser ( Parser ):
                 self.state = 1142
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.All]:
+                if token in [138]:
                     self.state = 1140
                     self.match(XplorMRParser.All)
                     pass
-                elif token in [XplorMRParser.Classification]:
+                elif token in [9]:
                     self.state = 1141
                     self.classification()
                     pass
@@ -7691,7 +7691,7 @@ class XplorMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1144
                 self.match(XplorMRParser.Reset)
@@ -7766,7 +7766,7 @@ class XplorMRParser ( Parser ):
             self.state = 1157
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.L_paren:
+            if _la==204:
                 self.state = 1152
                 self.selection()
                 self.state = 1153
@@ -7784,7 +7784,7 @@ class XplorMRParser ( Parser ):
             self.state = 1164
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 1161
                 self.number()
                 self.state = 1162
@@ -7894,17 +7894,17 @@ class XplorMRParser ( Parser ):
             self.state = 1200
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1166
                 self.carbon_shift_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1167
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Expectation]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1168
                 self.match(XplorMRParser.Expectation)
@@ -7919,14 +7919,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1173
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1175
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1177
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1176
                     self.match(XplorMRParser.Equ_op)
 
@@ -7934,14 +7934,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1179
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1180
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1182
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1181
                     self.match(XplorMRParser.Equ_op)
 
@@ -7949,28 +7949,28 @@ class XplorMRParser ( Parser ):
                 self.state = 1184
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.PhiStep]:
+            elif token in [67]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1185
                 self.match(XplorMRParser.PhiStep)
                 self.state = 1186
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.PsiStep]:
+            elif token in [68]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1187
                 self.match(XplorMRParser.PsiStep)
                 self.state = 1188
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1189
                 self.match(XplorMRParser.Potential)
                 self.state = 1191
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 1190
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -7978,7 +7978,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1193
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1194
                 self.match(XplorMRParser.Print)
@@ -7987,17 +7987,17 @@ class XplorMRParser ( Parser ):
                 self.state = 1196
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Rcoil]:
+            elif token in [69]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1197
                 self.carbon_shift_rcoil()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1198
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Zero]:
+            elif token in [63]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1199
                 self.match(XplorMRParser.Zero)
@@ -8254,71 +8254,71 @@ class XplorMRParser ( Parser ):
             self.state = 1250
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Observed]:
+            if token in [71]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1216
                 self.observed()
                 pass
-            elif token in [XplorMRParser.Rcoil]:
+            elif token in [69]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1217
                 self.proton_shift_rcoil()
                 pass
-            elif token in [XplorMRParser.Anisotropy]:
+            elif token in [51]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1218
                 self.proton_shift_anisotropy()
                 pass
-            elif token in [XplorMRParser.Amides]:
+            elif token in [72]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1219
                 self.proton_shift_amides()
                 pass
-            elif token in [XplorMRParser.Carbon]:
+            elif token in [66]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1220
                 self.proton_shift_carbons()
                 pass
-            elif token in [XplorMRParser.Nitrogens]:
+            elif token in [73]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1221
                 self.proton_shift_nitrogens()
                 pass
-            elif token in [XplorMRParser.Oxygens]:
+            elif token in [74]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1222
                 self.proton_shift_oxygens()
                 pass
-            elif token in [XplorMRParser.RingAtoms]:
+            elif token in [75]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1223
                 self.proton_shift_ring_atoms()
                 pass
-            elif token in [XplorMRParser.AlphasAndAmides]:
+            elif token in [76]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1224
                 self.proton_shift_alphas_and_amides()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1225
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Error]:
+            elif token in [77]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1226
                 self.match(XplorMRParser.Error)
                 self.state = 1227
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Degeneracy]:
+            elif token in [65]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1228
                 self.match(XplorMRParser.Degeneracy)
                 self.state = 1229
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1230
                 self.match(XplorMRParser.ForceConstant)
@@ -8327,20 +8327,20 @@ class XplorMRParser ( Parser ):
                 self.state = 1233
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                     self.state = 1232
                     self.number_s()
 
 
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1235
                 self.match(XplorMRParser.Potential)
                 self.state = 1237
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 1236
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -8348,7 +8348,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1239
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1240
                 self.match(XplorMRParser.Print)
@@ -8359,11 +8359,11 @@ class XplorMRParser ( Parser ):
                 self.state = 1245
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.All]:
+                if token in [138]:
                     self.state = 1243
                     self.match(XplorMRParser.All)
                     pass
-                elif token in [XplorMRParser.Classification]:
+                elif token in [9]:
                     self.state = 1244
                     self.classification()
                     pass
@@ -8373,7 +8373,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1247
                 self.match(XplorMRParser.Simple_name)
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 1249
                 self.match(XplorMRParser.Reset)
@@ -8442,7 +8442,7 @@ class XplorMRParser ( Parser ):
             self.state = 1255
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.L_paren:
+            if _la==204:
                 self.state = 1254
                 self.selection()
 
@@ -8452,7 +8452,7 @@ class XplorMRParser ( Parser ):
             self.state = 1259
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 1258
                 self.number()
 
@@ -8579,7 +8579,7 @@ class XplorMRParser ( Parser ):
             self.state = 1271
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.Logical:
+            if _la==195:
                 self.state = 1270
                 self.match(XplorMRParser.Logical)
 
@@ -8841,7 +8841,7 @@ class XplorMRParser ( Parser ):
             self.state = 1295
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.L_paren:
+            if _la==204:
                 self.state = 1294
                 self.selection()
 
@@ -9004,31 +9004,31 @@ class XplorMRParser ( Parser ):
             self.state = 1409
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1300
                 self.rama_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1301
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Cutoff]:
+            elif token in [27]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1302
                 self.match(XplorMRParser.Cutoff)
                 self.state = 1303
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1304
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1306
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1305
                     self.match(XplorMRParser.Equ_op)
 
@@ -9036,7 +9036,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1308
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Gaussian]:
+            elif token in [79]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1309
                 self.match(XplorMRParser.Gaussian)
@@ -9073,7 +9073,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1329
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                     self.state = 1325
                     self.number_s()
                     self.state = 1326
@@ -9083,14 +9083,14 @@ class XplorMRParser ( Parser ):
 
 
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1331
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1333
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1332
                     self.match(XplorMRParser.Equ_op)
 
@@ -9098,7 +9098,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1335
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Phase]:
+            elif token in [80]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1336
                 self.match(XplorMRParser.Phase)
@@ -9135,7 +9135,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1356
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                     self.state = 1352
                     self.number_s()
                     self.state = 1353
@@ -9145,7 +9145,7 @@ class XplorMRParser ( Parser ):
 
 
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1358
                 self.match(XplorMRParser.Print)
@@ -9156,11 +9156,11 @@ class XplorMRParser ( Parser ):
                 self.state = 1363
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.All]:
+                if token in [138]:
                     self.state = 1361
                     self.match(XplorMRParser.All)
                     pass
-                elif token in [XplorMRParser.Classification]:
+                elif token in [9]:
                     self.state = 1362
                     self.classification()
                     pass
@@ -9168,7 +9168,7 @@ class XplorMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XplorMRParser.Quartic]:
+            elif token in [81]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1365
                 self.match(XplorMRParser.Quartic)
@@ -9205,7 +9205,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1385
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                     self.state = 1381
                     self.number_s()
                     self.state = 1382
@@ -9215,19 +9215,19 @@ class XplorMRParser ( Parser ):
 
 
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1387
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Scale]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1388
                 self.match(XplorMRParser.Scale)
                 self.state = 1390
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1389
                     self.match(XplorMRParser.Equ_op)
 
@@ -9235,14 +9235,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1392
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Shape]:
+            elif token in [82]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1393
                 self.match(XplorMRParser.Shape)
                 self.state = 1394
                 self.match(XplorMRParser.Gauss_or_Quart)
                 pass
-            elif token in [XplorMRParser.Size]:
+            elif token in [62]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1395
                 self.match(XplorMRParser.Size)
@@ -9269,18 +9269,18 @@ class XplorMRParser ( Parser ):
                 self.state = 1405
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                     self.state = 1404
                     self.number_s()
 
 
                 pass
-            elif token in [XplorMRParser.Sort]:
+            elif token in [83]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1407
                 self.match(XplorMRParser.Sort)
                 pass
-            elif token in [XplorMRParser.Zero]:
+            elif token in [63]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1408
                 self.match(XplorMRParser.Zero)
@@ -9376,7 +9376,7 @@ class XplorMRParser ( Parser ):
             self.state = 1435
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.L_paren:
+            if _la==204:
                 self.state = 1430
                 self.selection()
                 self.state = 1431
@@ -9450,24 +9450,24 @@ class XplorMRParser ( Parser ):
             self.state = 1446
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1437
                 self.coll_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1438
                 self.coll_assign_loop()
                 pass
-            elif token in [XplorMRParser.Scale]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1439
                 self.match(XplorMRParser.Scale)
                 self.state = 1441
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1440
                     self.match(XplorMRParser.Equ_op)
 
@@ -9475,12 +9475,12 @@ class XplorMRParser ( Parser ):
                 self.state = 1443
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1444
                 self.match(XplorMRParser.Print)
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1445
                 self.match(XplorMRParser.Reset)
@@ -9639,17 +9639,17 @@ class XplorMRParser ( Parser ):
             self.state = 1483
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1453
                 self.dani_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1454
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1455
                 self.match(XplorMRParser.Coefficients)
@@ -9664,14 +9664,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1460
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1462
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1464
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1463
                     self.match(XplorMRParser.Equ_op)
 
@@ -9679,14 +9679,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1466
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1467
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1469
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1468
                     self.match(XplorMRParser.Equ_op)
 
@@ -9694,14 +9694,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1471
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1472
                 self.match(XplorMRParser.Potential)
                 self.state = 1474
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 1473
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -9709,7 +9709,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1476
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1477
                 self.match(XplorMRParser.Print)
@@ -9718,12 +9718,12 @@ class XplorMRParser ( Parser ):
                 self.state = 1479
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1480
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Type]:
+            elif token in [45]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1481
                 self.match(XplorMRParser.Type)
@@ -9806,7 +9806,7 @@ class XplorMRParser ( Parser ):
             self.state = 1494
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 1493
                 self.number()
 
@@ -9916,38 +9916,38 @@ class XplorMRParser ( Parser ):
             self.state = 1557
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1496
                 self.orie_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1497
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Cutoff]:
+            elif token in [27]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1498
                 self.match(XplorMRParser.Cutoff)
                 self.state = 1499
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Height]:
+            elif token in [88]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1500
                 self.match(XplorMRParser.Height)
                 self.state = 1501
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1502
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1504
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1503
                     self.match(XplorMRParser.Equ_op)
 
@@ -9955,7 +9955,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1506
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Gaussian]:
+            elif token in [79]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1507
                 self.match(XplorMRParser.Gaussian)
@@ -9974,14 +9974,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1514
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.MaxGaussians]:
+            elif token in [89]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1516
                 self.match(XplorMRParser.MaxGaussians)
                 self.state = 1517
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.NewGaussian]:
+            elif token in [90]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1518
                 self.match(XplorMRParser.NewGaussian)
@@ -10002,14 +10002,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1526
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1528
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1530
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1529
                     self.match(XplorMRParser.Equ_op)
 
@@ -10017,7 +10017,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1532
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1533
                 self.match(XplorMRParser.Print)
@@ -10028,11 +10028,11 @@ class XplorMRParser ( Parser ):
                 self.state = 1538
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.All]:
+                if token in [138]:
                     self.state = 1536
                     self.match(XplorMRParser.All)
                     pass
-                elif token in [XplorMRParser.Classification]:
+                elif token in [9]:
                     self.state = 1537
                     self.classification()
                     pass
@@ -10040,7 +10040,7 @@ class XplorMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XplorMRParser.Quartic]:
+            elif token in [81]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1540
                 self.match(XplorMRParser.Quartic)
@@ -10059,19 +10059,19 @@ class XplorMRParser ( Parser ):
                 self.state = 1547
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1549
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Residue]:
+            elif token in [154]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1550
                 self.match(XplorMRParser.Residue)
                 self.state = 1551
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Size]:
+            elif token in [62]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1552
                 self.match(XplorMRParser.Size)
@@ -10080,7 +10080,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1554
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Zero]:
+            elif token in [63]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1556
                 self.match(XplorMRParser.Zero)
@@ -10247,29 +10247,29 @@ class XplorMRParser ( Parser ):
             self.state = 1604
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1565
                 self.csa_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1566
                 self.csa_assign_loop()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1567
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Scale]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1568
                 self.match(XplorMRParser.Scale)
                 self.state = 1570
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1569
                     self.match(XplorMRParser.Equ_op)
 
@@ -10277,14 +10277,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1572
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Type]:
+            elif token in [45]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1573
                 self.match(XplorMRParser.Type)
                 self.state = 1574
                 self.match(XplorMRParser.Csa_types)
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1575
                 self.match(XplorMRParser.Coefficients)
@@ -10295,7 +10295,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1578
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Sigma]:
+            elif token in [92]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1580
                 self.match(XplorMRParser.Sigma)
@@ -10306,14 +10306,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1583
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1585
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1587
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1586
                     self.match(XplorMRParser.Equ_op)
 
@@ -10321,14 +10321,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1589
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1590
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1592
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1591
                     self.match(XplorMRParser.Equ_op)
 
@@ -10336,14 +10336,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1594
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1595
                 self.match(XplorMRParser.Potential)
                 self.state = 1597
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 1596
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -10351,7 +10351,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1599
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1600
                 self.match(XplorMRParser.Print)
@@ -10360,7 +10360,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1602
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1603
                 self.match(XplorMRParser.Reset)
@@ -10451,7 +10451,7 @@ class XplorMRParser ( Parser ):
             self.state = 1619
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 1618
                 self.number()
 
@@ -10549,24 +10549,24 @@ class XplorMRParser ( Parser ):
             self.state = 1658
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1621
                 self.csa_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1622
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Scale]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1623
                 self.match(XplorMRParser.Scale)
                 self.state = 1625
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1624
                     self.match(XplorMRParser.Equ_op)
 
@@ -10574,7 +10574,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1627
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1628
                 self.match(XplorMRParser.Coefficients)
@@ -10585,7 +10585,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1631
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Sigma]:
+            elif token in [92]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1633
                 self.match(XplorMRParser.Sigma)
@@ -10598,14 +10598,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1637
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1639
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1641
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1640
                     self.match(XplorMRParser.Equ_op)
 
@@ -10613,14 +10613,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1643
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1644
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1646
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1645
                     self.match(XplorMRParser.Equ_op)
 
@@ -10628,14 +10628,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1648
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1649
                 self.match(XplorMRParser.Potential)
                 self.state = 1651
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 1650
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -10643,7 +10643,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1653
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1654
                 self.match(XplorMRParser.Print)
@@ -10652,7 +10652,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1656
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1657
                 self.match(XplorMRParser.Reset)
@@ -10747,17 +10747,17 @@ class XplorMRParser ( Parser ):
             self.state = 1690
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1660
                 self.one_bond_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1661
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1662
                 self.match(XplorMRParser.Coefficients)
@@ -10776,14 +10776,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1669
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1671
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1673
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1672
                     self.match(XplorMRParser.Equ_op)
 
@@ -10791,14 +10791,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1675
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1676
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1678
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1677
                     self.match(XplorMRParser.Equ_op)
 
@@ -10806,14 +10806,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1680
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1681
                 self.match(XplorMRParser.Potential)
                 self.state = 1683
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 1682
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -10821,7 +10821,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1685
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1686
                 self.match(XplorMRParser.Print)
@@ -10830,7 +10830,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1688
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1689
                 self.match(XplorMRParser.Reset)
@@ -11024,24 +11024,24 @@ class XplorMRParser ( Parser ):
             self.state = 1742
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1704
                 self.angle_db_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1705
                 self.classification()
                 pass
-            elif token in [XplorMRParser.DerivFlag]:
+            elif token in [96]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1706
                 self.match(XplorMRParser.DerivFlag)
                 self.state = 1707
                 self.match(XplorMRParser.Simple_name)
                 pass
-            elif token in [XplorMRParser.Expectation]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1708
                 self.match(XplorMRParser.Expectation)
@@ -11052,21 +11052,21 @@ class XplorMRParser ( Parser ):
                 self.state = 1711
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Error]:
+            elif token in [77]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1712
                 self.match(XplorMRParser.Error)
                 self.state = 1713
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1714
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1716
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1715
                     self.match(XplorMRParser.Equ_op)
 
@@ -11074,14 +11074,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1718
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1719
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1721
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1720
                     self.match(XplorMRParser.Equ_op)
 
@@ -11089,14 +11089,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1723
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1724
                 self.match(XplorMRParser.Potential)
                 self.state = 1726
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 1725
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -11104,7 +11104,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1728
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1729
                 self.match(XplorMRParser.Print)
@@ -11115,11 +11115,11 @@ class XplorMRParser ( Parser ):
                 self.state = 1734
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.All]:
+                if token in [138]:
                     self.state = 1732
                     self.match(XplorMRParser.All)
                     pass
-                elif token in [XplorMRParser.Classification]:
+                elif token in [9]:
                     self.state = 1733
                     self.classification()
                     pass
@@ -11127,18 +11127,18 @@ class XplorMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1736
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Size]:
+            elif token in [62]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1737
                 self.match(XplorMRParser.Size)
                 self.state = 1738
                 _la = self._input.LA(1)
-                if not(_la==XplorMRParser.Dihedral or _la==XplorMRParser.AngleDb):
+                if not(_la==37 or _la==95):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -11148,7 +11148,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1740
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Zero]:
+            elif token in [63]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1741
                 self.match(XplorMRParser.Zero)
@@ -11230,7 +11230,7 @@ class XplorMRParser ( Parser ):
             self.state = 1757
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.L_paren:
+            if _la==204:
                 self.state = 1756
                 self.selection()
 
@@ -11345,29 +11345,29 @@ class XplorMRParser ( Parser ):
             self.state = 1811
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1759
                 self.pre_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1760
                 self.pre_assign_loop()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1761
                 self.classification()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1762
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1764
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1763
                     self.match(XplorMRParser.Equ_op)
 
@@ -11377,14 +11377,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1767
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1769
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1771
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1770
                     self.match(XplorMRParser.Equ_op)
 
@@ -11392,14 +11392,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1773
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Potential]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1774
                 self.match(XplorMRParser.Potential)
                 self.state = 1776
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op_PT:
+                if _la==226:
                     self.state = 1775
                     self.match(XplorMRParser.Equ_op_PT)
 
@@ -11409,14 +11409,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1779
                 self.match(XplorMRParser.Potential_types)
                 pass
-            elif token in [XplorMRParser.Kconst]:
+            elif token in [98]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1780
                 self.match(XplorMRParser.Kconst)
                 self.state = 1782
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1781
                     self.match(XplorMRParser.Equ_op)
 
@@ -11426,14 +11426,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1785
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Omega]:
+            elif token in [99]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1787
                 self.match(XplorMRParser.Omega)
                 self.state = 1789
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1788
                     self.match(XplorMRParser.Equ_op)
 
@@ -11443,14 +11443,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1792
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Tauc]:
+            elif token in [100]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1794
                 self.match(XplorMRParser.Tauc)
                 self.state = 1796
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1795
                     self.match(XplorMRParser.Equ_op)
 
@@ -11462,7 +11462,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1800
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1802
                 self.match(XplorMRParser.Print)
@@ -11473,11 +11473,11 @@ class XplorMRParser ( Parser ):
                 self.state = 1807
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.All]:
+                if token in [138]:
                     self.state = 1805
                     self.match(XplorMRParser.All)
                     pass
-                elif token in [XplorMRParser.Classification]:
+                elif token in [9]:
                     self.state = 1806
                     self.classification()
                     pass
@@ -11485,12 +11485,12 @@ class XplorMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1809
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Debug]:
+            elif token in [101]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1810
                 self.match(XplorMRParser.Debug)
@@ -11563,7 +11563,7 @@ class XplorMRParser ( Parser ):
             self.state = 1818
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 1817
                 self.number()
 
@@ -11686,29 +11686,29 @@ class XplorMRParser ( Parser ):
             self.state = 1861
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1820
                 self.pcs_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1821
                 self.pcs_assign_loop()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1822
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Tolerance]:
+            elif token in [103]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1823
                 self.match(XplorMRParser.Tolerance)
                 self.state = 1824
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1825
                 self.match(XplorMRParser.Coefficients)
@@ -11717,14 +11717,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1827
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1829
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1831
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1830
                     self.match(XplorMRParser.Equ_op)
 
@@ -11732,14 +11732,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1833
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1834
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1836
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1835
                     self.match(XplorMRParser.Equ_op)
 
@@ -11747,7 +11747,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1838
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1839
                 self.match(XplorMRParser.Print)
@@ -11758,11 +11758,11 @@ class XplorMRParser ( Parser ):
                 self.state = 1844
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.All]:
+                if token in [138]:
                     self.state = 1842
                     self.match(XplorMRParser.All)
                     pass
-                elif token in [XplorMRParser.Classification]:
+                elif token in [9]:
                     self.state = 1843
                     self.classification()
                     pass
@@ -11770,19 +11770,19 @@ class XplorMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1846
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Save]:
+            elif token in [104]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1847
                 self.match(XplorMRParser.Save)
                 self.state = 1848
                 self.match(XplorMRParser.Simple_name)
                 pass
-            elif token in [XplorMRParser.Fmed]:
+            elif token in [105]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1849
                 self.match(XplorMRParser.Fmed)
@@ -11791,37 +11791,37 @@ class XplorMRParser ( Parser ):
                 self.state = 1851
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.ErrOn]:
+            elif token in [106]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1853
                 self.match(XplorMRParser.ErrOn)
                 pass
-            elif token in [XplorMRParser.ErrOff]:
+            elif token in [107]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1854
                 self.match(XplorMRParser.ErrOff)
                 pass
-            elif token in [XplorMRParser.Fon]:
+            elif token in [108]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1855
                 self.match(XplorMRParser.Fon)
                 pass
-            elif token in [XplorMRParser.Foff]:
+            elif token in [109]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1856
                 self.match(XplorMRParser.Foff)
                 pass
-            elif token in [XplorMRParser.Son]:
+            elif token in [110]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 1857
                 self.match(XplorMRParser.Son)
                 pass
-            elif token in [XplorMRParser.Soff]:
+            elif token in [111]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 1858
                 self.match(XplorMRParser.Soff)
                 pass
-            elif token in [XplorMRParser.Frun]:
+            elif token in [112]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 1859
                 self.match(XplorMRParser.Frun)
@@ -11910,7 +11910,7 @@ class XplorMRParser ( Parser ):
             self.state = 1874
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 1873
                 self.number()
 
@@ -12026,24 +12026,24 @@ class XplorMRParser ( Parser ):
             self.state = 1907
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1876
                 self.prdc_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1877
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Tolerance]:
+            elif token in [103]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1878
                 self.match(XplorMRParser.Tolerance)
                 self.state = 1879
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1880
                 self.match(XplorMRParser.Coefficients)
@@ -12052,14 +12052,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1882
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1884
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1886
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1885
                     self.match(XplorMRParser.Equ_op)
 
@@ -12067,14 +12067,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1888
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1889
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1891
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1890
                     self.match(XplorMRParser.Equ_op)
 
@@ -12082,61 +12082,61 @@ class XplorMRParser ( Parser ):
                 self.state = 1893
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.ErrOn]:
+            elif token in [106]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1894
                 self.match(XplorMRParser.ErrOn)
                 pass
-            elif token in [XplorMRParser.ErrOff]:
+            elif token in [107]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1895
                 self.match(XplorMRParser.ErrOff)
                 pass
-            elif token in [XplorMRParser.Fmed]:
+            elif token in [105]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1896
                 self.match(XplorMRParser.Fmed)
                 pass
-            elif token in [XplorMRParser.Fon]:
+            elif token in [108]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 1897
                 self.match(XplorMRParser.Fon)
                 pass
-            elif token in [XplorMRParser.Foff]:
+            elif token in [109]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 1898
                 self.match(XplorMRParser.Foff)
                 pass
-            elif token in [XplorMRParser.Frun]:
+            elif token in [112]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 1899
                 self.match(XplorMRParser.Frun)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 1900
                 self.match(XplorMRParser.Print)
                 self.state = 1901
                 self.match(XplorMRParser.Threshold)
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 1902
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Save]:
+            elif token in [104]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 1903
                 self.match(XplorMRParser.Save)
                 self.state = 1904
                 self.match(XplorMRParser.Simple_name)
                 pass
-            elif token in [XplorMRParser.Son]:
+            elif token in [110]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 1905
                 self.match(XplorMRParser.Son)
                 pass
-            elif token in [XplorMRParser.Soff]:
+            elif token in [111]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 1906
                 self.match(XplorMRParser.Soff)
@@ -12217,7 +12217,7 @@ class XplorMRParser ( Parser ):
             self.state = 1918
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 1917
                 self.number()
 
@@ -12294,24 +12294,24 @@ class XplorMRParser ( Parser ):
             self.state = 1936
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1920
                 self.porientation_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1921
                 self.classification()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1922
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1924
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1923
                     self.match(XplorMRParser.Equ_op)
 
@@ -12319,14 +12319,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1926
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1927
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1929
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1928
                     self.match(XplorMRParser.Equ_op)
 
@@ -12334,7 +12334,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1931
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1932
                 self.match(XplorMRParser.Print)
@@ -12343,7 +12343,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1934
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1935
                 self.match(XplorMRParser.Reset)
@@ -12497,38 +12497,38 @@ class XplorMRParser ( Parser ):
             self.state = 1967
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1945
                 self.pccr_assign()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1946
                 self.classification()
                 pass
-            elif token in [XplorMRParser.Weip]:
+            elif token in [116]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1947
                 self.match(XplorMRParser.Weip)
                 self.state = 1948
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Coefficients]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1949
                 self.match(XplorMRParser.Coefficients)
                 self.state = 1950
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1951
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1953
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1952
                     self.match(XplorMRParser.Equ_op)
 
@@ -12536,14 +12536,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1955
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1956
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1958
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1957
                     self.match(XplorMRParser.Equ_op)
 
@@ -12551,7 +12551,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1960
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1961
                 self.match(XplorMRParser.Print)
@@ -12560,12 +12560,12 @@ class XplorMRParser ( Parser ):
                 self.state = 1963
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 1964
                 self.match(XplorMRParser.Reset)
                 pass
-            elif token in [XplorMRParser.Frun]:
+            elif token in [112]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 1965
                 self.match(XplorMRParser.Frun)
@@ -12642,7 +12642,7 @@ class XplorMRParser ( Parser ):
             self.state = 1975
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0):
+            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
                 self.state = 1974
                 self.number()
 
@@ -12723,29 +12723,29 @@ class XplorMRParser ( Parser ):
             self.state = 1994
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1977
                 self.hbond_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1978
                 self.hbond_assign_loop()
                 pass
-            elif token in [XplorMRParser.Classification]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 1979
                 self.classification()
                 pass
-            elif token in [XplorMRParser.ForceConstant]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 1980
                 self.match(XplorMRParser.ForceConstant)
                 self.state = 1982
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1981
                     self.match(XplorMRParser.Equ_op)
 
@@ -12753,14 +12753,14 @@ class XplorMRParser ( Parser ):
                 self.state = 1984
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nrestraints]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 1985
                 self.match(XplorMRParser.Nrestraints)
                 self.state = 1987
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 1986
                     self.match(XplorMRParser.Equ_op)
 
@@ -12768,7 +12768,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1989
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Print]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 1990
                 self.match(XplorMRParser.Print)
@@ -12777,7 +12777,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1992
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 1993
                 self.match(XplorMRParser.Reset)
@@ -12938,24 +12938,24 @@ class XplorMRParser ( Parser ):
             self.state = 2068
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Assign]:
+            if token in [4]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2001
                 self.hbond_db_assign()
                 pass
-            elif token in [XplorMRParser.For]:
+            elif token in [185]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2002
                 self.hbond_db_assign_loop()
                 pass
-            elif token in [XplorMRParser.Kdir]:
+            elif token in [119]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2003
                 self.match(XplorMRParser.Kdir)
                 self.state = 2005
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2004
                     self.match(XplorMRParser.Equ_op)
 
@@ -12963,14 +12963,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2007
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Klin]:
+            elif token in [120]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 2008
                 self.match(XplorMRParser.Klin)
                 self.state = 2010
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2009
                     self.match(XplorMRParser.Equ_op)
 
@@ -12978,14 +12978,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2012
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Nseg]:
+            elif token in [121]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 2013
                 self.match(XplorMRParser.Nseg)
                 self.state = 2015
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2014
                     self.match(XplorMRParser.Equ_op)
 
@@ -12993,14 +12993,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2017
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Nmin]:
+            elif token in [122]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 2018
                 self.match(XplorMRParser.Nmin)
                 self.state = 2020
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2019
                     self.match(XplorMRParser.Equ_op)
 
@@ -13008,14 +13008,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2022
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Nmax]:
+            elif token in [123]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 2023
                 self.match(XplorMRParser.Nmax)
                 self.state = 2025
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2024
                     self.match(XplorMRParser.Equ_op)
 
@@ -13023,14 +13023,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2027
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Segm]:
+            elif token in [124]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 2028
                 self.match(XplorMRParser.Segm)
                 self.state = 2030
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2029
                     self.match(XplorMRParser.Equ_op)
 
@@ -13038,14 +13038,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2032
                 self.match(XplorMRParser.Simple_name)
                 pass
-            elif token in [XplorMRParser.Ohcut]:
+            elif token in [125]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 2033
                 self.match(XplorMRParser.Ohcut)
                 self.state = 2035
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2034
                     self.match(XplorMRParser.Equ_op)
 
@@ -13053,14 +13053,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2037
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Coh1cut]:
+            elif token in [126]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 2038
                 self.match(XplorMRParser.Coh1cut)
                 self.state = 2040
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2039
                     self.match(XplorMRParser.Equ_op)
 
@@ -13068,14 +13068,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2042
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Coh2cut]:
+            elif token in [127]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 2043
                 self.match(XplorMRParser.Coh2cut)
                 self.state = 2045
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2044
                     self.match(XplorMRParser.Equ_op)
 
@@ -13083,14 +13083,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2047
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Ohncut]:
+            elif token in [128]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 2048
                 self.match(XplorMRParser.Ohncut)
                 self.state = 2050
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2049
                     self.match(XplorMRParser.Equ_op)
 
@@ -13098,14 +13098,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2052
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Updfrq]:
+            elif token in [129]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 2053
                 self.match(XplorMRParser.Updfrq)
                 self.state = 2055
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2054
                     self.match(XplorMRParser.Equ_op)
 
@@ -13113,14 +13113,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2057
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Prnfrq]:
+            elif token in [130]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 2058
                 self.match(XplorMRParser.Prnfrq)
                 self.state = 2060
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2059
                     self.match(XplorMRParser.Equ_op)
 
@@ -13128,14 +13128,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2062
                 self.match(XplorMRParser.Integer)
                 pass
-            elif token in [XplorMRParser.Freemode]:
+            elif token in [131]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 2063
                 self.match(XplorMRParser.Freemode)
                 self.state = 2065
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2064
                     self.match(XplorMRParser.Equ_op)
 
@@ -13258,7 +13258,7 @@ class XplorMRParser ( Parser ):
             self.state = 2079
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Print_any) | (1 << XplorMRParser.Group) | (1 << XplorMRParser.Initialize))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 27022147520036864) != 0:
                 self.state = 2076
                 self.ncs_statement()
                 self.state = 2081
@@ -13325,14 +13325,14 @@ class XplorMRParser ( Parser ):
             self.state = 2094
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Group]:
+            if token in [53]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2084
                 self.match(XplorMRParser.Group)
                 self.state = 2088
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Weight or _la==XplorMRParser.Equivalence or _la==XplorMRParser.Sigb:
+                while _la==56 or _la==135 or _la==136:
                     self.state = 2085
                     self.ncs_group_statement()
                     self.state = 2090
@@ -13342,12 +13342,12 @@ class XplorMRParser ( Parser ):
                 self.state = 2091
                 self.match(XplorMRParser.End)
                 pass
-            elif token in [XplorMRParser.Initialize]:
+            elif token in [54]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2092
                 self.match(XplorMRParser.Initialize)
                 pass
-            elif token in [XplorMRParser.Print_any]:
+            elif token in [39]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2093
                 self.match(XplorMRParser.Print_any)
@@ -13414,14 +13414,14 @@ class XplorMRParser ( Parser ):
             self.state = 2111
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Equivalence]:
+            if token in [135]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2096
                 self.match(XplorMRParser.Equivalence)
                 self.state = 2098
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2097
                     self.match(XplorMRParser.Equ_op)
 
@@ -13429,14 +13429,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2100
                 self.selection()
                 pass
-            elif token in [XplorMRParser.Sigb]:
+            elif token in [136]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2101
                 self.match(XplorMRParser.Sigb)
                 self.state = 2103
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2102
                     self.match(XplorMRParser.Equ_op)
 
@@ -13444,14 +13444,14 @@ class XplorMRParser ( Parser ):
                 self.state = 2105
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Weight]:
+            elif token in [56]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2106
                 self.match(XplorMRParser.Weight)
                 self.state = 2108
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2107
                     self.match(XplorMRParser.Equ_op)
 
@@ -13569,7 +13569,7 @@ class XplorMRParser ( Parser ):
             self.state = 2122
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Or_op:
+            while _la==189:
                 self.state = 2118
                 self.match(XplorMRParser.Or_op)
                 self.state = 2119
@@ -13633,7 +13633,7 @@ class XplorMRParser ( Parser ):
             self.state = 2130
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.And_op:
+            while _la==190:
                 self.state = 2126
                 self.match(XplorMRParser.And_op)
                 self.state = 2127
@@ -13890,21 +13890,21 @@ class XplorMRParser ( Parser ):
                 self.match(XplorMRParser.Atom)
                 self.state = 2140
                 _la = self._input.LA(1)
-                if not(_la==XplorMRParser.Simple_name or _la==XplorMRParser.Simple_names):
+                if not(_la==201 or _la==202):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 2141
                 _la = self._input.LA(1)
-                if not(_la==XplorMRParser.Integer or _la==XplorMRParser.Integers):
+                if not(_la==194 or _la==203):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 2142
                 _la = self._input.LA(1)
-                if not(_la==XplorMRParser.Simple_name or _la==XplorMRParser.Simple_names):
+                if not(_la==201 or _la==202):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -13917,7 +13917,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2145
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Abs:
+                if _la==219:
                     self.state = 2144
                     self.match(XplorMRParser.Abs)
 
@@ -13957,11 +13957,11 @@ class XplorMRParser ( Parser ):
                 self.state = 2164
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Simple_names]:
+                if token in [202]:
                     self.state = 2157
                     self.match(XplorMRParser.Simple_names)
                     pass
-                elif token in [XplorMRParser.Simple_name]:
+                elif token in [201]:
                     self.state = 2158
                     self.match(XplorMRParser.Simple_name)
                     self.state = 2161
@@ -13975,7 +13975,7 @@ class XplorMRParser ( Parser ):
 
 
                     pass
-                elif token in [XplorMRParser.Symbol_name]:
+                elif token in [213]:
                     self.state = 2163
                     self.match(XplorMRParser.Symbol_name)
                     pass
@@ -14007,11 +14007,11 @@ class XplorMRParser ( Parser ):
                 self.state = 2183
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Simple_names]:
+                if token in [202]:
                     self.state = 2171
                     self.match(XplorMRParser.Simple_names)
                     pass
-                elif token in [XplorMRParser.Simple_name]:
+                elif token in [201]:
                     self.state = 2172
                     self.match(XplorMRParser.Simple_name)
                     self.state = 2175
@@ -14025,7 +14025,7 @@ class XplorMRParser ( Parser ):
 
 
                     pass
-                elif token in [XplorMRParser.Double_quote_string]:
+                elif token in [197]:
                     self.state = 2177
                     self.match(XplorMRParser.Double_quote_string)
                     self.state = 2180
@@ -14039,7 +14039,7 @@ class XplorMRParser ( Parser ):
 
 
                     pass
-                elif token in [XplorMRParser.Symbol_name]:
+                elif token in [213]:
                     self.state = 2182
                     self.match(XplorMRParser.Symbol_name)
                     pass
@@ -14065,7 +14065,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2191
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Comma:
+                if _la==192:
                     self.state = 2190
                     self.match(XplorMRParser.Comma)
 
@@ -14075,7 +14075,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2195
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Comma:
+                if _la==192:
                     self.state = 2194
                     self.match(XplorMRParser.Comma)
 
@@ -14100,7 +14100,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2206
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Equ_op:
+                if _la==207:
                     self.state = 2205
                     self.match(XplorMRParser.Equ_op)
 
@@ -14110,7 +14110,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2210
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Comma:
+                if _la==192:
                     self.state = 2209
                     self.match(XplorMRParser.Comma)
 
@@ -14118,13 +14118,13 @@ class XplorMRParser ( Parser ):
                 self.state = 2217
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Head:
+                if _la==188:
                     self.state = 2212
                     self.match(XplorMRParser.Head)
                     self.state = 2214
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==XplorMRParser.Equ_op:
+                    if _la==207:
                         self.state = 2213
                         self.match(XplorMRParser.Equ_op)
 
@@ -14157,11 +14157,11 @@ class XplorMRParser ( Parser ):
                 self.state = 2233
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Integers]:
+                if token in [203]:
                     self.state = 2226
                     self.match(XplorMRParser.Integers)
                     pass
-                elif token in [XplorMRParser.Integer]:
+                elif token in [194]:
                     self.state = 2227
                     self.match(XplorMRParser.Integer)
                     self.state = 2230
@@ -14175,7 +14175,7 @@ class XplorMRParser ( Parser ):
 
 
                     pass
-                elif token in [XplorMRParser.Symbol_name]:
+                elif token in [213]:
                     self.state = 2232
                     self.match(XplorMRParser.Symbol_name)
                     pass
@@ -14190,11 +14190,11 @@ class XplorMRParser ( Parser ):
                 self.state = 2243
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Simple_names]:
+                if token in [202]:
                     self.state = 2236
                     self.match(XplorMRParser.Simple_names)
                     pass
-                elif token in [XplorMRParser.Simple_name]:
+                elif token in [201]:
                     self.state = 2237
                     self.match(XplorMRParser.Simple_name)
                     self.state = 2240
@@ -14208,7 +14208,7 @@ class XplorMRParser ( Parser ):
 
 
                     pass
-                elif token in [XplorMRParser.Symbol_name]:
+                elif token in [213]:
                     self.state = 2242
                     self.match(XplorMRParser.Symbol_name)
                     pass
@@ -14223,11 +14223,11 @@ class XplorMRParser ( Parser ):
                 self.state = 2258
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Simple_names]:
+                if token in [202]:
                     self.state = 2246
                     self.match(XplorMRParser.Simple_names)
                     pass
-                elif token in [XplorMRParser.Simple_name]:
+                elif token in [201]:
                     self.state = 2247
                     self.match(XplorMRParser.Simple_name)
                     self.state = 2250
@@ -14241,7 +14241,7 @@ class XplorMRParser ( Parser ):
 
 
                     pass
-                elif token in [XplorMRParser.Double_quote_string]:
+                elif token in [197]:
                     self.state = 2252
                     self.match(XplorMRParser.Double_quote_string)
                     self.state = 2255
@@ -14255,7 +14255,7 @@ class XplorMRParser ( Parser ):
 
 
                     pass
-                elif token in [XplorMRParser.Symbol_name]:
+                elif token in [213]:
                     self.state = 2257
                     self.match(XplorMRParser.Symbol_name)
                     pass
@@ -14416,7 +14416,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 2285
             _la = self._input.LA(1)
-            if not(((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0)):
+            if not((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -14466,7 +14466,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 2287
             _la = self._input.LA(1)
-            if not(_la==XplorMRParser.Integer or _la==XplorMRParser.Real):
+            if not(_la==194 or _la==196):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -14519,7 +14519,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 2289
             _la = self._input.LA(1)
-            if not(((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & ((1 << (XplorMRParser.Integer - 194)) | (1 << (XplorMRParser.Real - 194)) | (1 << (XplorMRParser.Symbol_name - 194)))) != 0)):
+            if not((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -14569,7 +14569,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 2291
             _la = self._input.LA(1)
-            if not(_la==XplorMRParser.Integer or _la==XplorMRParser.Real):
+            if not(_la==194 or _la==196):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -14626,7 +14626,7 @@ class XplorMRParser ( Parser ):
             self.state = 2295
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.Equ_op:
+            if _la==207:
                 self.state = 2294
                 self.match(XplorMRParser.Equ_op)
 
@@ -14693,7 +14693,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 2299
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Noe) | (1 << XplorMRParser.Restraints) | (1 << XplorMRParser.Dihedral))) != 0) or _la==XplorMRParser.AngleDb or ((((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & ((1 << (XplorMRParser.HBonded - 179)) | (1 << (XplorMRParser.Improper - 179)) | (1 << (XplorMRParser.Simple_name - 179)))) != 0)):
+            if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 206158430216) != 0 or _la==95 or (((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & 4194307) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -14761,17 +14761,17 @@ class XplorMRParser ( Parser ):
             self.state = 2312
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.Exclude:
+            if _la==236:
                 self.state = 2302
                 self.match(XplorMRParser.Exclude)
                 self.state = 2310
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Include, XplorMRParser.Class_name]:
+                if token in [237, 239]:
                     self.state = 2306
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    while _la==XplorMRParser.Class_name:
+                    while _la==239:
                         self.state = 2303
                         self.match(XplorMRParser.Class_name)
                         self.state = 2308
@@ -14779,7 +14779,7 @@ class XplorMRParser ( Parser ):
                         _la = self._input.LA(1)
 
                     pass
-                elif token in [XplorMRParser.Any_class]:
+                elif token in [240]:
                     self.state = 2309
                     self.match(XplorMRParser.Any_class)
                     pass
@@ -14793,7 +14793,7 @@ class XplorMRParser ( Parser ):
             self.state = 2318
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Class_name:
+            while _la==239:
                 self.state = 2315
                 self.match(XplorMRParser.Class_name)
                 self.state = 2320
@@ -14914,11 +14914,11 @@ class XplorMRParser ( Parser ):
             self.state = 2333
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Do_Lp, XplorMRParser.Identity_Lp]:
+            if token in [169, 170]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2327
                 _la = self._input.LA(1)
-                if not(_la==XplorMRParser.Do_Lp or _la==XplorMRParser.Identity_Lp):
+                if not(_la==169 or _la==170):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -14928,7 +14928,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2329
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Show]:
+            elif token in [171]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2331
                 self.match(XplorMRParser.Show)
@@ -14990,7 +14990,7 @@ class XplorMRParser ( Parser ):
             self.state = 2338
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.Equ_op_VE:
+            if _la==243:
                 self.state = 2336
                 self.match(XplorMRParser.Equ_op_VE)
                 self.state = 2337
@@ -15062,10 +15062,10 @@ class XplorMRParser ( Parser ):
             self.state = 2343
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & ((1 << (XplorMRParser.Add_op_VE - 244)) | (1 << (XplorMRParser.Sub_op_VE - 244)) | (1 << (XplorMRParser.Mul_op_VE - 244)) | (1 << (XplorMRParser.Div_op_VE - 244)) | (1 << (XplorMRParser.Exp_op_VE - 244)))) != 0):
+            if (((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0:
                 self.state = 2341
                 _la = self._input.LA(1)
-                if not(((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & ((1 << (XplorMRParser.Add_op_VE - 244)) | (1 << (XplorMRParser.Sub_op_VE - 244)) | (1 << (XplorMRParser.Mul_op_VE - 244)) | (1 << (XplorMRParser.Div_op_VE - 244)) | (1 << (XplorMRParser.Exp_op_VE - 244)))) != 0)):
+                if not((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -15134,37 +15134,37 @@ class XplorMRParser ( Parser ):
             self.state = 2352
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Atom_properties_VE]:
+            if token in [252]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2345
                 self.match(XplorMRParser.Atom_properties_VE)
                 pass
-            elif token in [XplorMRParser.Abs_VE, XplorMRParser.Acos_VE, XplorMRParser.Cos_VE, XplorMRParser.Decode_VE, XplorMRParser.Encode_VE, XplorMRParser.Exp_VE, XplorMRParser.Gauss_VE, XplorMRParser.Heavy_VE, XplorMRParser.Int_VE, XplorMRParser.Log10_VE, XplorMRParser.Log_VE, XplorMRParser.Max_VE, XplorMRParser.Maxw_VE, XplorMRParser.Min_VE, XplorMRParser.Mod_VE, XplorMRParser.Norm_VE, XplorMRParser.Random_VE, XplorMRParser.Sign_VE, XplorMRParser.Sin_VE, XplorMRParser.Sqrt_VE, XplorMRParser.Tan_VE]:
+            elif token in [253, 254, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2346
                 self.vector_func_call()
                 pass
-            elif token in [XplorMRParser.Integer_VE]:
+            elif token in [250]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2347
                 self.match(XplorMRParser.Integer_VE)
                 pass
-            elif token in [XplorMRParser.Real_VE]:
+            elif token in [251]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 2348
                 self.match(XplorMRParser.Real_VE)
                 pass
-            elif token in [XplorMRParser.Simple_name_VE]:
+            elif token in [276]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 2349
                 self.match(XplorMRParser.Simple_name_VE)
                 pass
-            elif token in [XplorMRParser.Symbol_name_VE]:
+            elif token in [275]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 2350
                 self.match(XplorMRParser.Symbol_name_VE)
                 pass
-            elif token in [XplorMRParser.Double_quote_string_VE]:
+            elif token in [277]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 2351
                 self.match(XplorMRParser.Double_quote_string_VE)
@@ -15293,7 +15293,7 @@ class XplorMRParser ( Parser ):
             self.state = 2473
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.Abs_VE]:
+            if token in [253]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2354
                 self.match(XplorMRParser.Abs_VE)
@@ -15304,7 +15304,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2357
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Acos_VE]:
+            elif token in [254]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2359
                 self.match(XplorMRParser.Acos_VE)
@@ -15315,7 +15315,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2362
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Cos_VE]:
+            elif token in [256]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2364
                 self.match(XplorMRParser.Cos_VE)
@@ -15326,7 +15326,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2367
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Decode_VE]:
+            elif token in [257]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 2369
                 self.match(XplorMRParser.Decode_VE)
@@ -15337,7 +15337,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2372
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Encode_VE]:
+            elif token in [258]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 2374
                 self.match(XplorMRParser.Encode_VE)
@@ -15348,7 +15348,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2377
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Exp_VE]:
+            elif token in [259]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 2379
                 self.match(XplorMRParser.Exp_VE)
@@ -15359,7 +15359,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2382
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Gauss_VE]:
+            elif token in [260]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 2384
                 self.match(XplorMRParser.Gauss_VE)
@@ -15370,7 +15370,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2387
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Heavy_VE]:
+            elif token in [261]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 2389
                 self.match(XplorMRParser.Heavy_VE)
@@ -15381,7 +15381,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2392
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Int_VE]:
+            elif token in [262]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 2394
                 self.match(XplorMRParser.Int_VE)
@@ -15392,7 +15392,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2397
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Log10_VE]:
+            elif token in [263]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 2399
                 self.match(XplorMRParser.Log10_VE)
@@ -15403,7 +15403,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2402
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Log_VE]:
+            elif token in [264]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 2404
                 self.match(XplorMRParser.Log_VE)
@@ -15414,7 +15414,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2407
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Max_VE]:
+            elif token in [265]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 2409
                 self.match(XplorMRParser.Max_VE)
@@ -15425,7 +15425,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2416
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Comma_VE:
+                while _la==249:
                     self.state = 2412
                     self.match(XplorMRParser.Comma_VE)
                     self.state = 2413
@@ -15437,7 +15437,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2419
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Maxw_VE]:
+            elif token in [266]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 2421
                 self.match(XplorMRParser.Maxw_VE)
@@ -15448,7 +15448,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2424
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Min_VE]:
+            elif token in [267]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 2426
                 self.match(XplorMRParser.Min_VE)
@@ -15459,7 +15459,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2433
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Comma_VE:
+                while _la==249:
                     self.state = 2429
                     self.match(XplorMRParser.Comma_VE)
                     self.state = 2430
@@ -15471,7 +15471,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2436
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Mod_VE]:
+            elif token in [268]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 2438
                 self.match(XplorMRParser.Mod_VE)
@@ -15486,7 +15486,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2443
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Norm_VE]:
+            elif token in [269]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 2445
                 self.match(XplorMRParser.Norm_VE)
@@ -15497,7 +15497,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2448
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Random_VE]:
+            elif token in [270]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 2450
                 self.match(XplorMRParser.Random_VE)
@@ -15506,7 +15506,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2452
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Sign_VE]:
+            elif token in [271]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 2453
                 self.match(XplorMRParser.Sign_VE)
@@ -15517,7 +15517,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2456
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Sin_VE]:
+            elif token in [272]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 2458
                 self.match(XplorMRParser.Sin_VE)
@@ -15528,7 +15528,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2461
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Sqrt_VE]:
+            elif token in [273]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 2463
                 self.match(XplorMRParser.Sqrt_VE)
@@ -15539,7 +15539,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2466
                 self.match(XplorMRParser.R_paren_VE)
                 pass
-            elif token in [XplorMRParser.Tan_VE]:
+            elif token in [274]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 2468
                 self.match(XplorMRParser.Tan_VE)
@@ -15622,7 +15622,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 2475
             _la = self._input.LA(1)
-            if not(((((_la - 283)) & ~0x3f) == 0 and ((1 << (_la - 283)) & ((1 << (XplorMRParser.Average_VS - 283)) | (1 << (XplorMRParser.Element_VS - 283)) | (1 << (XplorMRParser.Max_VS - 283)) | (1 << (XplorMRParser.Min_VS - 283)) | (1 << (XplorMRParser.Norm_VS - 283)) | (1 << (XplorMRParser.Rms_VS - 283)) | (1 << (XplorMRParser.Sum_VS - 283)))) != 0)):
+            if not((((_la - 283)) & ~0x3f) == 0 and ((1 << (_la - 283)) & 127) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -15760,10 +15760,10 @@ class XplorMRParser ( Parser ):
             self.state = 2489
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & ((1 << (XplorMRParser.Add_op_VE - 244)) | (1 << (XplorMRParser.Sub_op_VE - 244)) | (1 << (XplorMRParser.Mul_op_VE - 244)) | (1 << (XplorMRParser.Div_op_VE - 244)) | (1 << (XplorMRParser.Exp_op_VE - 244)))) != 0):
+            if (((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0:
                 self.state = 2487
                 _la = self._input.LA(1)
-                if not(((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & ((1 << (XplorMRParser.Add_op_VE - 244)) | (1 << (XplorMRParser.Sub_op_VE - 244)) | (1 << (XplorMRParser.Mul_op_VE - 244)) | (1 << (XplorMRParser.Div_op_VE - 244)) | (1 << (XplorMRParser.Exp_op_VE - 244)))) != 0)):
+                if not((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -15855,7 +15855,7 @@ class XplorMRParser ( Parser ):
             self.state = 2493
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Noe) | (1 << XplorMRParser.Restraints) | (1 << XplorMRParser.Dihedral))) != 0) or _la==XplorMRParser.AngleDb or ((((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & ((1 << (XplorMRParser.HBonded - 179)) | (1 << (XplorMRParser.Improper - 179)) | (1 << (XplorMRParser.Simple_name - 179)))) != 0):
+            if ((_la) & ~0x3f) == 0 and ((1 << _la) & 206158430216) != 0 or _la==95 or (((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & 4194307) != 0:
                 self.state = 2492
                 self.class_name()
 
@@ -15866,7 +15866,7 @@ class XplorMRParser ( Parser ):
             self.match(XplorMRParser.Equ_op)
             self.state = 2497
             _la = self._input.LA(1)
-            if not(_la==XplorMRParser.Nil or _la==XplorMRParser.Integer):
+            if not(_la==175 or _la==194):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -15878,14 +15878,14 @@ class XplorMRParser ( Parser ):
             self.state = 2505
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==XplorMRParser.Reference:
+            if _la==174:
                 self.state = 2500
                 self.match(XplorMRParser.Reference)
                 self.state = 2501
                 self.match(XplorMRParser.Equ_op)
                 self.state = 2502
                 _la = self._input.LA(1)
-                if not(_la==XplorMRParser.Nil or _la==XplorMRParser.Integer):
+                if not(_la==175 or _la==194):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -15953,7 +15953,7 @@ class XplorMRParser ( Parser ):
             self.state = 2513
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Reset or _la==XplorMRParser.Dihedral or _la==XplorMRParser.AngleDb or _la==XplorMRParser.BondedTo or ((((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & ((1 << (XplorMRParser.HBonded - 179)) | (1 << (XplorMRParser.Improper - 179)) | (1 << (XplorMRParser.NBFix - 179)) | (1 << (XplorMRParser.NonB - 179)) | (1 << (XplorMRParser.VDWOff - 179)) | (1 << (XplorMRParser.Verbose - 179)))) != 0):
+            while _la==19 or _la==37 or _la==95 or _la==142 or (((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & 63) != 0:
                 self.state = 2510
                 self.parameter_statement()
                 self.state = 2515
@@ -16062,7 +16062,7 @@ class XplorMRParser ( Parser ):
             self.state = 2573
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [XplorMRParser.AngleDb]:
+            if token in [95]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 2518
                 self.match(XplorMRParser.AngleDb)
@@ -16079,7 +16079,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2528
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.UB:
+                if _la==177:
                     self.state = 2524
                     self.match(XplorMRParser.UB)
                     self.state = 2525
@@ -16089,7 +16089,7 @@ class XplorMRParser ( Parser ):
 
 
                 pass
-            elif token in [XplorMRParser.BondedTo]:
+            elif token in [142]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 2530
                 self.match(XplorMRParser.BondedTo)
@@ -16102,11 +16102,11 @@ class XplorMRParser ( Parser ):
                 self.state = 2534
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Dihedral, XplorMRParser.Improper]:
+            elif token in [37, 180]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 2536
                 _la = self._input.LA(1)
-                if not(_la==XplorMRParser.Dihedral or _la==XplorMRParser.Improper):
+                if not(_la==37 or _la==180):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -16122,7 +16122,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2543
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==XplorMRParser.Mult:
+                if _la==178:
                     self.state = 2541
                     self.match(XplorMRParser.Mult)
                     self.state = 2542
@@ -16136,7 +16136,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2547
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.HBonded]:
+            elif token in [179]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 2549
                 self.match(XplorMRParser.HBonded)
@@ -16149,7 +16149,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2553
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.NBFix]:
+            elif token in [181]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 2555
                 self.match(XplorMRParser.NBFix)
@@ -16166,7 +16166,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2561
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.NonB]:
+            elif token in [182]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 2563
                 self.match(XplorMRParser.NonB)
@@ -16181,11 +16181,11 @@ class XplorMRParser ( Parser ):
                 self.state = 2568
                 self.number_s()
                 pass
-            elif token in [XplorMRParser.Reset, XplorMRParser.VDWOff]:
+            elif token in [19, 183]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 2570
                 _la = self._input.LA(1)
-                if not(_la==XplorMRParser.Reset or _la==XplorMRParser.VDWOff):
+                if not(_la==19 or _la==183):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -16193,7 +16193,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2571
                 self.match(XplorMRParser.Simple_name)
                 pass
-            elif token in [XplorMRParser.Verbose]:
+            elif token in [184]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 2572
                 self.match(XplorMRParser.Verbose)
@@ -16322,7 +16322,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2582
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2579
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2584
@@ -16335,7 +16335,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2588
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2585
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2590
@@ -16348,7 +16348,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2594
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2591
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2596
@@ -16367,19 +16367,19 @@ class XplorMRParser ( Parser ):
             self.state = 2607
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Noe or _la==XplorMRParser.Assign or _la==XplorMRParser.Evaluate_Lp:
+            while _la==3 or _la==4 or _la==172:
                 self.state = 2605
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2602
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2603
                     self.noe_assign()
                     pass
-                elif token in [XplorMRParser.Noe]:
+                elif token in [3]:
                     self.state = 2604
                     self.distance_restraint()
                     pass
@@ -16517,7 +16517,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2621
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2618
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2623
@@ -16530,7 +16530,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2627
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2624
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2629
@@ -16543,7 +16543,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2633
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2630
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2635
@@ -16562,19 +16562,19 @@ class XplorMRParser ( Parser ):
             self.state = 2646
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Restraints) | (1 << XplorMRParser.Dihedral))) != 0) or _la==XplorMRParser.Evaluate_Lp:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 206158430224) != 0 or _la==172:
                 self.state = 2644
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2641
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2642
                     self.dihedral_assign()
                     pass
-                elif token in [XplorMRParser.Restraints, XplorMRParser.Dihedral]:
+                elif token in [36, 37]:
                     self.state = 2643
                     self.dihedral_angle_restraint()
                     pass
@@ -16712,7 +16712,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2660
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2657
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2662
@@ -16725,7 +16725,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2666
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2663
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2668
@@ -16738,7 +16738,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2672
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2669
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2674
@@ -16757,19 +16757,19 @@ class XplorMRParser ( Parser ):
             self.state = 2685
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Assign) | (1 << XplorMRParser.Sanisotropy) | (1 << XplorMRParser.Xdipolar) | (1 << XplorMRParser.Dipolar) | (1 << XplorMRParser.VeAngle) | (1 << XplorMRParser.Tensor) | (1 << XplorMRParser.Anisotropy))) != 0) or _la==XplorMRParser.Evaluate_Lp:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3545924999577616) != 0 or _la==172:
                 self.state = 2683
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2680
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2681
                     self.sani_assign()
                     pass
-                elif token in [XplorMRParser.Sanisotropy, XplorMRParser.Xdipolar, XplorMRParser.Dipolar, XplorMRParser.VeAngle, XplorMRParser.Tensor, XplorMRParser.Anisotropy]:
+                elif token in [40, 43, 44, 47, 50, 51]:
                     self.state = 2682
                     self.rdc_restraint()
                     pass
@@ -16907,7 +16907,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2699
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2696
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2701
@@ -16920,7 +16920,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2705
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2702
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2707
@@ -16933,7 +16933,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2711
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2708
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2713
@@ -16952,19 +16952,19 @@ class XplorMRParser ( Parser ):
             self.state = 2724
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Assign or _la==XplorMRParser.Xadc or _la==XplorMRParser.Evaluate_Lp:
+            while _la==4 or _la==60 or _la==172:
                 self.state = 2722
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2719
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2720
                     self.xadc_assign()
                     pass
-                elif token in [XplorMRParser.Xadc]:
+                elif token in [60]:
                     self.state = 2721
                     self.antidistance_restraint()
                     pass
@@ -17102,7 +17102,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2738
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2735
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2740
@@ -17115,7 +17115,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2744
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2741
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2746
@@ -17128,7 +17128,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2750
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2747
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2752
@@ -17147,19 +17147,19 @@ class XplorMRParser ( Parser ):
             self.state = 2763
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Assign or _la==XplorMRParser.Coupling or _la==XplorMRParser.Evaluate_Lp:
+            while _la==4 or _la==64 or _la==172:
                 self.state = 2761
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2758
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2759
                     self.coup_assign()
                     pass
-                elif token in [XplorMRParser.Coupling]:
+                elif token in [64]:
                     self.state = 2760
                     self.coupling_restraint()
                     pass
@@ -17297,7 +17297,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2777
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2774
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2779
@@ -17310,7 +17310,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2783
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2780
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2785
@@ -17323,7 +17323,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2789
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2786
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2791
@@ -17342,19 +17342,19 @@ class XplorMRParser ( Parser ):
             self.state = 2802
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Assign or _la==XplorMRParser.Collapse or _la==XplorMRParser.Evaluate_Lp:
+            while _la==4 or _la==85 or _la==172:
                 self.state = 2800
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2797
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2798
                     self.coll_assign()
                     pass
-                elif token in [XplorMRParser.Collapse]:
+                elif token in [85]:
                     self.state = 2799
                     self.radius_of_gyration_restraint()
                     pass
@@ -17492,7 +17492,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2816
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2813
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2818
@@ -17505,7 +17505,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2822
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2819
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2824
@@ -17518,7 +17518,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2828
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2825
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2830
@@ -17537,19 +17537,19 @@ class XplorMRParser ( Parser ):
             self.state = 2841
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Assign or _la==XplorMRParser.Dcsa or _la==XplorMRParser.Evaluate_Lp:
+            while _la==4 or _la==91 or _la==172:
                 self.state = 2839
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2836
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2837
                     self.csa_assign()
                     pass
-                elif token in [XplorMRParser.Dcsa]:
+                elif token in [91]:
                     self.state = 2838
                     self.csa_restraint()
                     pass
@@ -17687,7 +17687,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2855
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2852
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2857
@@ -17700,7 +17700,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2861
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2858
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2863
@@ -17713,7 +17713,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2867
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2864
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2869
@@ -17732,19 +17732,19 @@ class XplorMRParser ( Parser ):
             self.state = 2880
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Assign or _la==XplorMRParser.PMagnetic or _la==XplorMRParser.Evaluate_Lp:
+            while _la==4 or _la==97 or _la==172:
                 self.state = 2878
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2875
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2876
                     self.pre_assign()
                     pass
-                elif token in [XplorMRParser.PMagnetic]:
+                elif token in [97]:
                     self.state = 2877
                     self.pre_restraint()
                     pass
@@ -17889,7 +17889,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2894
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2891
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2896
@@ -17902,7 +17902,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2900
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2897
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2902
@@ -17915,7 +17915,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2906
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2903
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2908
@@ -17934,23 +17934,23 @@ class XplorMRParser ( Parser ):
             self.state = 2920
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Assign or _la==XplorMRParser.Carbon or _la==XplorMRParser.Xpcs or _la==XplorMRParser.Evaluate_Lp:
+            while _la==4 or _la==66 or _la==102 or _la==172:
                 self.state = 2918
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2914
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2915
                     self.pcs_assign()
                     pass
-                elif token in [XplorMRParser.Xpcs]:
+                elif token in [102]:
                     self.state = 2916
                     self.pcs_restraint()
                     pass
-                elif token in [XplorMRParser.Carbon]:
+                elif token in [66]:
                     self.state = 2917
                     self.carbon_shift_restraint()
                     pass
@@ -18088,7 +18088,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2934
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2931
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2936
@@ -18101,7 +18101,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2940
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2937
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2942
@@ -18114,7 +18114,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2946
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2943
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2948
@@ -18133,19 +18133,19 @@ class XplorMRParser ( Parser ):
             self.state = 2959
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Assign or _la==XplorMRParser.Hbda or _la==XplorMRParser.Evaluate_Lp:
+            while _la==4 or _la==117 or _la==172:
                 self.state = 2957
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2954
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2955
                     self.hbond_assign()
                     pass
-                elif token in [XplorMRParser.Hbda]:
+                elif token in [117]:
                     self.state = 2956
                     self.hbond_restraint()
                     pass
@@ -18283,7 +18283,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2973
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 2970
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 2975
@@ -18296,7 +18296,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2979
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 2976
                     self.match(XplorMRParser.Real_CF)
                     self.state = 2981
@@ -18309,7 +18309,7 @@ class XplorMRParser ( Parser ):
                 self.state = 2985
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 2982
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 2987
@@ -18328,19 +18328,19 @@ class XplorMRParser ( Parser ):
             self.state = 2998
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==XplorMRParser.Assign or _la==XplorMRParser.Hbdb or _la==XplorMRParser.Evaluate_Lp:
+            while _la==4 or _la==118 or _la==172:
                 self.state = 2996
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 2993
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Assign]:
+                elif token in [4]:
                     self.state = 2994
                     self.hbond_db_assign()
                     pass
-                elif token in [XplorMRParser.Hbdb]:
+                elif token in [118]:
                     self.state = 2995
                     self.hbond_db_restraint()
                     pass
@@ -18478,7 +18478,7 @@ class XplorMRParser ( Parser ):
                 self.state = 3012
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Integer_CF:
+                while _la==295:
                     self.state = 3009
                     self.match(XplorMRParser.Integer_CF)
                     self.state = 3014
@@ -18491,7 +18491,7 @@ class XplorMRParser ( Parser ):
                 self.state = 3018
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Real_CF:
+                while _la==296:
                     self.state = 3015
                     self.match(XplorMRParser.Real_CF)
                     self.state = 3020
@@ -18504,7 +18504,7 @@ class XplorMRParser ( Parser ):
                 self.state = 3024
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==XplorMRParser.Simple_name_CF:
+                while _la==298:
                     self.state = 3021
                     self.match(XplorMRParser.Simple_name_CF)
                     self.state = 3026
@@ -18523,19 +18523,19 @@ class XplorMRParser ( Parser ):
             self.state = 3037
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << XplorMRParser.Restraints) | (1 << XplorMRParser.Planar) | (1 << XplorMRParser.Group))) != 0) or _la==XplorMRParser.Evaluate_Lp:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 13510867601588224) != 0 or _la==172:
                 self.state = 3035
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [XplorMRParser.Evaluate_Lp]:
+                if token in [172]:
                     self.state = 3032
                     self.evaluate_statement()
                     pass
-                elif token in [XplorMRParser.Group]:
+                elif token in [53]:
                     self.state = 3033
                     self.planar_group()
                     pass
-                elif token in [XplorMRParser.Restraints, XplorMRParser.Planar]:
+                elif token in [36, 52]:
                     self.state = 3034
                     self.planar_restraint()
                     pass

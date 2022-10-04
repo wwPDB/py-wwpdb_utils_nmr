@@ -1,4 +1,4 @@
-# Generated from GromacsMRParser.g4 by ANTLR 4.10.1
+# Generated from GromacsMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -129,7 +129,7 @@ class GromacsMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -230,7 +230,7 @@ class GromacsMRParser ( Parser ):
             self.state = 39
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsMRParser.L_brkt:
+            while _la==1:
                 self.state = 37
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -348,7 +348,7 @@ class GromacsMRParser ( Parser ):
                 self.state = 50 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==GromacsMRParser.Integer):
+                if not (_la==10):
                     break
 
         except RecognitionException as re:
@@ -425,7 +425,7 @@ class GromacsMRParser ( Parser ):
             self.state = 62
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsMRParser.Simple_name:
+            if _la==15:
                 self.state = 61
                 self.match(GromacsMRParser.Simple_name)
 
@@ -498,7 +498,7 @@ class GromacsMRParser ( Parser ):
                 self.state = 70 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==GromacsMRParser.Integer):
+                if not (_la==10):
                     break
 
         except RecognitionException as re:
@@ -573,7 +573,7 @@ class GromacsMRParser ( Parser ):
             self.state = 81
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsMRParser.Simple_name:
+            if _la==15:
                 self.state = 80
                 self.match(GromacsMRParser.Simple_name)
 
@@ -646,7 +646,7 @@ class GromacsMRParser ( Parser ):
                 self.state = 89 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==GromacsMRParser.Integer):
+                if not (_la==10):
                     break
 
         except RecognitionException as re:
@@ -723,7 +723,7 @@ class GromacsMRParser ( Parser ):
             self.state = 101
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsMRParser.Simple_name:
+            if _la==15:
                 self.state = 100
                 self.match(GromacsMRParser.Simple_name)
 
@@ -796,7 +796,7 @@ class GromacsMRParser ( Parser ):
                 self.state = 109 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==GromacsMRParser.Integer):
+                if not (_la==10):
                     break
 
         except RecognitionException as re:
@@ -871,7 +871,7 @@ class GromacsMRParser ( Parser ):
             self.state = 120
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsMRParser.Simple_name:
+            if _la==15:
                 self.state = 119
                 self.match(GromacsMRParser.Simple_name)
 
@@ -944,7 +944,7 @@ class GromacsMRParser ( Parser ):
                 self.state = 128 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==GromacsMRParser.Integer):
+                if not (_la==10):
                     break
 
         except RecognitionException as re:
@@ -1015,7 +1015,7 @@ class GromacsMRParser ( Parser ):
             self.state = 137
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsMRParser.Simple_name:
+            if _la==15:
                 self.state = 136
                 self.match(GromacsMRParser.Simple_name)
 
@@ -1088,7 +1088,7 @@ class GromacsMRParser ( Parser ):
                 self.state = 145 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==GromacsMRParser.Integer):
+                if not (_la==10):
                     break
 
         except RecognitionException as re:
@@ -1157,7 +1157,7 @@ class GromacsMRParser ( Parser ):
             self.state = 153
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsMRParser.Simple_name:
+            if _la==15:
                 self.state = 152
                 self.match(GromacsMRParser.Simple_name)
 
@@ -1207,7 +1207,7 @@ class GromacsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 155
             _la = self._input.LA(1)
-            if not(_la==GromacsMRParser.Integer or _la==GromacsMRParser.Float):
+            if not(_la==10 or _la==11):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

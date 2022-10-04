@@ -3,7 +3,7 @@
 # Date: 21-Sep-2022
 #
 # Updates:
-# Generated from CharmmMRParser.g4 by ANTLR 4.10.1
+# Generated from CharmmMRParser.g4 by ANTLR 4.11.1
 """ ParserLister class for CHARMM MR files.
     @author: Masashi Yokochi
 """

@@ -1,4 +1,4 @@
-# Generated from IsdMRParser.g4 by ANTLR 4.10.1
+# Generated from IsdMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -56,7 +56,7 @@ class IsdMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -104,7 +104,7 @@ class IsdMRParser ( Parser ):
             self.state = 9
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==IsdMRParser.Distance:
+            while _la==1:
                 self.state = 6
                 self.distance_restraints()
                 self.state = 11
@@ -171,7 +171,7 @@ class IsdMRParser ( Parser ):
                 self.state = 18 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==IsdMRParser.Atom_selection):
+                if not (_la==7):
                     break
 
         except RecognitionException as re:

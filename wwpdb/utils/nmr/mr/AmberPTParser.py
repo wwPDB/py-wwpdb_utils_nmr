@@ -1,4 +1,4 @@
-# Generated from AmberPTParser.g4 by ANTLR 4.10.1
+# Generated from AmberPTParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -449,7 +449,7 @@ class AmberPTParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -826,11 +826,11 @@ class AmberPTParser ( Parser ):
             self.state = 102
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AmberPTParser.VERSION]:
+            if token in [1]:
                 self.state = 100
                 self.version_statement()
                 pass
-            elif token in [AmberPTParser.FLAG]:
+            elif token in [2]:
                 self.state = 101
                 self.match(AmberPTParser.FLAG)
                 pass
@@ -840,195 +840,195 @@ class AmberPTParser ( Parser ):
             self.state = 153
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AmberPTParser.AMBER_ATOM_TYPE) | (1 << AmberPTParser.ANGLE_EQUIL_VALUE) | (1 << AmberPTParser.ANGLE_FORCE_CONSTANT) | (1 << AmberPTParser.ANGLES_INC_HYDROGEN) | (1 << AmberPTParser.ANGLES_WITHOUT_HYDROGEN) | (1 << AmberPTParser.ATOMIC_NUMBER) | (1 << AmberPTParser.ATOM_NAME) | (1 << AmberPTParser.ATOM_TYPE_INDEX) | (1 << AmberPTParser.ATOMS_PER_MOLECULE) | (1 << AmberPTParser.BOND_EQUIL_VALUE) | (1 << AmberPTParser.BOND_FORCE_CONSTANT) | (1 << AmberPTParser.BONDS_INC_HYDROGEN) | (1 << AmberPTParser.BONDS_WITHOUT_HYDROGEN) | (1 << AmberPTParser.BOX_DIMENSIONS) | (1 << AmberPTParser.CAP_INFO) | (1 << AmberPTParser.CAP_INFO2) | (1 << AmberPTParser.CHARGE) | (1 << AmberPTParser.DIHEDRAL_FORCE_CONSTANT) | (1 << AmberPTParser.DIHEDRAL_PERIODICITY) | (1 << AmberPTParser.DIHEDRAL_PHASE) | (1 << AmberPTParser.DIHEDRALS_INC_HYDROGEN) | (1 << AmberPTParser.DIHEDRALS_WITHOUT_HYDROGEN) | (1 << AmberPTParser.EXCLUDED_ATOMS_LIST) | (1 << AmberPTParser.HBCUT) | (1 << AmberPTParser.HBOND_ACOEF) | (1 << AmberPTParser.HBOND_BCOEF) | (1 << AmberPTParser.IPOL) | (1 << AmberPTParser.IROTAT) | (1 << AmberPTParser.JOIN_ARRAY) | (1 << AmberPTParser.LENNARD_JONES_ACOEF) | (1 << AmberPTParser.LENNARD_JONES_BCOEF) | (1 << AmberPTParser.MASS) | (1 << AmberPTParser.NONBONDED_PARM_INDEX) | (1 << AmberPTParser.NUMBER_EXCLUDED_ATOMS) | (1 << AmberPTParser.POINTERS) | (1 << AmberPTParser.POLARIZABILITY) | (1 << AmberPTParser.RADII) | (1 << AmberPTParser.RADIUS_SET) | (1 << AmberPTParser.RESIDUE_LABEL) | (1 << AmberPTParser.RESIDUE_POINTER) | (1 << AmberPTParser.SCEE_SCALE_FACTOR) | (1 << AmberPTParser.SCNB_SCALE_FACTOR) | (1 << AmberPTParser.SCREEN) | (1 << AmberPTParser.SOLTY) | (1 << AmberPTParser.SOLVENT_POINTERS) | (1 << AmberPTParser.TITLE) | (1 << AmberPTParser.TREE_CHAIN_CLASSIFICATION))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 1125899906842616) != 0:
                 self.state = 151
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [AmberPTParser.AMBER_ATOM_TYPE]:
+                if token in [3]:
                     self.state = 104
                     self.amber_atom_type_statement()
                     pass
-                elif token in [AmberPTParser.ANGLE_EQUIL_VALUE]:
+                elif token in [4]:
                     self.state = 105
                     self.angle_equil_value_statement()
                     pass
-                elif token in [AmberPTParser.ANGLE_FORCE_CONSTANT]:
+                elif token in [5]:
                     self.state = 106
                     self.angle_force_constant_statement()
                     pass
-                elif token in [AmberPTParser.ANGLES_INC_HYDROGEN]:
+                elif token in [6]:
                     self.state = 107
                     self.angles_inc_hydrogen_statement()
                     pass
-                elif token in [AmberPTParser.ANGLES_WITHOUT_HYDROGEN]:
+                elif token in [7]:
                     self.state = 108
                     self.angles_without_hydrogen_statement()
                     pass
-                elif token in [AmberPTParser.ATOMIC_NUMBER]:
+                elif token in [8]:
                     self.state = 109
                     self.atomic_number_statement()
                     pass
-                elif token in [AmberPTParser.ATOM_NAME]:
+                elif token in [9]:
                     self.state = 110
                     self.atom_name_statement()
                     pass
-                elif token in [AmberPTParser.ATOM_TYPE_INDEX]:
+                elif token in [10]:
                     self.state = 111
                     self.atom_type_index_statement()
                     pass
-                elif token in [AmberPTParser.ATOMS_PER_MOLECULE]:
+                elif token in [11]:
                     self.state = 112
                     self.atoms_per_molecule_statement()
                     pass
-                elif token in [AmberPTParser.BOND_EQUIL_VALUE]:
+                elif token in [12]:
                     self.state = 113
                     self.bond_equil_value_statement()
                     pass
-                elif token in [AmberPTParser.BOND_FORCE_CONSTANT]:
+                elif token in [13]:
                     self.state = 114
                     self.bond_force_constant_statement()
                     pass
-                elif token in [AmberPTParser.BONDS_INC_HYDROGEN]:
+                elif token in [14]:
                     self.state = 115
                     self.bonds_inc_hydrogen_statement()
                     pass
-                elif token in [AmberPTParser.BONDS_WITHOUT_HYDROGEN]:
+                elif token in [15]:
                     self.state = 116
                     self.bonds_without_hydrogen_statement()
                     pass
-                elif token in [AmberPTParser.BOX_DIMENSIONS]:
+                elif token in [16]:
                     self.state = 117
                     self.box_dimensions_statement()
                     pass
-                elif token in [AmberPTParser.CAP_INFO]:
+                elif token in [17]:
                     self.state = 118
                     self.cap_info_statement()
                     pass
-                elif token in [AmberPTParser.CAP_INFO2]:
+                elif token in [18]:
                     self.state = 119
                     self.cap_info2_statement()
                     pass
-                elif token in [AmberPTParser.CHARGE]:
+                elif token in [19]:
                     self.state = 120
                     self.charge_statement()
                     pass
-                elif token in [AmberPTParser.DIHEDRAL_FORCE_CONSTANT]:
+                elif token in [20]:
                     self.state = 121
                     self.dihedral_force_constant_statement()
                     pass
-                elif token in [AmberPTParser.DIHEDRAL_PERIODICITY]:
+                elif token in [21]:
                     self.state = 122
                     self.dihedral_periodicity_statement()
                     pass
-                elif token in [AmberPTParser.DIHEDRAL_PHASE]:
+                elif token in [22]:
                     self.state = 123
                     self.dihedral_phase_statement()
                     pass
-                elif token in [AmberPTParser.DIHEDRALS_INC_HYDROGEN]:
+                elif token in [23]:
                     self.state = 124
                     self.dihedrals_inc_hydrogen_statement()
                     pass
-                elif token in [AmberPTParser.DIHEDRALS_WITHOUT_HYDROGEN]:
+                elif token in [24]:
                     self.state = 125
                     self.dihedrals_without_hydrogen_statement()
                     pass
-                elif token in [AmberPTParser.EXCLUDED_ATOMS_LIST]:
+                elif token in [25]:
                     self.state = 126
                     self.excluded_atoms_list_statement()
                     pass
-                elif token in [AmberPTParser.HBCUT]:
+                elif token in [26]:
                     self.state = 127
                     self.hbcut_statement()
                     pass
-                elif token in [AmberPTParser.HBOND_ACOEF]:
+                elif token in [27]:
                     self.state = 128
                     self.hbond_acoef_statement()
                     pass
-                elif token in [AmberPTParser.HBOND_BCOEF]:
+                elif token in [28]:
                     self.state = 129
                     self.hbond_bcoef_statement()
                     pass
-                elif token in [AmberPTParser.IPOL]:
+                elif token in [29]:
                     self.state = 130
                     self.ipol_statement()
                     pass
-                elif token in [AmberPTParser.IROTAT]:
+                elif token in [30]:
                     self.state = 131
                     self.irotat_statement()
                     pass
-                elif token in [AmberPTParser.JOIN_ARRAY]:
+                elif token in [31]:
                     self.state = 132
                     self.join_array_statement()
                     pass
-                elif token in [AmberPTParser.LENNARD_JONES_ACOEF]:
+                elif token in [32]:
                     self.state = 133
                     self.lennard_jones_acoef_statement()
                     pass
-                elif token in [AmberPTParser.LENNARD_JONES_BCOEF]:
+                elif token in [33]:
                     self.state = 134
                     self.lennard_jones_bcoef_statement()
                     pass
-                elif token in [AmberPTParser.MASS]:
+                elif token in [34]:
                     self.state = 135
                     self.mass_statement()
                     pass
-                elif token in [AmberPTParser.NONBONDED_PARM_INDEX]:
+                elif token in [35]:
                     self.state = 136
                     self.nonbonded_parm_index_statement()
                     pass
-                elif token in [AmberPTParser.NUMBER_EXCLUDED_ATOMS]:
+                elif token in [36]:
                     self.state = 137
                     self.number_excluded_atoms_statement()
                     pass
-                elif token in [AmberPTParser.POINTERS]:
+                elif token in [37]:
                     self.state = 138
                     self.pointers_statement()
                     pass
-                elif token in [AmberPTParser.POLARIZABILITY]:
+                elif token in [38]:
                     self.state = 139
                     self.polarizability_statement()
                     pass
-                elif token in [AmberPTParser.RADII]:
+                elif token in [39]:
                     self.state = 140
                     self.radii_statement()
                     pass
-                elif token in [AmberPTParser.RADIUS_SET]:
+                elif token in [40]:
                     self.state = 141
                     self.radius_set_statement()
                     pass
-                elif token in [AmberPTParser.RESIDUE_LABEL]:
+                elif token in [41]:
                     self.state = 142
                     self.residue_label_statement()
                     pass
-                elif token in [AmberPTParser.RESIDUE_POINTER]:
+                elif token in [42]:
                     self.state = 143
                     self.residue_pointer_statement()
                     pass
-                elif token in [AmberPTParser.SCEE_SCALE_FACTOR]:
+                elif token in [43]:
                     self.state = 144
                     self.scee_scale_factor_statement()
                     pass
-                elif token in [AmberPTParser.SCNB_SCALE_FACTOR]:
+                elif token in [44]:
                     self.state = 145
                     self.scnb_scale_factor_statement()
                     pass
-                elif token in [AmberPTParser.SCREEN]:
+                elif token in [45]:
                     self.state = 146
                     self.screen_statement()
                     pass
-                elif token in [AmberPTParser.SOLTY]:
+                elif token in [46]:
                     self.state = 147
                     self.solty_statement()
                     pass
-                elif token in [AmberPTParser.SOLVENT_POINTERS]:
+                elif token in [47]:
                     self.state = 148
                     self.solvent_pointers_statement()
                     pass
-                elif token in [AmberPTParser.TITLE]:
+                elif token in [48]:
                     self.state = 149
                     self.title_statement()
                     pass
-                elif token in [AmberPTParser.TREE_CHAIN_CLASSIFICATION]:
+                elif token in [49]:
                     self.state = 150
                     self.tree_chain_classification_statement()
                     pass
@@ -1125,14 +1125,14 @@ class AmberPTParser ( Parser ):
             self.state = 166
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==AmberPTParser.Date_time:
+            if _la==60:
                 self.state = 165
                 self.match(AmberPTParser.Date_time)
 
 
             self.state = 168
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_VS):
+            if not(_la==-1 or _la==62):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1200,7 +1200,7 @@ class AmberPTParser ( Parser ):
             self.state = 175
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Simple_name:
+            while _la==66:
                 self.state = 172
                 self.match(AmberPTParser.Simple_name)
                 self.state = 177
@@ -1209,7 +1209,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 178
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
+            if not(_la==-1 or _la==68):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1277,7 +1277,7 @@ class AmberPTParser ( Parser ):
             self.state = 185
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 182
                 self.match(AmberPTParser.Real)
                 self.state = 187
@@ -1286,7 +1286,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 188
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1354,7 +1354,7 @@ class AmberPTParser ( Parser ):
             self.state = 195
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 192
                 self.match(AmberPTParser.Real)
                 self.state = 197
@@ -1363,7 +1363,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 198
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1431,7 +1431,7 @@ class AmberPTParser ( Parser ):
             self.state = 205
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 202
                 self.match(AmberPTParser.Integer)
                 self.state = 207
@@ -1440,7 +1440,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 208
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1508,7 +1508,7 @@ class AmberPTParser ( Parser ):
             self.state = 215
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 212
                 self.match(AmberPTParser.Integer)
                 self.state = 217
@@ -1517,7 +1517,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 218
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1585,7 +1585,7 @@ class AmberPTParser ( Parser ):
             self.state = 225
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 222
                 self.match(AmberPTParser.Integer)
                 self.state = 227
@@ -1594,7 +1594,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 228
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1662,7 +1662,7 @@ class AmberPTParser ( Parser ):
             self.state = 235
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Simple_name:
+            while _la==66:
                 self.state = 232
                 self.match(AmberPTParser.Simple_name)
                 self.state = 237
@@ -1671,7 +1671,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 238
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
+            if not(_la==-1 or _la==68):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1739,7 +1739,7 @@ class AmberPTParser ( Parser ):
             self.state = 245
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 242
                 self.match(AmberPTParser.Integer)
                 self.state = 247
@@ -1748,7 +1748,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 248
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1816,7 +1816,7 @@ class AmberPTParser ( Parser ):
             self.state = 255
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 252
                 self.match(AmberPTParser.Integer)
                 self.state = 257
@@ -1825,7 +1825,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 258
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1893,7 +1893,7 @@ class AmberPTParser ( Parser ):
             self.state = 265
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 262
                 self.match(AmberPTParser.Real)
                 self.state = 267
@@ -1902,7 +1902,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 268
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1970,7 +1970,7 @@ class AmberPTParser ( Parser ):
             self.state = 275
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 272
                 self.match(AmberPTParser.Real)
                 self.state = 277
@@ -1979,7 +1979,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 278
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2047,7 +2047,7 @@ class AmberPTParser ( Parser ):
             self.state = 285
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 282
                 self.match(AmberPTParser.Integer)
                 self.state = 287
@@ -2056,7 +2056,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 288
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2124,7 +2124,7 @@ class AmberPTParser ( Parser ):
             self.state = 295
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 292
                 self.match(AmberPTParser.Integer)
                 self.state = 297
@@ -2133,7 +2133,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 298
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2201,7 +2201,7 @@ class AmberPTParser ( Parser ):
             self.state = 305
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 302
                 self.match(AmberPTParser.Real)
                 self.state = 307
@@ -2210,7 +2210,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 308
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2278,7 +2278,7 @@ class AmberPTParser ( Parser ):
             self.state = 315
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 312
                 self.match(AmberPTParser.Integer)
                 self.state = 317
@@ -2287,7 +2287,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 318
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2355,7 +2355,7 @@ class AmberPTParser ( Parser ):
             self.state = 325
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 322
                 self.match(AmberPTParser.Real)
                 self.state = 327
@@ -2364,7 +2364,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 328
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2432,7 +2432,7 @@ class AmberPTParser ( Parser ):
             self.state = 335
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 332
                 self.match(AmberPTParser.Real)
                 self.state = 337
@@ -2441,7 +2441,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 338
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2509,7 +2509,7 @@ class AmberPTParser ( Parser ):
             self.state = 345
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 342
                 self.match(AmberPTParser.Real)
                 self.state = 347
@@ -2518,7 +2518,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 348
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2586,7 +2586,7 @@ class AmberPTParser ( Parser ):
             self.state = 355
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 352
                 self.match(AmberPTParser.Real)
                 self.state = 357
@@ -2595,7 +2595,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 358
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2663,7 +2663,7 @@ class AmberPTParser ( Parser ):
             self.state = 365
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 362
                 self.match(AmberPTParser.Real)
                 self.state = 367
@@ -2672,7 +2672,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 368
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2740,7 +2740,7 @@ class AmberPTParser ( Parser ):
             self.state = 375
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 372
                 self.match(AmberPTParser.Integer)
                 self.state = 377
@@ -2749,7 +2749,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 378
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2817,7 +2817,7 @@ class AmberPTParser ( Parser ):
             self.state = 385
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 382
                 self.match(AmberPTParser.Integer)
                 self.state = 387
@@ -2826,7 +2826,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 388
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2894,7 +2894,7 @@ class AmberPTParser ( Parser ):
             self.state = 395
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 392
                 self.match(AmberPTParser.Integer)
                 self.state = 397
@@ -2903,7 +2903,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 398
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2971,7 +2971,7 @@ class AmberPTParser ( Parser ):
             self.state = 405
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 402
                 self.match(AmberPTParser.Real)
                 self.state = 407
@@ -2980,7 +2980,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 408
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3048,7 +3048,7 @@ class AmberPTParser ( Parser ):
             self.state = 415
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 412
                 self.match(AmberPTParser.Real)
                 self.state = 417
@@ -3057,7 +3057,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 418
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3125,7 +3125,7 @@ class AmberPTParser ( Parser ):
             self.state = 425
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 422
                 self.match(AmberPTParser.Real)
                 self.state = 427
@@ -3134,7 +3134,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 428
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3202,7 +3202,7 @@ class AmberPTParser ( Parser ):
             self.state = 435
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 432
                 self.match(AmberPTParser.Integer)
                 self.state = 437
@@ -3211,7 +3211,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 438
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3279,7 +3279,7 @@ class AmberPTParser ( Parser ):
             self.state = 445
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 442
                 self.match(AmberPTParser.Integer)
                 self.state = 447
@@ -3288,7 +3288,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 448
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3356,7 +3356,7 @@ class AmberPTParser ( Parser ):
             self.state = 455
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 452
                 self.match(AmberPTParser.Integer)
                 self.state = 457
@@ -3365,7 +3365,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 458
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3433,7 +3433,7 @@ class AmberPTParser ( Parser ):
             self.state = 465
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 462
                 self.match(AmberPTParser.Real)
                 self.state = 467
@@ -3442,7 +3442,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 468
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3510,7 +3510,7 @@ class AmberPTParser ( Parser ):
             self.state = 475
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 472
                 self.match(AmberPTParser.Real)
                 self.state = 477
@@ -3519,7 +3519,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 478
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3587,7 +3587,7 @@ class AmberPTParser ( Parser ):
             self.state = 485
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 482
                 self.match(AmberPTParser.Real)
                 self.state = 487
@@ -3596,7 +3596,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 488
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3664,7 +3664,7 @@ class AmberPTParser ( Parser ):
             self.state = 495
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 492
                 self.match(AmberPTParser.Integer)
                 self.state = 497
@@ -3673,7 +3673,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 498
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3741,7 +3741,7 @@ class AmberPTParser ( Parser ):
             self.state = 505
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 502
                 self.match(AmberPTParser.Integer)
                 self.state = 507
@@ -3750,7 +3750,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 508
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3818,7 +3818,7 @@ class AmberPTParser ( Parser ):
             self.state = 515
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 512
                 self.match(AmberPTParser.Integer)
                 self.state = 517
@@ -3827,7 +3827,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 518
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3895,7 +3895,7 @@ class AmberPTParser ( Parser ):
             self.state = 525
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 522
                 self.match(AmberPTParser.Real)
                 self.state = 527
@@ -3904,7 +3904,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 528
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3972,7 +3972,7 @@ class AmberPTParser ( Parser ):
             self.state = 535
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 532
                 self.match(AmberPTParser.Real)
                 self.state = 537
@@ -3981,7 +3981,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 538
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4049,7 +4049,7 @@ class AmberPTParser ( Parser ):
             self.state = 545
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Simple_name:
+            while _la==66:
                 self.state = 542
                 self.match(AmberPTParser.Simple_name)
                 self.state = 547
@@ -4058,7 +4058,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 548
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
+            if not(_la==-1 or _la==68):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4126,7 +4126,7 @@ class AmberPTParser ( Parser ):
             self.state = 555
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Simple_name:
+            while _la==66:
                 self.state = 552
                 self.match(AmberPTParser.Simple_name)
                 self.state = 557
@@ -4135,7 +4135,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 558
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
+            if not(_la==-1 or _la==68):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4209,12 +4209,12 @@ class AmberPTParser ( Parser ):
                 self.state = 565 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==AmberPTParser.Integer):
+                if not (_la==69):
                     break
 
             self.state = 567
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4282,7 +4282,7 @@ class AmberPTParser ( Parser ):
             self.state = 574
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 571
                 self.match(AmberPTParser.Real)
                 self.state = 576
@@ -4291,7 +4291,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 577
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4359,7 +4359,7 @@ class AmberPTParser ( Parser ):
             self.state = 584
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 581
                 self.match(AmberPTParser.Real)
                 self.state = 586
@@ -4368,7 +4368,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 587
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4436,7 +4436,7 @@ class AmberPTParser ( Parser ):
             self.state = 594
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 591
                 self.match(AmberPTParser.Real)
                 self.state = 596
@@ -4445,7 +4445,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 597
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4513,7 +4513,7 @@ class AmberPTParser ( Parser ):
             self.state = 604
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Real:
+            while _la==72:
                 self.state = 601
                 self.match(AmberPTParser.Real)
                 self.state = 606
@@ -4522,7 +4522,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 607
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_EA):
+            if not(_la==-1 or _la==74):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4590,7 +4590,7 @@ class AmberPTParser ( Parser ):
             self.state = 614
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Integer:
+            while _la==69:
                 self.state = 611
                 self.match(AmberPTParser.Integer)
                 self.state = 616
@@ -4599,7 +4599,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 617
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_IA):
+            if not(_la==-1 or _la==71):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4667,7 +4667,7 @@ class AmberPTParser ( Parser ):
             self.state = 624
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Simple_name:
+            while _la==66:
                 self.state = 621
                 self.match(AmberPTParser.Simple_name)
                 self.state = 626
@@ -4676,7 +4676,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 627
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
+            if not(_la==-1 or _la==68):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4744,7 +4744,7 @@ class AmberPTParser ( Parser ):
             self.state = 634
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberPTParser.Simple_name:
+            while _la==66:
                 self.state = 631
                 self.match(AmberPTParser.Simple_name)
                 self.state = 636
@@ -4753,7 +4753,7 @@ class AmberPTParser ( Parser ):
 
             self.state = 637
             _la = self._input.LA(1)
-            if not(_la==AmberPTParser.EOF or _la==AmberPTParser.FLAG_AA):
+            if not(_la==-1 or _la==68):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4811,7 +4811,7 @@ class AmberPTParser ( Parser ):
             self.match(AmberPTParser.FORMAT)
             self.state = 640
             _la = self._input.LA(1)
-            if not(((((_la - 63)) & ~0x3f) == 0 and ((1 << (_la - 63)) & ((1 << (AmberPTParser.Fortran_format_A - 63)) | (1 << (AmberPTParser.Fortran_format_I - 63)) | (1 << (AmberPTParser.Fortran_format_E - 63)))) != 0)):
+            if not((((_la - 63)) & ~0x3f) == 0 and ((1 << (_la - 63)) & 7) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

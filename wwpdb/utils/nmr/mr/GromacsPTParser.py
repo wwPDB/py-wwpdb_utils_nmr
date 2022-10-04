@@ -1,4 +1,4 @@
-# Generated from GromacsPTParser.g4 by ANTLR 4.10.1
+# Generated from GromacsPTParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -393,7 +393,7 @@ class GromacsPTParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -634,7 +634,7 @@ class GromacsPTParser ( Parser ):
             self.state = 135
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.L_brkt:
+            while _la==1:
                 self.state = 133
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -867,7 +867,7 @@ class GromacsPTParser ( Parser ):
             self.state = 149
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 148
                 self.match(GromacsPTParser.Simple_name)
 
@@ -940,7 +940,7 @@ class GromacsPTParser ( Parser ):
                 self.state = 157 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==GromacsPTParser.Simple_name):
+                if not (_la==35):
                     break
 
         except RecognitionException as re:
@@ -1051,7 +1051,7 @@ class GromacsPTParser ( Parser ):
             self.state = 168
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Simple_name:
+            while _la==35:
                 self.state = 165
                 self.atomtypes()
                 self.state = 170
@@ -1185,7 +1185,7 @@ class GromacsPTParser ( Parser ):
             self.state = 185
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Simple_name:
+            while _la==35:
                 self.state = 182
                 self.pairtypes()
                 self.state = 187
@@ -1315,7 +1315,7 @@ class GromacsPTParser ( Parser ):
             self.state = 200
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Simple_name:
+            while _la==35:
                 self.state = 197
                 self.bondtypes()
                 self.state = 202
@@ -1445,7 +1445,7 @@ class GromacsPTParser ( Parser ):
             self.state = 215
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Simple_name:
+            while _la==35:
                 self.state = 212
                 self.angletypes()
                 self.state = 217
@@ -1577,7 +1577,7 @@ class GromacsPTParser ( Parser ):
             self.state = 231
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Simple_name:
+            while _la==35:
                 self.state = 228
                 self.dihedraltypes()
                 self.state = 233
@@ -1651,11 +1651,11 @@ class GromacsPTParser ( Parser ):
             self.state = 244
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [GromacsPTParser.Integer]:
+            if token in [30]:
                 self.state = 239
                 self.match(GromacsPTParser.Integer)
                 pass
-            elif token in [GromacsPTParser.Real]:
+            elif token in [31]:
                 self.state = 240
                 self.match(GromacsPTParser.Real)
                 self.state = 241
@@ -1730,7 +1730,7 @@ class GromacsPTParser ( Parser ):
             self.state = 252
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Simple_name:
+            while _la==35:
                 self.state = 249
                 self.constrainttypes()
                 self.state = 254
@@ -1860,7 +1860,7 @@ class GromacsPTParser ( Parser ):
             self.state = 267
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Simple_name:
+            while _la==35:
                 self.state = 264
                 self.nonbonded_params()
                 self.state = 269
@@ -1932,7 +1932,7 @@ class GromacsPTParser ( Parser ):
             self.state = 276
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Real:
+            if _la==31:
                 self.state = 275
                 self.match(GromacsPTParser.Real)
 
@@ -2005,7 +2005,7 @@ class GromacsPTParser ( Parser ):
                 self.state = 284 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==GromacsPTParser.Integer):
+                if not (_la==30):
                     break
 
         except RecognitionException as re:
@@ -2101,7 +2101,7 @@ class GromacsPTParser ( Parser ):
             self.state = 303
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 302
                 self.match(GromacsPTParser.Simple_name)
 
@@ -2168,7 +2168,7 @@ class GromacsPTParser ( Parser ):
             self.state = 311
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 308
                 self.bonds()
                 self.state = 313
@@ -2255,7 +2255,7 @@ class GromacsPTParser ( Parser ):
             self.state = 325
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 324
                 self.match(GromacsPTParser.Simple_name)
 
@@ -2322,7 +2322,7 @@ class GromacsPTParser ( Parser ):
             self.state = 333
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 330
                 self.pairs()
                 self.state = 335
@@ -2413,7 +2413,7 @@ class GromacsPTParser ( Parser ):
             self.state = 350
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 349
                 self.match(GromacsPTParser.Simple_name)
 
@@ -2480,7 +2480,7 @@ class GromacsPTParser ( Parser ):
             self.state = 358
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 355
                 self.pairs_nb()
                 self.state = 360
@@ -2563,7 +2563,7 @@ class GromacsPTParser ( Parser ):
             self.state = 372
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 371
                 self.match(GromacsPTParser.Simple_name)
 
@@ -2630,7 +2630,7 @@ class GromacsPTParser ( Parser ):
             self.state = 380
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 377
                 self.angles()
                 self.state = 382
@@ -2737,7 +2737,7 @@ class GromacsPTParser ( Parser ):
             self.state = 403
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 402
                 self.match(GromacsPTParser.Simple_name)
 
@@ -2804,7 +2804,7 @@ class GromacsPTParser ( Parser ):
             self.state = 411
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 408
                 self.dihedrals()
                 self.state = 413
@@ -2913,7 +2913,7 @@ class GromacsPTParser ( Parser ):
             self.state = 434
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 433
                 self.match(GromacsPTParser.Simple_name)
 
@@ -2980,7 +2980,7 @@ class GromacsPTParser ( Parser ):
             self.state = 442
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 439
                 self.exclusions()
                 self.state = 444
@@ -3052,7 +3052,7 @@ class GromacsPTParser ( Parser ):
             self.state = 452
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 451
                 self.match(GromacsPTParser.Simple_name)
 
@@ -3119,7 +3119,7 @@ class GromacsPTParser ( Parser ):
             self.state = 460
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 457
                 self.constraints()
                 self.state = 462
@@ -3193,7 +3193,7 @@ class GromacsPTParser ( Parser ):
             self.state = 470
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 469
                 self.match(GromacsPTParser.Simple_name)
 
@@ -3260,7 +3260,7 @@ class GromacsPTParser ( Parser ):
             self.state = 478
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 475
                 self.settles()
                 self.state = 480
@@ -3337,7 +3337,7 @@ class GromacsPTParser ( Parser ):
             self.state = 489
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 488
                 self.match(GromacsPTParser.Simple_name)
 
@@ -3404,7 +3404,7 @@ class GromacsPTParser ( Parser ):
             self.state = 497
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 494
                 self.virtual_sites1()
                 self.state = 499
@@ -3466,7 +3466,7 @@ class GromacsPTParser ( Parser ):
             self.state = 504
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 503
                 self.match(GromacsPTParser.Simple_name)
 
@@ -3533,7 +3533,7 @@ class GromacsPTParser ( Parser ):
             self.state = 512
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 509
                 self.virtual_sites2()
                 self.state = 514
@@ -3609,7 +3609,7 @@ class GromacsPTParser ( Parser ):
             self.state = 523
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 522
                 self.match(GromacsPTParser.Simple_name)
 
@@ -3676,7 +3676,7 @@ class GromacsPTParser ( Parser ):
             self.state = 531
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 528
                 self.virtual_sites3()
                 self.state = 533
@@ -3767,7 +3767,7 @@ class GromacsPTParser ( Parser ):
             self.state = 547
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 546
                 self.match(GromacsPTParser.Simple_name)
 
@@ -3834,7 +3834,7 @@ class GromacsPTParser ( Parser ):
             self.state = 555
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 552
                 self.virtual_sites4()
                 self.state = 557
@@ -3921,7 +3921,7 @@ class GromacsPTParser ( Parser ):
             self.state = 571
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 570
                 self.match(GromacsPTParser.Simple_name)
 
@@ -3988,7 +3988,7 @@ class GromacsPTParser ( Parser ):
             self.state = 579
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Integer:
+            while _la==30:
                 self.state = 576
                 self.virtual_sitesn()
                 self.state = 581
@@ -4074,7 +4074,7 @@ class GromacsPTParser ( Parser ):
             self.state = 593
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 592
                 self.match(GromacsPTParser.Simple_name)
 
@@ -4143,7 +4143,7 @@ class GromacsPTParser ( Parser ):
             self.state = 601
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==GromacsPTParser.Simple_name_AA:
+            while _la==43:
                 self.state = 598
                 self.match(GromacsPTParser.Simple_name_AA)
                 self.state = 603
@@ -4220,7 +4220,7 @@ class GromacsPTParser ( Parser ):
                 self.state = 612 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==GromacsPTParser.Simple_name):
+                if not (_la==35):
                     break
 
         except RecognitionException as re:
@@ -4314,7 +4314,7 @@ class GromacsPTParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 617
             _la = self._input.LA(1)
-            if not(_la==GromacsPTParser.Integer or _la==GromacsPTParser.Real):
+            if not(_la==30 or _la==31):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4387,7 +4387,7 @@ class GromacsPTParser ( Parser ):
                 self.state = 625 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==GromacsPTParser.Integer):
+                if not (_la==30):
                     break
 
         except RecognitionException as re:
@@ -4456,7 +4456,7 @@ class GromacsPTParser ( Parser ):
             self.state = 633
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==GromacsPTParser.Simple_name:
+            if _la==35:
                 self.state = 632
                 self.match(GromacsPTParser.Simple_name)
 

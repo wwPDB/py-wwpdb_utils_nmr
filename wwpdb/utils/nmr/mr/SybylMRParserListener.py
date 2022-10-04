@@ -3,7 +3,7 @@
 # Date: 06-Jul-2022
 #
 # Updates:
-# Generated from SybylMRParser.g4 by ANTLR 4.10.1
+# Generated from SybylMRParser.g4 by ANTLR 4.11.1
 """ ParserLister class for SYBYL MR files.
     @author: Masashi Yokochi
 """

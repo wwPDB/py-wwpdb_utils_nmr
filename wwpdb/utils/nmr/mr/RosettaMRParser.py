@@ -1,4 +1,4 @@
-# Generated from RosettaMRParser.g4 by ANTLR 4.10.1
+# Generated from RosettaMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -346,7 +346,7 @@ class RosettaMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -485,7 +485,7 @@ class RosettaMRParser ( Parser ):
             self.state = 80
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.AtomPair) | (1 << RosettaMRParser.NamedAtomPair) | (1 << RosettaMRParser.Angle) | (1 << RosettaMRParser.NamedAngle) | (1 << RosettaMRParser.Dihedral) | (1 << RosettaMRParser.DihedralPair) | (1 << RosettaMRParser.CoordinateConstraint) | (1 << RosettaMRParser.LocalCoordinateConstraint) | (1 << RosettaMRParser.AmbiguousNMRDistance) | (1 << RosettaMRParser.SiteConstraint) | (1 << RosettaMRParser.SiteConstraintResidues) | (1 << RosettaMRParser.MinResidueAtomicDistance) | (1 << RosettaMRParser.BigBin) | (1 << RosettaMRParser.MultiConstraint) | (1 << RosettaMRParser.AmbiguousConstraint) | (1 << RosettaMRParser.KofNConstraint) | (1 << RosettaMRParser.Integer) | (1 << RosettaMRParser.COMMENT))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 19140298416455678) != 0:
                 self.state = 78
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -632,10 +632,10 @@ class RosettaMRParser ( Parser ):
             self.state = 89
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.Atom_pair_selection) | (1 << RosettaMRParser.Atom_selection) | (1 << RosettaMRParser.Any_name))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 8070450532247928832) != 0:
                 self.state = 86
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.Atom_pair_selection) | (1 << RosettaMRParser.Atom_selection) | (1 << RosettaMRParser.Any_name))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 8070450532247928832) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -767,7 +767,7 @@ class RosettaMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 99
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.AtomPair) | (1 << RosettaMRParser.NamedAtomPair) | (1 << RosettaMRParser.AmbiguousNMRDistance))) != 0)):
+            if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 518) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -900,7 +900,7 @@ class RosettaMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 111
             _la = self._input.LA(1)
-            if not(_la==RosettaMRParser.Angle or _la==RosettaMRParser.NamedAngle):
+            if not(_la==3 or _la==4):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2058,15 +2058,15 @@ class RosettaMRParser ( Parser ):
             self.state = 244
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [RosettaMRParser.MultiConstraint]:
+            if token in [14]:
                 self.state = 240
                 self.match(RosettaMRParser.MultiConstraint)
                 pass
-            elif token in [RosettaMRParser.AmbiguousConstraint]:
+            elif token in [15]:
                 self.state = 241
                 self.match(RosettaMRParser.AmbiguousConstraint)
                 pass
-            elif token in [RosettaMRParser.KofNConstraint]:
+            elif token in [16]:
                 self.state = 242
                 self.match(RosettaMRParser.KofNConstraint)
                 self.state = 243
@@ -2084,7 +2084,7 @@ class RosettaMRParser ( Parser ):
                 self.state = 249 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.AtomPair) | (1 << RosettaMRParser.NamedAtomPair) | (1 << RosettaMRParser.Angle) | (1 << RosettaMRParser.NamedAngle) | (1 << RosettaMRParser.Dihedral) | (1 << RosettaMRParser.DihedralPair) | (1 << RosettaMRParser.CoordinateConstraint) | (1 << RosettaMRParser.LocalCoordinateConstraint) | (1 << RosettaMRParser.AmbiguousNMRDistance) | (1 << RosettaMRParser.SiteConstraint) | (1 << RosettaMRParser.SiteConstraintResidues) | (1 << RosettaMRParser.MinResidueAtomicDistance) | (1 << RosettaMRParser.BigBin))) != 0)):
+                if not (((_la) & ~0x3f) == 0 and ((1 << _la) & 16382) != 0):
                     break
 
             self.state = 251
@@ -2167,52 +2167,52 @@ class RosettaMRParser ( Parser ):
             self.state = 263
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [RosettaMRParser.AtomPair, RosettaMRParser.NamedAtomPair, RosettaMRParser.AmbiguousNMRDistance]:
+            if token in [1, 2, 9]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 253
                 self.atom_pair_restraint()
                 pass
-            elif token in [RosettaMRParser.Angle, RosettaMRParser.NamedAngle]:
+            elif token in [3, 4]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 254
                 self.angle_restraint()
                 pass
-            elif token in [RosettaMRParser.Dihedral]:
+            elif token in [5]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 255
                 self.dihedral_restraint()
                 pass
-            elif token in [RosettaMRParser.DihedralPair]:
+            elif token in [6]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 256
                 self.dihedral_pair_restraint()
                 pass
-            elif token in [RosettaMRParser.CoordinateConstraint]:
+            elif token in [7]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 257
                 self.coordinate_restraint()
                 pass
-            elif token in [RosettaMRParser.LocalCoordinateConstraint]:
+            elif token in [8]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 258
                 self.local_coordinate_restraint()
                 pass
-            elif token in [RosettaMRParser.SiteConstraint]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 259
                 self.site_restraint()
                 pass
-            elif token in [RosettaMRParser.SiteConstraintResidues]:
+            elif token in [11]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 260
                 self.site_residues_restraint()
                 pass
-            elif token in [RosettaMRParser.MinResidueAtomicDistance]:
+            elif token in [12]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 261
                 self.min_residue_atomic_distance_restraint()
                 pass
-            elif token in [RosettaMRParser.BigBin]:
+            elif token in [13]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 262
                 self.big_bin_restraint()
@@ -2383,10 +2383,10 @@ class RosettaMRParser ( Parser ):
             self.state = 442
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [RosettaMRParser.CIRCULARHARMONIC, RosettaMRParser.HARMONIC, RosettaMRParser.SIGMOID, RosettaMRParser.SQUARE_WELL]:
+            if token in [18, 25, 39, 40]:
                 self.state = 265
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.CIRCULARHARMONIC) | (1 << RosettaMRParser.HARMONIC) | (1 << RosettaMRParser.SIGMOID) | (1 << RosettaMRParser.SQUARE_WELL))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 1649301258240) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2396,7 +2396,7 @@ class RosettaMRParser ( Parser ):
                 self.state = 267
                 self.number_f()
                 pass
-            elif token in [RosettaMRParser.BOUNDED]:
+            elif token in [27]:
                 self.state = 269
                 self.match(RosettaMRParser.BOUNDED)
                 self.state = 270
@@ -2421,11 +2421,11 @@ class RosettaMRParser ( Parser ):
                         self.state = 278
                         self._errHandler.sync(self)
                         token = self._input.LA(1)
-                        if token in [RosettaMRParser.Simple_name]:
+                        if token in [55]:
                             self.state = 276
                             self.match(RosettaMRParser.Simple_name)
                             pass
-                        elif token in [RosettaMRParser.Integer, RosettaMRParser.Float]:
+                        elif token in [50, 51]:
                             self.state = 277
                             self.number_f()
                             pass
@@ -2437,7 +2437,7 @@ class RosettaMRParser ( Parser ):
                     _alt = self._interp.adaptivePredict(self._input,19,self._ctx)
 
                 pass
-            elif token in [RosettaMRParser.PERIODICBOUNDED]:
+            elif token in [19]:
                 self.state = 283
                 self.match(RosettaMRParser.PERIODICBOUNDED)
                 self.state = 284
@@ -2464,11 +2464,11 @@ class RosettaMRParser ( Parser ):
                         self.state = 293
                         self._errHandler.sync(self)
                         token = self._input.LA(1)
-                        if token in [RosettaMRParser.Simple_name]:
+                        if token in [55]:
                             self.state = 291
                             self.match(RosettaMRParser.Simple_name)
                             pass
-                        elif token in [RosettaMRParser.Integer, RosettaMRParser.Float]:
+                        elif token in [50, 51]:
                             self.state = 292
                             self.number_f()
                             pass
@@ -2480,7 +2480,7 @@ class RosettaMRParser ( Parser ):
                     _alt = self._interp.adaptivePredict(self._input,22,self._ctx)
 
                 pass
-            elif token in [RosettaMRParser.OFFSETPERIODICBOUNDED]:
+            elif token in [20]:
                 self.state = 298
                 self.match(RosettaMRParser.OFFSETPERIODICBOUNDED)
                 self.state = 299
@@ -2509,11 +2509,11 @@ class RosettaMRParser ( Parser ):
                         self.state = 309
                         self._errHandler.sync(self)
                         token = self._input.LA(1)
-                        if token in [RosettaMRParser.Simple_name]:
+                        if token in [55]:
                             self.state = 307
                             self.match(RosettaMRParser.Simple_name)
                             pass
-                        elif token in [RosettaMRParser.Integer, RosettaMRParser.Float]:
+                        elif token in [50, 51]:
                             self.state = 308
                             self.number_f()
                             pass
@@ -2525,10 +2525,10 @@ class RosettaMRParser ( Parser ):
                     _alt = self._interp.adaptivePredict(self._input,25,self._ctx)
 
                 pass
-            elif token in [RosettaMRParser.AMBERPERIODIC, RosettaMRParser.CHARMMPERIODIC, RosettaMRParser.FLAT_HARMONIC, RosettaMRParser.TOPOUT]:
+            elif token in [21, 22, 26, 46]:
                 self.state = 314
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.AMBERPERIODIC) | (1 << RosettaMRParser.CHARMMPERIODIC) | (1 << RosettaMRParser.FLAT_HARMONIC) | (1 << RosettaMRParser.TOPOUT))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 70368817577984) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2540,10 +2540,10 @@ class RosettaMRParser ( Parser ):
                 self.state = 317
                 self.number_f()
                 pass
-            elif token in [RosettaMRParser.CIRCULARSIGMOIDAL, RosettaMRParser.LINEAR_PENALTY]:
+            elif token in [23, 43]:
                 self.state = 319
                 _la = self._input.LA(1)
-                if not(_la==RosettaMRParser.CIRCULARSIGMOIDAL or _la==RosettaMRParser.LINEAR_PENALTY):
+                if not(_la==23 or _la==43):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2557,7 +2557,7 @@ class RosettaMRParser ( Parser ):
                 self.state = 323
                 self.number_f()
                 pass
-            elif token in [RosettaMRParser.CIRCULARSPLINE]:
+            elif token in [24]:
                 self.state = 325
                 self.match(RosettaMRParser.CIRCULARSPLINE)
                 self.state = 327 
@@ -2575,7 +2575,7 @@ class RosettaMRParser ( Parser ):
                     _alt = self._interp.adaptivePredict(self._input,26,self._ctx)
 
                 pass
-            elif token in [RosettaMRParser.GAUSSIANFUNC]:
+            elif token in [28]:
                 self.state = 331
                 self.match(RosettaMRParser.GAUSSIANFUNC)
                 self.state = 332
@@ -2587,7 +2587,7 @@ class RosettaMRParser ( Parser ):
                 self.state = 337
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==RosettaMRParser.WEIGHT:
+                if _la==29:
                     self.state = 335
                     self.match(RosettaMRParser.WEIGHT)
                     self.state = 336
@@ -2595,7 +2595,7 @@ class RosettaMRParser ( Parser ):
 
 
                 pass
-            elif token in [RosettaMRParser.SOGFUNC]:
+            elif token in [30]:
                 self.state = 339
                 self.match(RosettaMRParser.SOGFUNC)
                 self.state = 340
@@ -2619,10 +2619,10 @@ class RosettaMRParser ( Parser ):
                     _alt = self._interp.adaptivePredict(self._input,28,self._ctx)
 
                 pass
-            elif token in [RosettaMRParser.MIXTUREFUNC, RosettaMRParser.KARPLUS, RosettaMRParser.SOEDINGFUNC]:
+            elif token in [31, 44, 45]:
                 self.state = 349
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << RosettaMRParser.MIXTUREFUNC) | (1 << RosettaMRParser.KARPLUS) | (1 << RosettaMRParser.SOEDINGFUNC))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 52778705616896) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2640,17 +2640,17 @@ class RosettaMRParser ( Parser ):
                 self.state = 355
                 self.number_f()
                 pass
-            elif token in [RosettaMRParser.CONSTANTFUNC]:
+            elif token in [32]:
                 self.state = 357
                 self.match(RosettaMRParser.CONSTANTFUNC)
                 self.state = 358
                 self.number_f()
                 pass
-            elif token in [RosettaMRParser.IDENTITY]:
+            elif token in [33]:
                 self.state = 359
                 self.match(RosettaMRParser.IDENTITY)
                 pass
-            elif token in [RosettaMRParser.SCALARWEIGHTEDFUNC]:
+            elif token in [34]:
                 self.state = 360
                 self.match(RosettaMRParser.SCALARWEIGHTEDFUNC)
                 self.state = 361
@@ -2658,7 +2658,7 @@ class RosettaMRParser ( Parser ):
                 self.state = 362
                 self.func_type_def()
                 pass
-            elif token in [RosettaMRParser.SUMFUNC]:
+            elif token in [35]:
                 self.state = 364
                 self.match(RosettaMRParser.SUMFUNC)
                 self.state = 365
@@ -2678,7 +2678,7 @@ class RosettaMRParser ( Parser ):
                     _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
 
                 pass
-            elif token in [RosettaMRParser.SPLINE]:
+            elif token in [36]:
                 self.state = 371
                 self.match(RosettaMRParser.SPLINE)
                 self.state = 372
@@ -2686,7 +2686,7 @@ class RosettaMRParser ( Parser ):
                 self.state = 392
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [RosettaMRParser.Integer, RosettaMRParser.Float]:
+                if token in [50, 51]:
                     self.state = 373
                     self.number_f()
                     self.state = 374
@@ -2694,7 +2694,7 @@ class RosettaMRParser ( Parser ):
                     self.state = 375
                     self.number_f()
                     pass
-                elif token in [RosettaMRParser.NONE]:
+                elif token in [37]:
                     self.state = 377
                     self.match(RosettaMRParser.NONE)
                     self.state = 378
@@ -2723,7 +2723,7 @@ class RosettaMRParser ( Parser ):
                         self.state = 390 
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if not (_la==RosettaMRParser.Simple_name):
+                        if not (_la==55):
                             break
 
                     pass
@@ -2731,7 +2731,7 @@ class RosettaMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [RosettaMRParser.FADE]:
+            elif token in [38]:
                 self.state = 394
                 self.match(RosettaMRParser.FADE)
                 self.state = 395
@@ -2751,7 +2751,7 @@ class RosettaMRParser ( Parser ):
 
 
                 pass
-            elif token in [RosettaMRParser.SQUARE_WELL2]:
+            elif token in [41]:
                 self.state = 402
                 self.match(RosettaMRParser.SQUARE_WELL2)
                 self.state = 403
@@ -2763,13 +2763,13 @@ class RosettaMRParser ( Parser ):
                 self.state = 407
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==RosettaMRParser.DEGREES:
+                if _la==42:
                     self.state = 406
                     self.match(RosettaMRParser.DEGREES)
 
 
                 pass
-            elif token in [RosettaMRParser.ETABLE]:
+            elif token in [47]:
                 self.state = 409
                 self.match(RosettaMRParser.ETABLE)
                 self.state = 410
@@ -2788,7 +2788,7 @@ class RosettaMRParser ( Parser ):
                     _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
 
                 pass
-            elif token in [RosettaMRParser.USOG]:
+            elif token in [48]:
                 self.state = 418
                 self.match(RosettaMRParser.USOG)
                 self.state = 419
@@ -2814,7 +2814,7 @@ class RosettaMRParser ( Parser ):
                     _alt = self._interp.adaptivePredict(self._input,36,self._ctx)
 
                 pass
-            elif token in [RosettaMRParser.SOG]:
+            elif token in [49]:
                 self.state = 429
                 self.match(RosettaMRParser.SOG)
                 self.state = 430
@@ -3122,7 +3122,7 @@ class RosettaMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 466
             _la = self._input.LA(1)
-            if not(_la==RosettaMRParser.Integer or _la==RosettaMRParser.Float):
+            if not(_la==50 or _la==51):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3172,7 +3172,7 @@ class RosettaMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 468
             _la = self._input.LA(1)
-            if not(_la==RosettaMRParser.Integer or _la==RosettaMRParser.Float):
+            if not(_la==50 or _la==51):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

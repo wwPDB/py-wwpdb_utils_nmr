@@ -3,7 +3,7 @@
 # Date: 04-Mar-2022
 #
 # Updates:
-# Generated from RosettaMRParser.g4 by ANTLR 4.10.1
+# Generated from RosettaMRParser.g4 by ANTLR 4.11.1
 """ ParserLister class for ROSETTA MR files.
     @author: Masashi Yokochi
 """

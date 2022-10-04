@@ -3,7 +3,7 @@
 # Date: 17-May-2022
 #
 # Updates:
-# Generated from BiosymMRParser.g4 by ANTLR 4.10.1
+# Generated from BiosymMRParser.g4 by ANTLR 4.11.1
 """ ParserLister class for BIOSYM MR files.
     @author: Masashi Yokochi
 """

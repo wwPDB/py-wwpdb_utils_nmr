@@ -1,4 +1,4 @@
-# Generated from CyanaMRParser.g4 by ANTLR 4.10.1
+# Generated from CyanaMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -372,7 +372,7 @@ class CyanaMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -579,7 +579,7 @@ class CyanaMRParser ( Parser ):
             self.state = 116
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CyanaMRParser.Integer) | (1 << CyanaMRParser.Orientation_header) | (1 << CyanaMRParser.Tensor_header) | (1 << CyanaMRParser.COMMENT) | (1 << CyanaMRParser.NoeUpp) | (1 << CyanaMRParser.NoeLow) | (1 << CyanaMRParser.Ssbond) | (1 << CyanaMRParser.Hbond) | (1 << CyanaMRParser.Link) | (1 << CyanaMRParser.Residue) | (1 << CyanaMRParser.Simple_name))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 1287092) != 0:
                 self.state = 114
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -764,7 +764,7 @@ class CyanaMRParser ( Parser ):
             self.state = 125
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CyanaMRParser.Any_name:
+            while _la==25:
                 self.state = 122
                 self.match(CyanaMRParser.Any_name)
                 self.state = 127
@@ -1089,7 +1089,7 @@ class CyanaMRParser ( Parser ):
             self.state = 173
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CyanaMRParser.Type:
+            if _la==10:
                 self.state = 170
                 self.match(CyanaMRParser.Type)
                 self.state = 171
@@ -1101,7 +1101,7 @@ class CyanaMRParser ( Parser ):
             self.state = 176
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CyanaMRParser.Or:
+            if _la==12:
                 self.state = 175
                 self.match(CyanaMRParser.Or)
 
@@ -1325,7 +1325,7 @@ class CyanaMRParser ( Parser ):
             self.state = 202
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CyanaMRParser.COMMENT:
+            while _la==7:
                 self.state = 199
                 self.comment()
                 self.state = 204
@@ -1579,7 +1579,7 @@ class CyanaMRParser ( Parser ):
             self.state = 242
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CyanaMRParser.COMMENT:
+            while _la==7:
                 self.state = 239
                 self.comment()
                 self.state = 244
@@ -1739,7 +1739,7 @@ class CyanaMRParser ( Parser ):
                     self.state = 269
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
-                    if token in [CyanaMRParser.Simple_name]:
+                    if token in [20]:
                         self.state = 263
                         self.match(CyanaMRParser.Simple_name)
                         self.state = 264
@@ -1751,7 +1751,7 @@ class CyanaMRParser ( Parser ):
                         self.state = 267
                         self.number()
                         pass
-                    elif token in [CyanaMRParser.COMMENT]:
+                    elif token in [7]:
                         self.state = 268
                         self.comment()
                         pass
@@ -1904,7 +1904,7 @@ class CyanaMRParser ( Parser ):
                     self.state = 291
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
-                    if token in [CyanaMRParser.Simple_name]:
+                    if token in [20]:
                         self.state = 283
                         self.match(CyanaMRParser.Simple_name)
                         self.state = 284
@@ -1918,7 +1918,7 @@ class CyanaMRParser ( Parser ):
                         self.state = 288
                         self.number()
                         pass
-                    elif token in [CyanaMRParser.COMMENT]:
+                    elif token in [7]:
                         self.state = 290
                         self.comment()
                         pass
@@ -2071,7 +2071,7 @@ class CyanaMRParser ( Parser ):
                     self.state = 314
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
-                    if token in [CyanaMRParser.Simple_name]:
+                    if token in [20]:
                         self.state = 305
                         self.match(CyanaMRParser.Simple_name)
                         self.state = 306
@@ -2087,7 +2087,7 @@ class CyanaMRParser ( Parser ):
                         self.state = 311
                         self.number()
                         pass
-                    elif token in [CyanaMRParser.COMMENT]:
+                    elif token in [7]:
                         self.state = 313
                         self.comment()
                         pass
@@ -2242,7 +2242,7 @@ class CyanaMRParser ( Parser ):
                     self.state = 334
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
-                    if token in [CyanaMRParser.Integer]:
+                    if token in [2]:
                         self.state = 329
                         self.match(CyanaMRParser.Integer)
                         self.state = 330
@@ -2252,7 +2252,7 @@ class CyanaMRParser ( Parser ):
                         self.state = 332
                         self.number()
                         pass
-                    elif token in [CyanaMRParser.COMMENT]:
+                    elif token in [7]:
                         self.state = 333
                         self.comment()
                         pass
@@ -2407,7 +2407,7 @@ class CyanaMRParser ( Parser ):
                     self.state = 356
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
-                    if token in [CyanaMRParser.Integer]:
+                    if token in [2]:
                         self.state = 349
                         self.match(CyanaMRParser.Integer)
                         self.state = 350
@@ -2419,7 +2419,7 @@ class CyanaMRParser ( Parser ):
                         self.state = 353
                         self.number()
                         pass
-                    elif token in [CyanaMRParser.COMMENT]:
+                    elif token in [7]:
                         self.state = 355
                         self.comment()
                         pass
@@ -2574,7 +2574,7 @@ class CyanaMRParser ( Parser ):
                     self.state = 379
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
-                    if token in [CyanaMRParser.Integer]:
+                    if token in [2]:
                         self.state = 371
                         self.match(CyanaMRParser.Integer)
                         self.state = 372
@@ -2588,7 +2588,7 @@ class CyanaMRParser ( Parser ):
                         self.state = 376
                         self.number()
                         pass
-                    elif token in [CyanaMRParser.COMMENT]:
+                    elif token in [7]:
                         self.state = 378
                         self.comment()
                         pass
@@ -2720,7 +2720,7 @@ class CyanaMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 388
             _la = self._input.LA(1)
-            if not(_la==CyanaMRParser.NoeUpp or _la==CyanaMRParser.NoeLow):
+            if not(_la==8 or _la==9):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3589,7 +3589,7 @@ class CyanaMRParser ( Parser ):
             self.state = 502
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CyanaMRParser.Atom1:
+            if _la==28:
                 self.state = 500
                 self.match(CyanaMRParser.Atom1)
                 self.state = 501
@@ -3601,7 +3601,7 @@ class CyanaMRParser ( Parser ):
             self.state = 507
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CyanaMRParser.Residue1:
+            if _la==30:
                 self.state = 505
                 self.match(CyanaMRParser.Residue1)
                 self.state = 506
@@ -3613,7 +3613,7 @@ class CyanaMRParser ( Parser ):
             self.state = 512
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CyanaMRParser.Atom2:
+            if _la==29:
                 self.state = 510
                 self.match(CyanaMRParser.Atom2)
                 self.state = 511
@@ -3625,7 +3625,7 @@ class CyanaMRParser ( Parser ):
             self.state = 517
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CyanaMRParser.Residue2:
+            if _la==31:
                 self.state = 515
                 self.match(CyanaMRParser.Residue2)
                 self.state = 516
@@ -3773,11 +3773,11 @@ class CyanaMRParser ( Parser ):
                     self.state = 535
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
-                    if token in [CyanaMRParser.Mapping]:
+                    if token in [18]:
                         self.state = 533
                         self.mapping_list()
                         pass
-                    elif token in [CyanaMRParser.COMMENT]:
+                    elif token in [7]:
                         self.state = 534
                         self.comment()
                         pass
@@ -3858,7 +3858,7 @@ class CyanaMRParser ( Parser ):
                 self.state = 545 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==CyanaMRParser.Simple_name_MP):
+                if not (_la==41):
                     break
 
             self.state = 547
@@ -3939,11 +3939,11 @@ class CyanaMRParser ( Parser ):
                     self.state = 556
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
-                    if token in [CyanaMRParser.Ambig]:
+                    if token in [19]:
                         self.state = 554
                         self.ambig_list()
                         pass
-                    elif token in [CyanaMRParser.COMMENT]:
+                    elif token in [7]:
                         self.state = 555
                         self.comment()
                         pass
@@ -4022,7 +4022,7 @@ class CyanaMRParser ( Parser ):
             self.match(CyanaMRParser.Ambig)
             self.state = 561
             _la = self._input.LA(1)
-            if not(_la==CyanaMRParser.Ambig_code_MP or _la==CyanaMRParser.Simple_name_MP):
+            if not(_la==39 or _la==41):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4040,7 +4040,7 @@ class CyanaMRParser ( Parser ):
                 self.state = 567 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==CyanaMRParser.Simple_name_MP):
+                if not (_la==41):
                     break
 
             self.state = 569
@@ -4090,7 +4090,7 @@ class CyanaMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 571
             _la = self._input.LA(1)
-            if not(_la==CyanaMRParser.Integer or _la==CyanaMRParser.Float):
+            if not(_la==2 or _la==3):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4140,7 +4140,7 @@ class CyanaMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 573
             _la = self._input.LA(1)
-            if not(_la==CyanaMRParser.Ambig_code or _la==CyanaMRParser.Simple_name):
+            if not(_la==1 or _la==20):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

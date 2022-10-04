@@ -1,4 +1,4 @@
-# Generated from DynamoMRParser.g4 by ANTLR 4.10.1
+# Generated from DynamoMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -652,7 +652,7 @@ class DynamoMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -812,7 +812,7 @@ class DynamoMRParser ( Parser ):
             self.state = 87
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==DynamoMRParser.Data or _la==DynamoMRParser.Vars:
+            while _la==1 or _la==2:
                 self.state = 85
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -989,7 +989,7 @@ class DynamoMRParser ( Parser ):
             self.state = 117
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [DynamoMRParser.First_resid]:
+            if token in [14]:
                 self.state = 93
                 self.match(DynamoMRParser.First_resid)
                 self.state = 94
@@ -997,7 +997,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 95
                 self.match(DynamoMRParser.RETURN_DA)
                 pass
-            elif token in [DynamoMRParser.Sequence]:
+            elif token in [15]:
                 self.state = 96
                 self.match(DynamoMRParser.Sequence)
                 self.state = 98 
@@ -1009,13 +1009,13 @@ class DynamoMRParser ( Parser ):
                     self.state = 100 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if not (_la==DynamoMRParser.One_letter_code):
+                    if not (_la==70):
                         break
 
                 self.state = 102
                 self.match(DynamoMRParser.RETURN_SQ)
                 pass
-            elif token in [DynamoMRParser.Db_name]:
+            elif token in [16]:
                 self.state = 103
                 self.match(DynamoMRParser.Db_name)
                 self.state = 104
@@ -1023,13 +1023,13 @@ class DynamoMRParser ( Parser ):
                 self.state = 105
                 self.match(DynamoMRParser.RETURN_DA)
                 pass
-            elif token in [DynamoMRParser.Tab_name]:
+            elif token in [17]:
                 self.state = 106
                 self.match(DynamoMRParser.Tab_name)
                 self.state = 110
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==DynamoMRParser.Simple_name_DA:
+                while _la==65:
                     self.state = 107
                     self.match(DynamoMRParser.Simple_name_DA)
                     self.state = 112
@@ -1039,7 +1039,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 113
                 self.match(DynamoMRParser.RETURN_DA)
                 pass
-            elif token in [DynamoMRParser.Tab_id]:
+            elif token in [18]:
                 self.state = 114
                 self.match(DynamoMRParser.Tab_id)
                 self.state = 115
@@ -1220,7 +1220,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 152 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -1488,7 +1488,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 205 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -1760,7 +1760,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 260 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -2039,7 +2039,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 317 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -2348,7 +2348,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 383 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -2665,7 +2665,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 453 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -2905,7 +2905,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 501 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -3137,7 +3137,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 542 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Simple_name):
+                if not (_la==9):
                     break
 
         except RecognitionException as re:
@@ -3373,7 +3373,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 585 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -3663,13 +3663,13 @@ class DynamoMRParser ( Parser ):
             self.state = 756
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [DynamoMRParser.Pales_mode]:
+            if token in [19]:
                 self.state = 600
                 self.match(DynamoMRParser.Pales_mode)
                 self.state = 601
                 self.match(DynamoMRParser.Simple_name_DA)
                 pass
-            elif token in [DynamoMRParser.Tensor_mode]:
+            elif token in [20]:
                 self.state = 602
                 self.match(DynamoMRParser.Tensor_mode)
                 self.state = 603
@@ -3677,7 +3677,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 611
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==DynamoMRParser.L_paren_DA:
+                if _la==58:
                     self.state = 604
                     self.match(DynamoMRParser.L_paren_DA)
                     self.state = 606 
@@ -3689,7 +3689,7 @@ class DynamoMRParser ( Parser ):
                         self.state = 608 
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if not (_la==DynamoMRParser.Simple_name_DA):
+                        if not (_la==65):
                             break
 
                     self.state = 610
@@ -3697,7 +3697,7 @@ class DynamoMRParser ( Parser ):
 
 
                 pass
-            elif token in [DynamoMRParser.Saupe_matrix]:
+            elif token in [21]:
                 self.state = 613
                 self.match(DynamoMRParser.Saupe_matrix)
                 self.state = 614
@@ -3741,7 +3741,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 633
                 self.match(DynamoMRParser.R_paren_DA)
                 pass
-            elif token in [DynamoMRParser.Saupe]:
+            elif token in [23]:
                 self.state = 634
                 self.match(DynamoMRParser.Saupe)
                 self.state = 635
@@ -3755,7 +3755,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 639
                 self.match(DynamoMRParser.Real_DA)
                 pass
-            elif token in [DynamoMRParser.Irreducible_rep]:
+            elif token in [24]:
                 self.state = 640
                 self.match(DynamoMRParser.Irreducible_rep)
                 self.state = 641
@@ -3769,13 +3769,13 @@ class DynamoMRParser ( Parser ):
                 self.state = 645
                 self.match(DynamoMRParser.Simple_name_DA)
                 pass
-            elif token in [DynamoMRParser.Irreducible]:
+            elif token in [25]:
                 self.state = 646
                 self.match(DynamoMRParser.Irreducible)
                 self.state = 654
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [DynamoMRParser.Real_DA]:
+                if token in [64]:
                     self.state = 647
                     self.match(DynamoMRParser.Real_DA)
                     self.state = 648
@@ -3787,7 +3787,7 @@ class DynamoMRParser ( Parser ):
                     self.state = 651
                     self.match(DynamoMRParser.Real_DA)
                     pass
-                elif token in [DynamoMRParser.General_magnitude]:
+                elif token in [26]:
                     self.state = 652
                     self.match(DynamoMRParser.General_magnitude)
                     self.state = 653
@@ -3797,7 +3797,7 @@ class DynamoMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [DynamoMRParser.Mapping_corr]:
+            elif token in [27]:
                 self.state = 656
                 self.match(DynamoMRParser.Mapping_corr)
                 self.state = 657
@@ -3849,13 +3849,13 @@ class DynamoMRParser ( Parser ):
                 self.state = 680
                 self.match(DynamoMRParser.R_paren_DA)
                 pass
-            elif token in [DynamoMRParser.Mapping]:
+            elif token in [28]:
                 self.state = 681
                 self.match(DynamoMRParser.Mapping)
                 self.state = 683
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==DynamoMRParser.Inv:
+                if _la==29:
                     self.state = 682
                     self.match(DynamoMRParser.Inv)
 
@@ -3873,7 +3873,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 690
                 self.match(DynamoMRParser.Float_DA)
                 pass
-            elif token in [DynamoMRParser.Eigenvalues]:
+            elif token in [30]:
                 self.state = 691
                 self.match(DynamoMRParser.Eigenvalues)
                 self.state = 692
@@ -3897,13 +3897,13 @@ class DynamoMRParser ( Parser ):
                 self.state = 701
                 self.match(DynamoMRParser.Real_DA)
                 pass
-            elif token in [DynamoMRParser.Eigenvectors]:
+            elif token in [31]:
                 self.state = 702
                 self.match(DynamoMRParser.Eigenvectors)
                 self.state = 712
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [DynamoMRParser.L_paren_DA]:
+                if token in [58]:
                     self.state = 703
                     self.match(DynamoMRParser.L_paren_DA)
                     self.state = 704
@@ -3915,10 +3915,10 @@ class DynamoMRParser ( Parser ):
                     self.state = 707
                     self.match(DynamoMRParser.R_paren_DA)
                     pass
-                elif token in [DynamoMRParser.X_axis, DynamoMRParser.Y_axis, DynamoMRParser.Z_axis]:
+                elif token in [32, 33, 34]:
                     self.state = 708
                     _la = self._input.LA(1)
-                    if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << DynamoMRParser.X_axis) | (1 << DynamoMRParser.Y_axis) | (1 << DynamoMRParser.Z_axis))) != 0)):
+                    if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 30064771072) != 0):
                         self._errHandler.recoverInline(self)
                     else:
                         self._errHandler.reportMatch(self)
@@ -3934,7 +3934,7 @@ class DynamoMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [DynamoMRParser.Q_euler_solutions]:
+            elif token in [35]:
                 self.state = 714
                 self.match(DynamoMRParser.Q_euler_solutions)
                 self.state = 715
@@ -3944,7 +3944,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 717
                 self.match(DynamoMRParser.Simple_name_DA)
                 pass
-            elif token in [DynamoMRParser.Q_euler_angles]:
+            elif token in [36]:
                 self.state = 718
                 self.match(DynamoMRParser.Q_euler_angles)
                 self.state = 719
@@ -3956,13 +3956,13 @@ class DynamoMRParser ( Parser ):
                 self.state = 722
                 self.match(DynamoMRParser.Float_DA)
                 pass
-            elif token in [DynamoMRParser.Euler_solutions]:
+            elif token in [37]:
                 self.state = 723
                 self.match(DynamoMRParser.Euler_solutions)
                 self.state = 724
                 self.match(DynamoMRParser.Integer_DA)
                 pass
-            elif token in [DynamoMRParser.Euler_angles]:
+            elif token in [38]:
                 self.state = 725
                 self.match(DynamoMRParser.Euler_angles)
                 self.state = 726
@@ -3972,10 +3972,10 @@ class DynamoMRParser ( Parser ):
                 self.state = 728
                 self.match(DynamoMRParser.Float_DA)
                 pass
-            elif token in [DynamoMRParser.Da, DynamoMRParser.Dr, DynamoMRParser.Aa, DynamoMRParser.Ar, DynamoMRParser.Da_hn, DynamoMRParser.Rhombicity]:
+            elif token in [39, 40, 41, 42, 43, 44]:
                 self.state = 729
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << DynamoMRParser.Da) | (1 << DynamoMRParser.Dr) | (1 << DynamoMRParser.Aa) | (1 << DynamoMRParser.Ar) | (1 << DynamoMRParser.Da_hn) | (1 << DynamoMRParser.Rhombicity))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 34634616274944) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3983,31 +3983,31 @@ class DynamoMRParser ( Parser ):
                 self.state = 730
                 self.match(DynamoMRParser.Real_DA)
                 pass
-            elif token in [DynamoMRParser.N]:
+            elif token in [45]:
                 self.state = 731
                 self.match(DynamoMRParser.N)
                 self.state = 732
                 self.match(DynamoMRParser.Integer_DA)
                 pass
-            elif token in [DynamoMRParser.Rms, DynamoMRParser.Chi2, DynamoMRParser.Corr, DynamoMRParser.Q]:
+            elif token in [46, 47, 48, 50]:
                 self.state = 739
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [DynamoMRParser.Rms]:
+                if token in [46]:
                     self.state = 733
                     self.match(DynamoMRParser.Rms)
                     pass
-                elif token in [DynamoMRParser.Chi2]:
+                elif token in [47]:
                     self.state = 734
                     self.match(DynamoMRParser.Chi2)
                     pass
-                elif token in [DynamoMRParser.Corr]:
+                elif token in [48]:
                     self.state = 735
                     self.match(DynamoMRParser.Corr)
                     self.state = 736
                     self.match(DynamoMRParser.R)
                     pass
-                elif token in [DynamoMRParser.Q]:
+                elif token in [50]:
                     self.state = 737
                     self.match(DynamoMRParser.Q)
                     self.state = 738
@@ -4019,21 +4019,21 @@ class DynamoMRParser ( Parser ):
                 self.state = 741
                 self.match(DynamoMRParser.Float_DA)
                 pass
-            elif token in [DynamoMRParser.Regression]:
+            elif token in [51]:
                 self.state = 742
                 self.match(DynamoMRParser.Regression)
                 self.state = 748
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [DynamoMRParser.Offset]:
+                if token in [52]:
                     self.state = 743
                     self.match(DynamoMRParser.Offset)
                     pass
-                elif token in [DynamoMRParser.Slope, DynamoMRParser.Bax]:
+                elif token in [53, 54]:
                     self.state = 745
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==DynamoMRParser.Bax:
+                    if _la==54:
                         self.state = 744
                         self.match(DynamoMRParser.Bax)
 
@@ -4225,7 +4225,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 791 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -4519,7 +4519,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 851 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -4855,7 +4855,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 926 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -5199,7 +5199,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 1005 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -5459,7 +5459,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 1060 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -5681,7 +5681,7 @@ class DynamoMRParser ( Parser ):
                 self.state = 1099 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==DynamoMRParser.Integer):
+                if not (_la==4):
                     break
 
         except RecognitionException as re:
@@ -5802,7 +5802,7 @@ class DynamoMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1111
             _la = self._input.LA(1)
-            if not(_la==DynamoMRParser.Integer or _la==DynamoMRParser.Float):
+            if not(_la==4 or _la==5):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

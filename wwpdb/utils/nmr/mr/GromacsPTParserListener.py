@@ -3,7 +3,7 @@
 # Date: 02-Jun-2022
 #
 # Updates:
-# Generated from GromacsPTParser.g4 by ANTLR 4.10.1
+# Generated from GromacsPTParser.g4 by ANTLR 4.11.1
 """ ParserLister class for GROMACS PT files.
     @author: Masashi Yokochi
 """

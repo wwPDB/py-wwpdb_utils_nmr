@@ -3,7 +3,7 @@
 # Date: 27-Jan-2022
 #
 # Updates:
-# Generated from AmberMRParser.g4 by ANTLR 4.10.1
+# Generated from AmberMRParser.g4 by ANTLR 4.11.1
 """ ParserLister class for AMBER MR files.
     @author: Masashi Yokochi
 """

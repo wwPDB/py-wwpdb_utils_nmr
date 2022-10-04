@@ -1,4 +1,4 @@
-# Generated from CharmmMRParser.g4 by ANTLR 4.10.1
+# Generated from CharmmMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -684,7 +684,7 @@ class CharmmMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -837,7 +837,7 @@ class CharmmMRParser ( Parser ):
             self.state = 118
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Set) | (1 << CharmmMRParser.Cons) | (1 << CharmmMRParser.Shake) | (1 << CharmmMRParser.Noe) | (1 << CharmmMRParser.PNoe))) != 0) or ((((_la - 87)) & ~0x3f) == 0 and ((1 << (_la - 87)) & ((1 << (CharmmMRParser.ResDistance - 87)) | (1 << (CharmmMRParser.Pull - 87)) | (1 << (CharmmMRParser.RGyration - 87)) | (1 << (CharmmMRParser.DMConstrain - 87)) | (1 << (CharmmMRParser.COMMENT - 87)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 180152781187842058) != 0 or (((_la - 87)) & ~0x3f) == 0 and ((1 << (_la - 87)) & 2305843009282900097) != 0:
                 self.state = 116
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -982,7 +982,7 @@ class CharmmMRParser ( Parser ):
             self.state = 127
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CharmmMRParser.Any_name:
+            while _la==174:
                 self.state = 124
                 self.match(CharmmMRParser.Any_name)
                 self.state = 129
@@ -1046,7 +1046,7 @@ class CharmmMRParser ( Parser ):
             self.state = 136
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & ((1 << (CharmmMRParser.Reset - 56)) | (1 << (CharmmMRParser.Assign - 56)) | (1 << (CharmmMRParser.KMin - 56)) | (1 << (CharmmMRParser.KMax - 56)) | (1 << (CharmmMRParser.RMin - 56)) | (1 << (CharmmMRParser.RMax - 56)) | (1 << (CharmmMRParser.FMax - 56)) | (1 << (CharmmMRParser.MinDist - 56)) | (1 << (CharmmMRParser.RSwi - 56)) | (1 << (CharmmMRParser.SExp - 56)) | (1 << (CharmmMRParser.SumR - 56)) | (1 << (CharmmMRParser.TCon - 56)) | (1 << (CharmmMRParser.RExp - 56)) | (1 << (CharmmMRParser.MPNoe - 56)) | (1 << (CharmmMRParser.NMPNoe - 56)) | (1 << (CharmmMRParser.Read - 56)) | (1 << (CharmmMRParser.Write - 56)) | (1 << (CharmmMRParser.Print - 56)) | (1 << (CharmmMRParser.Scale - 56)) | (1 << (CharmmMRParser.Temperature - 56)))) != 0):
+            while (((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & 1707229181) != 0:
                 self.state = 133
                 self.noe_statement()
                 self.state = 138
@@ -1110,7 +1110,7 @@ class CharmmMRParser ( Parser ):
             self.state = 145
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & ((1 << (CharmmMRParser.Reset - 56)) | (1 << (CharmmMRParser.Assign - 56)) | (1 << (CharmmMRParser.KMin - 56)) | (1 << (CharmmMRParser.KMax - 56)) | (1 << (CharmmMRParser.RMin - 56)) | (1 << (CharmmMRParser.RMax - 56)) | (1 << (CharmmMRParser.FMax - 56)) | (1 << (CharmmMRParser.MinDist - 56)) | (1 << (CharmmMRParser.RSwi - 56)) | (1 << (CharmmMRParser.SExp - 56)) | (1 << (CharmmMRParser.SumR - 56)) | (1 << (CharmmMRParser.TCon - 56)) | (1 << (CharmmMRParser.RExp - 56)) | (1 << (CharmmMRParser.CnoX - 56)) | (1 << (CharmmMRParser.CnoY - 56)) | (1 << (CharmmMRParser.CnoZ - 56)) | (1 << (CharmmMRParser.MPNoe - 56)) | (1 << (CharmmMRParser.NMPNoe - 56)) | (1 << (CharmmMRParser.Read - 56)) | (1 << (CharmmMRParser.Write - 56)) | (1 << (CharmmMRParser.Print - 56)) | (1 << (CharmmMRParser.Scale - 56)) | (1 << (CharmmMRParser.Temperature - 56)))) != 0):
+            while (((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & 1707343869) != 0:
                 self.state = 142
                 self.pnoe_statement()
                 self.state = 147
@@ -1177,13 +1177,13 @@ class CharmmMRParser ( Parser ):
             self.state = 159
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Dihedral]:
+            if token in [21]:
                 self.state = 151
                 self.match(CharmmMRParser.Dihedral)
                 self.state = 155
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Force) | (1 << CharmmMRParser.Main) | (1 << CharmmMRParser.Comp) | (1 << CharmmMRParser.ByNumber) | (1 << CharmmMRParser.Min) | (1 << CharmmMRParser.Period) | (1 << CharmmMRParser.Width))) != 0) or ((((_la - 116)) & ~0x3f) == 0 and ((1 << (_la - 116)) & ((1 << (CharmmMRParser.Selection - 116)) | (1 << (CharmmMRParser.Integer - 116)) | (1 << (CharmmMRParser.Simple_name - 116)))) != 0):
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 63701504) != 0 or (((_la - 116)) & ~0x3f) == 0 and ((1 << (_la - 116)) & 8858370049) != 0:
                     self.state = 152
                     self.dihedral_statement()
                     self.state = 157
@@ -1191,7 +1191,7 @@ class CharmmMRParser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [CharmmMRParser.ClDh]:
+            elif token in [26]:
                 self.state = 158
                 self.match(CharmmMRParser.ClDh)
                 pass
@@ -1255,7 +1255,7 @@ class CharmmMRParser ( Parser ):
             self.state = 166
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Absolute) | (1 << CharmmMRParser.Bestfit) | (1 << CharmmMRParser.Relative) | (1 << CharmmMRParser.Clear) | (1 << CharmmMRParser.Force) | (1 << CharmmMRParser.Mass) | (1 << CharmmMRParser.Weight) | (1 << CharmmMRParser.Exponent) | (1 << CharmmMRParser.XScale) | (1 << CharmmMRParser.YScale) | (1 << CharmmMRParser.ZScale))) != 0) or _la==CharmmMRParser.Selection:
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 65504) != 0 or _la==116:
                 self.state = 163
                 self.harmonic_statement()
                 self.state = 168
@@ -1319,7 +1319,7 @@ class CharmmMRParser ( Parser ):
             self.state = 174
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Dihedral) | (1 << CharmmMRParser.Bond) | (1 << CharmmMRParser.Angle) | (1 << CharmmMRParser.Improper))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3491758080) != 0:
                 self.state = 171
                 self.ic_statement()
                 self.state = 176
@@ -1383,7 +1383,7 @@ class CharmmMRParser ( Parser ):
             self.state = 182
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Force) | (1 << CharmmMRParser.Exponent) | (1 << CharmmMRParser.NoMass))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 8589939200) != 0:
                 self.state = 179
                 self.droplet_statement()
                 self.state = 184
@@ -1447,7 +1447,7 @@ class CharmmMRParser ( Parser ):
             self.state = 190
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CharmmMRParser.Selection:
+            while _la==116:
                 self.state = 187
                 self.fix_atom_statement()
                 self.state = 192
@@ -1511,7 +1511,7 @@ class CharmmMRParser ( Parser ):
             self.state = 198
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CharmmMRParser.Force:
+            while _la==9:
                 self.state = 195
                 self.center_of_mass_statement()
                 self.state = 200
@@ -1573,11 +1573,11 @@ class CharmmMRParser ( Parser ):
             self.state = 209
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.EOF, CharmmMRParser.Set, CharmmMRParser.Cons, CharmmMRParser.Shake, CharmmMRParser.NoReset, CharmmMRParser.Fast, CharmmMRParser.NoFast, CharmmMRParser.Noe, CharmmMRParser.PNoe, CharmmMRParser.ResDistance, CharmmMRParser.Pull, CharmmMRParser.RGyration, CharmmMRParser.DMConstrain, CharmmMRParser.Selection, CharmmMRParser.COMMENT]:
+            if token in [-1, 1, 3, 43, 45, 52, 54, 55, 57, 87, 94, 108, 113, 116, 148]:
                 self.state = 205
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.NoReset) | (1 << CharmmMRParser.Fast) | (1 << CharmmMRParser.NoFast))) != 0) or _la==CharmmMRParser.Selection:
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 22553182508941312) != 0 or _la==116:
                     self.state = 202
                     self.fix_bond_or_angle_statement()
                     self.state = 207
@@ -1585,7 +1585,7 @@ class CharmmMRParser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [CharmmMRParser.Off]:
+            elif token in [44]:
                 self.state = 208
                 self.match(CharmmMRParser.Off)
                 pass
@@ -1644,7 +1644,7 @@ class CharmmMRParser ( Parser ):
             self.state = 215
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & ((1 << (CharmmMRParser.Reset - 56)) | (1 << (CharmmMRParser.Scale - 56)) | (1 << (CharmmMRParser.KVal - 56)) | (1 << (CharmmMRParser.RVal - 56)) | (1 << (CharmmMRParser.EVal - 56)) | (1 << (CharmmMRParser.IVal - 56)) | (1 << (CharmmMRParser.Positive - 56)) | (1 << (CharmmMRParser.Negative - 56)) | (1 << (CharmmMRParser.Selection - 56)))) != 0):
+            while (((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & 1152921775726657537) != 0:
                 self.state = 212
                 self.restrained_distance_statement()
                 self.state = 217
@@ -1703,7 +1703,7 @@ class CharmmMRParser ( Parser ):
             self.state = 222
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Force) | (1 << CharmmMRParser.Weight) | (1 << CharmmMRParser.Period) | (1 << CharmmMRParser.Off))) != 0) or ((((_la - 95)) & ~0x3f) == 0 and ((1 << (_la - 95)) & ((1 << (CharmmMRParser.XDir - 95)) | (1 << (CharmmMRParser.YDir - 95)) | (1 << (CharmmMRParser.ZDir - 95)) | (1 << (CharmmMRParser.EField - 95)) | (1 << (CharmmMRParser.List - 95)) | (1 << (CharmmMRParser.Switch - 95)) | (1 << (CharmmMRParser.SForce - 95)) | (1 << (CharmmMRParser.Selection - 95)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 17592202824192) != 0 or (((_la - 95)) & ~0x3f) == 0 and ((1 << (_la - 95)) & 2097279) != 0:
                 self.state = 219
                 self.external_force_statement()
                 self.state = 224
@@ -1773,11 +1773,11 @@ class CharmmMRParser ( Parser ):
             self.state = 235
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.EOF, CharmmMRParser.Set, CharmmMRParser.Cons, CharmmMRParser.Relative, CharmmMRParser.Force, CharmmMRParser.Mass, CharmmMRParser.NoRotation, CharmmMRParser.NoTranslation, CharmmMRParser.Main, CharmmMRParser.Comp, CharmmMRParser.Shake, CharmmMRParser.Noe, CharmmMRParser.PNoe, CharmmMRParser.ResDistance, CharmmMRParser.Pull, CharmmMRParser.MaxN, CharmmMRParser.NPrt, CharmmMRParser.Offset, CharmmMRParser.BOffset, CharmmMRParser.RGyration, CharmmMRParser.DMConstrain, CharmmMRParser.Selection, CharmmMRParser.COMMENT]:
+            if token in [-1, 1, 3, 7, 9, 10, 16, 17, 18, 19, 43, 55, 57, 87, 94, 103, 104, 106, 107, 108, 113, 116, 148]:
                 self.state = 230
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Relative) | (1 << CharmmMRParser.Force) | (1 << CharmmMRParser.Mass) | (1 << CharmmMRParser.NoRotation) | (1 << CharmmMRParser.NoTranslation) | (1 << CharmmMRParser.Main) | (1 << CharmmMRParser.Comp))) != 0) or ((((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & ((1 << (CharmmMRParser.MaxN - 103)) | (1 << (CharmmMRParser.NPrt - 103)) | (1 << (CharmmMRParser.Offset - 103)) | (1 << (CharmmMRParser.BOffset - 103)) | (1 << (CharmmMRParser.Selection - 103)))) != 0):
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 984704) != 0 or (((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & 8219) != 0:
                     self.state = 227
                     self.rmsd_statement()
                     self.state = 232
@@ -1785,11 +1785,11 @@ class CharmmMRParser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [CharmmMRParser.Show]:
+            elif token in [105]:
                 self.state = 233
                 self.match(CharmmMRParser.Show)
                 pass
-            elif token in [CharmmMRParser.Clear]:
+            elif token in [8]:
                 self.state = 234
                 self.match(CharmmMRParser.Clear)
                 pass
@@ -1848,7 +1848,7 @@ class CharmmMRParser ( Parser ):
             self.state = 241
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Force) | (1 << CharmmMRParser.Comp) | (1 << CharmmMRParser.Reset))) != 0) or ((((_la - 102)) & ~0x3f) == 0 and ((1 << (_la - 102)) & ((1 << (CharmmMRParser.RMSD - 102)) | (1 << (CharmmMRParser.Reference - 102)) | (1 << (CharmmMRParser.Orient - 102)) | (1 << (CharmmMRParser.Output - 102)) | (1 << (CharmmMRParser.NSave - 102)) | (1 << (CharmmMRParser.Selection - 102)))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 72057594038452736) != 0 or (((_la - 102)) & ~0x3f) == 0 and ((1 << (_la - 102)) & 18305) != 0:
                 self.state = 238
                 self.gyration_statement()
                 self.state = 243
@@ -1907,7 +1907,7 @@ class CharmmMRParser ( Parser ):
             self.state = 248
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CharmmMRParser.Force or _la==CharmmMRParser.Weight or ((((_la - 109)) & ~0x3f) == 0 and ((1 << (_la - 109)) & ((1 << (CharmmMRParser.Reference - 109)) | (1 << (CharmmMRParser.Output - 109)) | (1 << (CharmmMRParser.NSave - 109)) | (1 << (CharmmMRParser.Cutoff - 109)) | (1 << (CharmmMRParser.NContact - 109)) | (1 << (CharmmMRParser.Selection - 109)))) != 0):
+            while _la==9 or _la==11 or (((_la - 109)) & ~0x3f) == 0 and ((1 << (_la - 109)) & 237) != 0:
                 self.state = 245
                 self.distance_matrix_statement()
                 self.state = 250
@@ -2045,90 +2045,90 @@ class CharmmMRParser ( Parser ):
             self.state = 306
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Assign]:
+            if token in [58]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 251
                 self.noe_assign()
                 pass
-            elif token in [CharmmMRParser.Reset]:
+            elif token in [56]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 252
                 self.match(CharmmMRParser.Reset)
                 pass
-            elif token in [CharmmMRParser.KMin]:
+            elif token in [59]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 253
                 self.match(CharmmMRParser.KMin)
                 self.state = 254
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.RMin]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 255
                 self.match(CharmmMRParser.RMin)
                 self.state = 256
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.KMax]:
+            elif token in [60]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 257
                 self.match(CharmmMRParser.KMax)
                 self.state = 258
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.RMax]:
+            elif token in [62]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 259
                 self.match(CharmmMRParser.RMax)
                 self.state = 260
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.FMax]:
+            elif token in [63]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 261
                 self.match(CharmmMRParser.FMax)
                 self.state = 262
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.MinDist]:
+            elif token in [64]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 263
                 self.match(CharmmMRParser.MinDist)
                 pass
-            elif token in [CharmmMRParser.RSwi]:
+            elif token in [65]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 264
                 self.match(CharmmMRParser.RSwi)
                 self.state = 265
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.SExp]:
+            elif token in [66]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 266
                 self.match(CharmmMRParser.SExp)
                 self.state = 267
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.SumR]:
+            elif token in [67]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 268
                 self.match(CharmmMRParser.SumR)
                 pass
-            elif token in [CharmmMRParser.TCon]:
+            elif token in [68]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 269
                 self.match(CharmmMRParser.TCon)
                 self.state = 270
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.RExp]:
+            elif token in [69]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 271
                 self.match(CharmmMRParser.RExp)
                 self.state = 272
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.MPNoe]:
+            elif token in [73]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 273
                 self.match(CharmmMRParser.MPNoe)
@@ -2149,14 +2149,14 @@ class CharmmMRParser ( Parser ):
                 self.state = 281
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.NMPNoe]:
+            elif token in [78]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 283
                 self.match(CharmmMRParser.NMPNoe)
                 self.state = 284
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.Read]:
+            elif token in [79]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 285
                 self.match(CharmmMRParser.Read)
@@ -2165,7 +2165,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 287
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.Write]:
+            elif token in [80]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 288
                 self.match(CharmmMRParser.Write)
@@ -2176,26 +2176,26 @@ class CharmmMRParser ( Parser ):
                 self.state = 292
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Anal:
+                if _la==83:
                     self.state = 291
                     self.match(CharmmMRParser.Anal)
 
 
                 pass
-            elif token in [CharmmMRParser.Print]:
+            elif token in [82]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 294
                 self.match(CharmmMRParser.Print)
                 self.state = 300
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Anal:
+                if _la==83:
                     self.state = 295
                     self.match(CharmmMRParser.Anal)
                     self.state = 298
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==CharmmMRParser.Cut:
+                    if _la==84:
                         self.state = 296
                         self.match(CharmmMRParser.Cut)
                         self.state = 297
@@ -2205,14 +2205,14 @@ class CharmmMRParser ( Parser ):
 
 
                 pass
-            elif token in [CharmmMRParser.Scale]:
+            elif token in [85]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 302
                 self.match(CharmmMRParser.Scale)
                 self.state = 303
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.Temperature]:
+            elif token in [86]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 304
                 self.match(CharmmMRParser.Temperature)
@@ -2414,111 +2414,111 @@ class CharmmMRParser ( Parser ):
             self.state = 373
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Assign]:
+            if token in [58]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 312
                 self.pnoe_assign()
                 pass
-            elif token in [CharmmMRParser.Reset]:
+            elif token in [56]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 313
                 self.match(CharmmMRParser.Reset)
                 pass
-            elif token in [CharmmMRParser.KMin]:
+            elif token in [59]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 314
                 self.match(CharmmMRParser.KMin)
                 self.state = 315
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.RMin]:
+            elif token in [61]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 316
                 self.match(CharmmMRParser.RMin)
                 self.state = 317
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.KMax]:
+            elif token in [60]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 318
                 self.match(CharmmMRParser.KMax)
                 self.state = 319
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.RMax]:
+            elif token in [62]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 320
                 self.match(CharmmMRParser.RMax)
                 self.state = 321
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.FMax]:
+            elif token in [63]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 322
                 self.match(CharmmMRParser.FMax)
                 self.state = 323
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.CnoX]:
+            elif token in [70]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 324
                 self.match(CharmmMRParser.CnoX)
                 self.state = 325
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.CnoY]:
+            elif token in [71]:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 326
                 self.match(CharmmMRParser.CnoY)
                 self.state = 327
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.CnoZ]:
+            elif token in [72]:
                 self.enterOuterAlt(localctx, 10)
                 self.state = 328
                 self.match(CharmmMRParser.CnoZ)
                 self.state = 329
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.MinDist]:
+            elif token in [64]:
                 self.enterOuterAlt(localctx, 11)
                 self.state = 330
                 self.match(CharmmMRParser.MinDist)
                 pass
-            elif token in [CharmmMRParser.RSwi]:
+            elif token in [65]:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 331
                 self.match(CharmmMRParser.RSwi)
                 self.state = 332
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.SExp]:
+            elif token in [66]:
                 self.enterOuterAlt(localctx, 13)
                 self.state = 333
                 self.match(CharmmMRParser.SExp)
                 self.state = 334
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.SumR]:
+            elif token in [67]:
                 self.enterOuterAlt(localctx, 14)
                 self.state = 335
                 self.match(CharmmMRParser.SumR)
                 pass
-            elif token in [CharmmMRParser.TCon]:
+            elif token in [68]:
                 self.enterOuterAlt(localctx, 15)
                 self.state = 336
                 self.match(CharmmMRParser.TCon)
                 self.state = 337
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.RExp]:
+            elif token in [69]:
                 self.enterOuterAlt(localctx, 16)
                 self.state = 338
                 self.match(CharmmMRParser.RExp)
                 self.state = 339
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.MPNoe]:
+            elif token in [73]:
                 self.enterOuterAlt(localctx, 17)
                 self.state = 340
                 self.match(CharmmMRParser.MPNoe)
@@ -2539,14 +2539,14 @@ class CharmmMRParser ( Parser ):
                 self.state = 348
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.NMPNoe]:
+            elif token in [78]:
                 self.enterOuterAlt(localctx, 18)
                 self.state = 350
                 self.match(CharmmMRParser.NMPNoe)
                 self.state = 351
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.Read]:
+            elif token in [79]:
                 self.enterOuterAlt(localctx, 19)
                 self.state = 352
                 self.match(CharmmMRParser.Read)
@@ -2555,7 +2555,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 354
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.Write]:
+            elif token in [80]:
                 self.enterOuterAlt(localctx, 20)
                 self.state = 355
                 self.match(CharmmMRParser.Write)
@@ -2566,26 +2566,26 @@ class CharmmMRParser ( Parser ):
                 self.state = 359
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Anal:
+                if _la==83:
                     self.state = 358
                     self.match(CharmmMRParser.Anal)
 
 
                 pass
-            elif token in [CharmmMRParser.Print]:
+            elif token in [82]:
                 self.enterOuterAlt(localctx, 21)
                 self.state = 361
                 self.match(CharmmMRParser.Print)
                 self.state = 367
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Anal:
+                if _la==83:
                     self.state = 362
                     self.match(CharmmMRParser.Anal)
                     self.state = 365
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==CharmmMRParser.Cut:
+                    if _la==84:
                         self.state = 363
                         self.match(CharmmMRParser.Cut)
                         self.state = 364
@@ -2595,14 +2595,14 @@ class CharmmMRParser ( Parser ):
 
 
                 pass
-            elif token in [CharmmMRParser.Scale]:
+            elif token in [85]:
                 self.enterOuterAlt(localctx, 22)
                 self.state = 369
                 self.match(CharmmMRParser.Scale)
                 self.state = 370
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.Temperature]:
+            elif token in [86]:
                 self.enterOuterAlt(localctx, 23)
                 self.state = 371
                 self.match(CharmmMRParser.Temperature)
@@ -2726,45 +2726,45 @@ class CharmmMRParser ( Parser ):
             self.state = 389
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.ByNumber, CharmmMRParser.Selection, CharmmMRParser.Integer, CharmmMRParser.Simple_name]:
+            if token in [22, 116, 144, 149]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 378
                 self.dihedral_assign()
                 pass
-            elif token in [CharmmMRParser.Force]:
+            elif token in [9]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 379
                 self.match(CharmmMRParser.Force)
                 self.state = 380
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.Min]:
+            elif token in [23]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 381
                 self.match(CharmmMRParser.Min)
                 self.state = 382
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.Period]:
+            elif token in [24]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 383
                 self.match(CharmmMRParser.Period)
                 self.state = 384
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.Comp]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 385
                 self.match(CharmmMRParser.Comp)
                 pass
-            elif token in [CharmmMRParser.Width]:
+            elif token in [25]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 386
                 self.match(CharmmMRParser.Width)
                 self.state = 387
                 self.number_s()
                 pass
-            elif token in [CharmmMRParser.Main]:
+            elif token in [18]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 388
                 self.match(CharmmMRParser.Main)
@@ -2884,7 +2884,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 410
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Simple_name:
+                if _la==149:
                     self.state = 409
                     self.match(CharmmMRParser.Simple_name)
 
@@ -2896,7 +2896,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 415
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Simple_name:
+                if _la==149:
                     self.state = 414
                     self.match(CharmmMRParser.Simple_name)
 
@@ -2908,7 +2908,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 420
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Simple_name:
+                if _la==149:
                     self.state = 419
                     self.match(CharmmMRParser.Simple_name)
 
@@ -2920,7 +2920,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 425
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Simple_name:
+                if _la==149:
                     self.state = 424
                     self.match(CharmmMRParser.Simple_name)
 
@@ -3012,12 +3012,12 @@ class CharmmMRParser ( Parser ):
             self.state = 489
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Absolute, CharmmMRParser.Force, CharmmMRParser.Mass, CharmmMRParser.Weight, CharmmMRParser.Exponent, CharmmMRParser.XScale, CharmmMRParser.YScale, CharmmMRParser.ZScale, CharmmMRParser.Selection]:
+            if token in [5, 9, 10, 11, 12, 13, 14, 15, 116]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 432
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Absolute:
+                if _la==5:
                     self.state = 431
                     self.match(CharmmMRParser.Absolute)
 
@@ -3025,7 +3025,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 437
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Exponent) | (1 << CharmmMRParser.XScale) | (1 << CharmmMRParser.YScale) | (1 << CharmmMRParser.ZScale))) != 0):
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 61440) != 0:
                     self.state = 434
                     self.absolute_spec()
                     self.state = 439
@@ -3035,7 +3035,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 443
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Force) | (1 << CharmmMRParser.Mass) | (1 << CharmmMRParser.Weight))) != 0):
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3584) != 0:
                     self.state = 440
                     self.force_const_spec()
                     self.state = 445
@@ -3058,20 +3058,20 @@ class CharmmMRParser ( Parser ):
                 self.state = 454
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Main) | (1 << CharmmMRParser.Comp) | (1 << CharmmMRParser.Keep))) != 0):
+                if ((_la) & ~0x3f) == 0 and ((1 << _la) & 1835008) != 0:
                     self.state = 453
                     self.coordinate_spec()
 
 
                 pass
-            elif token in [CharmmMRParser.Bestfit]:
+            elif token in [6]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 456
                 self.match(CharmmMRParser.Bestfit)
                 self.state = 458
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.NoRotation or _la==CharmmMRParser.NoTranslation:
+                if _la==16 or _la==17:
                     self.state = 457
                     self.bestfit_spec()
 
@@ -3090,20 +3090,20 @@ class CharmmMRParser ( Parser ):
                 self.state = 467
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Main) | (1 << CharmmMRParser.Comp) | (1 << CharmmMRParser.Keep))) != 0):
+                if ((_la) & ~0x3f) == 0 and ((1 << _la) & 1835008) != 0:
                     self.state = 466
                     self.coordinate_spec()
 
 
                 pass
-            elif token in [CharmmMRParser.Relative]:
+            elif token in [7]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 469
                 self.match(CharmmMRParser.Relative)
                 self.state = 471
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.NoRotation or _la==CharmmMRParser.NoTranslation:
+                if _la==16 or _la==17:
                     self.state = 470
                     self.bestfit_spec()
 
@@ -3111,7 +3111,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 476
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Force) | (1 << CharmmMRParser.Mass) | (1 << CharmmMRParser.Weight))) != 0):
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3584) != 0:
                     self.state = 473
                     self.force_const_spec()
                     self.state = 478
@@ -3123,7 +3123,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 483
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Force) | (1 << CharmmMRParser.Mass) | (1 << CharmmMRParser.Weight))) != 0):
+                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3584) != 0:
                     self.state = 480
                     self.force_const_spec()
                     self.state = 485
@@ -3133,7 +3133,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 486
                 self.selection()
                 pass
-            elif token in [CharmmMRParser.Clear]:
+            elif token in [8]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 488
                 self.match(CharmmMRParser.Clear)
@@ -3198,28 +3198,28 @@ class CharmmMRParser ( Parser ):
             self.state = 499
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Exponent]:
+            if token in [12]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 491
                 self.match(CharmmMRParser.Exponent)
                 self.state = 492
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.XScale]:
+            elif token in [13]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 493
                 self.match(CharmmMRParser.XScale)
                 self.state = 494
                 self.number()
                 pass
-            elif token in [CharmmMRParser.YScale]:
+            elif token in [14]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 495
                 self.match(CharmmMRParser.YScale)
                 self.state = 496
                 self.number()
                 pass
-            elif token in [CharmmMRParser.ZScale]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 497
                 self.match(CharmmMRParser.ZScale)
@@ -3280,19 +3280,19 @@ class CharmmMRParser ( Parser ):
             self.state = 505
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Force]:
+            if token in [9]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 501
                 self.match(CharmmMRParser.Force)
                 self.state = 502
                 self.number()
                 pass
-            elif token in [CharmmMRParser.Mass]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 503
                 self.match(CharmmMRParser.Mass)
                 pass
-            elif token in [CharmmMRParser.Weight]:
+            elif token in [11]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 504
                 self.match(CharmmMRParser.Weight)
@@ -3345,7 +3345,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 507
             _la = self._input.LA(1)
-            if not(_la==CharmmMRParser.NoRotation or _la==CharmmMRParser.NoTranslation):
+            if not(_la==16 or _la==17):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3398,7 +3398,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 509
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Main) | (1 << CharmmMRParser.Comp) | (1 << CharmmMRParser.Keep))) != 0)):
+            if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 1835008) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3467,7 +3467,7 @@ class CharmmMRParser ( Parser ):
             self.state = 526
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Bond]:
+            if token in [28]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 511
                 self.match(CharmmMRParser.Bond)
@@ -3476,7 +3476,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 515
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Exponent:
+                if _la==12:
                     self.state = 513
                     self.match(CharmmMRParser.Exponent)
                     self.state = 514
@@ -3486,27 +3486,27 @@ class CharmmMRParser ( Parser ):
                 self.state = 518
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Upper:
+                if _la==29:
                     self.state = 517
                     self.match(CharmmMRParser.Upper)
 
 
                 pass
-            elif token in [CharmmMRParser.Angle]:
+            elif token in [30]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 520
                 self.match(CharmmMRParser.Angle)
                 self.state = 521
                 self.number()
                 pass
-            elif token in [CharmmMRParser.Dihedral]:
+            elif token in [21]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 522
                 self.match(CharmmMRParser.Dihedral)
                 self.state = 523
                 self.number()
                 pass
-            elif token in [CharmmMRParser.Improper]:
+            elif token in [31]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 524
                 self.match(CharmmMRParser.Improper)
@@ -3570,21 +3570,21 @@ class CharmmMRParser ( Parser ):
             self.state = 533
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Force]:
+            if token in [9]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 528
                 self.match(CharmmMRParser.Force)
                 self.state = 529
                 self.number()
                 pass
-            elif token in [CharmmMRParser.Exponent]:
+            elif token in [12]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 530
                 self.match(CharmmMRParser.Exponent)
                 self.state = 531
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.NoMass]:
+            elif token in [33]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 532
                 self.match(CharmmMRParser.NoMass)
@@ -3653,7 +3653,7 @@ class CharmmMRParser ( Parser ):
             self.state = 537
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.Purg:
+            if _la==35:
                 self.state = 536
                 self.match(CharmmMRParser.Purg)
 
@@ -3661,7 +3661,7 @@ class CharmmMRParser ( Parser ):
             self.state = 540
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.Bond:
+            if _la==28:
                 self.state = 539
                 self.match(CharmmMRParser.Bond)
 
@@ -3669,7 +3669,7 @@ class CharmmMRParser ( Parser ):
             self.state = 543
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.Thet:
+            if _la==36:
                 self.state = 542
                 self.match(CharmmMRParser.Thet)
 
@@ -3677,7 +3677,7 @@ class CharmmMRParser ( Parser ):
             self.state = 546
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.Phi:
+            if _la==37:
                 self.state = 545
                 self.match(CharmmMRParser.Phi)
 
@@ -3685,7 +3685,7 @@ class CharmmMRParser ( Parser ):
             self.state = 549
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.Imph:
+            if _la==38:
                 self.state = 548
                 self.match(CharmmMRParser.Imph)
 
@@ -3760,7 +3760,7 @@ class CharmmMRParser ( Parser ):
             self.state = 554
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.Weight:
+            if _la==11:
                 self.state = 553
                 self.match(CharmmMRParser.Weight)
 
@@ -3835,7 +3835,7 @@ class CharmmMRParser ( Parser ):
             self.state = 570
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Selection]:
+            if token in [116]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 564
                 self.selection()
@@ -3844,12 +3844,12 @@ class CharmmMRParser ( Parser ):
                 self.state = 566
                 self.shake_opt()
                 pass
-            elif token in [CharmmMRParser.Fast, CharmmMRParser.NoFast]:
+            elif token in [52, 54]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 568
                 self.fast_opt()
                 pass
-            elif token in [CharmmMRParser.NoReset]:
+            elif token in [45]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 569
                 self.match(CharmmMRParser.NoReset)
@@ -3936,7 +3936,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 572
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CharmmMRParser.Bond) | (1 << CharmmMRParser.Angle) | (1 << CharmmMRParser.BonH) | (1 << CharmmMRParser.AngH))) != 0)):
+            if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 633320039776256) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3944,21 +3944,21 @@ class CharmmMRParser ( Parser ):
             self.state = 578
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.EOF, CharmmMRParser.Set, CharmmMRParser.Cons, CharmmMRParser.Main, CharmmMRParser.Shake, CharmmMRParser.NoReset, CharmmMRParser.Tol, CharmmMRParser.MxIter, CharmmMRParser.ShkScale, CharmmMRParser.Fast, CharmmMRParser.NoFast, CharmmMRParser.Noe, CharmmMRParser.PNoe, CharmmMRParser.ResDistance, CharmmMRParser.Pull, CharmmMRParser.RGyration, CharmmMRParser.DMConstrain, CharmmMRParser.Selection, CharmmMRParser.COMMENT]:
+            if token in [-1, 1, 3, 18, 43, 45, 47, 48, 51, 52, 54, 55, 57, 87, 94, 108, 113, 116, 148]:
                 self.state = 574
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Main:
+                if _la==18:
                     self.state = 573
                     self.match(CharmmMRParser.Main)
 
 
                 pass
-            elif token in [CharmmMRParser.Comp]:
+            elif token in [19]:
                 self.state = 576
                 self.match(CharmmMRParser.Comp)
                 pass
-            elif token in [CharmmMRParser.Parameters]:
+            elif token in [50]:
                 self.state = 577
                 self.match(CharmmMRParser.Parameters)
                 pass
@@ -3968,7 +3968,7 @@ class CharmmMRParser ( Parser ):
             self.state = 582
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.Tol:
+            if _la==47:
                 self.state = 580
                 self.match(CharmmMRParser.Tol)
                 self.state = 581
@@ -3978,7 +3978,7 @@ class CharmmMRParser ( Parser ):
             self.state = 586
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.MxIter:
+            if _la==48:
                 self.state = 584
                 self.match(CharmmMRParser.MxIter)
                 self.state = 585
@@ -3988,7 +3988,7 @@ class CharmmMRParser ( Parser ):
             self.state = 590
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.ShkScale:
+            if _la==51:
                 self.state = 588
                 self.match(CharmmMRParser.ShkScale)
                 self.state = 589
@@ -4046,14 +4046,14 @@ class CharmmMRParser ( Parser ):
             self.state = 598
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Fast]:
+            if token in [52]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 592
                 self.match(CharmmMRParser.Fast)
                 self.state = 595
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Water:
+                if _la==53:
                     self.state = 593
                     self.match(CharmmMRParser.Water)
                     self.state = 594
@@ -4061,7 +4061,7 @@ class CharmmMRParser ( Parser ):
 
 
                 pass
-            elif token in [CharmmMRParser.NoFast]:
+            elif token in [54]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 597
                 self.match(CharmmMRParser.NoFast)
@@ -4146,16 +4146,16 @@ class CharmmMRParser ( Parser ):
             self.state = 610
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Reset]:
+            if token in [56]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 600
                 self.match(CharmmMRParser.Reset)
                 pass
-            elif token in [CharmmMRParser.Scale, CharmmMRParser.KVal, CharmmMRParser.RVal]:
+            elif token in [85, 88, 89]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 601
                 _la = self._input.LA(1)
-                if not(((((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & ((1 << (CharmmMRParser.Scale - 85)) | (1 << (CharmmMRParser.KVal - 85)) | (1 << (CharmmMRParser.RVal - 85)))) != 0)):
+                if not((((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 25) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -4163,11 +4163,11 @@ class CharmmMRParser ( Parser ):
                 self.state = 602
                 self.number()
                 pass
-            elif token in [CharmmMRParser.EVal, CharmmMRParser.IVal]:
+            elif token in [90, 91]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 603
                 _la = self._input.LA(1)
-                if not(_la==CharmmMRParser.EVal or _la==CharmmMRParser.IVal):
+                if not(_la==90 or _la==91):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -4175,17 +4175,17 @@ class CharmmMRParser ( Parser ):
                 self.state = 604
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.Positive]:
+            elif token in [92]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 605
                 self.match(CharmmMRParser.Positive)
                 pass
-            elif token in [CharmmMRParser.Negative]:
+            elif token in [93]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 606
                 self.match(CharmmMRParser.Negative)
                 pass
-            elif token in [CharmmMRParser.Selection]:
+            elif token in [116]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 607
                 self.selection()
@@ -4278,18 +4278,18 @@ class CharmmMRParser ( Parser ):
             self.state = 622
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Force]:
+            if token in [9]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 612
                 self.match(CharmmMRParser.Force)
                 self.state = 613
                 self.number()
                 pass
-            elif token in [CharmmMRParser.Period, CharmmMRParser.XDir, CharmmMRParser.YDir, CharmmMRParser.ZDir, CharmmMRParser.EField, CharmmMRParser.SForce]:
+            elif token in [24, 95, 96, 97, 98, 101]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 614
                 _la = self._input.LA(1)
-                if not(_la==CharmmMRParser.Period or ((((_la - 95)) & ~0x3f) == 0 and ((1 << (_la - 95)) & ((1 << (CharmmMRParser.XDir - 95)) | (1 << (CharmmMRParser.YDir - 95)) | (1 << (CharmmMRParser.ZDir - 95)) | (1 << (CharmmMRParser.EField - 95)) | (1 << (CharmmMRParser.SForce - 95)))) != 0)):
+                if not(_la==24 or (((_la - 95)) & ~0x3f) == 0 and ((1 << (_la - 95)) & 79) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -4297,29 +4297,29 @@ class CharmmMRParser ( Parser ):
                 self.state = 615
                 self.number()
                 pass
-            elif token in [CharmmMRParser.Off]:
+            elif token in [44]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 616
                 self.match(CharmmMRParser.Off)
                 pass
-            elif token in [CharmmMRParser.List]:
+            elif token in [99]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 617
                 self.match(CharmmMRParser.List)
                 pass
-            elif token in [CharmmMRParser.Switch]:
+            elif token in [100]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 618
                 self.match(CharmmMRParser.Switch)
                 self.state = 619
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.Weight]:
+            elif token in [11]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 620
                 self.match(CharmmMRParser.Weight)
                 pass
-            elif token in [CharmmMRParser.Selection]:
+            elif token in [116]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 621
                 self.selection()
@@ -4393,39 +4393,39 @@ class CharmmMRParser ( Parser ):
             self.state = 632
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Relative]:
+            if token in [7]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 624
                 self.match(CharmmMRParser.Relative)
                 pass
-            elif token in [CharmmMRParser.MaxN]:
+            elif token in [103]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 625
                 self.match(CharmmMRParser.MaxN)
                 self.state = 626
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.NPrt]:
+            elif token in [104]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 627
                 self.match(CharmmMRParser.NPrt)
                 pass
-            elif token in [CharmmMRParser.NoRotation, CharmmMRParser.NoTranslation]:
+            elif token in [16, 17]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 628
                 self.rmsd_orient_spec()
                 pass
-            elif token in [CharmmMRParser.Force, CharmmMRParser.Mass, CharmmMRParser.Offset, CharmmMRParser.BOffset]:
+            elif token in [9, 10, 106, 107]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 629
                 self.rmsd_force_const_spec()
                 pass
-            elif token in [CharmmMRParser.Main, CharmmMRParser.Comp]:
+            elif token in [18, 19]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 630
                 self.rmsd_coordinate_spec()
                 pass
-            elif token in [CharmmMRParser.Selection]:
+            elif token in [116]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 631
                 self.selection()
@@ -4478,7 +4478,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 634
             _la = self._input.LA(1)
-            if not(_la==CharmmMRParser.NoRotation or _la==CharmmMRParser.NoTranslation):
+            if not(_la==16 or _la==17):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4537,26 +4537,26 @@ class CharmmMRParser ( Parser ):
             self.state = 643
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Force]:
+            if token in [9]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 636
                 self.match(CharmmMRParser.Force)
                 self.state = 637
                 self.number()
                 pass
-            elif token in [CharmmMRParser.Mass]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 638
                 self.match(CharmmMRParser.Mass)
                 pass
-            elif token in [CharmmMRParser.Offset]:
+            elif token in [106]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 639
                 self.match(CharmmMRParser.Offset)
                 self.state = 640
                 self.number()
                 pass
-            elif token in [CharmmMRParser.BOffset]:
+            elif token in [107]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 641
                 self.match(CharmmMRParser.BOffset)
@@ -4611,7 +4611,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 645
             _la = self._input.LA(1)
-            if not(_la==CharmmMRParser.Main or _la==CharmmMRParser.Comp):
+            if not(_la==18 or _la==19):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4690,16 +4690,16 @@ class CharmmMRParser ( Parser ):
             self.state = 656
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Reset]:
+            if token in [56]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 647
                 self.match(CharmmMRParser.Reset)
                 pass
-            elif token in [CharmmMRParser.Force, CharmmMRParser.Reference]:
+            elif token in [9, 109]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 648
                 _la = self._input.LA(1)
-                if not(_la==CharmmMRParser.Force or _la==CharmmMRParser.Reference):
+                if not(_la==9 or _la==109):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -4707,26 +4707,26 @@ class CharmmMRParser ( Parser ):
                 self.state = 649
                 self.number()
                 pass
-            elif token in [CharmmMRParser.RMSD]:
+            elif token in [102]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 650
                 self.match(CharmmMRParser.RMSD)
                 pass
-            elif token in [CharmmMRParser.Comp]:
+            elif token in [19]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 651
                 self.match(CharmmMRParser.Comp)
                 pass
-            elif token in [CharmmMRParser.Orient]:
+            elif token in [110]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 652
                 self.match(CharmmMRParser.Orient)
                 pass
-            elif token in [CharmmMRParser.Output, CharmmMRParser.NSave]:
+            elif token in [111, 112]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 653
                 _la = self._input.LA(1)
-                if not(_la==CharmmMRParser.Output or _la==CharmmMRParser.NSave):
+                if not(_la==111 or _la==112):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -4734,7 +4734,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 654
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.Selection]:
+            elif token in [116]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 655
                 self.selection()
@@ -4813,11 +4813,11 @@ class CharmmMRParser ( Parser ):
             self.state = 663
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.Force, CharmmMRParser.Weight, CharmmMRParser.Reference, CharmmMRParser.Cutoff]:
+            if token in [9, 11, 109, 114]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 658
                 _la = self._input.LA(1)
-                if not(_la==CharmmMRParser.Force or _la==CharmmMRParser.Weight or _la==CharmmMRParser.Reference or _la==CharmmMRParser.Cutoff):
+                if not(_la==9 or _la==11 or _la==109 or _la==114):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -4825,11 +4825,11 @@ class CharmmMRParser ( Parser ):
                 self.state = 659
                 self.number()
                 pass
-            elif token in [CharmmMRParser.Output, CharmmMRParser.NSave, CharmmMRParser.NContact]:
+            elif token in [111, 112, 115]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 660
                 _la = self._input.LA(1)
-                if not(((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & ((1 << (CharmmMRParser.Output - 111)) | (1 << (CharmmMRParser.NSave - 111)) | (1 << (CharmmMRParser.NContact - 111)))) != 0)):
+                if not((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & 19) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -4837,7 +4837,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 661
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.Selection]:
+            elif token in [116]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 662
                 self.selection()
@@ -4902,7 +4902,7 @@ class CharmmMRParser ( Parser ):
             self.state = 668
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.Show:
+            if _la==105:
                 self.state = 667
                 self.match(CharmmMRParser.Show)
 
@@ -4964,7 +4964,7 @@ class CharmmMRParser ( Parser ):
             self.state = 677
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CharmmMRParser.Or_op:
+            while _la==117:
                 self.state = 673
                 self.match(CharmmMRParser.Or_op)
                 self.state = 674
@@ -5028,7 +5028,7 @@ class CharmmMRParser ( Parser ):
             self.state = 685
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==CharmmMRParser.And_op:
+            while _la==118:
                 self.state = 681
                 self.match(CharmmMRParser.And_op)
                 self.state = 682
@@ -5226,7 +5226,7 @@ class CharmmMRParser ( Parser ):
             self.state = 791
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CharmmMRParser.L_paren]:
+            if token in [152]:
                 self.state = 689
                 self.match(CharmmMRParser.L_paren)
                 self.state = 690
@@ -5234,42 +5234,42 @@ class CharmmMRParser ( Parser ):
                 self.state = 691
                 self.match(CharmmMRParser.R_paren)
                 pass
-            elif token in [CharmmMRParser.All]:
+            elif token in [142]:
                 self.state = 693
                 self.match(CharmmMRParser.All)
                 pass
-            elif token in [CharmmMRParser.Atom]:
+            elif token in [133]:
                 self.state = 694
                 self.match(CharmmMRParser.Atom)
                 self.state = 695
                 _la = self._input.LA(1)
-                if not(_la==CharmmMRParser.Simple_name or _la==CharmmMRParser.Simple_names):
+                if not(_la==149 or _la==150):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 696
                 _la = self._input.LA(1)
-                if not(_la==CharmmMRParser.Integer or _la==CharmmMRParser.Integers):
+                if not(_la==144 or _la==151):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 697
                 _la = self._input.LA(1)
-                if not(_la==CharmmMRParser.Simple_name or _la==CharmmMRParser.Simple_names):
+                if not(_la==149 or _la==150):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 pass
-            elif token in [CharmmMRParser.Property]:
+            elif token in [134]:
                 self.state = 698
                 self.match(CharmmMRParser.Property)
                 self.state = 700
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CharmmMRParser.Abs:
+                if _la==177:
                     self.state = 699
                     self.match(CharmmMRParser.Abs)
 
@@ -5281,35 +5281,35 @@ class CharmmMRParser ( Parser ):
                 self.state = 704
                 self.number_f()
                 pass
-            elif token in [CharmmMRParser.Bonded]:
+            elif token in [122]:
                 self.state = 705
                 self.match(CharmmMRParser.Bonded)
                 self.state = 706
                 self.factor(18)
                 pass
-            elif token in [CharmmMRParser.ByGroup]:
+            elif token in [124]:
                 self.state = 707
                 self.match(CharmmMRParser.ByGroup)
                 self.state = 708
                 self.factor(17)
                 pass
-            elif token in [CharmmMRParser.ByRes]:
+            elif token in [123]:
                 self.state = 709
                 self.match(CharmmMRParser.ByRes)
                 self.state = 710
                 self.factor(16)
                 pass
-            elif token in [CharmmMRParser.Type]:
+            elif token in [131]:
                 self.state = 711
                 self.match(CharmmMRParser.Type)
                 self.state = 719
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CharmmMRParser.Simple_names]:
+                if token in [150]:
                     self.state = 712
                     self.match(CharmmMRParser.Simple_names)
                     pass
-                elif token in [CharmmMRParser.Simple_name]:
+                elif token in [149]:
                     self.state = 713
                     self.match(CharmmMRParser.Simple_name)
                     self.state = 716
@@ -5323,7 +5323,7 @@ class CharmmMRParser ( Parser ):
 
 
                     pass
-                elif token in [CharmmMRParser.Symbol_name]:
+                elif token in [162]:
                     self.state = 718
                     self.match(CharmmMRParser.Symbol_name)
                     pass
@@ -5331,17 +5331,17 @@ class CharmmMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CharmmMRParser.Chemical]:
+            elif token in [132]:
                 self.state = 721
                 self.match(CharmmMRParser.Chemical)
                 self.state = 729
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CharmmMRParser.Simple_names]:
+                if token in [150]:
                     self.state = 722
                     self.match(CharmmMRParser.Simple_names)
                     pass
-                elif token in [CharmmMRParser.Simple_name]:
+                elif token in [149]:
                     self.state = 723
                     self.match(CharmmMRParser.Simple_name)
                     self.state = 726
@@ -5355,7 +5355,7 @@ class CharmmMRParser ( Parser ):
 
 
                     pass
-                elif token in [CharmmMRParser.Symbol_name]:
+                elif token in [162]:
                     self.state = 728
                     self.match(CharmmMRParser.Symbol_name)
                     pass
@@ -5363,29 +5363,29 @@ class CharmmMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CharmmMRParser.Initial]:
+            elif token in [136]:
                 self.state = 731
                 self.match(CharmmMRParser.Initial)
                 pass
-            elif token in [CharmmMRParser.Lone]:
+            elif token in [137]:
                 self.state = 732
                 self.match(CharmmMRParser.Lone)
                 pass
-            elif token in [CharmmMRParser.Hydrogen]:
+            elif token in [138]:
                 self.state = 733
                 self.match(CharmmMRParser.Hydrogen)
                 pass
-            elif token in [CharmmMRParser.NONE]:
+            elif token in [143]:
                 self.state = 734
                 self.match(CharmmMRParser.NONE)
                 pass
-            elif token in [CharmmMRParser.Not_op]:
+            elif token in [119]:
                 self.state = 735
                 self.match(CharmmMRParser.Not_op)
                 self.state = 736
                 self.factor(9)
                 pass
-            elif token in [CharmmMRParser.Point]:
+            elif token in [135]:
                 self.state = 737
                 self.match(CharmmMRParser.Point)
                 self.state = 738
@@ -5413,24 +5413,24 @@ class CharmmMRParser ( Parser ):
 
 
                 pass
-            elif token in [CharmmMRParser.User]:
+            elif token in [139]:
                 self.state = 748
                 self.match(CharmmMRParser.User)
                 pass
-            elif token in [CharmmMRParser.Previous]:
+            elif token in [140]:
                 self.state = 749
                 self.match(CharmmMRParser.Previous)
                 pass
-            elif token in [CharmmMRParser.Recall]:
+            elif token in [141]:
                 self.state = 750
                 self.match(CharmmMRParser.Recall)
                 self.state = 751
                 self.match(CharmmMRParser.Integer)
                 pass
-            elif token in [CharmmMRParser.ByNumber, CharmmMRParser.Residue]:
+            elif token in [22, 127]:
                 self.state = 752
                 _la = self._input.LA(1)
-                if not(_la==CharmmMRParser.ByNumber or _la==CharmmMRParser.Residue):
+                if not(_la==22 or _la==127):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -5438,11 +5438,11 @@ class CharmmMRParser ( Parser ):
                 self.state = 760
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CharmmMRParser.Integers]:
+                if token in [151]:
                     self.state = 753
                     self.match(CharmmMRParser.Integers)
                     pass
-                elif token in [CharmmMRParser.Integer]:
+                elif token in [144]:
                     self.state = 754
                     self.match(CharmmMRParser.Integer)
                     self.state = 757
@@ -5456,7 +5456,7 @@ class CharmmMRParser ( Parser ):
 
 
                     pass
-                elif token in [CharmmMRParser.Symbol_name]:
+                elif token in [162]:
                     self.state = 759
                     self.match(CharmmMRParser.Symbol_name)
                     pass
@@ -5464,17 +5464,17 @@ class CharmmMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CharmmMRParser.Resname]:
+            elif token in [129]:
                 self.state = 762
                 self.match(CharmmMRParser.Resname)
                 self.state = 770
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CharmmMRParser.Simple_names]:
+                if token in [150]:
                     self.state = 763
                     self.match(CharmmMRParser.Simple_names)
                     pass
-                elif token in [CharmmMRParser.Simple_name]:
+                elif token in [149]:
                     self.state = 764
                     self.match(CharmmMRParser.Simple_name)
                     self.state = 767
@@ -5488,7 +5488,7 @@ class CharmmMRParser ( Parser ):
 
 
                     pass
-                elif token in [CharmmMRParser.Symbol_name]:
+                elif token in [162]:
                     self.state = 769
                     self.match(CharmmMRParser.Symbol_name)
                     pass
@@ -5496,17 +5496,17 @@ class CharmmMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CharmmMRParser.SegIdentifier]:
+            elif token in [125]:
                 self.state = 772
                 self.match(CharmmMRParser.SegIdentifier)
                 self.state = 785
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [CharmmMRParser.Simple_names]:
+                if token in [150]:
                     self.state = 773
                     self.match(CharmmMRParser.Simple_names)
                     pass
-                elif token in [CharmmMRParser.Simple_name]:
+                elif token in [149]:
                     self.state = 774
                     self.match(CharmmMRParser.Simple_name)
                     self.state = 777
@@ -5520,7 +5520,7 @@ class CharmmMRParser ( Parser ):
 
 
                     pass
-                elif token in [CharmmMRParser.Double_quote_string]:
+                elif token in [146]:
                     self.state = 779
                     self.match(CharmmMRParser.Double_quote_string)
                     self.state = 782
@@ -5534,7 +5534,7 @@ class CharmmMRParser ( Parser ):
 
 
                     pass
-                elif token in [CharmmMRParser.Symbol_name]:
+                elif token in [162]:
                     self.state = 784
                     self.match(CharmmMRParser.Symbol_name)
                     pass
@@ -5542,10 +5542,10 @@ class CharmmMRParser ( Parser ):
                     raise NoViableAltException(self)
 
                 pass
-            elif token in [CharmmMRParser.ISeg, CharmmMRParser.IRes, CharmmMRParser.IGroup]:
+            elif token in [126, 128, 130]:
                 self.state = 787
                 _la = self._input.LA(1)
-                if not(((((_la - 126)) & ~0x3f) == 0 and ((1 << (_la - 126)) & ((1 << (CharmmMRParser.ISeg - 126)) | (1 << (CharmmMRParser.IRes - 126)) | (1 << (CharmmMRParser.IGroup - 126)))) != 0)):
+                if not((((_la - 126)) & ~0x3f) == 0 and ((1 << (_la - 126)) & 21) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -5597,11 +5597,11 @@ class CharmmMRParser ( Parser ):
                         self.state = 805
                         self._errHandler.sync(self)
                         token = self._input.LA(1)
-                        if token in [CharmmMRParser.Integers]:
+                        if token in [151]:
                             self.state = 798
                             self.match(CharmmMRParser.Integers)
                             pass
-                        elif token in [CharmmMRParser.Integer]:
+                        elif token in [144]:
                             self.state = 799
                             self.match(CharmmMRParser.Integer)
                             self.state = 802
@@ -5615,7 +5615,7 @@ class CharmmMRParser ( Parser ):
 
 
                             pass
-                        elif token in [CharmmMRParser.Symbol_name]:
+                        elif token in [162]:
                             self.state = 804
                             self.match(CharmmMRParser.Symbol_name)
                             pass
@@ -5677,7 +5677,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 812
             _la = self._input.LA(1)
-            if not(((((_la - 144)) & ~0x3f) == 0 and ((1 << (_la - 144)) & ((1 << (CharmmMRParser.Integer - 144)) | (1 << (CharmmMRParser.Real - 144)) | (1 << (CharmmMRParser.Symbol_name - 144)))) != 0)):
+            if not((((_la - 144)) & ~0x3f) == 0 and ((1 << (_la - 144)) & 262147) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -5727,7 +5727,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 814
             _la = self._input.LA(1)
-            if not(_la==CharmmMRParser.Integer or _la==CharmmMRParser.Real):
+            if not(_la==144 or _la==145):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -5780,7 +5780,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 816
             _la = self._input.LA(1)
-            if not(((((_la - 144)) & ~0x3f) == 0 and ((1 << (_la - 144)) & ((1 << (CharmmMRParser.Integer - 144)) | (1 << (CharmmMRParser.Real - 144)) | (1 << (CharmmMRParser.Symbol_name - 144)))) != 0)):
+            if not((((_la - 144)) & ~0x3f) == 0 and ((1 << (_la - 144)) & 262147) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -5850,14 +5850,14 @@ class CharmmMRParser ( Parser ):
             self.state = 821
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==CharmmMRParser.Equ_op_VE:
+            if _la==168:
                 self.state = 820
                 self.match(CharmmMRParser.Equ_op_VE)
 
 
             self.state = 823
             _la = self._input.LA(1)
-            if not(((((_la - 169)) & ~0x3f) == 0 and ((1 << (_la - 169)) & ((1 << (CharmmMRParser.Integer_VE - 169)) | (1 << (CharmmMRParser.Real_VE - 169)) | (1 << (CharmmMRParser.Simple_name_VE - 169)))) != 0)):
+            if not((((_la - 169)) & ~0x3f) == 0 and ((1 << (_la - 169)) & 7) != 0):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

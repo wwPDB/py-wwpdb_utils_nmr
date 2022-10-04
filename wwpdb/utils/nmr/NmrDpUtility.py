@@ -16390,12 +16390,16 @@ class NmrDpUtility:
         """ Return human-readable seq align codes.
         """
 
+        len_s1 = len(s1['seq_id'])
+        len_s2 = len(s2['seq_id'])
+
         length = len(myAlign)
 
         seq_id1 = []
         seq_id2 = []
         comp_id1 = []
         comp_id2 = []
+
         idx1 = 0
         idx2 = 0
         for i in range(length):
@@ -16403,7 +16407,7 @@ class NmrDpUtility:
             myPr0 = str(myPr[0])
             myPr1 = str(myPr[1])
             if myPr0 != '.':
-                while idx1 < len(s1['seq_id']):
+                while idx1 < len_s1:
                     if s1['comp_id'][idx1] == myPr0:
                         seq_id1.append(s1['seq_id'][idx1])
                         comp_id1.append(myPr0)
@@ -16414,7 +16418,7 @@ class NmrDpUtility:
                 seq_id1.append(None)
                 comp_id1.append('.')
             if myPr1 != '.':
-                while idx2 < len(s2['seq_id']):
+                while idx2 < len_s2:
                     if s2['comp_id'][idx2] == myPr1:
                         seq_id2.append(s2['seq_id'][idx2])
                         comp_id2.append(myPr1)
@@ -32217,10 +32221,14 @@ class NmrDpUtility:
                 if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                        in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                        if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                    len_s1 = len(_s1['seq_id'])
+                    len_s2 = len(_s2['seq_id'])
+
                     seq_id1 = []
                     seq_id2 = []
                     comp_id1 = []
                     comp_id2 = []
+
                     idx1 = 0
                     idx2 = 0
                     for i in range(length):
@@ -32228,7 +32236,7 @@ class NmrDpUtility:
                         myPr0 = str(myPr[0])
                         myPr1 = str(myPr[1])
                         if myPr0 != '.':
-                            while idx1 < len(_s1['seq_id']):
+                            while idx1 < len_s1:
                                 if _s1['comp_id'][idx1] == myPr0:
                                     seq_id1.append(_s1['seq_id'][idx1])
                                     comp_id1.append(myPr0)
@@ -32239,7 +32247,7 @@ class NmrDpUtility:
                             seq_id1.append(None)
                             comp_id1.append('.')
                         if myPr1 != '.':
-                            while idx2 < len(_s2['seq_id']):
+                            while idx2 < len_s2:
                                 if _s2['comp_id'][idx2] == myPr1:
                                     seq_id2.append(_s2['seq_id'][idx2])
                                     comp_id2.append(myPr1)
@@ -32367,10 +32375,14 @@ class NmrDpUtility:
                 if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                        in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                        if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                    len_s1 = len(_s1['seq_id'])
+                    len_s2 = len(_s2['seq_id'])
+
                     seq_id1 = []
                     seq_id2 = []
                     comp_id1 = []
                     comp_id2 = []
+
                     idx1 = 0
                     idx2 = 0
                     for i in range(length):
@@ -32378,7 +32390,7 @@ class NmrDpUtility:
                         myPr0 = str(myPr[0])
                         myPr1 = str(myPr[1])
                         if myPr0 != '.':
-                            while idx1 < len(_s1['seq_id']):
+                            while idx1 < len_s1:
                                 if _s1['comp_id'][idx1] == myPr0:
                                     seq_id1.append(_s1['seq_id'][idx1])
                                     comp_id1.append(myPr0)
@@ -32389,7 +32401,7 @@ class NmrDpUtility:
                             seq_id1.append(None)
                             comp_id1.append('.')
                         if myPr1 != '.':
-                            while idx2 < len(_s2['seq_id']):
+                            while idx2 < len_s2:
                                 if _s2['comp_id'][idx2] == myPr1:
                                     seq_id2.append(_s2['seq_id'][idx2])
                                     comp_id2.append(myPr1)
@@ -32441,21 +32453,23 @@ class NmrDpUtility:
 
         return True
 
-    def __compensateLadderHistidinTag2(self, chainId, polySeq1, polySeq2):
+    def __compensateLadderHistidinTag2(self, chain_id, s1, s2):
         """ Compensate ladder-like Histidin tag in polymer sequence 2.
         """
 
-        self.__pA.setReferenceSequence(polySeq1['comp_id'], 'REF' + chainId)
-        self.__pA.addTestSequence(polySeq2['comp_id'], chainId)
+        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+        self.__pA.addTestSequence(s2['comp_id'], chain_id)
         self.__pA.doAlign()
 
-        myAlign = self.__pA.getAlignment(chainId)
+        _s2 = copy.copy(s2)
+
+        len_s2 = len(s2['comp_id'])
+
+        myAlign = self.__pA.getAlignment(chain_id)
 
         length = len(myAlign)
 
-        his_tag_seq_ids = []
-
-        aligned = has_his_tag = False
+        _myPr0 = '.'
 
         idx2 = 0
         for p in range(length):
@@ -32464,31 +32478,23 @@ class NmrDpUtility:
             myPr1 = str(myPr[1])
 
             if myPr0 == myPr1:
-                aligned = True
+                pass
 
-            if not aligned or myPr0 == myPr1:
-                if myPr1 != '.':
+            elif myPr0 == 'HIS' and myPr1 == '.' and _myPr0 == 'HIS':
+                _s2['comp_id'][idx2] = 'HIS'
+                if idx2 < len_s2:
                     idx2 += 1
-                continue
 
-            if myPr0 == 'HIS' and myPr1 == '.':
-                has_his_tag = True
-                his_tag_seq_ids.append(polySeq2['seq_id'][idx2])
-
-            elif has_his_tag:
-                if myPr0 != 'HIS':
-                    aligned = has_his_tag = False
+            _myPr0 = myPr0
 
             if myPr1 != '.':
-                idx2 += 1
+                while idx2 < len_s2:
+                    if s2['comp_id'][idx2] == myPr1:
+                        idx2 += 1
+                        break
+                    idx2 += 1
 
-        if len(his_tag_seq_ids) == 0:
-            return polySeq2
-
-        for seq_id2 in his_tag_seq_ids:
-            polySeq2['comp_id'][polySeq2['seq_id'].index(seq_id2)] = 'HIS'
-
-        return polySeq2
+        return _s2
 
     def __assignCoordPolymerSequence(self):
         """ Assign polymer sequences of coordinate file.

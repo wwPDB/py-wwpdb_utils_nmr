@@ -3,7 +3,7 @@
 # Date: 09-Feb-2022
 #
 # Updates:
-# Generated from XplorMRParser.g4 by ANTLR 4.10.1
+# Generated from XplorMRParser.g4 by ANTLR 4.11.1
 """ ParserLister class for XPLOR-NIH MR files.
     @author: Masashi Yokochi
 """
@@ -30,6 +30,8 @@ try:
                                                        getTypeOfDihedralRestraint,
                                                        isCyclicPolymer,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       MAX_PREF_LABEL_SCHEME_COUNT,
+                                                       THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -56,7 +58,8 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                              PARAMAGNETIC_ELEMENTS,
-                                                             FERROMAGNETIC_ELEMENTS)
+                                                             FERROMAGNETIC_ELEMENTS,
+                                                             LANTHANOID_ELEMENTS)
     from wwpdb.utils.nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
                                            MAJOR_ASYM_ID_SET,
                                            monDict3,
@@ -65,13 +68,16 @@ try:
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
+                                           retrieveAtomIdentFromMRMap,
                                            retrieveAtomIdFromMRMap,
                                            retrieveRemappedSeqId,
                                            splitPolySeqRstForMultimers,
                                            splitPolySeqRstForExactNoes,
                                            retrieveRemappedChainId,
                                            splitPolySeqRstForNonPoly,
-                                           retrieveRemappedNonPoly)
+                                           retrieveRemappedNonPoly,
+                                           splitPolySeqRstForBranch,
+                                           retrieveOriginalSeqIdFromMRMap)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.XplorMRParser import XplorMRParser
@@ -86,6 +92,8 @@ except ImportError:
                                            getTypeOfDihedralRestraint,
                                            isCyclicPolymer,
                                            REPRESENTATIVE_MODEL_ID,
+                                           MAX_PREF_LABEL_SCHEME_COUNT,
+                                           THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -112,7 +120,8 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                  PARAMAGNETIC_ELEMENTS,
-                                                 FERROMAGNETIC_ELEMENTS)
+                                                 FERROMAGNETIC_ELEMENTS,
+                                                 LANTHANOID_ELEMENTS)
     from nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
                                MAJOR_ASYM_ID_SET,
                                monDict3,
@@ -121,13 +130,16 @@ except ImportError:
                                alignPolymerSequence,
                                assignPolymerSequence,
                                trimSequenceAlignment,
+                               retrieveAtomIdentFromMRMap,
                                retrieveAtomIdFromMRMap,
                                retrieveRemappedSeqId,
                                splitPolySeqRstForMultimers,
                                splitPolySeqRstForExactNoes,
                                retrieveRemappedChainId,
                                splitPolySeqRstForNonPoly,
-                               retrieveRemappedNonPoly)
+                               retrieveRemappedNonPoly,
+                               splitPolySeqRstForBranch,
+                               retrieveOriginalSeqIdFromMRMap)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -202,6 +214,7 @@ class XplorMRParserListener(ParseTreeListener):
     __sel_expr_debug = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
+    __correctCircularShift = True
 
     # @see: https://bmrb.io/ref_info/atom_nom.tbl
     # @see: https://bmrb.io/macro/files/xplor_to_iupac.Nov140620
@@ -246,8 +259,10 @@ class XplorMRParserListener(ParseTreeListener):
 
     # coordinates information generated by ParserListenerUtil.checkCoordinates()
     __polySeq = None
-    # __altPolySeq = None
+    __altPolySeq = None
     __nonPoly = None
+    __branch = None
+    __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
@@ -256,6 +271,8 @@ class XplorMRParserListener(ParseTreeListener):
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __hasPolySeq = False
     __hasNonPoly = False
+    __hasBranch = False
+    __hasNonPolySeq = False
     __preferAuthSeq = True
     __gapInAuthSeq = False
 
@@ -367,6 +384,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     reasonsForReParsing = {}
 
+    __cachedDictForAtomIdList = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
@@ -392,8 +411,9 @@ class XplorMRParserListener(ParseTreeListener):
             self.__authAtomId = ret['auth_atom_id']
             # self.__altAuthAtomId = ret['alt_auth_atom_id']
             self.__polySeq = ret['polymer_sequence']
-            # self.__altPolySeq = ret['alt_polymer_sequence']
+            self.__altPolySeq = ret['alt_polymer_sequence']
             self.__nonPoly = ret['non_polymer']
+            self.__branch = ret['branch']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
@@ -401,6 +421,17 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
+        self.__hasBranch = self.__branch is not None and len(self.__branch) > 0
+        if self.__hasNonPoly or self.__hasBranch:
+            self.__hasNonPolySeq = True
+            if self.__hasNonPoly and self.__hasBranch:
+                self.__nonPolySeq = self.__nonPoly
+                self.__nonPolySeq.extend(self.__branch)
+            elif self.__hasNonPoly:
+                self.__nonPolySeq = self.__nonPoly
+            else:
+                self.__nonPolySeq = self.__branch
+
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
 
@@ -431,6 +462,9 @@ class XplorMRParserListener(ParseTreeListener):
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
+        self.__preferLabelSeqCount = 0
+
+        self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
 
         self.distRestraints = 0      # XPLOR-NIH: Distance restraints
         self.dihedRestraints = 0     # XPLOR-NIH: Dihedral angle restraints
@@ -486,7 +520,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#xplor_nih_mr.
     def exitXplor_nih_mr(self, ctx: XplorMRParser.Xplor_nih_mrContext):  # pylint: disable=unused-argument
         if self.__hasPolySeq and self.__polySeqRst is not None:
-            sortPolySeqRst(self.__polySeqRst, None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
+            sortPolySeqRst(self.__polySeqRst,
+                           None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
 
             file_type = 'nm-res-xpl'
 
@@ -526,6 +561,8 @@ class XplorMRParserListener(ParseTreeListener):
 
                     seqIdRemap = []
 
+                    cyclicPolymer = {}
+
                     for ca in self.__chainAssign:
                         ref_chain_id = ca['ref_chain_id']
                         test_chain_id = ca['test_chain_id']
@@ -535,22 +572,30 @@ class XplorMRParserListener(ParseTreeListener):
                                   and sa['test_chain_id'] == test_chain_id)
 
                         poly_seq_model = next(ps for ps in self.__polySeq
-                                              if ps['chain_id'] == ref_chain_id)
+                                              if ps['auth_chain_id'] == ref_chain_id)
                         poly_seq_rst = next(ps for ps in self.__polySeqRst
                                             if ps['chain_id'] == test_chain_id)
 
                         seq_id_mapping = {}
                         for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                             if mid_code == '|':
-                                seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                   in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                   if seq_id == ref_seq_id)
+                                try:
+                                    seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
+                                                                       in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                                       if seq_id == ref_seq_id)
+                                except StopIteration:
+                                    pass
 
-                        if isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName):
+                        if ref_chain_id not in cyclicPolymer:
+                            cyclicPolymer[ref_chain_id] =\
+                                isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+
+                        if cyclicPolymer[ref_chain_id]:
 
                             poly_seq_model = next(ps for ps in self.__polySeq
-                                                  if ps['chain_id'] == ref_chain_id)
+                                                  if ps['auth_chain_id'] == ref_chain_id)
 
+                            offset = None
                             for seq_id, comp_id in zip(poly_seq_rst['seq_id'], poly_seq_rst['comp_id']):
                                 if seq_id not in seq_id_mapping:
                                     _seq_id = next((_seq_id for _seq_id, _comp_id in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
@@ -559,9 +604,10 @@ class XplorMRParserListener(ParseTreeListener):
                                         offset = seq_id - _seq_id
                                         break
 
-                            for seq_id in poly_seq_rst['seq_id']:
-                                if seq_id not in seq_id_mapping:
-                                    seq_id_mapping[seq_id] = seq_id - offset
+                            if offset is not None:
+                                for seq_id in poly_seq_rst['seq_id']:
+                                    if seq_id not in seq_id_mapping:
+                                        seq_id_mapping[seq_id] = seq_id - offset
 
                         if any(k for k, v in seq_id_mapping.items() if k != v)\
                            and not any(k for k, v in seq_id_mapping.items()
@@ -593,13 +639,23 @@ class XplorMRParserListener(ParseTreeListener):
                                 self.reasonsForReParsing['model_chain_id_ext'] = modelChainIdExt
 
                     if self.__hasNonPoly:
-                        polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__polySeq, self.__nonPoly, self.__polySeqRst,
+                        polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__nonPoly, self.__polySeqRst,
                                                                                self.__seqAlign, self.__chainAssign)
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
                             if 'non_poly_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
+
+                    if self.__hasBranch:
+                        polySeqRst, branchMapping = splitPolySeqRstForBranch(self.__pA, self.__polySeq, self.__branch, self.__polySeqRst,
+                                                                             self.__chainAssign)
+
+                        if polySeqRst is not None:
+                            self.__polySeqRst = polySeqRst
+                            if 'branch_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['branch_remap'] = branchMapping
+
         # """
         # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
         #     if 'non_poly_remap' in self.reasonsForReParsing:
@@ -608,7 +664,7 @@ class XplorMRParserListener(ParseTreeListener):
         #         del self.reasonsForReParsing['seq_id_remap']
         # """
         if 'local_seq_scheme' in self.reasonsForReParsing:
-            if 'non_poly_remap' in self.reasonsForReParsing:
+            if 'non_poly_remap' in self.reasonsForReParsing or 'branch_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
             if 'seq_id_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
@@ -1140,6 +1196,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             self.__allowZeroUpperLimit = False
             if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) > 0\
                and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
@@ -1442,12 +1499,13 @@ class XplorMRParserListener(ParseTreeListener):
             lower_linear_limit = None
             upper_linear_limit = None
 
-            if exponent in (2, 4):
-                lower_limit = target - delta
-                upper_limit = target + delta
-            else:
-                lower_linear_limit = target - delta
-                upper_linear_limit = target + delta
+            if delta > 0.0:
+                if exponent in (2, 4):
+                    lower_limit = target - delta
+                    upper_limit = target + delta
+                else:
+                    lower_linear_limit = target - delta
+                    upper_linear_limit = target + delta
 
             dstFunc = self.validateAngleRange(self.scale if exponent > 0 else 0.0, {'energy_const': energyConst, 'exponent': exponent},
                                               target_value, lower_limit, upper_limit,
@@ -1490,6 +1548,30 @@ class XplorMRParserListener(ParseTreeListener):
 
         validRange = True
         dstFunc = {'weight': weight}
+
+        if self.__correctCircularShift:
+            _array = numpy.array([target_value, lower_limit, upper_limit, lower_linear_limit, upper_linear_limit],
+                                 dtype=float)
+
+            shift = None
+            if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                shift = -(numpy.nanmax(_array) // 360) * 360
+            elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                shift = -(numpy.nanmin(_array) // 360) * 360
+            if shift is not None:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    "The target/limit values for an angle restraint have been circularly shifted "\
+                    f"to fit within range {ANGLE_RESTRAINT_ERROR}.\n"
+                if target_value is not None:
+                    target_value += shift
+                if lower_limit is not None:
+                    lower_limit += shift
+                if upper_limit is not None:
+                    upper_limit += shift
+                if lower_linear_limit is not None:
+                    upper_linear_limit += shift
+                if upper_linear_limit is not None:
+                    upper_linear_limit += shift
 
         if isinstance(misc_dict, dict):
             for k, v in misc_dict.items():
@@ -1587,7 +1669,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def areUniqueCoordAtoms(self, subtype_name, skip_col=None):
+    def areUniqueCoordAtoms(self, subtype_name, skip_col=None, allow_ambig=False, allow_ambig_warn_title=''):
         """ Check whether atom selection sets are uniquely assigned.
         """
 
@@ -1606,6 +1688,11 @@ class XplorMRParserListener(ParseTreeListener):
                 if atom1['chain_id'] != atom2['chain_id']:
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
+                    continue
+                if allow_ambig:
+                    self.warningMessage += f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"\
+                        f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
+                        f"{atom2['atom_id']}' found in {subtype_name} restraint.\n"
                     continue
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
@@ -1673,7 +1760,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
                 if len(self.numberSelection) > 2:
@@ -1787,7 +1874,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
 
                 else:
@@ -1810,9 +1899,15 @@ class XplorMRParserListener(ParseTreeListener):
                                or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        if atom_id_1[0] == 'H' and atom_id_2[0] == 'H':
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}). "\
+                                "Did you accidentally select 'SANIsotropy' statement, instead of 'XDIPolar' statement of XPLOR-NIH?\n"
+                        else:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                                "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
@@ -2105,7 +2200,7 @@ class XplorMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if self.potential == 'square':
+                if self.potential == 'square' and delta > 0.0:
                     target_value = target
                     lower_limit = target - delta
                     upper_limit = target + delta
@@ -2126,7 +2221,8 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
-            if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS):
+            if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS,
+                                            allow_ambig=True, allow_ambig_warn_title='Anomalous RDC vector'):
                 if len(self.__warningInAtomSelection) > 0:
                     self.warningMessage += self.__warningInAtomSelection
                 return
@@ -2143,23 +2239,25 @@ class XplorMRParserListener(ParseTreeListener):
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in 1H-1H dipolar coupling vector; "\
+                    f"Non-magnetic susceptible spin appears in RDC vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                     f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
+
+            spin_system = f'{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_1[0]][0]}{atom_id_1[0]}-{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_2[0]][0]}{atom_id_2[0]}'
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain 1H-1H dipolar coupling vector; "\
+                        f"Found inter-chain {spin_system} dipolar coupling vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue 1H-1H dipolar coupling vector; "\
+                    f"Found inter-residue {spin_system} dipolar coupling vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
@@ -2167,27 +2265,28 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
 
                 else:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue 1H-1H dipolar coupling vector; "\
+                        f"Found inter-residue {spin_system} dipolar coupling vector; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero 1H-1H dipolar coupling vector; "\
+                    f"Found zero {spin_system} dipolar coupling vector; "\
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
             else:
                 if atom_id_1[0] != 'H' or atom_id_2[0] != 'H':
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Not an 1H-1H dipolar coupling vector in the 'XDIPolar' statement; "\
+                    self.warningMessage += f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"\
+                        f"Found {spin_system} dipolar coupling vector in the 'XDIPolar' statement, which usually accepts 1H-1H dipolar coupling; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    return
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -2414,7 +2513,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                             or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                         pass
 
                     else:
@@ -2602,7 +2703,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -2658,7 +2759,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
 
                 else:
@@ -2754,7 +2857,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -2811,7 +2914,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                             or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                         pass
 
                     else:
@@ -3123,7 +3228,7 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:  # can't decide whether VEAN or COUP wo the coordinates
                 return
 
-            if self.potential != 'harmonic':
+            if self.potential != 'harmonic' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -3143,7 +3248,7 @@ class XplorMRParserListener(ParseTreeListener):
                 lower_limit = None
                 upper_limit = None
 
-                if self.potential != 'harmonic':
+                if self.potential != 'harmonic' and delta > 0.0:
                     lower_limit = target - delta
                     upper_limit = target + delta
 
@@ -3195,7 +3300,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                             or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                         pass
 
                     else:
@@ -3837,7 +3944,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
 
                 else:
@@ -4006,7 +4115,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -4060,7 +4169,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
 
                 else:
@@ -4529,7 +4640,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                             or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                         pass
 
                     else:
@@ -4544,7 +4657,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
                             ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA'))
-                             or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')):
+                             or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')
+                             or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                         pass
 
                     else:
@@ -4951,7 +5066,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if self.potential == 'square':
+            if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
                 upper_limit = target + delta
 
@@ -5222,8 +5337,12 @@ class XplorMRParserListener(ParseTreeListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = target - delta
-            upper_limit = target + delta
+            lower_limit = None
+            upper_limit = None
+
+            if delta > 0.0:
+                lower_limit = target - delta
+                upper_limit = target + delta
 
             if len(self.numberSelection) > 2:
                 error_less = delta
@@ -5443,8 +5562,12 @@ class XplorMRParserListener(ParseTreeListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = target - delta
-            upper_limit = target + delta
+            lower_limit = None
+            upper_limit = None
+
+            if delta > 0.0:
+                lower_limit = target - delta
+                upper_limit = target + delta
 
             dstFunc = self.validateRdcRange(1.0, {'potential': self.potential},
                                             target_value, lower_limit, upper_limit)
@@ -5500,7 +5623,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
 
                 else:
@@ -5634,7 +5759,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
 
                 else:
@@ -5710,8 +5837,12 @@ class XplorMRParserListener(ParseTreeListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = target - delta
-            upper_limit = target + delta
+            lower_limit = None
+            upper_limit = None
+
+            if delta > 0.0:
+                lower_limit = target - delta
+                upper_limit = target + delta
 
             dstFunc = self.validateCcrRange(1.0,
                                             target_value, lower_limit, upper_limit)
@@ -5765,7 +5896,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
 
                 else:
@@ -6104,14 +6237,14 @@ class XplorMRParserListener(ParseTreeListener):
 
             if len(_donor) == 1 and len(_hydrogen) == 1 and len(_acceptor) == 1:
                 distance = numpy.linalg.norm(toNpArray(_hydrogen[0]) - toNpArray(_acceptor[0]))
-                if distance > 2.4:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                if distance > 2.5:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                         f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
 
                 distance = numpy.linalg.norm(toNpArray(_donor[0]) - toNpArray(_acceptor[0]))
-                if distance > 3.4:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                if distance > 3.5:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                         f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
 
@@ -6174,13 +6307,13 @@ class XplorMRParserListener(ParseTreeListener):
         acceptor = self.atomSelectionSet[self.acceptor_columnSel][0]
         donor = self.atomSelectionSet[self.donor_columnSel][0]
 
-        if acceptor['atom_id'][0] not in ('N', 'O', 'F'):
+        if donor['atom_id'][0] not in ('N', 'O', 'F'):
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "\
                 f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}.\n"
             return
 
-        if donor['atom_id'][0] != 'H':
+        if acceptor['atom_id'][0] != 'H':
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "The acceptor atom type should be Hydrogen; "\
                 f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}.\n"
@@ -6228,8 +6361,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             if len(_hydrogen) == 1 and len(_acceptor) == 1:
                 distance = numpy.linalg.norm(toNpArray(_hydrogen[0]) - toNpArray(_acceptor[0]))
-                if distance > 2.4:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                if distance > 2.5:
+                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                         f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                         f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
 
@@ -6514,8 +6647,8 @@ class XplorMRParserListener(ParseTreeListener):
                 _factor['chain_id'] = [self.__representativeAsymId]
             else:
                 _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq]
-                if self.__hasNonPoly:
-                    for np in self.__nonPoly:
+                if self.__hasNonPolySeq:
+                    for np in self.__nonPolySeq:
                         _chainId = np['auth_chain_id']
                         if _chainId not in _factor['chain_id']:
                             _factor['chain_id'].append(_chainId)
@@ -6541,9 +6674,9 @@ class XplorMRParserListener(ParseTreeListener):
                                         or translateToStdResName(_factor['comp_ids'][0]) <= origCompId
                                         <= translateToStdResName(_factor['comp_ids'][1]))):
                                 _compIdSelect.add(realCompId)
-                if self.__hasNonPoly:
+                if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
-                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
                                 idx = np['auth_seq_id'].index(realSeqId)
@@ -6595,9 +6728,9 @@ class XplorMRParserListener(ParseTreeListener):
                                 _, realSeqId = self.__authToLabelSeq[seqKey]
                                 if re.match(_seqId, str(realSeqId)):
                                     seqIds.append(realSeqId)
-            if self.__hasNonPoly:
+            if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
-                    npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                    npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         found = False
                         for realSeqId in np['auth_seq_id']:
@@ -6642,9 +6775,9 @@ class XplorMRParserListener(ParseTreeListener):
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         seqIds.append(realSeqId)
-            if self.__hasNonPoly:
+            if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
-                    npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                    npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -6667,9 +6800,9 @@ class XplorMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         _compIdSelect |= set(ps['comp_id'])
-                if self.__hasNonPoly:
+                if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
-                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             _compIdSelect |= set(np['comp_id'])
                 for compId in _compIdSelect:
@@ -6691,11 +6824,11 @@ class XplorMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         _compIdSelect |= set(ps['comp_id'])
-                if self.__hasNonPoly:
+                if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
-                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
-                            _compIdSelect |= set(ps['comp_id'])
+                            _compIdSelect |= set(np['comp_id'])
                 for compId in _compIdSelect:
                     if self.__ccU.updateChemCompDict(compId):
                         for cca in self.__ccU.lastAtomList:
@@ -6725,9 +6858,9 @@ class XplorMRParserListener(ParseTreeListener):
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
-            if self.__hasNonPoly:
+            if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
-                    npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                    npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
@@ -6799,9 +6932,9 @@ class XplorMRParserListener(ParseTreeListener):
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
-                if self.__hasNonPoly:
+                if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
-                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
@@ -6885,9 +7018,9 @@ class XplorMRParserListener(ParseTreeListener):
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
-            if self.__hasNonPoly:
+            if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
-                    npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                    npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
@@ -6939,9 +7072,9 @@ class XplorMRParserListener(ParseTreeListener):
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
-                if self.__hasNonPoly:
+                if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
-                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
@@ -6990,13 +7123,13 @@ class XplorMRParserListener(ParseTreeListener):
 
         if _factor['atom_id'][0] is not None:
             foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True)
-            if self.__hasNonPoly:
-                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=True)
+            if self.__hasNonPolySeq:
+                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=True, altPolySeq=self.__nonPolySeq)
 
             if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1:
                 self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=False)
-                if self.__hasNonPoly:
-                    self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=False)
+                if self.__hasNonPolySeq:
+                    self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=False, altPolySeq=self.__nonPolySeq)
 
         if 'atom_ids' in _factor:
             del _factor['atom_ids']
@@ -7020,7 +7153,8 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__with_axis and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
             if self.__with_para and (('comp_id' in _factor and _factor['atom_id'][0] == _factor['comp_id'][0] and _factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                     or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+                                     or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS
+                                     or _factor['atom_id'][0] in LANTHANOID_ELEMENTS):
                 return _factor
             if self.__cur_subtype == 'dist' and _factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
                 return _factor
@@ -7030,6 +7164,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if cifCheck:
                     self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}.\n"
+                    self.__preferAuthSeq = not self.__preferAuthSeq
+                    self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
+                    self.__setLocalSeqScheme()
                     # """
                     # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
                     #     if 'label_seq_scheme' not in self.reasonsForReParsing:
@@ -7062,11 +7199,11 @@ class XplorMRParserListener(ParseTreeListener):
 
         return _factor
 
-    def __consumeFactor_expressions__(self, _factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True):
+    def __consumeFactor_expressions__(self, _factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True, altPolySeq=None):
         foundCompId = False
 
-        for chainId in (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else self.__nonPoly)]):
-            psList = [ps for ps in (self.__polySeq if isPolySeq else self.__nonPoly) if ps['auth_chain_id'] == chainId]
+        for chainId in (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]):
+            psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId]
 
             if len(psList) == 0:
                 continue
@@ -7078,6 +7215,10 @@ class XplorMRParserListener(ParseTreeListener):
                     seqId = self.getRealSeqId(ps, seqId, isPolySeq)
 
                     if self.__reasons is not None:
+                        if 'branch_remap' in self.__reasons and seqId in self.__reasons['branch_remap']:
+                            fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['branch_remap'], seqId)
+                            if fixedChainId != chainId:
+                                continue
                         if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                             if fixedChainId != chainId:
@@ -7096,19 +7237,19 @@ class XplorMRParserListener(ParseTreeListener):
                         min_auth_seq_id = ps['auth_seq_id'][0]
                         max_auth_seq_id = ps['auth_seq_id'][-1]
                         if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                            offset = 1
-                            while seqId + offset <= max_auth_seq_id:
-                                if seqId + offset in ps['auth_seq_id']:
+                            _seqId_ = seqId + 1
+                            while _seqId_ <= max_auth_seq_id:
+                                if _seqId_ in ps['auth_seq_id']:
                                     break
-                                offset += 1
-                            if seqId + offset not in ps['auth_seq_id']:
-                                offset = -1
-                                while seqId + offset >= min_auth_seq_id:
-                                    if seqId + offset in ps['auth_seq_id']:
+                                _seqId_ += 1
+                            if _seqId_ not in ps['auth_seq_id']:
+                                _seqId_ = seqId - 1
+                                while _seqId_ >= min_auth_seq_id:
+                                    if _seqId_ in ps['auth_seq_id']:
                                         break
-                                    offset -= 1
-                            if seqId + offset in ps['auth_seq_id']:
-                                idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                                    _seqId_ -= 1
+                            if _seqId_ in ps['auth_seq_id']:
+                                idx = ps['auth_seq_id'].index(_seqId_) - _seqId_ - seqId
                                 try:
                                     seqId = ps['auth_seq_id'][idx]
                                     compId = ps['comp_id'][idx]
@@ -7116,6 +7257,16 @@ class XplorMRParserListener(ParseTreeListener):
                                     pass
                     else:
                         compId = None
+
+                    if not isPolySeq and compId is None:
+                        if 'alt_auth_seq_id' in ps and seqId in ps['alt_auth_seq_id']:
+                            idx = ps['alt_auth_seq_id'].index(seqId)
+                            seqId = ps['seq_id'][idx]
+                            compId = ps['comp_id'][idx]
+                        elif seqId in ps['seq_id']:
+                            idx = ps['seq_id'].index(seqId)
+                            compId = ps['comp_id'][idx]
+                            _seqId_ = ps['auth_seq_id'][idx]
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
@@ -7152,6 +7303,9 @@ class XplorMRParserListener(ParseTreeListener):
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _seqId == seqId)
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 
+                    if not isPolySeq and isChainSpecified and self.doesNonPolySeqIdMatchWithPolySeqUnobs(_factor['chain_id'][0], _seqId_):
+                        continue
+
                     foundCompId = True
 
                     if not self.__with_axis and not self.__with_para:
@@ -7162,7 +7316,7 @@ class XplorMRParserListener(ParseTreeListener):
                             if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                 continue
                         if self.__with_para:
-                            if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS):
+                            if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS or atomId in LANTHANOID_ELEMENTS):
                                 continue
 
                         if self.__with_axis or self.__with_para:
@@ -7172,9 +7326,19 @@ class XplorMRParserListener(ParseTreeListener):
 
                         atomId = atomId.upper()
 
-                        if compId not in monDict3 and self.__mrAtomNameMapping is not None and _seqId in ps['auth_seq_id']:
-                            authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
+                        if compId not in monDict3 and self.__mrAtomNameMapping is not None and (_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id']):
+                            if _seqId in ps['auth_seq_id']:
+                                authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
+                            else:
+                                authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId_)]
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
+                            if coordAtomSite is not None and atomId not in coordAtomSite['atom_id']:
+                                if self.__reasons is not None and 'branch_remap' in self.__reasons:
+                                    _seqId_ = retrieveOriginalSeqIdFromMRMap(self.__reasons['branch_remap'], chainId, seqId)
+                                    if _seqId_ != seqId:
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId_, authCompId, atomId, coordAtomSite)
+                                elif seqId != _seqId:
+                                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
 
@@ -7354,6 +7518,9 @@ class XplorMRParserListener(ParseTreeListener):
                                 else:
                                     ccdCheck = True
 
+                            if len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1:
+                                continue
+
                             if isPolySeq and 'ambig_auth_seq_id' in ps and _seqId in ps['ambig_auth_seq_id']:
                                 continue
 
@@ -7363,14 +7530,24 @@ class XplorMRParserListener(ParseTreeListener):
                             if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and _atomId not in XPLOR_NITROXIDE_NAMES:
                                 _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
                                 if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
+                                    if len(origAtomId) > 1:
+                                        typeSymbols = set()
+                                        for _atomId_ in origAtomId:
+                                            typeSymbol = next((cca[self.__ccU.ccaTypeSymbol] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId_), None)
+                                            if typeSymbol is not None:
+                                                typeSymbols.add(typeSymbol)
+                                                if len(typeSymbols) > 1:
+                                                    break
+                                        if len(typeSymbols) > 1:
+                                            continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                            if self.__cur_subtype != 'plane':
+                                            if self.__cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
                                                 if seqId == 1 and _atomId in ('H', 'HN'):
-                                                    if 'H1' in coordAtomSite['atom_id']:
+                                                    if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] == 'H':
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -7384,8 +7561,24 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "\
                                                                     "Please re-upload the model file.\n"
                                                 if not checked:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                        if isPolySeq and not self.__preferAuthSeq\
+                                                           and ('label_seq_offset' not in self.reasonsForReParsing
+                                                                or chainId not in self.reasonsForReParsing['label_seq_offset']):
+                                                            if 'label_seq_offset' not in self.reasonsForReParsing:
+                                                                self.reasonsForReParsing['label_seq_offset'] = {}
+                                                            offset = self.getLabelSeqOffsetDueToUnobs(ps)
+                                                            self.reasonsForReParsing['label_seq_offset'][chainId] = offset
+                                                            if offset != 0:
+                                                                self.reasonsForReParsing['label_seq_scheme'] = True
+                                                        if seqId < 1 and len(self.__polySeq) == 1:
+                                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\
+                                                                f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                                                "Please update the sequence in the Macromolecules page.\n"
+                                                        else:
+                                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         # """
                                         # if self.__reasons is None and seqKey in self.__authToLabelSeq:
@@ -7401,19 +7594,30 @@ class XplorMRParserListener(ParseTreeListener):
                                         if cifCheck and self.__cur_subtype != 'plane'\
                                            and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
                                            and (self.__reasons is None or 'non_poly_remap' not in self.__reasons):
-                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                            if chainId in MAJOR_ASYM_ID_SET:
+                                                if seqId < 1 and len(self.__polySeq) == 1:
+                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\
+                                                        f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
+                                                        "Please update the sequence in the Macromolecules page.\n"
+                                                else:
+                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 
         return foundCompId
 
     def getOrigSeqId(self, ps, seqId, isPolySeq=True):
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
         if not self.__preferAuthSeq:
+            chainId = ps['chain_id']
+            offset = 0
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+                offset = self.__reasons['label_seq_offset'][chainId]
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__authToLabelSeq:
                 _chainId, _seqId = self.__authToLabelSeq[seqKey]
                 if _seqId in ps['seq_id']:
-                    return _seqId
+                    return _seqId + offset
         if seqId in ps['auth_seq_id']:
             return seqId
         # if seqId in ps['seq_id']:
@@ -7423,7 +7627,11 @@ class XplorMRParserListener(ParseTreeListener):
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
         if not self.__preferAuthSeq:
-            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
+            chainId = ps['chain_id']
+            offset = 0
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+                offset = self.__reasons['label_seq_offset'][chainId]
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
@@ -7462,6 +7670,9 @@ class XplorMRParserListener(ParseTreeListener):
         return seqKey, None
 
     def getAtomIdList(self, factor, compId, atomId):
+        key = (compId, atomId, 'alt_atom_id' in factor)
+        if key in self.__cachedDictForAtomIdList:
+            return self.__cachedDictForAtomIdList[key]
         atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
         if 'alt_atom_id' in factor and details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -7470,7 +7681,52 @@ class XplorMRParserListener(ParseTreeListener):
             _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
             if _atomId != atomId:
                 atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
+        self.__cachedDictForAtomIdList[key] = atomIds
         return atomIds
+
+    def getLabelSeqOffsetDueToUnobs(self, ps):
+        authChainId = ps['auth_chain_id']
+        for labelSeqId, authSeqId in zip(ps['seq_id'], ps['auth_seq_id']):
+            seqKey = (authChainId, authSeqId)
+            if seqKey not in self.__coordUnobsRes:
+                return labelSeqId - 1
+        return ps['seq_id'][-1] - 1
+
+    def doesNonPolySeqIdMatchWithPolySeqUnobs(self, chainId, seqId):
+        _ps_ = next((_ps_ for _ps_ in self.__polySeq if _ps_['auth_chain_id'] == chainId), None)
+        if _ps_ is not None:
+            _chainId_ = _ps_['chain_id']
+            _seqKey_ = (_chainId_, seqId)
+            if _seqKey_ in self.__labelToAuthSeq:
+                if self.__labelToAuthSeq[_seqKey_] != _seqKey_:
+                    if self.__labelToAuthSeq[_seqKey_] in self.__coordUnobsRes:
+                        return True
+                else:
+                    max_label_seq_id = _ps_['seq_id'][-1]
+                    _seqId_ = seqId + 1
+                    while _seqId_ <= max_label_seq_id:
+                        if _seqId_ in _ps_['seq_id']:
+                            _seqKey_ = (_chainId_, _seqId_)
+                            if _seqKey_ in self.__labelToAuthSeq and self.__labelToAuthSeq[_seqKey_] != _seqKey_:
+                                break
+                        _seqId_ += 1
+                    if _seqId_ not in _ps_['seq_id']:
+                        min_label_seq_id = _ps_['seq_id'][0]
+                        _seqId_ = seqId - 1
+                        while _seqId_ >= min_label_seq_id:
+                            if _seqId_ in _ps_['seq_id']:
+                                _seqKey_ = (_chainId_, _seqId_)
+                                if _seqKey_ in self.__labelToAuthSeq and self.__labelToAuthSeq[_seqKey_] != _seqKey_:
+                                    break
+                            _seqId_ -= 1
+                    if _seqId_ in _ps_['seq_id']:
+                        _seqKey_ = (_chainId_, _seqId_)
+                        if _seqKey_ in self.__labelToAuthSeq and self.__labelToAuthSeq[_seqKey_] != _seqKey_:
+                            __chainId__, __seqId__ = self.__labelToAuthSeq[_seqKey_]
+                            __seqKey__ = (__chainId__, __seqId__ - (_seqId_ - seqId))
+                            if __seqKey__ in self.__coordUnobsRes:
+                                return True
+        return False
 
     def intersectionFactor_expressions(self, atomSelection=None):
         self.consumeFactor_expressions(cifCheck=False)
@@ -7777,8 +8033,8 @@ class XplorMRParserListener(ParseTreeListener):
                     chainId = str(ctx.Simple_name(0))
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                if ps['auth_chain_id'] == self.getRealChainId(chainId)]
-                    if self.__hasNonPoly:
-                        for np in self.__nonPoly:
+                    if self.__hasNonPolySeq:
+                        for np in self.__nonPolySeq:
                             _chainId = np['auth_chain_id']
                             if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
                                 self.factor['chain_id'].append(_chainId)
@@ -7790,8 +8046,8 @@ class XplorMRParserListener(ParseTreeListener):
                     _chainId = toRegEx(chainId)
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                if re.match(_chainId, ps['auth_chain_id'])]
-                    if self.__hasNonPoly:
-                        for np in self.__nonPoly:
+                    if self.__hasNonPolySeq:
+                        for np in self.__nonPolySeq:
                             __chainId = np['auth_chain_id']
                             if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
                                 self.factor['chain_id'].append(__chainId)
@@ -7837,9 +8093,9 @@ class XplorMRParserListener(ParseTreeListener):
                                         _, realSeqId = self.__authToLabelSeq[seqKey]
                                         if re.match(_seqId, str(realSeqId)):
                                             _seqIdSelect.add(realSeqId)
-                    if self.__hasNonPoly:
+                    if self.__hasNonPolySeq:
                         for chainId in self.factor['chain_id']:
-                            npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                            npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                             for np in npList:
                                 found = False
                                 for realSeqId in np['auth_seq_id']:
@@ -7871,9 +8127,9 @@ class XplorMRParserListener(ParseTreeListener):
                                 if self.__ccU.updateChemCompDict(compId):
                                     if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
                                         _atomIdSelect.add(atomId)
-                    if self.__hasNonPoly:
+                    if self.__hasNonPolySeq:
                         for chainId in self.factor['chain_id']:
-                            npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                            npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                             for np in npList:
                                 for seqId in self.factor['seq_id']:
                                     if seqId in np['auth_seq_id']:
@@ -7902,9 +8158,9 @@ class XplorMRParserListener(ParseTreeListener):
                                             realAtomId = cca[self.__ccU.ccaAtomId]
                                             if re.match(_atomId, realAtomId):
                                                 _atomIdSelect.add(realAtomId)
-                    if self.__hasNonPoly:
+                    if self.__hasNonPolySeq:
                         for chainId in self.factor['chain_id']:
-                            npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                            npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                             for np in npList:
                                 for seqId in self.factor['seq_id']:
                                     if seqId in np['auth_seq_id']:
@@ -8221,8 +8477,8 @@ class XplorMRParserListener(ParseTreeListener):
                                         seqId = self.getRealSeqId(ps, seqId)
                                         if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId):
                                             _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-                                    if self.__hasNonPoly:
-                                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                                    if self.__hasNonPolySeq:
+                                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                                         for np in npList:
                                             if seqId in np['auth_seq_id'] and np['comp_id'][np['auth_seq_id'].index(seqId)] == compId:
                                                 seqId = self.getRealSeqId(np, seqId, False)
@@ -8291,8 +8547,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                         if numpy.linalg.norm(toNpArray(_neighbor[0]) - origin) < 2.5:
                                                             _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
 
-                                    if self.__hasNonPoly:
-                                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                                    if self.__hasNonPolySeq:
+                                        npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                                         for np in npList:
                                             for _seqId in [seqId - 1, seqId + 1]:
                                                 if _seqId in np['auth_seq_id']:
@@ -8532,8 +8788,8 @@ class XplorMRParserListener(ParseTreeListener):
                                     atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
                                     for atomId in atomIds:
                                         _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
-                            if self.__hasNonPoly:
-                                npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                            if self.__hasNonPolySeq:
+                                npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                                 for np in npList:
                                     if seqId in np['auth_seq_id'] and np['comp_id'][np['auth_seq_id'].index(seqId)] == compId:
                                         seqId = self.getRealSeqId(np, seqId, False)
@@ -8670,7 +8926,7 @@ class XplorMRParserListener(ParseTreeListener):
                         if self.__with_axis and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
                         if self.__with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                                 or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+                                                 or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
@@ -8709,13 +8965,18 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__verbose:
                         self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
-                _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
-                self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
-
-                if len(self.factor['atom_selection']) == 0:
+                if 'atom_selection' not in self.factor:
                     self.factor['atom_id'] = [None]
                     self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         "The 'not' clause has no effect.\n"
+                else:
+                    _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
+                    self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+
+                    if len(self.factor['atom_selection']) == 0:
+                        self.factor['atom_id'] = [None]
+                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                            "The 'not' clause has no effect.\n"
 
             elif ctx.Point():
                 if self.__sel_expr_debug:
@@ -8941,7 +9202,7 @@ class XplorMRParserListener(ParseTreeListener):
                             pass
                         if self.__with_para and 'atom_id' in __factor\
                            and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
@@ -8998,7 +9259,7 @@ class XplorMRParserListener(ParseTreeListener):
                             pass
                         if self.__with_para and 'atom_id' in __factor\
                            and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
@@ -9039,8 +9300,8 @@ class XplorMRParserListener(ParseTreeListener):
                             return
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                if begChainId <= ps['auth_chain_id'] <= endChainId]
-                    if self.__hasNonPoly:
-                        for np in self.__nonPoly:
+                    if self.__hasNonPolySeq:
+                        for np in self.__nonPolySeq:
                             _chainId = np['auth_chain_id']
                             if begChainId <= _chainId <= endChainId and _chainId not in self.factor['chain_id']:
                                 self.factor['chain_id'].append(_chainId)
@@ -9064,8 +9325,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 return
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                    if ps['auth_chain_id'] == self.getRealChainId(chainId)]
-                        if self.__hasNonPoly:
-                            for np in self.__nonPoly:
+                        if self.__hasNonPolySeq:
+                            for np in self.__nonPolySeq:
                                 _chainId = np['auth_chain_id']
                                 if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(_chainId)
@@ -9074,8 +9335,8 @@ class XplorMRParserListener(ParseTreeListener):
                         _chainId = toRegEx(chainId)
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
                                                    if re.match(_chainId, ps['auth_chain_id'])]
-                        if self.__hasNonPoly:
-                            for np in self.__nonPoly:
+                        if self.__hasNonPolySeq:
+                            for np in self.__nonPolySeq:
                                 __chainId = np['auth_chain_id']
                                 if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(__chainId)
@@ -9118,7 +9379,7 @@ class XplorMRParserListener(ParseTreeListener):
                             pass
                         if self.__with_para and 'atom_id' in __factor\
                            and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS):
+                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
@@ -10310,9 +10571,17 @@ class XplorMRParserListener(ParseTreeListener):
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.hbondRestraints)] = self.__preferAuthSeq
         elif self.__cur_subtype == 'geo':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
+        if not self.__preferAuthSeq:
+            self.__preferLabelSeqCount += 1
+            if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
+                self.reasonsForReParsing['label_seq_scheme'] = True
 
     def __retrieveLocalSeqScheme(self):
         if self.__reasons is None or 'local_seq_scheme' not in self.__reasons:
+            return
+        if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+            self.__preferAuthSeq = False
+            self.__authSeqId = 'label_seq_id'
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)

@@ -159,6 +159,9 @@
 # 06-Jul-2022  M. Yokochi - add support for SYBYL MR format (DAOTHER-7902, NMR restraint remediation)
 # 05-Aug-2022  M. Yokochi - do not add a saveframe tag if there is already the tag (DAOTHER-7947)
 # 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
+# 06-Sep-2022  M. Yokochi - add support for branched entity (NMR restraint remediation)
+# 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (DAOTHER-8059, NMR restraint remediation)
+# 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (DAOTHER-8058, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -235,6 +238,9 @@ try:
                                                        DIST_UNCERTAINTY_RANGE,
                                                        ANGLE_UNCERTAINTY_RANGE,
                                                        RDC_UNCERTAINTY_RANGE,
+                                                       CSA_RESTRAINT_RANGE,
+                                                       CCR_RESTRAINT_RANGE,
+                                                       PRE_RESTRAINT_RANGE,
                                                        WEIGHT_RANGE,
                                                        SCALE_RANGE,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -250,6 +256,8 @@ try:
     from wwpdb.utils.nmr.mr.GromacsPTReader import GromacsPTReader
     from wwpdb.utils.nmr.mr.DynamoMRReader import DynamoMRReader
     from wwpdb.utils.nmr.mr.SybylMRReader import SybylMRReader
+    from wwpdb.utils.nmr.mr.IsdMRReader import IsdMRReader
+    from wwpdb.utils.nmr.mr.CharmmMRReader import CharmmMRReader
 
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -304,6 +312,9 @@ except ImportError:
                                            DIST_UNCERTAINTY_RANGE,
                                            ANGLE_UNCERTAINTY_RANGE,
                                            RDC_UNCERTAINTY_RANGE,
+                                           CSA_RESTRAINT_RANGE,
+                                           CCR_RESTRAINT_RANGE,
+                                           PRE_RESTRAINT_RANGE,
                                            WEIGHT_RANGE,
                                            SCALE_RANGE,
                                            REPRESENTATIVE_MODEL_ID,
@@ -319,6 +330,8 @@ except ImportError:
     from nmr.mr.GromacsPTReader import GromacsPTReader
     from nmr.mr.DynamoMRReader import DynamoMRReader
     from nmr.mr.SybylMRReader import SybylMRReader
+    from nmr.mr.IsdMRReader import IsdMRReader
+    from nmr.mr.CharmmMRReader import CharmmMRReader
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -350,6 +363,7 @@ ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
 
 RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 
+bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr\d+_3.str$')
 
 datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
 sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
@@ -1003,6 +1017,8 @@ class NmrDpUtility:
         # temporary file path to be removed (release mode)
         self.__tmpPath = None
 
+        self.__dirPath = None
+
         # auxiliary input resource
         self.__inputParamDict = {}
 
@@ -1203,11 +1219,11 @@ class NmrDpUtility:
                                      'noepk_restraint', 'jcoup_restraint', 'rdc_raw_data',
                                      'csa_restraint', 'ddc_restraint',
                                      'hvycs_restraint', 'procs_restraint',
-                                     'csp_restraint', 'relax_restraint',
+                                     'csp_restraint', 'auto_relax_restraint',
                                      'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                      'other_restraint')
 
-        self.cif_content_subtypes = ('poly_seq', 'non_poly', 'coordinate')
+        self.cif_content_subtypes = ('poly_seq', 'non_poly', 'branch', 'coordinate')
 
         # readable file type
         self.readable_file_type = {'nef': 'NEF (NMR Exchange Format)',
@@ -1247,7 +1263,7 @@ class NmrDpUtility:
                                       'hvycs_restraint': None,
                                       'procs_restraint': None,
                                       'csp_restraint': None,
-                                      'relax_restraint': None,
+                                      'auto_relax_restraint': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'other_restraint': None
@@ -1270,7 +1286,7 @@ class NmrDpUtility:
                                            'hvycs_restraint': 'CA_CB_chem_shift_constraints',
                                            'procs_restraint': 'H_chem_shift_constraints',
                                            'csp_restraint': 'chem_shift_perturbation',
-                                           'relax_restraint': 'auto_relaxation',
+                                           'auto_relax_restraint': 'auto_relaxation',
                                            'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                                            'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                                            'other_restraint': 'other_data_types'
@@ -1296,7 +1312,7 @@ class NmrDpUtility:
                                       'hvycs_restraint': None,
                                       'procs_restraint': None,
                                       'csp_restraint': None,
-                                      'relax_restraint': None,
+                                      'auto_relax_restraint': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'other_restraint': None
@@ -1319,13 +1335,14 @@ class NmrDpUtility:
                                            'hvycs_restraint': '_CA_CB_constraint',
                                            'procs_restraint': '_H_chem_shift_constraint',
                                            'csp_restraint': '_Chem_shift_perturbation',
-                                           'relax_restraint': '_Auto_relaxation',
-                                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
+                                           'auto_relax_restraint': '_Auto_relaxation',
+                                           'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                                            'ccr_dd_restraint': '_Cross_correlation_DD',
                                            'other_restraint': '_Other_data'
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
                                        'non_poly': 'pdbx_nonpoly_scheme',
+                                       'branch': 'pdbx_branch_scheme',
                                        'coordinate': 'atom_site',
                                        'poly_seq_alias': 'ndb_poly_seq_scheme',
                                        'non_poly_alias': 'ndb_nonpoly_scheme'
@@ -1384,7 +1401,19 @@ class NmrDpUtility:
                                    'dihed_restraint': 'index',
                                    'rdc_restraint': 'index',
                                    'spectral_peak': 'index',
-                                   'spectral_peak_alt': None
+                                   'spectral_peak_alt': None,
+                                   'noepk_restraint': None,
+                                   'jcoup_restraint': None,
+                                   'rdc_raw_data': None,
+                                   'csa_restraint': None,
+                                   'ddc_restraint': None,
+                                   'hvycs_restraint': None,
+                                   'procs_restraint': None,
+                                   'csp_restraint': None,
+                                   'auto_relax_restraint': None,
+                                   'ccr_d_csa_restraint': None,
+                                   'ccr_dd_restraint': None,
+                                   'other_restraint': None
                                    },
                            'nmr-star': {'entry_info': None,
                                         'poly_seq': None,
@@ -1395,10 +1424,23 @@ class NmrDpUtility:
                                         'dihed_restraint': 'Index_ID',
                                         'rdc_restraint': 'Index_ID',
                                         'spectral_peak': 'Index_ID',
-                                        'spectral_peak_alt': None
+                                        'spectral_peak_alt': None,
+                                        'noepk_restraint': None,
+                                        'jcoup_restraint': None,
+                                        'rdc_raw_data': None,
+                                        'csa_restraint': None,
+                                        'ddc_restraint': None,
+                                        'hvycs_restraint': None,
+                                        'procs_restraint': None,
+                                        'csp_restraint': None,
+                                        'auto_relax_restraint': None,
+                                        'ccr_d_csa_restraint': None,
+                                        'ccr_dd_restraint': None,
+                                        'other_restraint': None
                                         },
                            'pdbx': {'poly_seq': None,
                                     'non_poly': None,
+                                    'branch': None,
                                     'coordinate': 'id'
                                     }
                            }
@@ -1413,7 +1455,19 @@ class NmrDpUtility:
                                     'dihed_restraint': 'weight',
                                     'rdc_restraint': 'weight',
                                     'spectral_peak': None,
-                                    'spectral_peak_alt': None
+                                    'spectral_peak_alt': None,
+                                    'noepk_restraint': None,
+                                    'jcoup_restraint': None,
+                                    'rdc_raw_data': None,
+                                    'csa_restraint': None,
+                                    'ddc_restraint': None,
+                                    'hvycs_restraint': None,
+                                    'procs_restraint': None,
+                                    'csp_restraint': None,
+                                    'auto_relax_restraint': None,
+                                    'ccr_d_csa_restraint': None,
+                                    'ccr_dd_restraint': None,
+                                    'other_restraint': None
                                     },
                             'nmr-star': {'entry_info': None,
                                          'poly_seq': None,
@@ -1424,10 +1478,23 @@ class NmrDpUtility:
                                          'dihed_restraint': 'Weight',
                                          'rdc_restraint': 'Weight',
                                          'spectral_peak': None,
-                                         'spectral_peak_alt': None
+                                         'spectral_peak_alt': None,
+                                         'noepk_restraint': None,
+                                         'jcoup_restraint': None,
+                                         'rdc_raw_data': None,
+                                         'csa_restraint': None,
+                                         'ddc_restraint': None,
+                                         'hvycs_restraint': None,
+                                         'procs_restraint': None,
+                                         'csp_restraint': None,
+                                         'auto_relax_restraint': None,
+                                         'ccr_d_csa_restraint': None,
+                                         'ccr_dd_restraint': None,
+                                         'other_restraint': None
                                          },
                             'pdbx': {'poly_seq': None,
                                      'non_poly': None,
+                                     'branch': None,
                                      'coordinate': None
                                      }
                             }
@@ -1442,13 +1509,37 @@ class NmrDpUtility:
                                         'dihed_restraint': 'restraint_id',
                                         'rdc_restraint': 'restraint_id',
                                         'spectral_peak': 'peak_id',
-                                        'spectral_peak_alt': None
+                                        'spectral_peak_alt': None,
+                                        'noepk_restraint': None,
+                                        'jcoup_restraint': None,
+                                        'rdc_raw_data': None,
+                                        'csa_restraint': None,
+                                        'ddc_restraint': None,
+                                        'hvycs_restraint': None,
+                                        'procs_restraint': None,
+                                        'csp_restraint': None,
+                                        'auto_relax_restraint': None,
+                                        'ccr_d_csa_restraint': None,
+                                        'ccr_dd_restraint': None,
+                                        'other_restraint': None
                                         },
                                 'nmr-star': {'dist_restraint': 'ID',
                                              'dihed_restraint': 'ID',
                                              'rdc_restraint': 'ID',
                                              'spectral_peak': 'ID',
-                                             'spectral_peak_alt': 'ID'
+                                             'spectral_peak_alt': 'ID',
+                                             'noepk_restraint': 'ID',
+                                             'jcoup_restraint': 'ID',
+                                             'rdc_raw_data': 'ID',
+                                             'csa_restraint': 'ID',
+                                             'ddc_restraint': 'ID',
+                                             'hvycs_restraint': 'ID',
+                                             'procs_restraint': 'ID',
+                                             'csp_restraint': 'ID',
+                                             'auto_relax_restraint': 'ID',
+                                             'ccr_d_csa_restraint': 'ID',
+                                             'ccr_dd_restraint': 'ID',
+                                             'other_restraint': 'ID'
                                              }
                                 }
 
@@ -1507,7 +1598,19 @@ class NmrDpUtility:
                                                     {'name': 'atom_name_2', 'type': 'str'}
                                                     ],
                                   'spectral_peak': None,
-                                  'spectral_peak_alt': None
+                                  'spectral_peak_alt': None,
+                                  'noepk_restraint': None,
+                                  'jcoup_restraint': None,
+                                  'rdc_raw_data': None,
+                                  'csa_restraint': None,
+                                  'ddc_restraint': None,
+                                  'hvycs_restraint': None,
+                                  'procs_restraint': None,
+                                  'csp_restraint': None,
+                                  'auto_relax_restraint': None,
+                                  'ccr_d_csa_restraint': None,
+                                  'ccr_dd_restraint': None,
+                                  'other_restraint': None
                                   },
                           'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID'},
                                                     {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
@@ -1529,7 +1632,7 @@ class NmrDpUtility:
                                                           {'name': 'Atom_isotope_number', 'type': 'enum-int', 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                            'enforce-enum': True},
                                                           {'name': 'Mol_common_name', 'type': 'str'}],
-                                       'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'dist_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
                                                           {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1539,7 +1642,7 @@ class NmrDpUtility:
                                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                                           ],
-                                       'dihed_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'dihed_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1557,7 +1660,7 @@ class NmrDpUtility:
                                                            {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
-                                       'rdc_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'rdc_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                          {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -1568,9 +1671,137 @@ class NmrDpUtility:
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
                                                          ],
                                        'spectral_peak': None,
-                                       'spectral_peak_alt': [{'name': 'ID', 'type': 'positive-int'},
+                                       'spectral_peak_alt': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                              {'name': 'Spectral_peak_list_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'}
-                                                             ]
+                                                             ],
+                                       'noepk_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                           {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_1', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                           {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_2', 'type': 'str'}
+                                                           ],
+                                       'jcoup_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                                           {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_1', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                                           {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_2', 'type': 'str'}
+                                                           ],
+                                       'rdc_raw_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                        {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                        {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                                        {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                        {'name': 'Atom_ID_1', 'type': 'str'},
+                                                        {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                        {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                                        {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                        {'name': 'Atom_ID_2', 'type': 'str'}
+                                                        ],
+                                       'csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                         {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                         {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                                         {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                         {'name': 'Atom_ID', 'type': 'str'}
+                                                         ],
+                                       'ddc_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                         {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                                         {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                         {'name': 'Atom_ID_1', 'type': 'str'},
+                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                         {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                                         {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                         {'name': 'Atom_ID_2', 'type': 'str'}
+                                                         ],
+                                       'hvycs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                                           {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_1', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                                           {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_2', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_3'},
+                                                           {'name': 'Comp_index_ID_3', 'type': 'int', 'default-from': 'Seq_ID_3'},
+                                                           {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_3', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_4'},
+                                                           {'name': 'Comp_index_ID_4', 'type': 'int', 'default-from': 'Seq_ID_4'},
+                                                           {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_4', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_5', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_5'},
+                                                           {'name': 'Comp_index_ID_5', 'type': 'int', 'default-from': 'Seq_ID_5'},
+                                                           {'name': 'Comp_ID_5', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_5', 'type': 'str'}
+                                                           ],
+                                       'procs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                           {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID'},
+                                                           {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                                           {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID', 'type': 'str'}
+                                                           ],
+                                       'csp_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                         {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                         {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                                         {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                         {'name': 'Atom_ID', 'type': 'str'}
+                                                         ],
+                                       'auto_relax_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                                {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                                {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                                                {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                                {'name': 'Atom_ID', 'type': 'str'}
+                                                                ],
+                                       'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                               {'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                               {'name': 'Dipole_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_seq_ID_1'},
+                                                               {'name': 'Dipole_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                               {'name': 'Dipole_atom_ID_1', 'type': 'str'},
+                                                               {'name': 'Dipole_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                               {'name': 'Dipole_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_seq_ID_2'},
+                                                               {'name': 'Dipole_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                               {'name': 'Dipole_atom_ID_2', 'type': 'str'},
+                                                               {'name': 'CSA_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                               {'name': 'CSA_comp_index_ID_1', 'type': 'int', 'default-from': 'CSA_seq_ID_1'},
+                                                               {'name': 'CSA_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                               {'name': 'CSA_atom_ID_1', 'type': 'str'},
+                                                               {'name': 'CSA_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                               {'name': 'CSA_comp_index_ID_2', 'type': 'int', 'default-from': 'CSA_seq_ID_2'},
+                                                               {'name': 'CSA_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                               {'name': 'CSA_atom_ID_2', 'type': 'str'}
+                                                               ],
+                                       'ccr_dd_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                            {'name': 'Dipole_1_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                            {'name': 'Dipole_1_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_1_seq_ID_1'},
+                                                            {'name': 'Dipole_1_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                            {'name': 'Dipole_1_atom_ID_1', 'type': 'str'},
+                                                            {'name': 'Dipole_1_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                            {'name': 'Dipole_1_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_1_seq_ID_2'},
+                                                            {'name': 'Dipole_1_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                            {'name': 'Dipole_1_atom_ID_2', 'type': 'str'},
+                                                            {'name': 'Dipole_2_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                            {'name': 'Dipole_2_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_2_seq_ID_1'},
+                                                            {'name': 'Dipole_2_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                            {'name': 'Dipole_2_atom_ID_1', 'type': 'str'},
+                                                            {'name': 'Dipole_2_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                            {'name': 'Dipole_2_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_2_seq_ID_2'},
+                                                            {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                            {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}
+                                                            ],
+                                       'other_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                           {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                           {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                                           {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID', 'type': 'str'}
+                                                           ]
                                        },
                           'pdbx': {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1594,6 +1825,11 @@ class NmrDpUtility:
                                                       {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                       {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
                                                       ],
+                                   'branch': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                              {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                              {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                                              ],
                                    'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                   {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
@@ -1658,7 +1894,19 @@ class NmrDpUtility:
                                                             {'name': 'atom_name_2', 'type': 'str'}
                                                             ],
                                           'spectral_peak': None,
-                                          'spectral_peak_alt': None
+                                          'spectral_peak_alt': None,
+                                          'noepk_restraint': None,
+                                          'jcoup_restraint': None,
+                                          'rdc_raw_data': None,
+                                          'csa_restraint': None,
+                                          'ddc_restraint': None,
+                                          'hvycs_restraint': None,
+                                          'procs_restraint': None,
+                                          'csp_restraint': None,
+                                          'auto_relax_restraint': None,
+                                          'ccr_d_csa_restraint': None,
+                                          'ccr_dd_restraint': None,
+                                          'other_restraint': None
                                           },
                                   'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
                                                                    'default': '1', 'default-from': 'Auth_asym_ID_1'},
@@ -1704,7 +1952,175 @@ class NmrDpUtility:
                                                                  {'name': 'Atom_ID_2', 'type': 'str'}
                                                                  ],
                                                'spectral_peak': None,
-                                               'spectral_peak_alt': None
+                                               'spectral_peak_alt': None,
+                                               'noepk_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                    'default': '1'},
+                                                                   {'name': 'Comp_index_ID_1', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_1'},
+                                                                   {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_1', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                    'default': '1'},
+                                                                   {'name': 'Comp_index_ID_2', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_2'},
+                                                                   {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_2', 'type': 'str'}
+                                                                   ],
+                                               'jcoup_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                    'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                                                   {'name': 'Comp_index_ID_1', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_1'},
+                                                                   {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_1', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                    'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                                                   {'name': 'Comp_index_ID_2', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_2'},
+                                                                   {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_2', 'type': 'str'}
+                                                                   ],
+                                               'rdc_raw_data': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                 'default': '1'},
+                                                                {'name': 'Comp_index_ID_1', 'type': 'int',
+                                                                 'default-from': 'Seq_ID_1'},
+                                                                {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                {'name': 'Atom_ID_1', 'type': 'str'},
+                                                                {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                 'default': '1'},
+                                                                {'name': 'Comp_index_ID_2', 'type': 'int',
+                                                                 'default-from': 'Seq_ID_2'},
+                                                                {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                {'name': 'Atom_ID_2', 'type': 'str'}
+                                                                ],
+                                               'csa_restraint': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str',
+                                                                  'default': '1'},
+                                                                 {'name': 'Comp_index_ID', 'type': 'int',
+                                                                  'default-from': 'Seq_ID'},
+                                                                 {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                                 {'name': 'Atom_ID', 'type': 'str'}
+                                                                 ],
+                                               'ddc_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                  'default': '1'},
+                                                                 {'name': 'Comp_index_ID_1', 'type': 'int',
+                                                                  'default-from': 'Seq_ID_1'},
+                                                                 {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                 {'name': 'Atom_ID_1', 'type': 'str'},
+                                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                  'default': '1'},
+                                                                 {'name': 'Comp_index_ID_2', 'type': 'int',
+                                                                  'default-from': 'Seq_ID_2'},
+                                                                 {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                 {'name': 'Atom_ID_2', 'type': 'str'}
+                                                                 ],
+                                               'hvycs_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                    'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                                                   {'name': 'Comp_index_ID_1', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_1'},
+                                                                   {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_1', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                    'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                                                   {'name': 'Comp_index_ID_2', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_2'},
+                                                                   {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_2', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str',
+                                                                    'default': '1', 'default-from': 'Auth_asym_ID_3'},
+                                                                   {'name': 'Comp_index_ID_3', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_3'},
+                                                                   {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_3', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str',
+                                                                    'default': '1', 'default-from': 'Auth_asym_ID_4'},
+                                                                   {'name': 'Comp_index_ID_4', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_4'},
+                                                                   {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_4', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_5', 'type': 'positive-int-as-str',
+                                                                    'default': '1', 'default-from': 'Auth_asym_ID_5'},
+                                                                   {'name': 'Comp_index_ID_5', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_5'},
+                                                                   {'name': 'Comp_ID_5', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_5', 'type': 'str'}
+                                                                   ],
+                                               'procs_restraint': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str',
+                                                                    'default': '1', 'default-from': 'Auth_asym_ID'},
+                                                                   {'name': 'Comp_index_ID', 'type': 'int',
+                                                                    'default-from': 'Seq_ID'},
+                                                                   {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID', 'type': 'str'}
+                                                                   ],
+                                               'csp_restraint': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str',
+                                                                  'default': '1'},
+                                                                 {'name': 'Comp_index_ID', 'type': 'int',
+                                                                  'default-from': 'Seq_ID'},
+                                                                 {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                                 {'name': 'Atom_ID', 'type': 'str'}
+                                                                 ],
+                                               'auto_relax_restraint': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str',
+                                                                         'default': '1'},
+                                                                        {'name': 'Comp_index_ID', 'type': 'int',
+                                                                         'default-from': 'Seq_ID'},
+                                                                        {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                                        {'name': 'Atom_ID', 'type': 'str'}
+                                                                        ],
+                                               'ccr_d_csa_restraint': [{'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                        'default': '1'},
+                                                                       {'name': 'Dipole_comp_index_ID_1', 'type': 'int',
+                                                                        'default-from': 'Dipole_seq_ID_1'},
+                                                                       {'name': 'Dipole_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                       {'name': 'Dipole_atom_ID_1', 'type': 'str'},
+                                                                       {'name': 'Dipole_entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                        'default': '1'},
+                                                                       {'name': 'Dipole_comp_index_ID_2', 'type': 'int',
+                                                                        'default-from': 'Dipole_seq_ID_2'},
+                                                                       {'name': 'Dipole_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                       {'name': 'Dipole_atom_ID_2', 'type': 'str'},
+                                                                       {'name': 'CSA_entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                        'default': '1'},
+                                                                       {'name': 'CSA_comp_index_ID_1', 'type': 'int',
+                                                                        'default-from': 'CSA_seq_ID_1'},
+                                                                       {'name': 'CSA_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                       {'name': 'CSA_atom_ID_1', 'type': 'str'},
+                                                                       {'name': 'CSA_entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                        'default': '1'},
+                                                                       {'name': 'CSA_comp_index_ID_2', 'type': 'int',
+                                                                        'default-from': 'CSA_seq_ID_2'},
+                                                                       {'name': 'CSA_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                       {'name': 'CSA_atom_ID_2', 'type': 'str'}
+                                                                       ],
+                                               'ccr_dd_restraint': [{'name': 'Dipole_1_entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                     'default': '1'},
+                                                                    {'name': 'Dipole_1_comp_index_ID_1', 'type': 'int',
+                                                                     'default-from': 'Dipole_1_seq_ID_1'},
+                                                                    {'name': 'Dipole_1_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                    {'name': 'Dipole_1_atom_ID_1', 'type': 'str'},
+                                                                    {'name': 'Dipole_1_entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                     'default': '1'},
+                                                                    {'name': 'Dipole_1_comp_index_ID_2', 'type': 'int',
+                                                                     'default-from': 'Dipole_1_seq_ID_2'},
+                                                                    {'name': 'Dipole_1_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                    {'name': 'Dipole_1_atom_ID_2', 'type': 'str'},
+                                                                    {'name': 'Dipole_2_entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                     'default': '1'},
+                                                                    {'name': 'Dipole_2_comp_index_ID_1', 'type': 'int',
+                                                                     'default-from': 'Dipole_2_seq_ID_1'},
+                                                                    {'name': 'Dipole_2_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                    {'name': 'Dipole_2_atom_ID_1', 'type': 'str'},
+                                                                    {'name': 'Dipole_2_entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                     'default': '1'},
+                                                                    {'name': 'Dipole_2_comp_index_ID_2', 'type': 'int',
+                                                                     'default-from': 'Dipole_2_seq_ID_2'},
+                                                                    {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                    {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}
+                                                                    ],
+                                               'other_restraint': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str',
+                                                                    'default': '1'},
+                                                                   {'name': 'Comp_index_ID', 'type': 'int',
+                                                                    'default-from': 'Seq_ID'},
+                                                                   {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID', 'type': 'str'}
+                                                                   ]
                                                }
                                   }
 
@@ -1877,7 +2293,19 @@ class NmrDpUtility:
                                                                 'coexist-with': None}},
                                                      {'name': 'height_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True}
                                                      ],
-                                   'spectral_peak_alt': None
+                                   'spectral_peak_alt': None,
+                                   'noepk_restraint': None,
+                                   'jcoup_restraint': None,
+                                   'rdc_raw_data': None,
+                                   'csa_restraint': None,
+                                   'ddc_restraint': None,
+                                   'hvycs_restraint': None,
+                                   'procs_restraint': None,
+                                   'csp_restraint': None,
+                                   'auto_relax_restraint': None,
+                                   'ccr_d_csa_restraint': None,
+                                   'ccr_dd_restraint': None,
+                                   'other_restraint': None
                                    },
                            'nmr-star': {'poly_seq': [{'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
                                                      {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -2158,7 +2586,450 @@ class NmrDpUtility:
                                                                'range': WEIGHT_RANGE},
                                                               {'name': 'Restraint', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('no', 'yes')}
-                                                              ]
+                                                              ],
+                                        'noepk_restraint': [{'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                             'group': {'member-with': ['Val_min', 'Val_max'],
+                                                                       'coexist-with': None,
+                                                                       'smaller-than': None,
+                                                                       'larger-than': None}},
+                                                            {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                             'group': {'member-with': ['Val', 'Val_max'],
+                                                                       'coexist-with': None,
+                                                                       'smaller-than': None,
+                                                                       'larger-than': ['Val_max']}},
+                                                            {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                             'group': {'member-with': ['Val', 'Val_min'],
+                                                                       'coexist-with': None,
+                                                                       'smaller-than': ['Val_min'],
+                                                                       'larger-than': None}},
+                                                            {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'range': {'min_inclusive': 0.0}},
+                                                            {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Homonucl_NOE_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
+                                                            ],
+                                        'jcoup_restraint': [{'name': 'Code', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                             'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                             'enforce-enum': True},
+                                                            {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                             'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                             'enforce-enum': True},
+                                                            {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                                             'enum': ALLOWED_AMBIGUITY_CODES,
+                                                             'enforce-enum': True},
+                                                            {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                             'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                             'enforce-enum': True},
+                                                            {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                             'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                             'enforce-enum': True},
+                                                            {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                                             'enum': ALLOWED_AMBIGUITY_CODES,
+                                                             'enforce-enum': True},
+                                                            {'name': 'Val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                             'range': RDC_RESTRAINT_RANGE,
+                                                             'group': {'member-with': ['Val_min', 'Val_max'],
+                                                                       'coexist-with': None,
+                                                                       'smaller-than': None,
+                                                                       'larger-than': None}},
+                                                            {'name': 'Val_min', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                             'range': RDC_RESTRAINT_RANGE,
+                                                             'group': {'member-with': ['Val_max'],
+                                                                       'coexist-with': None,
+                                                                       'smaller-than': None,
+                                                                       'larger-than': ['Val_max']}},
+                                                            {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                             'range': RDC_RESTRAINT_RANGE,
+                                                             'group': {'member-with': ['Val_min'],
+                                                                       'coexist-with': None,
+                                                                       'smaller-than': ['Val_min'],
+                                                                       'larger-than': None}},
+                                                            {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'range': {'min_inclusive': 0.0}},
+                                                            {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_aysm_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_aysm_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Coupling_constant_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                             'default': '1', 'default-from': 'parent'}
+                                                            ],
+                                        'rdc_raw_data': [{'name': 'RDC_code', 'type': 'str', 'mandatory': True},
+                                                         {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                          'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                          'enforce-enum': True},
+                                                         {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                          'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                          'enforce-enum': True},
+                                                         {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                                          'enum': ALLOWED_AMBIGUITY_CODES,
+                                                          'enforce-enum': True},
+                                                         {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                          'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                          'enforce-enum': True},
+                                                         {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                          'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                          'enforce-enum': True},
+                                                         {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                                          'enum': ALLOWED_AMBIGUITY_CODES,
+                                                          'enforce-enum': True},
+                                                         {'name': 'Val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          'range': RDC_RESTRAINT_RANGE,
+                                                          'group': {'member-with': ['Val_min', 'Val_max'],
+                                                                    'coexist-with': None,
+                                                                    'smaller-than': None,
+                                                                    'larger-than': None}},
+                                                         {'name': 'Val_min', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          'range': RDC_RESTRAINT_RANGE,
+                                                          'group': {'member-with': ['Val_max'],
+                                                                    'coexist-with': None,
+                                                                    'smaller-than': None,
+                                                                    'larger-than': ['Val_max']}},
+                                                         {'name': 'Val_max', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          'range': RDC_RESTRAINT_RANGE,
+                                                          'group': {'member-with': ['Val_min'],
+                                                                    'coexist-with': None,
+                                                                    'smaller-than': ['Val_min'],
+                                                                    'larger-than': None}},
+                                                         {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                          'range': {'min_inclusive': 0.0}},
+                                                         {'name': 'Val_bond_length', 'type': 'range-float', 'mandatory': False,
+                                                          'range': DIST_RESTRAINT_RANGE},
+                                                         {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                         {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                         {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'RDC_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
+                                                         ],
+                                        'csa_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                           'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                           'enforce-enum': True},
+                                                          {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                           'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                           'enforce-enum': True},
+                                                          {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                           'range': CSA_RESTRAINT_RANGE},
+                                                          {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                           'range': {'min_inclusive': 0.0}},
+                                                          {'name': 'Principal_value_sigma_11_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                                           'range': CSA_RESTRAINT_RANGE,
+                                                           'group': {'member-with': ['Principal_value_sigma_22_val', 'Principal_value_sigma_33_val'],
+                                                                     'coexist-with': None}},
+                                                          {'name': 'Principal_value_sigma_22_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                                           'range': CSA_RESTRAINT_RANGE,
+                                                           'group': {'member-with': ['Principal_value_sigma_11_val', 'Principal_value_sigma_33_val'],
+                                                                     'coexist-with': None}},
+                                                          {'name': 'Principal_value_sigma_33_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                                           'range': CSA_RESTRAINT_RANGE,
+                                                           'group': {'member-with': ['Principal_value_sigma_11_val', 'Principal_value_sigma_22_val'],
+                                                                     'coexist-with': None}},
+                                                          {'name': 'Principal_Euler_angle_alpha_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                                           'range': ANGLE_RESTRAINT_RANGE,
+                                                           'group': {'member-with': ['Principal_Euler_angle_beta_val', 'Principal_Euler_angle_gamma_val'],
+                                                                     'coexist-with': None}},
+                                                          {'name': 'Principal_Euler_angle_beta_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                                           'range': ANGLE_RESTRAINT_RANGE,
+                                                           'group': {'member-with': ['Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_gamma_val'],
+                                                                     'coexist-with': None}},
+                                                          {'name': 'Principal_Euler_angle_gamma_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                                           'range': ANGLE_RESTRAINT_RANGE,
+                                                           'group': {'member-with': ['Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_beta_val'],
+                                                                     'coexist-with': None}},
+                                                          {'name': 'Bond_length', 'type': 'range-float', 'mandatory': False,
+                                                           'range': DIST_RESTRAINT_RANGE},
+                                                          {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Chem_shift_anisotropy_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                           'default': '1', 'default-from': 'parent'}
+                                                          ],
+                                        'ddc_restraint': [{'name': 'Dipolar_coupling_code', 'type': 'str', 'mandatory': True},
+                                                          {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                           'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                           'enforce-enum': True},
+                                                          {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                           'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                           'enforce-enum': True},
+                                                          {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                                           'enum': ALLOWED_AMBIGUITY_CODES,
+                                                           'enforce-enum': True},
+                                                          {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                           'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                           'enforce-enum': True},
+                                                          {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                           'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                           'enforce-enum': True},
+                                                          {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                                           'enum': ALLOWED_AMBIGUITY_CODES,
+                                                           'enforce-enum': True},
+                                                          {'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                           'group': {'member-with': ['Val_min', 'Val_max'],
+                                                                     'coexist-with': None,
+                                                                     'smaller-than': None,
+                                                                     'larger-than': None}},
+                                                          {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                           'group': {'member-with': ['Val_max'],
+                                                                     'coexist-with': None,
+                                                                     'smaller-than': None,
+                                                                     'larger-than': ['Val_max']}},
+                                                          {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                           'group': {'member-with': ['Val_min'],
+                                                                     'coexist-with': None,
+                                                                     'smaller-than': ['Val_min'],
+                                                                     'larger-than': None}},
+                                                          {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                           'range': {'min_inclusive': 0.0}},
+                                                          {'name': 'Principal_Euler_angle_alpha_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                                           'range': ANGLE_RESTRAINT_RANGE,
+                                                           'group': {'member-with': ['Principal_Euler_angle_beta_val', 'Principal_Euler_angle_gamma_val'],
+                                                                     'coexist-with': None}},
+                                                          {'name': 'Principal_Euler_angle_beta_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                                           'range': ANGLE_RESTRAINT_RANGE,
+                                                           'group': {'member-with': ['Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_gamma_val'],
+                                                                     'coexist-with': None}},
+                                                          {'name': 'Principal_Euler_angle_gamma_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                                           'range': ANGLE_RESTRAINT_RANGE,
+                                                           'group': {'member-with': ['Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_beta_val'],
+                                                                     'coexist-with': None}},
+                                                          {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Dipolar_coupling_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                           'default': '1', 'default-from': 'parent'}
+                                                          ],
+                                        'hvycs_restraint': [{'name': 'CA_chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                                             'range': CS_RESTRAINT_RANGE},
+                                                            {'name': 'CA_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'range': CS_UNCERTAINTY_RANGE},
+                                                            {'name': 'CB_chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                                             'range': CS_RESTRAINT_RANGE},
+                                                            {'name': 'CB_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'range': CS_UNCERTAINTY_RANGE},
+                                                            {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_aysm_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_aysm_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_aysm_ID_3', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_aysm_ID_4', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_aysm_ID_5', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_5', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_5', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_5', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'CA_CB_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                             'default': '1', 'default-from': 'parent'}
+                                                            ],
+                                        'procs_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                             'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                             'enforce-enum': True},
+                                                            {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                             'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                             'enforce-enum': True},
+                                                            {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                                             'range': CS_RESTRAINT_RANGE},
+                                                            {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'range': CS_UNCERTAINTY_RANGE},
+                                                            {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_aysm_ID', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'H_chem_shift_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                             'default': '1', 'default-from': 'parent'}
+                                                            ],
+                                        'csp_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                           'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                           'enforce-enum': True},
+                                                          {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                           'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                           'enforce-enum': True},
+                                                          {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': False,
+                                                           'range': CS_RESTRAINT_RANGE},
+                                                          {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                           'range': CS_UNCERTAINTY_RANGE},
+                                                          {'name': 'Difference_chem_shift_val', 'type': 'range-float', 'mandatory': False,
+                                                           'range': CS_RESTRAINT_RANGE},
+                                                          {'name': 'Difference_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                           'range': CS_UNCERTAINTY_RANGE},
+                                                          {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Chem_shift_perturbation_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                           'default': '1', 'default-from': 'parent'}
+                                                          ],
+                                        'auto_relax_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                                  'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                                  'enforce-enum': True},
+                                                                 {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                                  'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                                  'enforce-enum': True},
+                                                                 {'name': 'Auto_relaxation_val', 'type': 'range-float', 'mandatory': True,
+                                                                  'range': PRE_RESTRAINT_RANGE},
+                                                                 {'name': 'Auto_relaxation_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                  'range': PRE_RESTRAINT_RANGE},
+                                                                 {'name': 'Rex_val', 'type': 'range-float', 'mandatory': False,
+                                                                  'range': PRE_RESTRAINT_RANGE},
+                                                                 {'name': 'Rex_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                  'range': PRE_RESTRAINT_RANGE},
+                                                                 {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                                 {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                                 {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                                 {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                                 {'name': 'Auto_relaxation_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                                  'default': '1', 'default-from': 'parent'}
+                                                                 ],
+                                        'ccr_d_csa_restraint': [{'name': 'Dipole_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
+                                                                 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Dipole_atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
+                                                                 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Dipole_atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_2',
+                                                                 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Dipole_atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_atom_ID_2',
+                                                                 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'CSA_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'CSA_atom_ID_1',
+                                                                 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'CSA_atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'CSA_atom_ID_1',
+                                                                 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'CSA_atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'CSA_atom_ID_2',
+                                                                 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'CSA_atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'CSA_atom_ID_2',
+                                                                 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                                 'range': CCR_RESTRAINT_RANGE},
+                                                                {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                 'range': CCR_RESTRAINT_RANGE},
+                                                                {'name': 'Dipole_auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Dipole_auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                                {'name': 'Dipole_auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Dipole_auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Dipole_auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Dipole_auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                                {'name': 'Dipole_auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Dipole_auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'CSA_auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'CSA_auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                                {'name': 'CSA_auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'CSA_auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'CSA_auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'CSA_auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                                {'name': 'CSA_auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'CSA_auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Cross_correlation_D_CSA_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                                 'default': '1', 'default-from': 'parent'}
+                                                                ],
+                                        'ccr_dd_restraint': [{'name': 'Dipole_1_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_1_atom_ID_1',
+                                                              'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                              'enforce-enum': True},
+                                                             {'name': 'Dipole_1_atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_1_atom_ID_1',
+                                                              'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                              'enforce-enum': True},
+                                                             {'name': 'Dipole_1_atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_1_atom_ID_2',
+                                                              'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                              'enforce-enum': True},
+                                                             {'name': 'Dipole_1_atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_1_atom_ID_2',
+                                                              'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                              'enforce-enum': True},
+                                                             {'name': 'Dipole_2_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_2_atom_ID_1',
+                                                              'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                              'enforce-enum': True},
+                                                             {'name': 'Dipole_2_atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_2_atom_ID_1',
+                                                              'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                              'enforce-enum': True},
+                                                             {'name': 'Dipole_2_atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_2_atom_ID_2',
+                                                              'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                              'enforce-enum': True},
+                                                             {'name': 'Dipole_2_atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_2_atom_ID_2',
+                                                              'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                              'enforce-enum': True},
+                                                             {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                              'range': CCR_RESTRAINT_RANGE},
+                                                             {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                              'range': CCR_RESTRAINT_RANGE},
+                                                             {'name': 'Dipole_1_auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_1_auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                             {'name': 'Dipole_1_auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_1_auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_1_auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_1_auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                             {'name': 'Dipole_1_auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_1_auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_2_auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_2_auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                             {'name': 'Dipole_2_auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_2_auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_2_auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_2_auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                             {'name': 'Dipole_2_auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Dipole_2_auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Cross_correlation_DD_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                              'default': '1', 'default-from': 'parent'}
+                                                             ],
+                                        'other_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                             'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                             'enforce-enum': True},
+                                                            {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                             'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                             'enforce-enum': True},
+                                                            {'name': 'Val', 'type': 'float', 'mandatory': True},
+                                                            {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'range': {'min_inclusive': 0.0}},
+                                                            {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Other_data_type_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                             'default': '1', 'default-from': 'parent'}
+                                                            ],
                                         }
                            }
 
@@ -2263,7 +3134,19 @@ class NmrDpUtility:
                                                                         'larger-than': None}}
                                                              ],
                                            'spectral_peak': None,
-                                           'spectral_peak_alt': None
+                                           'spectral_peak_alt': None,
+                                           'noepk_restraint': None,
+                                           'jcoup_restraint': None,
+                                           'rdc_raw_data': None,
+                                           'csa_restraint': None,
+                                           'ddc_restraint': None,
+                                           'hvycs_restraint': None,
+                                           'procs_restraint': None,
+                                           'csp_restraint': None,
+                                           'auto_relax_restraint': None,
+                                           'ccr_d_csa_restraint': None,
+                                           'ccr_dd_restraint': None,
+                                           'other_restraint': None
                                            },
                                    'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': DIST_RESTRAINT_RANGE,
@@ -2414,7 +3297,19 @@ class NmrDpUtility:
                                                                    'range': RDC_UNCERTAINTY_RANGE}
                                                                   ],
                                                 'spectral_peak': None,
-                                                'spectral_peak_alt': None
+                                                'spectral_peak_alt': None,
+                                                'noepk_restraint': None,
+                                                'jcoup_restraint': None,
+                                                'rdc_raw_data': None,
+                                                'csa_restraint': None,
+                                                'ddc_restraint': None,
+                                                'hvycs_restraint': None,
+                                                'procs_restraint': None,
+                                                'csp_restraint': None,
+                                                'auto_relax_restraint': None,
+                                                'ccr_d_csa_restraint': None,
+                                                'ccr_dd_restraint': None,
+                                                'other_restraint': None
                                                 }
                                    }
 
@@ -2545,7 +3440,19 @@ class NmrDpUtility:
                                                        'chain_code_13', 'sequence_code_13', 'residue_name_13', 'atom_name_13',
                                                        'chain_code_14', 'sequence_code_14', 'residue_name_14', 'atom_name_14',
                                                        'chain_code_15', 'sequence_code_15', 'residue_name_15', 'atom_name_15'],
-                                     'spectral_peak_alt': None
+                                     'spectral_peak_alt': None,
+                                     'noepk_restraint': None,
+                                     'jcoup_restraint': None,
+                                     'rdc_raw_data': None,
+                                     'csa_restraint': None,
+                                     'ddc_restraint': None,
+                                     'hvycs_restraint': None,
+                                     'procs_restraint': None,
+                                     'csp_restraint': None,
+                                     'auto_relax_restraint': None,
+                                     'ccr_d_csa_restraint': None,
+                                     'ccr_dd_restraint': None,
+                                     'other_restraint': None
                                      },
                              'nmr-star': {'entry_info': ['Software_ID', 'Software_label', 'Methods_ID', 'Methods_label', 'Software_name',
                                                          'Script_name', 'Script', 'Software_specific_info', 'Sf_ID', 'Entry_ID', 'Software_applied_list_ID'],
@@ -2709,7 +3616,122 @@ class NmrDpUtility:
                                                             'Auth_entity_assembly_ID_15', 'Auth_entity_ID_15', 'Auth_asym_ID_15', 'Auth_seq_ID_15',
                                                             'Auth_comp_ID_15', 'Auth_atom_ID_15', 'Auth_ambiguity_code_15', 'Auth_ambiguity_set_ID_15',
                                                             'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
-                                          'spectral_peak_alt': ['Index_ID', 'ID', 'Figure_of_merit', 'Restraint', 'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
+                                          'spectral_peak_alt': ['Index_ID', 'ID', 'Figure_of_merit', 'Restraint', 'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                          'noepk_restraint': ['ID', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1',
+                                                              'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1',
+                                                              'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2',
+                                                              'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2',
+                                                              'Val', 'Val_min', 'Val_max', 'Val_err', 'Resonance_ID_1', 'Resonance_ID_2',
+                                                              'Auth_entity_assembly_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
+                                                              'Auth_entity_assembly_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
+                                                              'Sf_ID', 'Entry_ID', 'Homonucl_NOE_list_ID'],
+                                          'jcoup_restraint': ['ID', 'Code', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1',
+                                                              'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Ambiguity_code_1',
+                                                              'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2',
+                                                              'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Ambiguity_code_2',
+                                                              'Val', 'Val_min', 'Val_max', 'Val_err', 'Resonance_ID_1', 'Resonance_ID_2',
+                                                              'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
+                                                              'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
+                                                              'Details', 'Sf_ID', 'Entry_ID', 'Coupling_constant_list_ID'],
+                                          'rdc_raw_data': ['ID', 'RDC_code', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1',
+                                                           'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Ambiguity_code_1',
+                                                           'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2',
+                                                           'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Ambiguity_code_2',
+                                                           'Val', 'Val_min', 'Val_max', 'Val_err', 'Val_bond_length',
+                                                           'Resonance_ID_1', 'Resonance_ID_2',
+                                                           'Auth_entity_assembly_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
+                                                           'Auth_entity_assembly_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
+                                                           'Sf_ID', 'Entry_ID', 'RDC_list_ID'],
+                                          'csa_restraint': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
+                                                            'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
+                                                            'Val', 'Val_err', 'Principal_value_sigma_11_val', 'Principal_value_sigma_22_val', 'Principal_value_sigma_33_val',
+                                                            'Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_beta_val', 'Principal_Euler_angle_gamma_val',
+                                                            'Bond_length', 'Resonance_ID', 'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
+                                                            'Sf_ID', 'Entry_ID', 'Chem_shift_anisotropy_ID'],
+                                          'ddc_restraint': ['ID', 'Dipolar_coupling_code', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1',
+                                                            'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Ambiguity_code_1',
+                                                            'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2',
+                                                            'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Ambiguity_code_2',
+                                                            'Val', 'Val_min', 'Val_max', 'Val_err',
+                                                            'Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_beta_val', 'Principal_Euler_angle_gamma_val',
+                                                            'Resonance_ID_1', 'Resonance_ID_2',
+                                                            'Auth_entity_assembly_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
+                                                            'Auth_entity_assembly_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
+                                                            'Sf_ID', 'Entry_ID', 'Dipolar_coupling_list_ID'],
+                                          'hvycs_restraint': ['ID', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1',
+                                                              'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Resonance_ID_1',
+                                                              'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2',
+                                                              'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Resonance_ID_2',
+                                                              'Assembly_atom_ID_3', 'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3',
+                                                              'Seq_ID_3', 'Comp_ID_3', 'Atom_ID_3', 'Atom_type_3', 'Resonance_ID_3',
+                                                              'Assembly_atom_ID_4', 'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4',
+                                                              'Seq_ID_4', 'Comp_ID_4', 'Atom_ID_4', 'Atom_type_4', 'Resonance_ID_4',
+                                                              'Assembly_atom_ID_5', 'Entity_assembly_ID_5', 'Entity_ID_5', 'Comp_index_ID_5',
+                                                              'Seq_ID_5', 'Comp_ID_5', 'Atom_ID_5', 'Atom_type_5', 'Resonance_ID_5',
+                                                              'CA_chem_shift_val', 'CA_chem_shift_val_err', 'CB_chem_shift_val', 'CB_chem_shift_val_err', 'Source_experiment_ID',
+                                                              'Auth_asym_ID_1', 'Auth_entity_assembly_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
+                                                              'Auth_asym_ID_2', 'Auth_entity_assembly_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
+                                                              'Auth_asym_ID_3', 'Auth_entity_assembly_ID_3', 'Auth_seq_ID_3', 'Auth_comp_ID_3', 'Auth_atom_ID_3',
+                                                              'Auth_asym_ID_4', 'Auth_entity_assembly_ID_4', 'Auth_seq_ID_4', 'Auth_comp_ID_4', 'Auth_atom_ID_4',
+                                                              'Auth_asym_ID_5', 'Auth_entity_assembly_ID_5', 'Auth_seq_ID_5', 'Auth_comp_ID_5', 'Auth_atom_ID_5',
+                                                              'Sf_ID', 'Entry_ID', 'CA_CB_constraint_list_ID'],
+                                          'procs_restraint': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
+                                                              'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
+                                                              'Resonance_ID', 'Chem_shift_val', 'Chem_shift_val_err', 'Source_experiment_ID',
+                                                              'Auth_asym_ID', 'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
+                                                              'Sf_ID', 'Entry_ID', 'H_chem_shift_constraint_list_ID'],
+                                          'csp_restraint': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
+                                                            'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
+                                                            'Chem_shift_val', 'Chem_shift_val_err', 'Difference_chem_shift_val', 'Difference_chem_shift_val_err',
+                                                            'Resonance_ID', 'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
+                                                            'Sf_ID', 'Entry_ID', 'Chem_shift_perturbation_list_ID'],
+                                          'auto_relax_restraint': ['ID', 'Assembly_ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
+                                                                   'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
+                                                                   'Auto_relaxation_val', 'Auto_relaxation_val_err', 'Rex_val', 'Rex_val_err',
+                                                                   'Resonance_ID', 'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
+                                                                   'Sf_ID', 'Entry_ID', 'Auto_relaxation_list_ID'],
+                                          'ccr_d_csa_restraint': ['ID', 'Dipole_assembly_atom_ID_1', 'Dipole_entity_assembly_ID_1', 'Dipole_entity_ID_1', 'Dipole_comp_index_ID_1',
+                                                                  'Dipole_seq_ID_1', 'Dipole_comp_ID_1', 'Dipole_atom_ID_1', 'Dipole_atom_type_1', 'Dipole_atom_isotope_number_1',
+                                                                  'Dipole_assembly_atom_ID_2', 'Dipole_entity_assembly_ID_2', 'Dipole_entity_ID_2', 'Dipole_comp_index_ID_2',
+                                                                  'Dipole_seq_ID_2', 'Dipole_comp_ID_2', 'Dipole_atom_ID_2', 'Dipole_atom_type_2', 'Dipole_atom_isotope_number_2',
+                                                                  'CSA_assembly_atom_ID_1', 'CSA_entity_assembly_ID_1', 'CSA_entity_ID_1', 'CSA_comp_index_ID_1',
+                                                                  'CSA_seq_ID_1', 'CSA_comp_ID_1', 'CSA_atom_ID_1', 'CSA_atom_type_1', 'CSA_atom_isotope_number_1',
+                                                                  'CSA_assembly_atom_ID_2', 'CSA_entity_assembly_ID_2', 'CSA_entity_ID_2', 'CSA_comp_index_ID_2',
+                                                                  'CSA_seq_ID_2', 'CSA_comp_ID_2', 'CSA_atom_ID_2', 'CSA_atom_type_2', 'CSA_atom_isotope_number_2',
+                                                                  'Val', 'Val_err', 'Dipole_resonance_ID_1', 'Dipole_resonance_ID_2', 'CSA_resonance_ID_1', 'CSA_resonance_ID_2',
+                                                                  'Dipole_auth_entity_assembly_ID_1', 'Dipole_auth_seq_ID_1', 'Dipole_auth_comp_ID_1', 'Dipole_auth_atom_ID_1',
+                                                                  'Dipole_auth_entity_assembly_ID_2', 'Dipole_auth_seq_ID_2', 'Dipole_auth_comp_ID_2', 'Dipole_auth_atom_ID_2',
+                                                                  'CSA_auth_entity_assembly_ID_1', 'CSA_auth_seq_ID_1', 'CSA_auth_comp_ID_1', 'CSA_auth_atom_ID_1',
+                                                                  'CSA_auth_entity_assembly_ID_2', 'CSA_auth_seq_ID_2', 'CSA_auth_comp_ID_2', 'CSA_auth_atom_ID_2',
+                                                                  'Sf_ID', 'Entry_ID', 'Cross_correlation_D_CSA_list_ID'],
+                                          'ccr_dd_restraint': ['ID', 'Dipole_1_assembly_atom_ID_1', 'Dipole_1_entity_assembly_ID_1',
+                                                               'Dipole_1_entity_ID_1', 'Dipole_1_comp_index_ID_1',
+                                                               'Dipole_1_seq_ID_1', 'Dipole_1_comp_ID_1', 'Dipole_1_atom_ID_1',
+                                                               'Dipole_1_atom_type_1', 'Dipole_1_atom_isotope_number_1',
+                                                               'Dipole_1_assembly_atom_ID_2', 'Dipole_1_entity_assembly_ID_2',
+                                                               'Dipole_1_entity_ID_2', 'Dipole_1_comp_index_ID_2',
+                                                               'Dipole_1_seq_ID_2', 'Dipole_1_comp_ID_2', 'Dipole_1_atom_ID_2',
+                                                               'Dipole_1_atom_type_2', 'Dipole_1_atom_isotope_number_2',
+                                                               'Dipole_2_assembly_atom_ID_1', 'Dipole_2_entity_assembly_ID_1',
+                                                               'Dipole_2_entity_ID_1', 'Dipole_2_comp_index_ID_1',
+                                                               'Dipole_2_seq_ID_1', 'Dipole_2_comp_ID_1', 'Dipole_2_atom_ID_1',
+                                                               'Dipole_2_atom_type_1', 'Dipole_2_atom_isotope_number_1',
+                                                               'Dipole_2_assembly_atom_ID_2', 'Dipole_2_entity_assembly_ID_2',
+                                                               'Dipole_2_entity_ID_2', 'Dipole_2_chem_comp_index_ID_2',
+                                                               'Dipole_2_seq_ID_2', 'Dipole_2_comp_ID_2', 'Dipole_2_atom_ID_2',
+                                                               'Dipole_2_atom_type_2', 'Dipole_2_atom_isotope_number_2',
+                                                               'Val', 'Val_err',
+                                                               'Dipole_1_Resonance_ID_1', 'Dipole_1_Resonance_ID_2', 'Dipole_2_Resonance_ID_1', 'Dipole_2_Resonance_ID_2',
+                                                               'Dipole_1_auth_entity_assembly_ID_1', 'Dipole_1_auth_seq_ID_1', 'Dipole_1_auth_comp_ID_1', 'Dipole_1_auth_atom_ID_1',
+                                                               'Dipole_1_auth_entity_assembly_ID_2', 'Dipole_1_auth_seq_ID_2', 'Dipole_1_auth_comp_ID_2', 'Dipole_1_auth_atom_ID_2',
+                                                               'Dipole_2_auth_entity_assembly_ID_1', 'Dipole_2_auth_seq_ID_1', 'Dipole_2_auth_comp_ID_1', 'Dipole_2_auth_atom_ID_1',
+                                                               'Dipole_2_auth_entity_assembly_ID_2', 'Dipole_2_auth_seq_ID_2', 'Dipole_2_auth_comp_ID_2', 'Dipole_2_auth_atom_ID_2',
+                                                               'Sf_ID', 'Entry_ID', 'Cross_correlation_DD_list_ID'],
+                                          'other_restraint': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
+                                                              'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
+                                                              'Val', 'Val_err', 'Resonance_ID',
+                                                              'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
+                                                              'Sf_ID', 'Entry_ID', 'Other_data_type_list_ID']
                                           }
                              }
 
@@ -2737,6 +3759,18 @@ class NmrDpUtility:
                                         'rdc_restraint': '_nef_rdc_restraint_list',
                                         'spectral_peak': '_nef_nmr_spectrum',
                                         'spectral_peak_alt': None,
+                                        'noepk_restraint': None,
+                                        'jcoup_restraint': None,
+                                        'rdc_raw_data': None,
+                                        'csa_restraint': None,
+                                        'ddc_restraint': None,
+                                        'hvycs_restraint': None,
+                                        'procs_restraint': None,
+                                        'csp_restraint': None,
+                                        'auto_relax_restraint': None,
+                                        'ccr_d_csa_restraint': None,
+                                        'ccr_dd_restraint': None,
+                                        'other_restraint': None
                                         },
                                 'nmr-star': {'entry_info': '_Entry',
                                              'poly_seq': '_Assembly',
@@ -2747,7 +3781,19 @@ class NmrDpUtility:
                                              'dihed_restraint': '_Torsion_angle_constraint_list',
                                              'rdc_restraint': '_RDC_constraint_list',
                                              'spectral_peak': '_Spectral_peak_list',
-                                             'spectral_peak_alt': '_Spectral_peak_list'
+                                             'spectral_peak_alt': '_Spectral_peak_list',
+                                             'noepk_restraint': '_Homonucl_NOE_list',
+                                             'jcoup_restraint': '_Coupling_constant_list',
+                                             'rdc_raw_data': '_RDC_list',
+                                             'csa_restraint': '_Chem_shift_anisotropy',
+                                             'ddc_restraint': '_Dipolar_coupling_list',
+                                             'hvycs_restraint': '_CA_CB_constraint_list',
+                                             'procs_restraint': '_H_chem_shift_constraint_list',
+                                             'csp_restraint': '_Chem_shift_perturbation_list',
+                                             'auto_relax_restraint': '_Auto_relaxation_list',
+                                             'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
+                                             'ccr_dd_restraint': '_Cross_correlation_DD_list',
+                                             'other_restraint': '_Other_data_type_list'
                                              }
                                 }
 
@@ -2823,7 +3869,19 @@ class NmrDpUtility:
                                                        {'name': 'experiment_classification', 'type': 'str', 'mandatory': False},
                                                        {'name': 'experiment_type', 'type': 'str', 'mandatory': False}
                                                        ],
-                                     'spectral_peak_alt': None
+                                     'spectral_peak_alt': None,
+                                     'noepk_restraint': None,
+                                     'jcoup_restraint': None,
+                                     'rdc_raw_data': None,
+                                     'csa_restraint': None,
+                                     'ddc_restraint': None,
+                                     'hvycs_restraint': None,
+                                     'procs_restraint': None,
+                                     'csp_restraint': None,
+                                     'auto_relax_restraint': None,
+                                     'ccr_d_csa_restraint': None,
+                                     'ccr_dd_restraint': None,
+                                     'other_restraint': None
                                      },
                              'nmr-star': {'entry_info': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
@@ -2916,7 +3974,93 @@ class NmrDpUtility:
                                                                 {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
                                                                  'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
                                                                  'enforce-enum': True}
-                                                                ]
+                                                                ],
+                                          'noepk_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Homonuclear_NOE_val_type', 'type': 'enum', 'mandatory': True,
+                                                               'enum': ('peak volume', 'peak height', 'contour count', 'na')}
+                                                              ],
+                                          'jcoup_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                               'enforce-non-zero': True}
+                                                              ],
+                                          'rdc_raw_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                           {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                            'enforce-non-zero': True}
+                                                           ],
+                                          'csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                            'enforce-non-zero': True},
+                                                            {'name': 'Val_units', 'type': 'enum', 'mandatory': False,
+                                                             'enum': ('ppm', 'ppb')}
+                                                            ],
+                                          'ddc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                            'enforce-non-zero': True},
+                                                            {'name': 'Scaling_factor', 'type': 'positive-float', 'mandatory': False},
+                                                            {'name': 'Fitting_procedure', 'type': 'str', 'mandatory': False}
+                                                            ],
+                                          'hvycs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Units', 'type': 'str', 'mandatory': False}
+                                                              ],
+                                          'procs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Units', 'type': 'str', 'mandatory': False}
+                                                              ],
+                                          'csp_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Type', 'type': 'enum', 'mandatory': False,
+                                                             'enum': ('macromolecular binding', 'ligand binding', 'ligand fragment binding', 'paramagnetic ligand binding')}
+                                                            ],
+                                          'auto_relax_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                                   {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                                   {'name': 'Temp_calibration_method', 'type': 'enum', 'mandatory': False,
+                                                                    'enum': ('methanol', 'monoethylene glycol', 'no calibration applied')},
+                                                                   {'name': 'Temp_control_method', 'type': 'enum', 'mandatory': False,
+                                                                    'enum': ('single scan interleaving', 'temperature compensation block',
+                                                                             'single scan interleaving and temperature compensation block',
+                                                                             'no temperature control applied')},
+                                                                   {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                                    'enforce-non-zero': True},
+                                                                   {'name': 'Exact_field_strength', 'type': 'positive-float', 'mandatory': False,
+                                                                    'enforce-non-zero': True},
+                                                                   {'name': 'Common_relaxation_type_name', 'type': 'enum', 'mandatory': False,
+                                                                    'enum': ('R1', 'R2', 'R1rho', 'ZQ relaxation', 'longitudinal spin order',
+                                                                             'single quantum antiphase', 'DQ relaxation')},
+                                                                   {'name': 'Relaxation_coherence_type', 'type': 'enum', 'mandatory': True,
+                                                                    'enum': ('Iz', 'Sz', '(I+)+(I-)', '(S+)+(S-)', 'I+', 'I-', 'S+', 'S-',
+                                                                             '(I+S-)+(I-S+)', 'I-S+', 'I+S-', 'IzSz', '((I+)+(I-))Sz', 'Iz((S+)+(S-))',
+                                                                             'I+Sz', 'I-Sz', 'IzS+', 'IzS-', '(I+S+)+(I-S-)', 'I+S+', 'I-S-')},
+                                                                   {'name': 'Relaxation_val_units', 'type': 'enum', 'mandatory': True,
+                                                                    'enum': ('s-1', 'ms-1', 'us-1', 'ns-1', 'ps-1')},
+                                                                   {'name': 'Rex_val_units', 'type': 'enum', 'mandatory': False,
+                                                                    'enum': ('s-1', 'ms-1', 'us-1')},
+                                                                   {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
+                                                                    'enforce-non-zero': True}
+                                                                   ],
+                                          'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                                   'enforce-non-zero': True},
+                                                                  {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
+                                                                   'enum': ('s-1', 'ms-1', 'us-1')}
+                                                                  ],
+                                          'ccr_dd_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                               {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                                'enforce-non-zero': True},
+                                                               {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
+                                                                'enum': ('s-1', 'ms-1', 'us-1')}
+                                                               ],
+                                          'other_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Definition', 'type': 'str', 'mandatory': True}
+                                                              ]
                                           }
                              }
 
@@ -2930,7 +4074,19 @@ class NmrDpUtility:
                                       'dihed_restraint': ['restraint_origin', 'potential_type'],
                                       'rdc_restraint': ['restraint_origin', 'potential_type'],
                                       'spectral_peak': ['experiment_type'],
-                                      'spectral_peak_alt': None
+                                      'spectral_peak_alt': None,
+                                      'noepk_restraint': None,
+                                      'jcoup_restraint': None,
+                                      'rdc_raw_data': None,
+                                      'csa_restraint': None,
+                                      'ddc_restraint': None,
+                                      'hvycs_restraint': None,
+                                      'procs_restraint': None,
+                                      'csp_restraint': None,
+                                      'auto_relax_restraint': None,
+                                      'ccr_d_csa_restraint': None,
+                                      'ccr_dd_restraint': None,
+                                      'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': None,
                                            'poly_seq': None,
@@ -2941,7 +4097,19 @@ class NmrDpUtility:
                                            'dihed_restraint': ['Constraint_type', 'Potential_type'],
                                            'rdc_restraint': ['Constraint_type', 'Potential_type'],
                                            'spectral_peak': ['Experiment_type'],
-                                           'spectral_peak_alt': ['Experiment_type']
+                                           'spectral_peak_alt': ['Experiment_type'],
+                                           'noepk_restraint': None,
+                                           'jcoup_restraint': None,
+                                           'rdc_raw_data': None,
+                                           'csa_restraint': None,
+                                           'ddc_restraint': None,
+                                           'hvycs_restraint': None,
+                                           'procs_restraint': None,
+                                           'csp_restraint': None,
+                                           'auto_relax_restraint': None,
+                                           'ccr_d_csa_restraint': None,
+                                           'ccr_dd_restraint': None,
+                                           'other_restraint': None
                                            }
                               }
 
@@ -2959,7 +4127,19 @@ class NmrDpUtility:
                                                           'tensor_sequence_code', 'tensor_residue_name'],
                                         'spectral_peak': ['sf_category', 'sf_framecode', 'num_dimensions', 'chemical_shift_list',
                                                           'experiment_classification', 'experiment_type'],
-                                        'spectral_peak_alt': None
+                                        'spectral_peak_alt': None,
+                                        'noepk_restraint': None,
+                                        'jcoup_restraint': None,
+                                        'rdc_raw_data': None,
+                                        'csa_restraint': None,
+                                        'ddc_restraint': None,
+                                        'hvycs_restraint': None,
+                                        'procs_restraint': None,
+                                        'csp_restraint': None,
+                                        'auto_relax_restraint': None,
+                                        'ccr_d_csa_restraint': None,
+                                        'ccr_dd_restraint': None,
+                                        'other_restraint': None
                                         },
                                 'nmr-star': {'entry_info': ['Sf_category', 'Sf_framecode', 'Sf_ID', 'ID', 'Title', 'Type',
                                                             'Version_type', 'Submission_date', 'Accession_date', 'Last_release_date', 'Original_release_date',
@@ -3026,7 +4206,45 @@ class NmrDpUtility:
                                                                    'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type',
                                                                    'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID',
                                                                    'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data',
-                                                                   'Chem_shift_reference_ID', 'Chem_shift_reference_label']
+                                                                   'Chem_shift_reference_ID', 'Chem_shift_reference_label'],
+                                             'noepk_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                                 'Sample_condition_list_ID', 'Sample_condition_list_label', 'Homonuclear_NOE_val_type',
+                                                                 'NOE_ref_val', 'NOE_ref_description', 'Details', 'Text_data_format', 'Text_data'],
+                                             'jcoup_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                                 'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H',
+                                                                 'Details', 'Text_data_format', 'Text_data'],
+                                             'rdc_raw_data': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                              'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H',
+                                                              'Bond_length_usage_flag', 'Dipolar_constraint_calib_method',
+                                                              'Mol_align_tensor_axial_sym_mol', 'Mol_align_tensor_rhombic_mol', 'General_order_param_int_motions',
+                                                              'Assumed_H_N_bond_length', 'Assumed_H_C_bond_length', 'Assumed_C_N_bond_length',
+                                                              'Details', 'Text_data_format', 'Text_data'],
+                                             'csa_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                               'Sample_condition_list_ID', 'Sample_condition_list_label',
+                                                               'Spectrometer_frequency_1H', 'Val_units', 'Details', 'Text_data_format', 'Text_data'],
+                                             'ddc_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                               'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H',
+                                                               'Scaling_factor', 'Fitting_procedure', 'Details', 'Text_data_format', 'Text_data'],
+                                             'hvycs_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Data_file_format',
+                                                                 'Constraint_file_ID', 'Block_ID', 'Units', 'Details', 'Text_data_format', 'Text_data'],
+                                             'procs_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Units', 'Data_file_name', 'Data_file_format',
+                                                                 'Constraint_file_ID', 'Block_ID', 'Details', 'Text_data_format', 'Text_data'],
+                                             'csp_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Type', 'Data_file_name',
+                                                               'Sample_condition_list_ID', 'Sample_condition_list_label', 'Chem_shift_ref_set_ID', 'Chem_shift_ref_set_label',
+                                                               'Details', 'Text_data_format', 'Text_data'],
+                                             'auto_relax_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                                      'Sample_condition_list_ID', 'Sample_condition_list_label',
+                                                                      'Temp_calibration_method', 'Temp_control_method', 'Spectrometer_frequency_1H', 'Exact_field_strength',
+                                                                      'Common_relaxation_type_name', 'Relaxation_coherence_type', 'Relaxation_val_units',
+                                                                      'Rex_units', 'Rex_field_strength', 'Details', 'Text_data_format', 'Text_data'],
+                                             'ccr_d_csa_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                                     'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H',
+                                                                     'Val_units', 'Details', 'Text_data_format', 'Text_data'],
+                                             'ccr_dd_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                                  'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H',
+                                                                  'Val_units', 'Details', 'Text_data_format', 'Text_data'],
+                                             'other_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Definition', 'Data_file_name',
+                                                                 'Sample_condition_list_ID', 'Sample_condition_list_label', 'Details', 'Text_data_format', 'Text_data']
                                              }
                                 }
 
@@ -3034,27 +4252,51 @@ class NmrDpUtility:
         self.__warn_template_for_missing_mandatory_sf_tag = "The mandatory saveframe tag %r is missing. Please verify the value and re-upload the %s file."
 
         # auxiliary loop categories
-        self.aux_lp_categories = {'nef': {'entry_info': [],
+        self.aux_lp_categories = {'nef': {'entry_info': None,
                                           'poly_seq': ['_nef_covalent_links', '_nef_sequence'],
-                                          'entity': [],
-                                          'chem_shift': [],
-                                          'chem_shift_ref': [],
-                                          'dist_restraint': [],
-                                          'dihed_restraint': [],
-                                          'rdc_restraint': [],
+                                          'entity': None,
+                                          'chem_shift': None,
+                                          'chem_shift_ref': None,
+                                          'dist_restraint': None,
+                                          'dihed_restraint': None,
+                                          'rdc_restraint': None,
                                           'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer'],
-                                          'spectral_peak_alt': []
+                                          'spectral_peak_alt': None,
+                                          'noepk_restraint': None,
+                                          'jcoup_restraint': None,
+                                          'rdc_raw_data': None,
+                                          'csa_restraint': None,
+                                          'ddc_restraint': None,
+                                          'hvycs_restraint': None,
+                                          'procs_restraint': None,
+                                          'csp_restraint': None,
+                                          'auto_relax_restraint': None,
+                                          'ccr_d_csa_restraint': None,
+                                          'ccr_dd_restraint': None,
+                                          'other_restraint': None
                                           },
-                                  'nmr-star': {'entry_info': [],
+                                  'nmr-star': {'entry_info': None,
                                                'poly_seq': ['_Bond', '_Entity_deleted_atom'],
                                                'entity': ['_Entity_poly_seq'],
                                                'chem_shift': ['_Ambiguous_atom_chem_shift'],
-                                               'chem_shift_ref': [],
-                                               'dist_restraint': [],
-                                               'dihed_restraint': [],
-                                               'rdc_restraint': [],
+                                               'chem_shift_ref': None,
+                                               'dist_restraint': None,
+                                               'dihed_restraint': None,
+                                               'rdc_restraint': None,
                                                'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer'],
-                                               'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift']
+                                               'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift'],
+                                               'noepk_restraint': None,
+                                               'jcoup_restraint': None,
+                                               'rdc_raw_data': None,
+                                               'csa_restraint': None,
+                                               'ddc_restraint': None,
+                                               'hvycs_restraint': None,
+                                               'procs_restraint': None,
+                                               'csp_restraint': None,
+                                               'auto_relax_restraint': None,
+                                               'ccr_d_csa_restraint': None,
+                                               'ccr_dd_restraint': None,
+                                               'other_restraint': None
                                                }
                                   }
 
@@ -3068,7 +4310,19 @@ class NmrDpUtility:
                                              'dihed_restraint': ['_nef_dihedral_restraint'],
                                              'rdc_restraint': ['_nef_rdc_restraint'],
                                              'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer', '_nef_peak'],
-                                             'spectral_peak_alt': []
+                                             'spectral_peak_alt': [],
+                                             'noepk_restraint': [],
+                                             'jcoup_restraint': [],
+                                             'rdc_raw_data': [],
+                                             'csa_restraint': [],
+                                             'ddc_restraint': [],
+                                             'hvycs_restraint': [],
+                                             'procs_restraint': [],
+                                             'csp_restraint': [],
+                                             'auto_relax_restraint': [],
+                                             'ccr_d_csa_restraint': [],
+                                             'ccr_dd_restraint': [],
+                                             'other_restraint': []
                                              },
                                      'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author',
                                                                  '_SG_project', '_Entry_src', '_Struct_keywords', '_Data_set',
@@ -3207,7 +4461,21 @@ class NmrDpUtility:
                                                                         '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift',
                                                                         '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char',
                                                                         '_Spectral_transition_char', '_Assigned_spectral_transition',
-                                                                        '_Gen_dist_constraint', '_Dist_constraint_value']
+                                                                        '_Gen_dist_constraint', '_Dist_constraint_value'],
+                                                  'noepk_restraint': ['Homonucl_NOE_experiment', 'Homonucl_NOE_software', 'Homonucl_NOE'],
+                                                  'jcoup_restraint': ['Coupling_constant_experiment', 'Coupling_constant_software', 'Coupling_constant'],
+                                                  'rdc_raw_data': ['RDC_experiment', 'RDC_software', 'RDC'],
+                                                  'csa_restraint': ['CS_anisotroty_experiment', 'CS_anisotroty_software', 'CS_anisotroty'],
+                                                  'ddc_restraint': ['Dipolar_coupling_experiment', 'Dipolar_coupling_software', 'Dipolar_coupling'],
+                                                  'hvycs_restraint': ['CA_CB_constraint_expt', 'CA_CB_constraint_software', 'CA_CB_constraint'],
+                                                  'procs_restraint': ['H_chem_shift_constraint_expt', 'H_chem_shift_constraint_software', 'H_chem_shift_constraint'],
+                                                  'csp_restraint': ['Chem_shift_perturbation_experiment', 'Chem_shift_perturbation_software',
+                                                                    'Chem_shift_perturbation'],
+                                                  'auto_relax_restraint': ['Auto_relaxation_experiment', 'Auto_relaxation_software', 'Auto_relaxation'],
+                                                  'ccr_d_csa_restraint': ['Cross_correlation_D_CSA_experiment', 'Cross_correlation_D_CSA_software',
+                                                                          'Cross_correlation_D_CSA'],
+                                                  'ccr_dd_restraint': ['Cross_correlation_DD_experiment', 'Cross_correlation_DD_software', 'Cross_correlation_DD'],
+                                                  'other_restraint': ['Other_data_experiment', 'Other_data_software', 'Other_data']
                                                   }
                                      }
 
@@ -3241,7 +4509,19 @@ class NmrDpUtility:
                                                                                {'name': 'dimension_2', 'type': 'positive-int'},
                                                                                ]
                                       },
-                                      'spectral_peak_alt': None
+                                      'spectral_peak_alt': None,
+                                      'noepk_restraint': None,
+                                      'jcoup_restraint': None,
+                                      'rdc_raw_data': None,
+                                      'csa_restraint': None,
+                                      'ddc_restraint': None,
+                                      'hvycs_restraint': None,
+                                      'procs_restraint': None,
+                                      'csp_restraint': None,
+                                      'auto_relax_restraint': None,
+                                      'ccr_d_csa_restraint': None,
+                                      'ccr_dd_restraint': None,
+                                      'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': None,
                                            'poly_seq': {
@@ -3295,7 +4575,19 @@ class NmrDpUtility:
                                                '_Peak_general_char': [],
                                                '_Peak_char': [],
                                                '_Assigned_peak_chem_shift': []
-                                           }
+                                           },
+                                           'noepk_restraint': None,
+                                           'jcoup_restraint': None,
+                                           'rdc_raw_data': None,
+                                           'csa_restraint': None,
+                                           'ddc_restraint': None,
+                                           'hvycs_restraint': None,
+                                           'procs_restraint': None,
+                                           'csp_restraint': None,
+                                           'auto_relax_restraint': None,
+                                           'ccr_d_csa_restraint': None,
+                                           'ccr_dd_restraint': None,
+                                           'other_restraint': None
                                            }
                               }
 
@@ -3337,7 +4629,19 @@ class NmrDpUtility:
                                                                                 {'name': 'is_indirect', 'type': 'bool', 'mandatory': False}
                                                                                 ]
                                        },
-                                       'spectral_peak_alt': None
+                                       'spectral_peak_alt': None,
+                                       'noepk_restraint': None,
+                                       'jcoup_restraint': None,
+                                       'rdc_raw_data': None,
+                                       'csa_restraint': None,
+                                       'ddc_restraint': None,
+                                       'hvycs_restraint': None,
+                                       'procs_restraint': None,
+                                       'csp_restraint': None,
+                                       'auto_relax_restraint': None,
+                                       'ccr_d_csa_restraint': None,
+                                       'ccr_dd_restraint': None,
+                                       'other_restraint': None
                                        },
                                'nmr-star': {'entry_info': None,
                                             'poly_seq': {
@@ -3458,7 +4762,19 @@ class NmrDpUtility:
                                                                               {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                                                'default-from': 'parent'}
                                                                               ]
-                                            }
+                                            },
+                                            'noepk_restraint': None,
+                                            'jcoup_restraint': None,
+                                            'rdc_raw_data': None,
+                                            'csa_restraint': None,
+                                            'ddc_restraint': None,
+                                            'hvycs_restraint': None,
+                                            'procs_restraint': None,
+                                            'csp_restraint': None,
+                                            'auto_relax_restraint': None,
+                                            'ccr_d_csa_restraint': None,
+                                            'ccr_dd_restraint': None,
+                                            'other_restraint': None
                                             }
                                }
 
@@ -3482,7 +4798,19 @@ class NmrDpUtility:
                                                                          'absolute_peak_positions', 'is_acquisition'],
                                              '_nef_spectrum_dimension_transfer': ['dimension_1', 'dimension_2', 'transfer_type', 'is_indirect']
                                          },
-                                         'spectral_peak_alt': None
+                                         'spectral_peak_alt': None,
+                                         'noepk_restraint': None,
+                                         'jcoup_restraint': None,
+                                         'rdc_raw_data': None,
+                                         'csa_restraint': None,
+                                         'ddc_restraint': None,
+                                         'hvycs_restraint': None,
+                                         'procs_restraint': None,
+                                         'csp_restraint': None,
+                                         'auto_relax_restraint': None,
+                                         'ccr_d_csa_restraint': None,
+                                         'ccr_dd_restraint': None,
+                                         'other_restraint': None
                                          },
                                  'nmr-star': {'entry_info': None,
                                               'poly_seq': {
@@ -3538,7 +4866,19 @@ class NmrDpUtility:
                                                                                 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Auth_ambiguity_code',
                                                                                 'Auth_ambiguity_set_ID', 'Auth_amb_atom_grp_ID', 'Resonance_ID', 'Details',
                                                                                 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
-                                              }
+                                              },
+                                              'noepk_restraint': None,
+                                              'jcoup_restraint': None,
+                                              'rdc_raw_data': None,
+                                              'csa_restraint': None,
+                                              'ddc_restraint': None,
+                                              'hvycs_restraint': None,
+                                              'procs_restraint': None,
+                                              'csp_restraint': None,
+                                              'auto_relax_restraint': None,
+                                              'ccr_d_csa_restraint': None,
+                                              'ccr_dd_restraint': None,
+                                              'other_restraint': None
                                               }
                                  }
 
@@ -3700,7 +5040,19 @@ class NmrDpUtility:
                           'dihed_restraint': [],
                           'rdc_restraint': [],
                           'spectral_peak': [],
-                          'spectral_peak_alt': []
+                          'spectral_peak_alt': [],
+                          'noepk_restraint': [],
+                          'jcoup_restraint': [],
+                          'rdc_raw_data': [],
+                          'csa_restraint': [],
+                          'ddc_restraint': [],
+                          'hvycs_restraint': [],
+                          'procs_restraint': [],
+                          'csp_restraint': [],
+                          'auto_relax_restraint': [],
+                          'ccr_d_csa_restraint': [],
+                          'ccr_dd_restraint': [],
+                          'other_restraint': []
                           }
 
         # auxiliary contents of loops
@@ -3713,7 +5065,19 @@ class NmrDpUtility:
                            'dihed_restraint': [],
                            'rdc_restraint': [],
                            'spectral_peak': [],
-                           'spectral_peak_alt': []
+                           'spectral_peak_alt': [],
+                           'noepk_restraint': [],
+                           'jcoup_restraint': [],
+                           'rdc_raw_data': [],
+                           'csa_restraint': [],
+                           'ddc_restraint': [],
+                           'hvycs_restraint': [],
+                           'procs_restraint': [],
+                           'csp_restraint': [],
+                           'auto_relax_restraint': [],
+                           'ccr_d_csa_restraint': [],
+                           'ccr_dd_restraint': [],
+                           'other_restraint': []
                            }
 
         # contents of savefram tags
@@ -3726,7 +5090,19 @@ class NmrDpUtility:
                               'dihed_restraint': [],
                               'rdc_restraint': [],
                               'spectral_peak': [],
-                              'spectral_peak_alt': []
+                              'spectral_peak_alt': [],
+                              'noepk_restraint': [],
+                              'jcoup_restraint': [],
+                              'rdc_raw_data': [],
+                              'csa_restraint': [],
+                              'ddc_restraint': [],
+                              'hvycs_restraint': [],
+                              'procs_restraint': [],
+                              'csp_restraint': [],
+                              'auto_relax_restraint': [],
+                              'ccr_d_csa_restraint': [],
+                              'ccr_dd_restraint': [],
+                              'other_restraint': []
                               }
 
         # self.__remapped_def_chain_id = {}
@@ -4182,7 +5558,7 @@ class NmrDpUtility:
         if srcPath is None:
             srcPath = self.__srcPath
 
-        self.report = NmrDpReport()
+        self.report = NmrDpReport(self.__verbose, self.__lfh)
 
         input_source = None
 
@@ -4233,7 +5609,7 @@ class NmrDpUtility:
 
                     csPath = _csPath
 
-                if self.__op == 'nmr-cs-mr-merge':
+                if self.__op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
 
                     _csPath = csPath + '.cif2str'
 
@@ -4356,6 +5732,8 @@ class NmrDpUtility:
 
         if self.__combined_mode:
 
+            self.__dirPath = os.path.dirname(srcPath)
+
             codec = detect_bom(srcPath, 'utf-8')
 
             srcPath_ = None
@@ -4444,6 +5822,9 @@ class NmrDpUtility:
 
             for csListId, csPath in enumerate(self.__inputParamDict[cs_file_path_list]):
 
+                if csListId == 0:
+                    self.__dirPath = os.path.dirname(csPath)
+
                 if csPath.endswith('.gz'):
 
                     _csPath = os.path.splitext(csPath)[0]
@@ -4466,7 +5847,7 @@ class NmrDpUtility:
 
                     csPath = _csPath
 
-                if self.__op == 'nmr-cs-mr-merge':
+                if self.__op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
 
                     _csPath = csPath + '.cif2str'
 
@@ -6453,11 +7834,11 @@ class NmrDpUtility:
 
             input_source = self.report.input_sources[fileListId]
 
-            self.__detectContentSubType__(fileListId, input_source)
+            self.__detectContentSubType__(fileListId, input_source, self.__dirPath)
 
         return not self.report.isError()
 
-    def __detectContentSubType__(self, file_list_id, input_source):
+    def __detectContentSubType__(self, file_list_id, input_source, dir_path=None):
         """ Detect content subtype of NMR data file in any STAR format.
         """
 
@@ -6587,6 +7968,41 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
+        if self.__remediation_mode and not self.__bmrb_only:
+
+            if content_type == 'nmr-restraints':
+
+                for content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref'):
+
+                    sf_category = self.sf_categories[file_type][content_subtype]
+
+                    if sf_category is None or lp_counts[content_subtype] == 0:
+                        continue
+
+                    for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                        sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                        self.__star_data[file_list_id].remove_saveframe(sf_framecode)
+
+                    lp_counts[content_subtype] = 0
+
+            elif content_type == 'nmr-chemical-shifts' and bmrb_nmr_star_file_name_pattern.match(file_name):
+
+                for content_subtype in self.nmr_content_subtypes:
+
+                    if content_subtype == 'chem_shift':
+                        continue
+
+                    sf_category = self.sf_categories[file_type][content_subtype]
+
+                    if sf_category is None or lp_counts[content_subtype] == 0:
+                        continue
+
+                    for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                        sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                        self.__star_data[file_list_id].remove_saveframe(sf_framecode)
+
+                    lp_counts[content_subtype] = 0
+
         content_subtype = 'chem_shift'
 
         if lp_counts[content_subtype] == 0 and self.__combined_mode:
@@ -6686,20 +8102,11 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
-        if self.__remediation_mode and content_type == 'nmr-restraints' and not self.__bmrb_only:
-
-            for content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref'):
-
-                sf_category = self.sf_categories[file_type][content_subtype]
-
-                if sf_category is None or lp_counts[content_subtype] == 0:
-                    continue
-
-                for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
-                    self.__star_data[file_list_id].remove_saveframe(sf_framecode)
-
-                lp_counts[content_subtype] = 0
+            if self.__remediation_mode and dir_path is not None:
+                touch_file = os.path.join(dir_path, '.entry_with_pk')
+                if not os.path.exists(touch_file):
+                    with open(os.path.join(dir_path, '.entry_with_pk'), 'w') as ofp:
+                        ofp.write('')
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
@@ -6784,12 +8191,18 @@ class NmrDpUtility:
             elif file_type == 'nm-res-syb':
                 mr_format_name = 'SYBYL'
                 a_mr_format_name = 'a ' + mr_format_name
+            elif file_type == 'nm-res-isd':
+                mr_format_name = 'ISD'
+                a_mr_format_name = 'an ' + mr_format_name
+            elif file_type == 'nm-res-cha':
+                mr_format_name = 'CHARMM'
+                a_mr_format_name = 'a ' + mr_format_name
             else:
                 mr_format_name = 'other'
 
             atom_like_names =\
                 self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                                                                                 'nm-res-oth') or is_aux_amb or is_aux_gro else 1))
+                                                                                 'nm-res-isd', 'nm-res-oth') or is_aux_amb or is_aux_gro else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
@@ -7209,7 +8622,7 @@ class NmrDpUtility:
                                     in_igr2 = False
 
             elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                               'nm-res-oth') or is_aux_amb or is_aux_gro:
+                               'nm-res-isd', 'nm-res-oth') or is_aux_amb or is_aux_gro:
 
                 if is_aux_amb:
 
@@ -7648,7 +9061,7 @@ class NmrDpUtility:
                         has_topology = True
 
             if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                             'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
+                             'nm-res-isd', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='utf-8') as ifp:
 
@@ -7712,12 +9125,14 @@ class NmrDpUtility:
             try:
 
                 if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
-                                 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn', 'nm-res-syb'):
+                                 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
+                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
                     reader = self.__getSimpleMRPTFileReader(file_type, self.__verbose)
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                    if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb'):
+                    if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn',
+                                                              'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
@@ -8100,18 +9515,20 @@ class NmrDpUtility:
 
                 elif 'chem_shift' not in content_subtype:
 
-                    err = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
-                        "However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
+                    if not self.__remediation_mode:
 
-                    self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                                 {'file_name': file_name, 'description': err}})
+                        err = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
+                            "However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
 
-                    # self.report.error.appendDescription('content_mismatch',
-                    #                                     {'file_name': file_name, 'description': err})
-                    # self.report.setError()
+                        self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                                     {'file_name': file_name, 'description': err}})
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+                        # self.report.error.appendDescription('content_mismatch',
+                        #                                     {'file_name': file_name, 'description': err})
+                        # self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
         md5_set = set(md5_list)
 
@@ -8138,6 +9555,10 @@ class NmrDpUtility:
 
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                    if self.__remediation_mode:
+                        file_path_2 = self.__inputParamDict[ar_file_path_list][j]['file_name']
+                        shutil.copyfile(file_path_2, file_path_2 + '-ignored')
 
         # restart using format issue resolved input files
         if self.__remediation_mode and corrected:
@@ -8338,6 +9759,14 @@ class NmrDpUtility:
             return SybylMRReader(verbose, self.__lfh, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT,
                                  reasons)
+        if file_type == 'nm-res-isd':
+            return IsdMRReader(verbose, self.__lfh, None, None, None, None,
+                               self.__ccU, self.__csStat, self.__nefT,
+                               reasons)
+        if file_type == 'nm-res-cha':
+            return CharmmMRReader(verbose, self.__lfh, None, None, None, None,
+                                  self.__ccU, self.__csStat, self.__nefT,
+                                  reasons)
 
         return None
 
@@ -8399,6 +9828,12 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-syb':
             # mr_format_name = 'SYBYL'
+            pass
+        elif file_type == 'nm-res-isd':
+            # mr_format_name = 'ISD'
+            pass
+        elif file_type == 'nm-res-cha':
+            # mr_format_name = 'CHARMM'
             pass
         else:
             return False
@@ -9273,8 +10708,13 @@ class NmrDpUtility:
         elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
             file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
 
-        elif len_valid_types == 3 and set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl']):
-            file_type = 'nm-res-xpl'
+        elif len_valid_types == 3:
+            set_valid_types = set(valid_types)
+            if set_valid_types == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl'])\
+               or set_valid_types == set(['nm-res-isd', 'nm-res-cns', 'nm-res-xpl']):
+                file_type = 'nm-res-xpl'
+            if set_valid_types == set(['nm-res-cha', 'nm-res-cns', 'nm-res-xpl']):
+                file_type = 'nm-res-cha'
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
@@ -9389,7 +10829,8 @@ class NmrDpUtility:
                 return self.__divideLegacyMR(file_path, file_type, err_desc, src_path, offset) | corrected
 
             for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
-                                   'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn', 'nm-res-syb']:
+                                   'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
+                                   'nm-res-syb', 'nm-res-isd', 'nm-res-cha']:
 
                 if test_file_type == file_type:
                     continue
@@ -9708,8 +11149,13 @@ class NmrDpUtility:
         elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
             file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
 
-        elif len_valid_types == 3 and set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl']):
-            file_type = 'nm-res-xpl'
+        elif len_valid_types == 3:
+            set_valid_types = set(valid_types)
+            if set_valid_types == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl'])\
+               or set_valid_types == set(['nm-res-isd', 'nm-res-cns', 'nm-res-xpl']):
+                file_type = 'nm-res-xpl'
+            if set_valid_types == set(['nm-res-cha', 'nm-res-cns', 'nm-res-xpl']):
+                file_type = 'nm-res-cha'
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
@@ -9761,6 +11207,12 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-syb':
             # mr_format_name = 'SYBYL'
+            pass
+        elif file_type == 'nm-res-isd':
+            # mr_format_name = 'ISD'
+            pass
+        elif file_type == 'nm-res-cha':
+            # mr_format_name = 'CHARMM'
             pass
         else:
             return False
@@ -10264,8 +11716,13 @@ class NmrDpUtility:
         elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
             file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
 
-        elif len_valid_types == 3 and set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl']):
-            file_type = 'nm-res-xpl'
+        elif len_valid_types == 3:
+            set_valid_types = set(valid_types)
+            if set_valid_types == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl'])\
+               or set_valid_types == set(['nm-res-isd', 'nm-res-cns', 'nm-res-xpl']):
+                file_type = 'nm-res-xpl'
+            if set_valid_types == set(['nm-res-cha', 'nm-res-cns', 'nm-res-xpl']):
+                file_type = 'nm-res-cha'
 
         self.__testFormatValidityOfLegacyMR(file_path, file_type, src_path, offset)
 
@@ -10287,7 +11744,8 @@ class NmrDpUtility:
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
             if listener is not None:
-                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb'):
+                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn',
+                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -10476,6 +11934,28 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
+        if (not is_valid or multiple_check) and file_type != 'nm-res-isd':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-isd')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+                valid_types.update(_valid_types)
+                possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-cha':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMR__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+                valid_types.update(_valid_types)
+                possible_types.update(_possible_types)
+
         if len(genuine_type) != 1:
             _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
             _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
@@ -10507,6 +11987,10 @@ class NmrDpUtility:
             mr_format_name = 'DYNAMO/PALES/TALOS'
         elif file_type == 'nm-res-syb':
             mr_format_name = 'SYBYL'
+        elif file_type == 'nm-res-isd':
+            mr_format_name = 'ISD'
+        elif file_type == 'nm-res-cha':
+            mr_format_name = 'CHARMM'
         elif file_type == 'nm-res-mr':
             mr_format_name = 'MR'
         else:
@@ -10544,6 +12028,12 @@ class NmrDpUtility:
             _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
         elif _file_type == 'nm-res-syb':
             _mr_format_name = 'SYBYL'
+            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-res-isd':
+            _mr_format_name = 'ISD'
+            _a_mr_format_name = 'an ' + _mr_format_name + ' restraint'
+        elif _file_type == 'nm-res-cha':
+            _mr_format_name = 'CHARMM'
             _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
 
         is_valid = False
@@ -10757,7 +12247,8 @@ class NmrDpUtility:
             designated = False
 
             for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
-                               'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn', 'nm-res-syb'):
+                               'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
+                               'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
 
                 sel_res_file = src_basename + f'-selected-as-res-{_file_type[-3:]}.mr'
 
@@ -10918,6 +12409,11 @@ class NmrDpUtility:
 
                                 ofp.write(line)
 
+                        _mrPath = os.path.splitext(src_file)[0] + '-corrected.str'
+
+                        if os.path.exists(_mrPath):  # in case manually corrected NMR-STAR file exists
+                            mrPath = _mrPath
+
                         mr_file_path_list = 'restraint_file_path_list'
 
                         if mr_file_path_list not in self.__inputParamDict:
@@ -11015,7 +12511,7 @@ class NmrDpUtility:
                                     self.__rescueImmatureStr(insert_index)
 
                                 if _is_done:
-                                    self.__detectContentSubType__(insert_index, input_source)
+                                    self.__detectContentSubType__(insert_index, input_source, dir_path)
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
@@ -11186,7 +12682,7 @@ class NmrDpUtility:
                                     self.__rescueImmatureStr(insert_index)
 
                                 if _is_done:
-                                    self.__detectContentSubType__(insert_index, input_source)
+                                    self.__detectContentSubType__(insert_index, input_source, dir_path)
 
                         elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                             pass
@@ -11314,9 +12810,17 @@ class NmrDpUtility:
                             _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
                             split_file_list.append(_ar)
 
-                        elif len_valid_types == 3 and set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl']):
+                        elif len_valid_types == 3\
+                                and (set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl'])
+                                     or set(valid_types) == set(['nm-res-isd', 'nm-res-cns', 'nm-res-xpl'])):
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = 'nm-res-xpl'
+                            split_file_list.append(_ar)
+
+                        elif len_valid_types == 3\
+                                and set(valid_types) == set(['nm-res-cha', 'nm-res-cns', 'nm-res-xpl']):
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-cha'
                             split_file_list.append(_ar)
 
                         else:
@@ -11428,8 +12932,8 @@ class NmrDpUtility:
                     else:
                         file_ext = os.path.basename(split_ext[0]).lower()
 
-                    if file_ext in ('x', 'crd', 'rst', 'inp', 'inpcrd', 'restrt')\
-                       or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:  # AMBER coordinate file extensions
+                    if file_ext in ('x', 'rc', 'crd', 'rst', 'inp', 'inpcrd', 'restrt')\
+                       or 'rc' in file_ext or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:  # AMBER coordinate file extensions
                         is_crd = False
                         with open(dst_file, 'r') as ifp:
                             for pos, line in enumerate(ifp, start=1):
@@ -11578,7 +13082,8 @@ class NmrDpUtility:
                     designated = False
 
                     for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
-                                       'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn', 'nm-res-syb'):
+                                       'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
+                                       'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
 
                         sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -11595,6 +13100,11 @@ class NmrDpUtility:
 
                     if designated:
                         continue
+
+                    cor_dst_file = dst_file + '-corrected'
+
+                    if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
+                        dst_file = cor_dst_file
 
                     has_spectral_peak = False
 
@@ -11753,7 +13263,7 @@ class NmrDpUtility:
                                         self.__rescueImmatureStr(insert_index)
 
                                     if _is_done:
-                                        self.__detectContentSubType__(insert_index, input_source)
+                                        self.__detectContentSubType__(insert_index, input_source, dir_path)
 
                             elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                                 pass
@@ -11888,11 +13398,6 @@ class NmrDpUtility:
 
                             continue
 
-                    cor_dst_file = dst_file + '-corrected'
-
-                    if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
-                        dst_file = cor_dst_file
-
                     file_name = os.path.basename(dst_file)
 
                     dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names if div_name.startswith(file_name)]
@@ -11916,7 +13421,8 @@ class NmrDpUtility:
                         designated = False
 
                         for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
-                                           'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn', 'nm-res-syb'):
+                                           'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
+                                           'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
 
                             sel_res_file = _dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -11997,9 +13503,19 @@ class NmrDpUtility:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
 
-                            elif len_valid_types == 3 and set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl']):
+                            elif len_valid_types == 3\
+                                    and (set(valid_types) == set(['nm-res-cya', 'nm-res-cns', 'nm-res-xpl'])
+                                         or set(valid_types) == set(['nm-res-isd', 'nm-res-cns', 'nm-res-xpl'])):
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-xpl'
+                                if distict:
+                                    _ar['original_file_name'] = file_name
+                                split_file_list.append(_ar)
+
+                            elif len_valid_types == 3\
+                                    and set(valid_types) == set(['nm-res-cha', 'nm-res-cns', 'nm-res-xpl']):
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = 'nm-res-cha'
                                 if distict:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
@@ -14005,11 +15521,11 @@ class NmrDpUtility:
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                            """
                             if conflict == 0:
                                 if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
                                     _s2 = fillInnerBlankCompId(_s2)
-
+                            """
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
@@ -14171,6 +15687,10 @@ class NmrDpUtility:
                             #             pass
                             # """
                             matched = mid_code.count('|')
+
+                            if self.__tolerant_seq_align and len(polymer_sequence) > 1:  # and not alt_chain:
+                                if 0 < matched < 4 and unmapped // matched > 20:
+                                    continue
 
                             seq_align = {'list_id': ps_in_loop['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id, 'length': ref_length,
                                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
@@ -14378,11 +15898,11 @@ class NmrDpUtility:
                             # """
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                            """
                             if conflict == 0:
                                 if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
                                     _s2 = fillInnerBlankCompId(_s2)
-
+                            """
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
@@ -14497,6 +16017,10 @@ class NmrDpUtility:
                             #     update_poly_seq = True
                             # """
                             matched = mid_code.count('|')
+
+                            if self.__tolerant_seq_align and len(polymer_sequence) > 1:  # and not alt_chain:
+                                if 0 < matched < 4 and unmapped // matched > 20:
+                                    continue
 
                             seq_align = {'list_id': ps_in_loop['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id, 'length': ref_length,
                                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
@@ -14700,11 +16224,11 @@ class NmrDpUtility:
 
                                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                                     _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                                    """
                                     if conflict == 0:
                                         if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
                                             _s2 = fillInnerBlankCompId(_s2)
-
+                                    """
                                     if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                         continue
 
@@ -14866,12 +16390,16 @@ class NmrDpUtility:
         """ Return human-readable seq align codes.
         """
 
+        len_s1 = len(s1['seq_id'])
+        len_s2 = len(s2['seq_id'])
+
         length = len(myAlign)
 
         seq_id1 = []
         seq_id2 = []
         comp_id1 = []
         comp_id2 = []
+
         idx1 = 0
         idx2 = 0
         for i in range(length):
@@ -14879,7 +16407,7 @@ class NmrDpUtility:
             myPr0 = str(myPr[0])
             myPr1 = str(myPr[1])
             if myPr0 != '.':
-                while idx1 < len(s1['seq_id']):
+                while idx1 < len_s1:
                     if s1['comp_id'][idx1] == myPr0:
                         seq_id1.append(s1['seq_id'][idx1])
                         comp_id1.append(myPr0)
@@ -14890,7 +16418,7 @@ class NmrDpUtility:
                 seq_id1.append(None)
                 comp_id1.append('.')
             if myPr1 != '.':
-                while idx2 < len(s2['seq_id']):
+                while idx2 < len_s2:
                     if s2['comp_id'][idx2] == myPr1:
                         seq_id2.append(s2['seq_id'][idx2])
                         comp_id2.append(myPr1)
@@ -16676,6 +18204,7 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - {str(e)}\n")
+
         # """
         # if (lp_data is not None) and len(lp_data) == 0 and self.__check_empty_loop:
 
@@ -17492,6 +19021,9 @@ class NmrDpUtility:
 
                         # main content of loop has been processed in __testDataConsistencyInLoop()
                         if lp_category in self.lp_categories[file_type][content_subtype]:
+                            continue
+
+                        if self.aux_lp_categories[file_type][content_subtype] is None:
                             continue
 
                         if lp_category in self.aux_lp_categories[file_type][content_subtype]:
@@ -18323,33 +19855,35 @@ class NmrDpUtility:
 
                         break
 
-            for lp_category in self.aux_lp_categories[file_type][content_subtype]:
+            if self.aux_lp_categories[file_type][content_subtype] is not None:
 
-                aux_data = next((l['data'] for l in self.__aux_data[content_subtype]
-                                 if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)  # noqa: E741
+                for lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
-                if aux_data is not None:
-                    for i in aux_data:
-                        if child_key_name in i and i[child_key_name] != parent_key:
+                    aux_data = next((l['data'] for l in self.__aux_data[content_subtype]
+                                     if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)  # noqa: E741
 
-                            if index_tag is None:
-                                err = f"{child_key_name} {str(i[child_key_name])!r} must be {parent_key}."
-                            else:
-                                err = f"[Check row of {index_tag} {i[index_tag]}] {child_key_name} {i[child_key_name]!r} must be {parent_key}."
+                    if aux_data is not None:
+                        for i in aux_data:
+                            if child_key_name in i and i[child_key_name] != parent_key:
 
-                            if i[child_key_name] in sf_framecode_dict:
-                                err = err[0:-1] + f" to point the parent {sf_framecode!r} saveframe. "\
-                                    f"The pointer has been reserved for the {sf_framecode_dict[i[child_key_name]]!r} saveframe."
+                                if index_tag is None:
+                                    err = f"{child_key_name} {str(i[child_key_name])!r} must be {parent_key}."
+                                else:
+                                    err = f"[Check row of {index_tag} {i[index_tag]}] {child_key_name} {i[child_key_name]!r} must be {parent_key}."
 
-                            self.report.error.appendDescription('invalid_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                 'description': err})
-                            self.report.setError()
+                                if i[child_key_name] in sf_framecode_dict:
+                                    err = err[0:-1] + f" to point the parent {sf_framecode!r} saveframe. "\
+                                        f"The pointer has been reserved for the {sf_framecode_dict[i[child_key_name]]!r} saveframe."
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testParentChildRelation() ++ ValueError  - {err}\n")
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                     'description': err})
+                                self.report.setError()
 
-                            break
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__testParentChildRelation() ++ ValueError  - {err}\n")
+
+                                break
 
         except Exception as e:
 
@@ -19620,16 +21154,18 @@ class NmrDpUtility:
 
                             if ambig_set_id in emptyValue:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                    + f"] {ambig_code_name} {str(ambig_code)!r} requires {ambig_set_id_name} value."
+                                if ambig_code in (4, 5):
 
-                                self.report.warning.appendDescription('missing_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                       'description': warn})
-                                self.report.setWarning()
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                        + f"] {ambig_code_name} {str(ambig_code)!r} requires {ambig_set_id_name} value."
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ Warning  - {warn}\n")
+                                    self.report.warning.appendDescription('missing_data',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                           'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ Warning  - {warn}\n")
 
                             else:
 
@@ -20199,20 +21735,27 @@ class NmrDpUtility:
 
                     if cs_list not in emptyValue:
 
-                        err = f"Assigned chemical shifts are mandatory. Referred {cs_list!r} saveframe does not exist."
+                        if fileListId == 0:
 
-                        self.report.error.appendDescription('missing_mandatory_content',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                             'description': err})
-                        self.report.setError()
+                            err = "Assigned chemical shifts are required to verify the consistensy of assigned peak list. "\
+                                f"Referred {cs_list!r} saveframe containing the assigned chemical shift does not exist."
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - {err}\n")
+                            self.report.error.appendDescription('missing_mandatory_content',
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                 'description': err})
+                            self.report.setError()
 
-                        continue
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - {err}\n")
+
+                            continue
+
+                        cs_input_source = self.report.input_sources[0]
+                        cs_input_source_dic = cs_input_source.get()
+                        cs_file_name = cs_input_source_dic['file_name']
 
                     try:
-                        cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name)  # noqa: E741
+                        cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == cs_file_name)  # noqa: E741
                     except StopIteration:
                         continue
 
@@ -20657,6 +22200,9 @@ class NmrDpUtility:
 
                 cs_data = None
 
+                cs_file_name = file_name
+                csFileListId = fileListId
+
                 try:
 
                     cs_list = get_first_sf_tag(sf_data, self.cs_list_sf_tag_name[file_type])
@@ -20671,17 +22217,25 @@ class NmrDpUtility:
 
                         if cs_list not in emptyValue:
 
-                            err = f"Assigned chemical shifts are mandatory. Referred {cs_list!r} saveframe does not exist."
+                            if fileListId == 0:
 
-                            self.report.error.appendDescription('missing_mandatory_content',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': err})
-                            self.report.setError()
+                                err = "Assigned chemical shifts are required to verify the consistensy of assigned peak lists. "\
+                                    f"Referred {cs_list!r} saveframe containing the assigned chemical shift does not exist."
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Error  - {err}\n")
+                                self.report.error.appendDescription('missing_mandatory_content',
+                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                     'description': err})
+                                self.report.setError()
 
-                            continue
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Error  - {err}\n")
+
+                                continue
+
+                            cs_input_source = self.report.input_sources[0]
+                            cs_input_source_dic = cs_input_source.get()
+                            cs_file_name = cs_input_source_dic['file_name']
+                            csFileListId = 0
 
                 except:  # noqa: E722 pylint: disable=bare-except
                     pass
@@ -20690,7 +22244,7 @@ class NmrDpUtility:
 
                     try:
 
-                        cs = next(l for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name)  # noqa: E741
+                        cs = next(l for l in self.__lp_data['chem_shift'] if l['file_name'] == cs_file_name)  # noqa: E741
 
                     except StopIteration:
                         continue
@@ -20698,7 +22252,7 @@ class NmrDpUtility:
                     cs_data = cs['data']
                     cs_list = cs['sf_framecode']
 
-                    cs_sf_data = self.__getSaveframeByName(fileListId, cs_list)
+                    cs_sf_data = self.__getSaveframeByName(csFileListId, cs_list)
 
                     if cs_sf_data is None:
                         continue
@@ -20841,7 +22395,7 @@ class NmrDpUtility:
                                         cs_data = l['data']
                                         cs_list = l['sf_framecode']
 
-                                        cs_sf_data = self.__getSaveframeByName(fileListId, cs_list)
+                                        cs_sf_data = self.__getSaveframeByName(csFileListId, cs_list)
 
                                         if cs_sf_data is None:
                                             continue
@@ -21292,7 +22846,9 @@ class NmrDpUtility:
 
                         if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                                 ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                                 or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                                 or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                             pass
 
                         else:
@@ -21885,6 +23441,9 @@ class NmrDpUtility:
                                                     + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
                                                     + f") which is a {variant_name} {_variant_!r} is not properly instantiated in the coordinate. Please re-upload the model file."
 
+                                    if self.__remediation_mode and checked:
+                                        continue
+
                                     self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                          'description': err})
@@ -22050,6 +23609,7 @@ class NmrDpUtility:
 
         amberAtomNumberDict = None
         gromacsAtomNumberDict = None
+        _amberAtomNumberDict = {}
 
         has_nm_aux_gro_file = False
 
@@ -22347,20 +23907,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
@@ -22378,7 +23940,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -22386,7 +23948,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -22480,20 +24042,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
@@ -22511,7 +24075,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -22519,7 +24083,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -22573,7 +24137,7 @@ class NmrDpUtility:
                                        self.__mr_atom_name_mapping,
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT,
-                                       amberAtomNumberDict)
+                                       amberAtomNumberDict, _amberAtomNumberDict)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -22600,20 +24164,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
@@ -22631,7 +24197,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -22639,7 +24205,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -22661,6 +24227,15 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+                    cur_dict = listener.getAtomNumberDict()
+                    if cur_dict is not None:
+                        if len(_amberAtomNumberDict) == 0:
+                            _amberAtomNumberDict = cur_dict
+                        else:
+                            for k, v in cur_dict.items():
+                                if k not in _amberAtomNumberDict:
+                                    _amberAtomNumberDict[k] = v
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -22735,20 +24310,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -22782,7 +24359,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -22790,7 +24367,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -22870,20 +24447,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -22909,7 +24488,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -22917,7 +24496,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -22992,20 +24571,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -23031,7 +24612,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -23039,7 +24620,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -23104,20 +24685,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
@@ -23135,7 +24718,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -23143,7 +24726,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -23210,20 +24793,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -23257,7 +24842,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -23265,7 +24850,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -23340,20 +24925,22 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Atom not found]'):
-                                self.report.error.appendDescription('atom_not_found',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
-                                self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -23379,7 +24966,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
 
-                            elif warn.startswith('[Range value error]'):
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                                 self.report.error.appendDescription('anomalous_data',
                                                                     {'file_name': file_name, 'description': warn})
                                 self.report.setError()
@@ -23387,7 +24974,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
 
-                            elif warn.startswith('[Range value warning]'):
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                                 self.report.warning.appendDescription('inconsistent_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
@@ -23403,6 +24990,262 @@ class NmrDpUtility:
                             #     if self.__verbose:
                             #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
                             #     """
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+            elif file_type == 'nm-res-isd':
+                reader = IsdMRReader(self.__verbose, self.__lfh,
+                                     self.__representative_model_id,
+                                     self.__mr_atom_name_mapping,
+                                     self.__cR, cC,
+                                     self.__ccU, self.__csStat, self.__nefT)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = IsdMRReader(self.__verbose, self.__lfh,
+                                             self.__representative_model_id,
+                                             self.__mr_atom_name_mapping,
+                                             self.__cR, cC,
+                                             self.__ccU, self.__csStat, self.__nefT,
+                                             reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom nomenclature]'):
+                                self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Enum mismatch ignorable]'):
+                                self.report.warning.appendDescription('enum_mismatch_ignorable',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
+                                self.report.warning.appendDescription('inconsistent_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                            #     """ defer to sequence alignment error
+                            # elif warn.startswith('[Unmatched residue name]'):
+                            #     self.report.warning.appendDescription('conflicted_mr_data',
+                            #                                           {'file_name': file_name, 'description': warn})
+                            #     self.report.setWarning()
+
+                            #     if self.__verbose:
+                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+                            #     """
+                            else:
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ KeyError  - {warn}\n")
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+            elif file_type == 'nm-res-cha':
+                reader = CharmmMRReader(self.__verbose, self.__lfh,
+                                        self.__representative_model_id,
+                                        self.__mr_atom_name_mapping,
+                                        self.__cR, cC,
+                                        self.__ccU, self.__csStat, self.__nefT)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = CharmmMRReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, cC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener.warningMessage is not None:
+                        messages = listener.warningMessage.split('\n')
+
+                        for warn in messages:
+                            if warn.startswith('[Concatenated sequence]'):
+                                self.report.warning.appendDescription('concatenated_sequence',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Sequence mismatch]'):
+                                self.report.error.appendDescription('sequence_mismatch',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Atom not found]'):
+                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                    self.report.error.appendDescription('atom_not_found',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Hydrogen not instantiated]'):
+                                if not self.__remediation_mode:
+                                    self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                        {'file_name': file_name, 'description': warn})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Invalid data]'):
+                                self.report.error.appendDescription('invalid_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Enum mismatch ignorable]'):
+                                self.report.warning.appendDescription('enum_mismatch_ignorable',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                                self.report.error.appendDescription('anomalous_data',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ ValueError  - {warn}\n")
+
+                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
+                                self.report.warning.appendDescription('inconsistent_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Insufficient atom selection]'):
+                                self.report.warning.appendDescription('insufficient_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Anomalous RDC vector]'):
+                                self.report.warning.appendDescription('anomalous_rdc_vector',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Unsupported data]'):
+                                self.report.warning.appendDescription('unsupported_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Warning  - {warn}\n")
+
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ KeyError  - " + warn)
                                 self.report.setError()
@@ -23799,7 +25642,7 @@ class NmrDpUtility:
         elif content_subtype == 'chem_shift_ref':
             ent['loop'] = lp_data
             ent['saveframe_tag'] = sf_tag_data
-
+            """
         else:
 
             err = f"Not found a module for calculation of statistics on content subtype {content_subtype}."
@@ -23811,7 +25654,7 @@ class NmrDpUtility:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - {err}\n")
 
             return
-
+            """
         has_err = self.report.error.exists(file_name, sf_framecode)
         has_warn = self.report.warning.exists(file_name, sf_framecode)
 
@@ -29351,23 +31194,25 @@ class NmrDpUtility:
             if self.__cR.hasCategory(lp_category):
                 lp_counts[content_subtype] = 1
 
-            elif content_subtype != 'non_poly':
+            elif content_subtype != 'branch':
 
-                if content_subtype == 'poly_seq' and self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
+                if content_subtype != 'non_poly':
+
+                    if content_subtype == 'poly_seq' and self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
+                        lp_counts[content_subtype] = 1
+                    # """ DAOTHER-5654
+                    # else:
+                    #     err = f"Category {lp_category} is mandatory."
+
+                    #     self.report.error.appendDescription('missing_mandatory_content',
+                    #                                         {'file_name': file_name, 'description': err})
+                    #     self.report.setError()
+
+                    #     if self.__verbose:
+                    #         self.__lfh.write(f"+NmrDpUtility.__detectCoordContentSubType() ++ Error  - {err}\n")
+                    # """
+                elif self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
                     lp_counts[content_subtype] = 1
-                # """ DAOTHER-5654
-                # else:
-                #     err = f"Category {lp_category} is mandatory."
-
-                #     self.report.error.appendDescription('missing_mandatory_content',
-                #                                         {'file_name': file_name, 'description': err})
-                #     self.report.setError()
-
-                #     if self.__verbose:
-                #         self.__lfh.write(f"+NmrDpUtility.__detectCoordContentSubType() ++ Error  - {err}\n")
-                # """
-            elif self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
-                lp_counts[content_subtype] = 1
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
@@ -29425,6 +31270,22 @@ class NmrDpUtility:
 
             if len(poly_seq) == 0:
                 return False
+
+            content_subtype = 'branch'
+
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            if self.__cR.hasCategory(lp_category):
+
+                key_items = self.key_items[file_type][content_subtype]
+
+                try:
+                    branch_seq = self.__cR.getPolymerSequence(lp_category, key_items,
+                                                              withStructConf=False, withRmsd=False, alias=False, total_models=self.__total_models)
+                    if len(branch_seq) > 0:
+                        poly_seq.extend(branch_seq)
+                except Exception:
+                    pass
 
             input_source.setItemValue('polymer_sequence', poly_seq)
 
@@ -29732,6 +31593,8 @@ class NmrDpUtility:
                     auth_seq_id = next((c['auth_seq_id'] for c in coord if c['chain_id'] == chain_id and c['seq_id'] is not None and int(c['seq_id']) == seq_id), None)
                     if auth_seq_id is not None:
                         self.__auth_to_label_seq[(label_to_auth_chain[chain_id], auth_seq_id)] = seq_key
+                    else:
+                        self.__auth_to_label_seq[seq_key] = seq_key
             self.__label_to_auth_seq = {v: k for k, v in self.__auth_to_label_seq.items()}
 
             # DAOTHER-7665
@@ -29936,7 +31799,7 @@ class NmrDpUtility:
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ('entry_info', 'poly_seq') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
+            if content_subtype in ('entry_info', 'poly_seq', 'branch') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -30204,7 +32067,7 @@ class NmrDpUtility:
 
             for content_subtype in polymer_sequence_in_loop.keys():
 
-                if content_subtype == 'non_poly':
+                if content_subtype in ('non_poly', 'branch'):
                     continue
 
                 seq_align_set = []
@@ -30241,11 +32104,11 @@ class NmrDpUtility:
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                            """
                             if conflict == 0:
                                 if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
                                     _s2 = fillInnerBlankCompId(_s2)
-
+                            """
                             ref_length = len(s1['seq_id'])
 
                             ref_code = getOneLetterCodeSequence(_s1['comp_id'])
@@ -30282,7 +32145,7 @@ class NmrDpUtility:
 
         seq_align_set = []
 
-        has_conflict = False
+        # has_conflict = False
 
         for i1, s1 in enumerate(polymer_sequence):
             chain_id = s1['chain_id']
@@ -30311,7 +32174,7 @@ class NmrDpUtility:
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                """
                 if conflict == 0:
                     has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
                     has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
@@ -30320,8 +32183,9 @@ class NmrDpUtility:
                         _s2 = fillInnerBlankCompId(_s2)
                     elif has_inner_gap_1 and not has_inner_gap_2:
                         _s1 = fillInnerBlankCompId(_s1)
-
+                """
                 if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    _s2 = self.__compensateLadderHistidinTag2(chain_id, _s1, _s2)
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
@@ -30336,15 +32200,15 @@ class NmrDpUtility:
 
                     _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                    if _conflict == 0:  # and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
                         conflict = 0
                         offset_1 = _offset_1
                         offset_2 = _offset_2
                         _s1 = __s1
                         _s2 = __s2
 
-                if conflict > 0:
-                    has_conflict = True
+                # if conflict > 0:
+                #     has_conflict = True
 
                 ref_length = len(s1['seq_id'])
 
@@ -30357,10 +32221,14 @@ class NmrDpUtility:
                 if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                        in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                        if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                    len_s1 = len(_s1['seq_id'])
+                    len_s2 = len(_s2['seq_id'])
+
                     seq_id1 = []
                     seq_id2 = []
                     comp_id1 = []
                     comp_id2 = []
+
                     idx1 = 0
                     idx2 = 0
                     for i in range(length):
@@ -30368,7 +32236,7 @@ class NmrDpUtility:
                         myPr0 = str(myPr[0])
                         myPr1 = str(myPr[1])
                         if myPr0 != '.':
-                            while idx1 < len(_s1['seq_id']):
+                            while idx1 < len_s1:
                                 if _s1['comp_id'][idx1] == myPr0:
                                     seq_id1.append(_s1['seq_id'][idx1])
                                     comp_id1.append(myPr0)
@@ -30379,7 +32247,7 @@ class NmrDpUtility:
                             seq_id1.append(None)
                             comp_id1.append('.')
                         if myPr1 != '.':
-                            while idx2 < len(_s2['seq_id']):
+                            while idx2 < len_s2:
                                 if _s2['comp_id'][idx2] == myPr1:
                                     seq_id2.append(_s2['seq_id'][idx2])
                                     comp_id2.append(myPr1)
@@ -30415,7 +32283,7 @@ class NmrDpUtility:
                 seq_align_set.append(seq_align)
 
         if len(seq_align_set) > 0:
-
+            """
             if has_conflict:
                 err_seq_align = [seq_align for seq_align in seq_align_set
                                  if seq_align['conflict'] > 0
@@ -30426,12 +32294,12 @@ class NmrDpUtility:
                 if len(err_seq_align) > 0:
                     for seq_align in err_seq_align:
                         seq_align_set.remove(seq_align)
-
+            """
             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', seq_align_set)
 
         seq_align_set = []
 
-        has_conflict = False
+        # has_conflict = False
 
         for s1 in nmr_polymer_sequence:
             chain_id = s1['chain_id']
@@ -30460,7 +32328,7 @@ class NmrDpUtility:
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-
+                """
                 if conflict == 0:
                     has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
                     has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
@@ -30469,8 +32337,9 @@ class NmrDpUtility:
                         _s2 = fillInnerBlankCompId(_s2)
                     elif has_inner_gap_1 and not has_inner_gap_2:
                         _s1 = fillInnerBlankCompId(_s1)
-
+                """
                 if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    _s1 = self.__compensateLadderHistidinTag2(chain_id, _s2, _s1)
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
                     _s2_ = __s2
@@ -30485,15 +32354,15 @@ class NmrDpUtility:
 
                     _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if _conflict == 0 and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
+                    if _conflict == 0:  # and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
                         conflict = 0
                         offset_1 = _offset_1
                         offset_2 = _offset_2
                         _s1 = __s1
                         _s2 = __s2
 
-                if conflict > 0:
-                    has_conflict = True
+                # if conflict > 0:
+                #     has_conflict = True
 
                 ref_length = len(s1['seq_id'])
 
@@ -30506,10 +32375,14 @@ class NmrDpUtility:
                 if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                        in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                        if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                    len_s1 = len(_s1['seq_id'])
+                    len_s2 = len(_s2['seq_id'])
+
                     seq_id1 = []
                     seq_id2 = []
                     comp_id1 = []
                     comp_id2 = []
+
                     idx1 = 0
                     idx2 = 0
                     for i in range(length):
@@ -30517,7 +32390,7 @@ class NmrDpUtility:
                         myPr0 = str(myPr[0])
                         myPr1 = str(myPr[1])
                         if myPr0 != '.':
-                            while idx1 < len(_s1['seq_id']):
+                            while idx1 < len_s1:
                                 if _s1['comp_id'][idx1] == myPr0:
                                     seq_id1.append(_s1['seq_id'][idx1])
                                     comp_id1.append(myPr0)
@@ -30528,7 +32401,7 @@ class NmrDpUtility:
                             seq_id1.append(None)
                             comp_id1.append('.')
                         if myPr1 != '.':
-                            while idx2 < len(_s2['seq_id']):
+                            while idx2 < len_s2:
                                 if _s2['comp_id'][idx2] == myPr1:
                                     seq_id2.append(_s2['seq_id'][idx2])
                                     comp_id2.append(myPr1)
@@ -30564,7 +32437,7 @@ class NmrDpUtility:
                 seq_align_set.append(seq_align)
 
         if len(seq_align_set) > 0:
-
+            """
             if has_conflict:
                 err_seq_align = [seq_align for seq_align in seq_align_set
                                  if seq_align['conflict'] > 0
@@ -30575,10 +32448,53 @@ class NmrDpUtility:
                 if len(err_seq_align) > 0:
                     for seq_align in err_seq_align:
                         seq_align_set.remove(seq_align)
-
+            """
             self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', seq_align_set)
 
         return True
+
+    def __compensateLadderHistidinTag2(self, chain_id, s1, s2):
+        """ Compensate ladder-like Histidin tag in polymer sequence 2.
+        """
+
+        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+        self.__pA.addTestSequence(s2['comp_id'], chain_id)
+        self.__pA.doAlign()
+
+        _s2 = copy.copy(s2)
+
+        len_s2 = len(s2['comp_id'])
+
+        myAlign = self.__pA.getAlignment(chain_id)
+
+        length = len(myAlign)
+
+        _myPr0 = '.'
+
+        idx2 = 0
+        for p in range(length):
+            myPr = myAlign[p]
+            myPr0 = str(myPr[0])
+            myPr1 = str(myPr[1])
+
+            if myPr0 == myPr1:
+                pass
+
+            elif myPr0 == 'HIS' and myPr1 == '.' and _myPr0 == 'HIS':
+                _s2['comp_id'][idx2] = 'HIS'
+                if idx2 < len_s2:
+                    idx2 += 1
+
+            _myPr0 = myPr0
+
+            if myPr1 != '.':
+                while idx2 < len_s2:
+                    if s2['comp_id'][idx2] == myPr1:
+                        idx2 += 1
+                        break
+                    idx2 += 1
+
+        return _s2
 
     def __assignCoordPolymerSequence(self):
         """ Assign polymer sequences of coordinate file.
@@ -32116,6 +34032,9 @@ class NmrDpUtility:
                                                                             comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
                                             + ") is not properly instantiated in the coordinates. Please re-upload the model file."
 
+                            if self.__remediation_mode and checked:
+                                continue
+
                             self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                  'description': err})
@@ -32181,10 +34100,10 @@ class NmrDpUtility:
         if os.path.getsize(fPath) == 0:
             raise IOError(f"+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find any content in file path {fPath}.")
 
-        self.report = NmrDpReport()
+        self.report = NmrDpReport(self.__verbose, self.__lfh)
         self.report.loadFile(fPath)
 
-        self.report_prev = NmrDpReport()
+        self.report_prev = NmrDpReport(self.__verbose, self.__lfh)
         self.report_prev.loadFile(fPath)
 
         return True
@@ -32331,6 +34250,9 @@ class NmrDpUtility:
 
                     # main content of loop has been processed in __testDataConsistencyInLoop()
                     if lp_category in self.lp_categories[file_type][content_subtype]:
+                        continue
+
+                    if self.aux_lp_categories[file_type][content_subtype] is None:
                         continue
 
                     if lp_category in self.aux_lp_categories[file_type][content_subtype]:
@@ -37773,6 +39695,9 @@ class NmrDpUtility:
 
                     # main content of loop has been processed in __resetBoolValueInLoop()
                     if lp_category in self.lp_categories[file_type][content_subtype]:
+                        continue
+
+                    if self.aux_lp_categories[file_type][content_subtype] is None:
                         continue
 
                     if lp_category in self.aux_lp_categories[file_type][content_subtype]:

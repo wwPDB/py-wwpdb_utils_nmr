@@ -1,4 +1,4 @@
-# Generated from SybylMRParser.g4 by ANTLR 4.10.1
+# Generated from SybylMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -65,7 +65,7 @@ class SybylMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -113,7 +113,7 @@ class SybylMRParser ( Parser ):
             self.state = 11
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==SybylMRParser.Atom1:
+            while _la==1:
                 self.state = 8
                 self.distance_restraints()
                 self.state = 13
@@ -195,7 +195,7 @@ class SybylMRParser ( Parser ):
                 self.state = 23 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==SybylMRParser.Atom_selection):
+                if not (_la==10):
                     break
 
         except RecognitionException as re:
@@ -300,7 +300,7 @@ class SybylMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 30
             _la = self._input.LA(1)
-            if not(_la==SybylMRParser.Integer or _la==SybylMRParser.Float):
+            if not(_la==5 or _la==6):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

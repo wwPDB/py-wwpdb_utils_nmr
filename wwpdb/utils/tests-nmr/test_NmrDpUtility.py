@@ -19,7 +19,6 @@ import os
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
-from testfixtures import LogCapture
 
 
 class TestNmrDpUtility(unittest.TestCase):
@@ -49,28 +48,25 @@ class TestNmrDpUtility(unittest.TestCase):
                             'nbase_restraint', 'ang_restraint', 'pre_restraint',
                             'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
                             'hbond_restraint', 'geo_restraint',
-                            'coordinate', 'non_poly', 'topology'})
+                            'coordinate', 'branch', 'non_poly', 'topology'})
 
         # data directory exists
         self.assertEqual(os.path.isdir(self.data_dir_path), True)
 
     def test_nmr_nef_consistency(self):
         # no input
-        with LogCapture() as _logs:
-            with self.assertRaises(ValueError):
-                self.utility.op('nmr-nef-consistency-check')
+        with self.assertRaises(ValueError):
+            self.utility.op('nmr-nef-consistency-check')
 
-        with LogCapture() as _logs:
-            with self.assertRaises(IOError):
-                self.utility.setSource('dummydummy')
+        with self.assertRaises(IOError):
+            self.utility.setSource('dummydummy')
 
         self.utility.setSource(self.data_dir_path + '2l9r.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
 
         # invalid workflow operation
-        with LogCapture() as _logs:  # noqa: F841
-            with self.assertRaises(KeyError):
-                self.utility.op('nmr')
+        with self.assertRaises(KeyError):
+            self.utility.op('nmr')
 
         self.utility.setLog(self.data_dir_path + '2l9r-nef-consistency-log.json')
 
@@ -78,21 +74,18 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str_consistency(self):
         # no input
-        with LogCapture() as _logs:
-            with self.assertRaises(ValueError):
-                self.utility.op('nmr-str-consistency-check')
+        with self.assertRaises(ValueError):
+            self.utility.op('nmr-str-consistency-check')
 
-        with LogCapture() as _logs:
-            with self.assertRaises(IOError):
-                self.utility.setSource('dummydummy')
+        with self.assertRaises(IOError):
+            self.utility.setSource('dummydummy')
 
         self.utility.setSource(self.data_dir_path + '2l9r.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
 
         # invalid workflow operation
-        with LogCapture() as _logs:  # noqa: F841
-            with self.assertRaises(KeyError):
-                self.utility.op('nmr')
+        with self.assertRaises(KeyError):
+            self.utility.op('nmr')
 
         self.utility.setLog(self.data_dir_path + '2l9r-str-consistency-log.json')
 

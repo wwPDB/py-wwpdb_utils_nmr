@@ -369,7 +369,7 @@ Do_Lp:			D O ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 Identity_Lp:		I D E N T? I? T? Y? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);
 Show:			S H O W -> pushMode(VECTOR_SHOW_MODE);	// Vector_show_property
 
-/* CNS: Gloval statement/Evaluate statement - Syntax
+/* CNS: Global statement/Evaluate statement - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
 Evaluate_Lp:		E V A L U? A? T? E? ' '* L_paren -> pushMode(VECTOR_EXPR_MODE);

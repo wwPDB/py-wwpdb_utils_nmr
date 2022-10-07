@@ -48,7 +48,7 @@ class AmberMRReader:
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
                  cR=None, cC=None, ccU=None, csStat=None, nefT=None,
-                 atomNumberDict=None):
+                 atomNumberDict=None, auxAtomNumberDict=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
@@ -76,6 +76,7 @@ class AmberMRReader:
 
         # AmberPTParserListener.getAtomNumberDict()
         self.__atomNumberDict = atomNumberDict
+        self.__auxAtomNumberDict = auxAtomNumberDict
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -256,6 +257,10 @@ class AmberMRReader:
                 sanderAtomNumberDict = listener.getSanderAtomNumberDict()
                 if len(sanderAtomNumberDict) > 0:
                     self.__atomNumberDict = sanderAtomNumberDict
+                    if self.__auxAtomNumberDict is not None and len(self.__auxAtomNumberDict) > 0:
+                        for k, v in self.__auxAtomNumberDict.items():
+                            if k not in self.__atomNumberDict:
+                                self.__atomNumberDict[k] = v
                 else:
                     break
 
@@ -280,6 +285,24 @@ class AmberMRReader:
 
 
 if __name__ == "__main__":
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7n7e/dihedral.amber',
+                 '../../tests-nmr/mock-data-remediation/7n7e/7n7e.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7n7e/distance.amber-corrected',
+                 '../../tests-nmr/mock-data-remediation/7n7e/7n7e.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2llj/2llj-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2llj/2llj.cif',
+                 None)
+
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5oe1/pa8_wat2.rest',

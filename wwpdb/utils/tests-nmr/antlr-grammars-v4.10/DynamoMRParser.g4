@@ -52,7 +52,10 @@ sequence:
 	Data
 		(
 		First_resid Integer_DA RETURN_DA |
-		Sequence One_letter_code+ RETURN_SQ
+		Sequence One_letter_code+ RETURN_SQ |
+		Db_name Simple_name_DA RETURN_DA |
+		Tab_name Simple_name_DA* RETURN_DA |
+		Tab_id Integer_DA RETURN_DA
 		);
 
 distance_restraints:

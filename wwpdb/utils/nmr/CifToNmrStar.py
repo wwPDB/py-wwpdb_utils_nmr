@@ -6,7 +6,7 @@
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 20-Apr-2022  M. Yokochi - enable to fix broken data block order of CIF formatted NMR-STAR using NMR-STAR schema (DAOTHER-7407, NMR restraint remediation)
 # 28-Jul-2022  M. Yokochi - enable to fix format issue of CIF formatted NMR-STAR (You cannot have two loops with the same category in one saveframe. Category: '_Audit')
-# 19-Aug-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
+# 27-Sep-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -267,7 +267,7 @@ class CifToNmrStar:
 
                 sf_category = item['sf_category']
 
-                if item['sf_category_flag']:
+                if item['sf_category_flag'] or ('missing_sf_category' in item and item['missing_sf_category']):
                     if sf_category not in sf_category_counter:
                         cur_list_id = 1
                     else:

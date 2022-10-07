@@ -3,12 +3,13 @@
 # Date: 02-June-2022
 #
 # Updates:
-# Generated from GromacsMRParser.g4 by ANTLR 4.10.1
+# Generated from GromacsMRParser.g4 by ANTLR 4.11.1
 """ ParserLister class for GROMACS MR files.
     @author: Masashi Yokochi
 """
 import sys
 import itertools
+import numpy
 
 from antlr4 import ParseTreeListener
 
@@ -19,6 +20,7 @@ try:
                                                        isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -41,6 +43,7 @@ except ImportError:
                                            isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            REPRESENTATIVE_MODEL_ID,
+                                           THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -85,6 +88,7 @@ class GromacsMRParserListener(ParseTreeListener):
     # __lfh = None
     __debug = False
     __omitDistLimitOutlier = True
+    __correctCircularShift = True
 
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     # __mrAtomNameMapping = None
@@ -452,8 +456,11 @@ class GromacsMRParserListener(ParseTreeListener):
             delta = self.numberSelection[1]
             weight = self.numberSelection[2]
 
-            lower_limit = target_value - delta
-            upper_limit = target_value + delta
+            if delta > 0.0:
+                lower_limit = target_value - delta
+                upper_limit = target_value + delta
+            else:
+                lower_limit = upper_limit = None
 
             if funct != 1:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -549,6 +556,26 @@ class GromacsMRParserListener(ParseTreeListener):
 
         validRange = True
         dstFunc = {'weight': weight}
+
+        if self.__correctCircularShift:
+            _array = numpy.array([target_value, lower_limit, upper_limit],
+                                 dtype=float)
+
+            shift = None
+            if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                shift = -(numpy.nanmax(_array) // 360) * 360
+            elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                shift = -(numpy.nanmin(_array) // 360) * 360
+            if shift is not None:
+                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                    "The target/limit values for an angle restraint have been circularly shifted "\
+                    f"to fit within range {ANGLE_RESTRAINT_ERROR}.\n"
+                if target_value is not None:
+                    target_value += shift
+                if lower_limit is not None:
+                    lower_limit += shift
+                if upper_limit is not None:
+                    upper_limit += shift
 
         if target_value is not None:
             if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
@@ -729,7 +756,9 @@ class GromacsMRParserListener(ParseTreeListener):
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
 
                 else:
@@ -875,8 +904,11 @@ class GromacsMRParserListener(ParseTreeListener):
             delta = self.numberSelection[1]
             weight = 1.0
 
-            lower_limit = target_value - delta
-            upper_limit = target_value + delta
+            if delta > 0.0:
+                lower_limit = target_value - delta
+                upper_limit = target_value + delta
+            else:
+                lower_limit = upper_limit = None
 
             len_atom_sorts = len(set(ai, aj, ak, al))
 
@@ -1019,8 +1051,11 @@ class GromacsMRParserListener(ParseTreeListener):
             delta = self.numberSelection[1]
             weight = 1.0
 
-            lower_limit = target_value - delta
-            upper_limit = target_value + delta
+            if delta > 0.0:
+                lower_limit = target_value - delta
+                upper_limit = target_value + delta
+            else:
+                lower_limit = upper_limit = None
 
             if ai == aj:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\

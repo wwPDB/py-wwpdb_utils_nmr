@@ -20,6 +20,7 @@ options { tokenVocab=RosettaMRLexer; }
 
 rosetta_mr:
 	(
+	comment |
 	atom_pair_restraints |
 	angle_restraints |
 	dihedral_restraints |
@@ -35,6 +36,9 @@ rosetta_mr:
 	disulfide_bond_linkages			// used only in CS-ROSETTA
 	)*
 	EOF;
+
+comment:
+	COMMENT (Atom_pair_selection | Atom_selection | Any_name)* RETURN_CM;
 
 /* Rosetta Constraint File - Constraint Types - Single constraints
  See also https://www.rosettacommons.org/docs/latest/rosetta_basics/file_types/constraint-file
@@ -127,6 +131,7 @@ any_restraint:
  See also https://www.rosettacommons.org/docs/latest/rosetta_basics/file_types/constraint-file
 */
 func_type_def:
+	(
 	(CIRCULARHARMONIC | HARMONIC | SIGMOID | SQUARE_WELL) number_f number_f |
 	BOUNDED number_f number_f number_f number_f? (Simple_name | number_f)* |
 	PERIODICBOUNDED number_f number_f number_f number_f number_f? (Simple_name | number_f)* |
@@ -146,7 +151,8 @@ func_type_def:
 	SQUARE_WELL2 number_f number_f number_f DEGREES? |
 	ETABLE number_f number_f number_f* |
 	USOG Integer (number_f number_f number_f number_f)+ |
-	SOG Integer (number_f number_f number_f number_f number_f number_f)+;
+	SOG Integer (number_f number_f number_f number_f number_f number_f)+
+	) comment?;
 
 /* CS-ROSETTA Installation Files
  See also https://spin.niddk.nih.gov/bax/software/CSROSETTA/#rdc and https://csrosetta.bmrb.io/format_help

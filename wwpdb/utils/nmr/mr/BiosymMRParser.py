@@ -1,4 +1,4 @@
-# Generated from BiosymMRParser.g4 by ANTLR 4.10.1
+# Generated from BiosymMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -123,7 +123,7 @@ class BiosymMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -213,7 +213,7 @@ class BiosymMRParser ( Parser ):
             self.state = 39
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << BiosymMRParser.Real) | (1 << BiosymMRParser.Atom_selection) | (1 << BiosymMRParser.Ordinal))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 776) != 0:
                 self.state = 37
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -372,7 +372,7 @@ class BiosymMRParser ( Parser ):
             self.state = 50
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==BiosymMRParser.Ordinal:
+            if _la==9:
                 self.state = 49
                 self.match(BiosymMRParser.Ordinal)
 
@@ -396,7 +396,7 @@ class BiosymMRParser ( Parser ):
             self.state = 61
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==BiosymMRParser.Integer or _la==BiosymMRParser.Float:
+            if _la==1 or _la==2:
                 self.state = 60
                 self.number()
 
@@ -514,7 +514,7 @@ class BiosymMRParser ( Parser ):
             self.state = 69
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==BiosymMRParser.Ordinal:
+            if _la==9:
                 self.state = 68
                 self.match(BiosymMRParser.Ordinal)
 
@@ -646,7 +646,7 @@ class BiosymMRParser ( Parser ):
             self.state = 85
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==BiosymMRParser.Ordinal:
+            if _la==9:
                 self.state = 84
                 self.match(BiosymMRParser.Ordinal)
 
@@ -696,7 +696,7 @@ class BiosymMRParser ( Parser ):
             self.state = 111
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==BiosymMRParser.Integer or _la==BiosymMRParser.Float:
+            if _la==1 or _la==2:
                 self.state = 108
                 self.number()
                 self.state = 109
@@ -816,7 +816,7 @@ class BiosymMRParser ( Parser ):
             self.state = 119
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==BiosymMRParser.Ordinal:
+            if _la==9:
                 self.state = 118
                 self.match(BiosymMRParser.Ordinal)
 
@@ -945,7 +945,7 @@ class BiosymMRParser ( Parser ):
             self.state = 137
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==BiosymMRParser.Ordinal:
+            if _la==9:
                 self.state = 136
                 self.match(BiosymMRParser.Ordinal)
 
@@ -1060,7 +1060,7 @@ class BiosymMRParser ( Parser ):
             self.state = 148
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==BiosymMRParser.Ordinal:
+            if _la==9:
                 self.state = 147
                 self.match(BiosymMRParser.Ordinal)
 
@@ -1161,7 +1161,7 @@ class BiosymMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 158
             _la = self._input.LA(1)
-            if not(_la==BiosymMRParser.Integer or _la==BiosymMRParser.Float):
+            if not(_la==1 or _la==2):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

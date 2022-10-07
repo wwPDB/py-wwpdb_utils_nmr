@@ -1,4 +1,4 @@
-# Generated from AmberMRParser.g4 by ANTLR 4.10.1
+# Generated from AmberMRParser.g4 by ANTLR 4.11.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -850,7 +850,7 @@ class AmberMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.11.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -954,7 +954,7 @@ class AmberMRParser ( Parser ):
             self.state = 81
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberMRParser.RST or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (AmberMRParser.NOEEXP - 64)) | (1 << (AmberMRParser.SHF - 64)) | (1 << (AmberMRParser.PCSHF - 64)) | (1 << (AmberMRParser.ALIGN - 64)) | (1 << (AmberMRParser.CSA - 64)))) != 0) or _la==AmberMRParser.Residue or _la==AmberMRParser.COMMENT:
+            while _la==2 or (((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 576461852351954945) != 0 or _la==141 or _la==145:
                 self.state = 79
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -1064,7 +1064,7 @@ class AmberMRParser ( Parser ):
             self.state = 90
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==AmberMRParser.Any_name:
+            while _la==158:
                 self.state = 87
                 self.match(AmberMRParser.Any_name)
                 self.state = 92
@@ -1127,7 +1127,7 @@ class AmberMRParser ( Parser ):
             self.state = 98
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==AmberMRParser.END:
+            if _la==1:
                 self.state = 97
                 self.match(AmberMRParser.END)
 
@@ -1186,7 +1186,7 @@ class AmberMRParser ( Parser ):
             self.state = 103
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==AmberMRParser.END:
+            if _la==1:
                 self.state = 102
                 self.match(AmberMRParser.END)
 
@@ -1245,7 +1245,7 @@ class AmberMRParser ( Parser ):
             self.state = 108
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==AmberMRParser.END:
+            if _la==1:
                 self.state = 107
                 self.match(AmberMRParser.END)
 
@@ -1304,7 +1304,7 @@ class AmberMRParser ( Parser ):
             self.state = 113
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==AmberMRParser.END:
+            if _la==1:
                 self.state = 112
                 self.match(AmberMRParser.END)
 
@@ -1363,7 +1363,7 @@ class AmberMRParser ( Parser ):
             self.state = 118
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==AmberMRParser.END:
+            if _la==1:
                 self.state = 117
                 self.match(AmberMRParser.END)
 
@@ -1422,7 +1422,7 @@ class AmberMRParser ( Parser ):
             self.state = 123
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==AmberMRParser.END:
+            if _la==1:
                 self.state = 122
                 self.match(AmberMRParser.END)
 
@@ -1474,7 +1474,7 @@ class AmberMRParser ( Parser ):
             self.state = 128
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AmberMRParser.IAT) | (1 << AmberMRParser.RSTWT) | (1 << AmberMRParser.RESTRAINT) | (1 << AmberMRParser.ATNAM_Lp) | (1 << AmberMRParser.ATNAM) | (1 << AmberMRParser.IRESID) | (1 << AmberMRParser.NSTEP1) | (1 << AmberMRParser.NSTEP2) | (1 << AmberMRParser.IRSTYP) | (1 << AmberMRParser.IALTD) | (1 << AmberMRParser.IFVARI) | (1 << AmberMRParser.NINC) | (1 << AmberMRParser.IMULT) | (1 << AmberMRParser.R1) | (1 << AmberMRParser.R2) | (1 << AmberMRParser.R3) | (1 << AmberMRParser.R4) | (1 << AmberMRParser.RK2) | (1 << AmberMRParser.RK3) | (1 << AmberMRParser.R1A) | (1 << AmberMRParser.R2A) | (1 << AmberMRParser.R3A) | (1 << AmberMRParser.R4A) | (1 << AmberMRParser.RK2A) | (1 << AmberMRParser.RK3A) | (1 << AmberMRParser.R0) | (1 << AmberMRParser.K0) | (1 << AmberMRParser.R0A) | (1 << AmberMRParser.K0A) | (1 << AmberMRParser.RJCOEF) | (1 << AmberMRParser.IGR1) | (1 << AmberMRParser.IGR2) | (1 << AmberMRParser.IGR3) | (1 << AmberMRParser.IGR4) | (1 << AmberMRParser.IGR5) | (1 << AmberMRParser.IGR6) | (1 << AmberMRParser.IGR7) | (1 << AmberMRParser.IGR8) | (1 << AmberMRParser.FXYZ) | (1 << AmberMRParser.OUTXYZ) | (1 << AmberMRParser.GRNAM1_Lp) | (1 << AmberMRParser.GRNAM2_Lp) | (1 << AmberMRParser.GRNAM3_Lp) | (1 << AmberMRParser.GRNAM4_Lp) | (1 << AmberMRParser.GRNAM5_Lp) | (1 << AmberMRParser.GRNAM6_Lp) | (1 << AmberMRParser.GRNAM7_Lp) | (1 << AmberMRParser.GRNAM8_Lp) | (1 << AmberMRParser.GRNAM1) | (1 << AmberMRParser.GRNAM2) | (1 << AmberMRParser.GRNAM3) | (1 << AmberMRParser.GRNAM4) | (1 << AmberMRParser.GRNAM5) | (1 << AmberMRParser.GRNAM6) | (1 << AmberMRParser.GRNAM7) | (1 << AmberMRParser.GRNAM8) | (1 << AmberMRParser.IR6) | (1 << AmberMRParser.IFNTYP) | (1 << AmberMRParser.IXPK) | (1 << AmberMRParser.NXPK) | (1 << AmberMRParser.ICONSTR))) != 0):
+            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -8) != 0:
                 self.state = 125
                 self.restraint_factor()
                 self.state = 130
@@ -1847,7 +1847,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 1)
                 self.state = 131
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AmberMRParser.IAT) | (1 << AmberMRParser.IGR1) | (1 << AmberMRParser.IGR2) | (1 << AmberMRParser.IGR3) | (1 << AmberMRParser.IGR4) | (1 << AmberMRParser.IGR5) | (1 << AmberMRParser.IGR6) | (1 << AmberMRParser.IGR7) | (1 << AmberMRParser.IGR8))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 2190433320968) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -1856,14 +1856,14 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Equ_op_IA)
                 self.state = 133
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Integers or _la==AmberMRParser.MultiplicativeInt):
+                if not(_la==185 or _la==186):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 134
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_IA or _la==AmberMRParser.End_IA):
+                if not(_la==182 or _la==183):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -1874,7 +1874,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 2)
                 self.state = 135
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.RSTWT or _la==AmberMRParser.RJCOEF):
+                if not(_la==4 or _la==32):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -1883,14 +1883,14 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 137
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Reals or _la==AmberMRParser.MultiplicativeReal):
+                if not(_la==193 or _la==194):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 138
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_RA or _la==AmberMRParser.End_RA):
+                if not(_la==190 or _la==191):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -1954,7 +1954,7 @@ class AmberMRParser ( Parser ):
                 self.state = 154
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 153
                     self.match(AmberMRParser.Comma)
 
@@ -1965,7 +1965,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 4)
                 self.state = 156
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AmberMRParser.ATNAM_Lp) | (1 << AmberMRParser.GRNAM1_Lp) | (1 << AmberMRParser.GRNAM2_Lp) | (1 << AmberMRParser.GRNAM3_Lp) | (1 << AmberMRParser.GRNAM4_Lp) | (1 << AmberMRParser.GRNAM5_Lp) | (1 << AmberMRParser.GRNAM6_Lp) | (1 << AmberMRParser.GRNAM7_Lp) | (1 << AmberMRParser.GRNAM8_Lp))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 2243003720663104) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -1981,7 +1981,7 @@ class AmberMRParser ( Parser ):
                 self.state = 162
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 161
                     self.match(AmberMRParser.Comma)
 
@@ -1992,7 +1992,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 5)
                 self.state = 164
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AmberMRParser.ATNAM) | (1 << AmberMRParser.GRNAM1) | (1 << AmberMRParser.GRNAM2) | (1 << AmberMRParser.GRNAM3) | (1 << AmberMRParser.GRNAM4) | (1 << AmberMRParser.GRNAM5) | (1 << AmberMRParser.GRNAM6) | (1 << AmberMRParser.GRNAM7) | (1 << AmberMRParser.GRNAM8))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 574208952489738368) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2003,7 +2003,7 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Qstrings)
                 self.state = 167
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_QA or _la==AmberMRParser.End_QA):
+                if not(_la==203 or _la==204):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2014,7 +2014,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 6)
                 self.state = 168
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AmberMRParser.IRESID) | (1 << AmberMRParser.IRSTYP) | (1 << AmberMRParser.IALTD) | (1 << AmberMRParser.IMULT) | (1 << AmberMRParser.OUTXYZ) | (1 << AmberMRParser.IR6) | (1 << AmberMRParser.IFNTYP))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 1729386654956820736) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2026,7 +2026,7 @@ class AmberMRParser ( Parser ):
                 self.state = 172
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 171
                     self.match(AmberMRParser.Comma)
 
@@ -2037,7 +2037,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 7)
                 self.state = 174
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AmberMRParser.NSTEP1) | (1 << AmberMRParser.NSTEP2) | (1 << AmberMRParser.IFVARI) | (1 << AmberMRParser.NINC) | (1 << AmberMRParser.IXPK) | (1 << AmberMRParser.NXPK) | (1 << AmberMRParser.ICONSTR))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & -2305843009213667840) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2049,7 +2049,7 @@ class AmberMRParser ( Parser ):
                 self.state = 178
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 177
                     self.match(AmberMRParser.Comma)
 
@@ -2060,7 +2060,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 8)
                 self.state = 180
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AmberMRParser.R1) | (1 << AmberMRParser.R2) | (1 << AmberMRParser.R3) | (1 << AmberMRParser.R4) | (1 << AmberMRParser.RK2) | (1 << AmberMRParser.RK3) | (1 << AmberMRParser.R1A) | (1 << AmberMRParser.R2A) | (1 << AmberMRParser.R3A) | (1 << AmberMRParser.R4A) | (1 << AmberMRParser.RK2A) | (1 << AmberMRParser.RK3A) | (1 << AmberMRParser.R0) | (1 << AmberMRParser.K0) | (1 << AmberMRParser.R0A) | (1 << AmberMRParser.K0A))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 4294901760) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2072,7 +2072,7 @@ class AmberMRParser ( Parser ):
                 self.state = 184
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 183
                     self.match(AmberMRParser.Comma)
 
@@ -2089,7 +2089,7 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.BoolInts)
                 self.state = 189
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_BA or _la==AmberMRParser.End_BA):
+                if not(_la==197 or _la==198):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2100,7 +2100,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 10)
                 self.state = 190
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AmberMRParser.IAT) | (1 << AmberMRParser.IGR1) | (1 << AmberMRParser.IGR2) | (1 << AmberMRParser.IGR3) | (1 << AmberMRParser.IGR4) | (1 << AmberMRParser.IGR5) | (1 << AmberMRParser.IGR6) | (1 << AmberMRParser.IGR7) | (1 << AmberMRParser.IGR8))) != 0)):
+                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 2190433320968) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2117,7 +2117,7 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Integers)
                 self.state = 196
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_IA or _la==AmberMRParser.End_IA):
+                if not(_la==182 or _la==183):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2140,7 +2140,7 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Reals)
                 self.state = 203
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_RA or _la==AmberMRParser.End_RA):
+                if not(_la==190 or _la==191):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2370,14 +2370,14 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Equ_op_IA)
                 self.state = 214
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Integers or _la==AmberMRParser.MultiplicativeInt):
+                if not(_la==185 or _la==186):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 215
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_IA or _la==AmberMRParser.End_IA):
+                if not(_la==182 or _la==183):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2392,14 +2392,14 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 218
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Reals or _la==AmberMRParser.MultiplicativeReal):
+                if not(_la==193 or _la==194):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 219
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_RA or _la==AmberMRParser.End_RA):
+                if not(_la==190 or _la==191):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2410,7 +2410,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 3)
                 self.state = 220
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.IHP or _la==AmberMRParser.JHP):
+                if not(_la==67 or _la==68):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2432,7 +2432,7 @@ class AmberMRParser ( Parser ):
                 self.state = 229
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 228
                     self.match(AmberMRParser.Comma)
 
@@ -2443,7 +2443,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 4)
                 self.state = 231
                 _la = self._input.LA(1)
-                if not(((((_la - 69)) & ~0x3f) == 0 and ((1 << (_la - 69)) & ((1 << (AmberMRParser.AEXP - 69)) | (1 << (AmberMRParser.ARANGE - 69)) | (1 << (AmberMRParser.AWT - 69)))) != 0)):
+                if not((((_la - 69)) & ~0x3f) == 0 and ((1 << (_la - 69)) & 7) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2465,7 +2465,7 @@ class AmberMRParser ( Parser ):
                 self.state = 240
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 239
                     self.match(AmberMRParser.Comma)
 
@@ -2476,7 +2476,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 5)
                 self.state = 242
                 _la = self._input.LA(1)
-                if not(((((_la - 72)) & ~0x3f) == 0 and ((1 << (_la - 72)) & ((1 << (AmberMRParser.INVWT1 - 72)) | (1 << (AmberMRParser.INVWT2 - 72)) | (1 << (AmberMRParser.OMEGA - 72)) | (1 << (AmberMRParser.TAUROT - 72)) | (1 << (AmberMRParser.TAUMET - 72)) | (1 << (AmberMRParser.OSCALE - 72)))) != 0)):
+                if not((((_la - 72)) & ~0x3f) == 0 and ((1 << (_la - 72)) & 95) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2488,7 +2488,7 @@ class AmberMRParser ( Parser ):
                 self.state = 246
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 245
                     self.match(AmberMRParser.Comma)
 
@@ -2506,7 +2506,7 @@ class AmberMRParser ( Parser ):
                 self.state = 252
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 251
                     self.match(AmberMRParser.Comma)
 
@@ -2529,7 +2529,7 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Integers)
                 self.state = 260
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_IA or _la==AmberMRParser.End_IA):
+                if not(_la==182 or _la==183):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2552,7 +2552,7 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Reals)
                 self.state = 267
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_RA or _la==AmberMRParser.End_RA):
+                if not(_la==190 or _la==191):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2762,11 +2762,11 @@ class AmberMRParser ( Parser ):
             self.state = 335
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AmberMRParser.NRING, AmberMRParser.NPROT, AmberMRParser.NTER, AmberMRParser.CTER]:
+            if token in [80, 89, 91, 92]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 277
                 _la = self._input.LA(1)
-                if not(((((_la - 80)) & ~0x3f) == 0 and ((1 << (_la - 80)) & ((1 << (AmberMRParser.NRING - 80)) | (1 << (AmberMRParser.NPROT - 80)) | (1 << (AmberMRParser.NTER - 80)) | (1 << (AmberMRParser.CTER - 80)))) != 0)):
+                if not((((_la - 80)) & ~0x3f) == 0 and ((1 << (_la - 80)) & 6657) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2778,17 +2778,17 @@ class AmberMRParser ( Parser ):
                 self.state = 281
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 280
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.NATR, AmberMRParser.IPROT]:
+            elif token in [81, 85]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 283
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.NATR or _la==AmberMRParser.IPROT):
+                if not(_la==81 or _la==85):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2806,13 +2806,13 @@ class AmberMRParser ( Parser ):
                 self.state = 290
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 289
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.IATR]:
+            elif token in [82]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 292
                 self.match(AmberMRParser.IATR)
@@ -2833,13 +2833,13 @@ class AmberMRParser ( Parser ):
                 self.state = 301
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 300
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.OBS]:
+            elif token in [86]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 303
                 self.match(AmberMRParser.OBS)
@@ -2856,17 +2856,17 @@ class AmberMRParser ( Parser ):
                 self.state = 310
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 309
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.STR, AmberMRParser.SHRANG, AmberMRParser.WT]:
+            elif token in [84, 87, 88]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 312
                 _la = self._input.LA(1)
-                if not(((((_la - 84)) & ~0x3f) == 0 and ((1 << (_la - 84)) & ((1 << (AmberMRParser.STR - 84)) | (1 << (AmberMRParser.SHRANG - 84)) | (1 << (AmberMRParser.WT - 84)))) != 0)):
+                if not((((_la - 84)) & ~0x3f) == 0 and ((1 << (_la - 84)) & 25) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2881,20 +2881,20 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 317
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Reals or _la==AmberMRParser.MultiplicativeReal):
+                if not(_la==193 or _la==194):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 318
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_RA or _la==AmberMRParser.End_RA):
+                if not(_la==190 or _la==191):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 pass
-            elif token in [AmberMRParser.NAMR]:
+            elif token in [83]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 319
                 self.match(AmberMRParser.NAMR)
@@ -2911,13 +2911,13 @@ class AmberMRParser ( Parser ):
                 self.state = 326
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 325
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.SHCUT]:
+            elif token in [90]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 328
                 self.match(AmberMRParser.SHCUT)
@@ -2928,13 +2928,13 @@ class AmberMRParser ( Parser ):
                 self.state = 332
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 331
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.COMMENT]:
+            elif token in [145]:
                 self.enterOuterAlt(localctx, 8)
                 self.state = 334
                 self.comment()
@@ -3132,11 +3132,11 @@ class AmberMRParser ( Parser ):
             self.state = 387
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AmberMRParser.NPROT, AmberMRParser.NME]:
+            if token in [89, 94]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 343
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.NPROT or _la==AmberMRParser.NME):
+                if not(_la==89 or _la==94):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3148,13 +3148,13 @@ class AmberMRParser ( Parser ):
                 self.state = 347
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 346
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.NMPMC]:
+            elif token in [95]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 349
                 self.match(AmberMRParser.NMPMC)
@@ -3165,17 +3165,17 @@ class AmberMRParser ( Parser ):
                 self.state = 353
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 352
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.IPROT, AmberMRParser.MLTPRO]:
+            elif token in [85, 103]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 355
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.IPROT or _la==AmberMRParser.MLTPRO):
+                if not(_la==85 or _la==103):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3193,17 +3193,17 @@ class AmberMRParser ( Parser ):
                 self.state = 362
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 361
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.OBS, AmberMRParser.OPTPHI, AmberMRParser.OPTTET, AmberMRParser.OPTOMG, AmberMRParser.OPTA1, AmberMRParser.OPTA2]:
+            elif token in [86, 96, 97, 98, 99, 100]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 364
                 _la = self._input.LA(1)
-                if not(((((_la - 86)) & ~0x3f) == 0 and ((1 << (_la - 86)) & ((1 << (AmberMRParser.OBS - 86)) | (1 << (AmberMRParser.OPTPHI - 86)) | (1 << (AmberMRParser.OPTTET - 86)) | (1 << (AmberMRParser.OPTOMG - 86)) | (1 << (AmberMRParser.OPTA1 - 86)) | (1 << (AmberMRParser.OPTA2 - 86)))) != 0)):
+                if not((((_la - 86)) & ~0x3f) == 0 and ((1 << (_la - 86)) & 31745) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3221,17 +3221,17 @@ class AmberMRParser ( Parser ):
                 self.state = 371
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 370
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.WT, AmberMRParser.TOLPRO]:
+            elif token in [88, 102]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 373
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.WT or _la==AmberMRParser.TOLPRO):
+                if not(_la==88 or _la==102):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3246,20 +3246,20 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 378
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Reals or _la==AmberMRParser.MultiplicativeReal):
+                if not(_la==193 or _la==194):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 379
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_RA or _la==AmberMRParser.End_RA):
+                if not(_la==190 or _la==191):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 pass
-            elif token in [AmberMRParser.OPTKON]:
+            elif token in [101]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 380
                 self.match(AmberMRParser.OPTKON)
@@ -3270,13 +3270,13 @@ class AmberMRParser ( Parser ):
                 self.state = 384
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 383
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.COMMENT]:
+            elif token in [145]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 386
                 self.comment()
@@ -3490,7 +3490,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 1)
                 self.state = 395
                 _la = self._input.LA(1)
-                if not(((((_la - 105)) & ~0x3f) == 0 and ((1 << (_la - 105)) & ((1 << (AmberMRParser.NDIP - 105)) | (1 << (AmberMRParser.DATASET - 105)) | (1 << (AmberMRParser.NUM_DATASETS - 105)))) != 0)):
+                if not((((_la - 105)) & ~0x3f) == 0 and ((1 << (_la - 105)) & 385) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3502,7 +3502,7 @@ class AmberMRParser ( Parser ):
                 self.state = 399
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 398
                     self.match(AmberMRParser.Comma)
 
@@ -3513,7 +3513,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 2)
                 self.state = 401
                 _la = self._input.LA(1)
-                if not(((((_la - 106)) & ~0x3f) == 0 and ((1 << (_la - 106)) & ((1 << (AmberMRParser.ID - 106)) | (1 << (AmberMRParser.JD - 106)) | (1 << (AmberMRParser.DATASET - 106)))) != 0)):
+                if not((((_la - 106)) & ~0x3f) == 0 and ((1 << (_la - 106)) & 67) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3531,7 +3531,7 @@ class AmberMRParser ( Parser ):
                 self.state = 408
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 407
                     self.match(AmberMRParser.Comma)
 
@@ -3542,7 +3542,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 3)
                 self.state = 410
                 _la = self._input.LA(1)
-                if not(((((_la - 108)) & ~0x3f) == 0 and ((1 << (_la - 108)) & ((1 << (AmberMRParser.DOBSL - 108)) | (1 << (AmberMRParser.DOBSU - 108)) | (1 << (AmberMRParser.DOBS - 108)))) != 0)):
+                if not((((_la - 108)) & ~0x3f) == 0 and ((1 << (_la - 108)) & 7) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3560,7 +3560,7 @@ class AmberMRParser ( Parser ):
                 self.state = 417
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 416
                     self.match(AmberMRParser.Comma)
 
@@ -3571,7 +3571,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 4)
                 self.state = 419
                 _la = self._input.LA(1)
-                if not(((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & ((1 << (AmberMRParser.DWT - 111)) | (1 << (AmberMRParser.GIGJ - 111)) | (1 << (AmberMRParser.DIJ - 111)))) != 0)):
+                if not((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & 769) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3588,7 +3588,7 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Reals)
                 self.state = 425
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_RA or _la==AmberMRParser.End_RA):
+                if not(_la==190 or _la==191):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3599,7 +3599,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 5)
                 self.state = 426
                 _la = self._input.LA(1)
-                if not(((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & ((1 << (AmberMRParser.DWT - 111)) | (1 << (AmberMRParser.GIGJ - 111)) | (1 << (AmberMRParser.DIJ - 111)))) != 0)):
+                if not((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & 769) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3608,14 +3608,14 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 428
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Reals or _la==AmberMRParser.MultiplicativeReal):
+                if not(_la==193 or _la==194):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 429
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_RA or _la==AmberMRParser.End_RA):
+                if not(_la==190 or _la==191):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3626,7 +3626,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 6)
                 self.state = 430
                 _la = self._input.LA(1)
-                if not(((((_la - 114)) & ~0x3f) == 0 and ((1 << (_la - 114)) & ((1 << (AmberMRParser.S11 - 114)) | (1 << (AmberMRParser.S12 - 114)) | (1 << (AmberMRParser.S13 - 114)) | (1 << (AmberMRParser.S22 - 114)) | (1 << (AmberMRParser.S23 - 114)))) != 0)):
+                if not((((_la - 114)) & ~0x3f) == 0 and ((1 << (_la - 114)) & 31) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3637,7 +3637,7 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Reals)
                 self.state = 433
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_RA or _la==AmberMRParser.End_RA):
+                if not(_la==190 or _la==191):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3655,7 +3655,7 @@ class AmberMRParser ( Parser ):
                 self.state = 438
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 437
                     self.match(AmberMRParser.Comma)
 
@@ -3673,7 +3673,7 @@ class AmberMRParser ( Parser ):
                 self.state = 444
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 443
                     self.match(AmberMRParser.Comma)
 
@@ -3874,11 +3874,11 @@ class AmberMRParser ( Parser ):
             self.state = 490
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [AmberMRParser.NCSA, AmberMRParser.DATASETC]:
+            if token in [124, 132]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 455
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.NCSA or _la==AmberMRParser.DATASETC):
+                if not(_la==124 or _la==132):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3890,17 +3890,17 @@ class AmberMRParser ( Parser ):
                 self.state = 459
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 458
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.ICSA, AmberMRParser.JCSA, AmberMRParser.KCSA]:
+            elif token in [125, 126, 127]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 461
                 _la = self._input.LA(1)
-                if not(((((_la - 125)) & ~0x3f) == 0 and ((1 << (_la - 125)) & ((1 << (AmberMRParser.ICSA - 125)) | (1 << (AmberMRParser.JCSA - 125)) | (1 << (AmberMRParser.KCSA - 125)))) != 0)):
+                if not((((_la - 125)) & ~0x3f) == 0 and ((1 << (_la - 125)) & 7) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3918,17 +3918,17 @@ class AmberMRParser ( Parser ):
                 self.state = 468
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 467
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.COBSL, AmberMRParser.COBSU, AmberMRParser.COBS]:
+            elif token in [128, 129, 130]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 470
                 _la = self._input.LA(1)
-                if not(((((_la - 128)) & ~0x3f) == 0 and ((1 << (_la - 128)) & ((1 << (AmberMRParser.COBSL - 128)) | (1 << (AmberMRParser.COBSU - 128)) | (1 << (AmberMRParser.COBS - 128)))) != 0)):
+                if not((((_la - 128)) & ~0x3f) == 0 and ((1 << (_la - 128)) & 7) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3946,13 +3946,13 @@ class AmberMRParser ( Parser ):
                 self.state = 477
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 476
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.CWT]:
+            elif token in [131]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 479
                 self.match(AmberMRParser.CWT)
@@ -3960,24 +3960,24 @@ class AmberMRParser ( Parser ):
                 self.match(AmberMRParser.Equ_op_RA)
                 self.state = 481
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Reals or _la==AmberMRParser.MultiplicativeReal):
+                if not(_la==193 or _la==194):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 self.state = 482
                 _la = self._input.LA(1)
-                if not(_la==AmberMRParser.Comma_RA or _la==AmberMRParser.End_RA):
+                if not(_la==190 or _la==191):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
                 pass
-            elif token in [AmberMRParser.FIELD, AmberMRParser.SIGMA11, AmberMRParser.SIGMA12, AmberMRParser.SIGMA13, AmberMRParser.SIGMA22, AmberMRParser.SIGMA23, AmberMRParser.CCUT]:
+            elif token in [133, 134, 135, 136, 137, 138, 139]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 483
                 _la = self._input.LA(1)
-                if not(((((_la - 133)) & ~0x3f) == 0 and ((1 << (_la - 133)) & ((1 << (AmberMRParser.FIELD - 133)) | (1 << (AmberMRParser.SIGMA11 - 133)) | (1 << (AmberMRParser.SIGMA12 - 133)) | (1 << (AmberMRParser.SIGMA13 - 133)) | (1 << (AmberMRParser.SIGMA22 - 133)) | (1 << (AmberMRParser.SIGMA23 - 133)) | (1 << (AmberMRParser.CCUT - 133)))) != 0)):
+                if not((((_la - 133)) & ~0x3f) == 0 and ((1 << (_la - 133)) & 127) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3989,13 +3989,13 @@ class AmberMRParser ( Parser ):
                 self.state = 487
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma:
+                if _la==140:
                     self.state = 486
                     self.match(AmberMRParser.Comma)
 
 
                 pass
-            elif token in [AmberMRParser.COMMENT]:
+            elif token in [145]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 489
                 self.comment()
@@ -4084,7 +4084,7 @@ class AmberMRParser ( Parser ):
                 self.state = 496
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 495
                     self.match(AmberMRParser.Comma_F)
 
@@ -4106,7 +4106,7 @@ class AmberMRParser ( Parser ):
                 self.state = 505
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 504
                     self.match(AmberMRParser.Comma_F)
 
@@ -4128,7 +4128,7 @@ class AmberMRParser ( Parser ):
                 self.state = 514
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 513
                     self.match(AmberMRParser.Comma_F)
 
@@ -4224,7 +4224,7 @@ class AmberMRParser ( Parser ):
                 self.state = 525
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 524
                     self.match(AmberMRParser.Comma_F)
 
@@ -4234,7 +4234,7 @@ class AmberMRParser ( Parser ):
                 self.state = 529
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 528
                     self.match(AmberMRParser.Comma_F)
 
@@ -4256,7 +4256,7 @@ class AmberMRParser ( Parser ):
                 self.state = 538
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 537
                     self.match(AmberMRParser.Comma_F)
 
@@ -4266,7 +4266,7 @@ class AmberMRParser ( Parser ):
                 self.state = 542
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 541
                     self.match(AmberMRParser.Comma_F)
 
@@ -4288,7 +4288,7 @@ class AmberMRParser ( Parser ):
                 self.state = 551
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 550
                     self.match(AmberMRParser.Comma_F)
 
@@ -4298,7 +4298,7 @@ class AmberMRParser ( Parser ):
                 self.state = 555
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 554
                     self.match(AmberMRParser.Comma_F)
 
@@ -4392,7 +4392,7 @@ class AmberMRParser ( Parser ):
                 self.state = 566
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 565
                     self.match(AmberMRParser.Comma_F)
 
@@ -4414,7 +4414,7 @@ class AmberMRParser ( Parser ):
                 self.state = 575
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 574
                     self.match(AmberMRParser.Comma_F)
 
@@ -4436,7 +4436,7 @@ class AmberMRParser ( Parser ):
                 self.state = 584
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 583
                     self.match(AmberMRParser.Comma_F)
 
@@ -4458,7 +4458,7 @@ class AmberMRParser ( Parser ):
                 self.state = 593
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 592
                     self.match(AmberMRParser.Comma_F)
 
@@ -4480,7 +4480,7 @@ class AmberMRParser ( Parser ):
                 self.state = 602
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 601
                     self.match(AmberMRParser.Comma_F)
 
@@ -4502,7 +4502,7 @@ class AmberMRParser ( Parser ):
                 self.state = 611
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 610
                     self.match(AmberMRParser.Comma_F)
 
@@ -4595,7 +4595,7 @@ class AmberMRParser ( Parser ):
                 self.state = 622
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 621
                     self.match(AmberMRParser.Comma_F)
 
@@ -4617,7 +4617,7 @@ class AmberMRParser ( Parser ):
                 self.state = 631
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 630
                     self.match(AmberMRParser.Comma_F)
 
@@ -4639,7 +4639,7 @@ class AmberMRParser ( Parser ):
                 self.state = 640
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 639
                     self.match(AmberMRParser.Comma_F)
 
@@ -4735,7 +4735,7 @@ class AmberMRParser ( Parser ):
                 self.state = 651
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 650
                     self.match(AmberMRParser.Comma_F)
 
@@ -4745,7 +4745,7 @@ class AmberMRParser ( Parser ):
                 self.state = 655
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 654
                     self.match(AmberMRParser.Comma_F)
 
@@ -4755,7 +4755,7 @@ class AmberMRParser ( Parser ):
                 self.state = 659
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 658
                     self.match(AmberMRParser.Comma_F)
 
@@ -4777,7 +4777,7 @@ class AmberMRParser ( Parser ):
                 self.state = 668
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 667
                     self.match(AmberMRParser.Comma_F)
 
@@ -4787,7 +4787,7 @@ class AmberMRParser ( Parser ):
                 self.state = 672
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 671
                     self.match(AmberMRParser.Comma_F)
 
@@ -4797,7 +4797,7 @@ class AmberMRParser ( Parser ):
                 self.state = 676
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 675
                     self.match(AmberMRParser.Comma_F)
 
@@ -4819,7 +4819,7 @@ class AmberMRParser ( Parser ):
                 self.state = 685
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 684
                     self.match(AmberMRParser.Comma_F)
 
@@ -4829,7 +4829,7 @@ class AmberMRParser ( Parser ):
                 self.state = 689
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 688
                     self.match(AmberMRParser.Comma_F)
 
@@ -4839,7 +4839,7 @@ class AmberMRParser ( Parser ):
                 self.state = 693
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 692
                     self.match(AmberMRParser.Comma_F)
 
@@ -4941,7 +4941,7 @@ class AmberMRParser ( Parser ):
                 self.state = 704
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 703
                     self.match(AmberMRParser.Comma_F)
 
@@ -4951,7 +4951,7 @@ class AmberMRParser ( Parser ):
                 self.state = 708
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 707
                     self.match(AmberMRParser.Comma_F)
 
@@ -4961,7 +4961,7 @@ class AmberMRParser ( Parser ):
                 self.state = 712
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 711
                     self.match(AmberMRParser.Comma_F)
 
@@ -4983,7 +4983,7 @@ class AmberMRParser ( Parser ):
                 self.state = 721
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 720
                     self.match(AmberMRParser.Comma_F)
 
@@ -4993,7 +4993,7 @@ class AmberMRParser ( Parser ):
                 self.state = 725
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 724
                     self.match(AmberMRParser.Comma_F)
 
@@ -5003,7 +5003,7 @@ class AmberMRParser ( Parser ):
                 self.state = 729
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 728
                     self.match(AmberMRParser.Comma_F)
 
@@ -5025,7 +5025,7 @@ class AmberMRParser ( Parser ):
                 self.state = 738
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 737
                     self.match(AmberMRParser.Comma_F)
 
@@ -5035,7 +5035,7 @@ class AmberMRParser ( Parser ):
                 self.state = 742
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 741
                     self.match(AmberMRParser.Comma_F)
 
@@ -5045,7 +5045,7 @@ class AmberMRParser ( Parser ):
                 self.state = 746
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 745
                     self.match(AmberMRParser.Comma_F)
 
@@ -5147,7 +5147,7 @@ class AmberMRParser ( Parser ):
                 self.state = 757
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 756
                     self.match(AmberMRParser.Comma_F)
 
@@ -5157,7 +5157,7 @@ class AmberMRParser ( Parser ):
                 self.state = 761
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 760
                     self.match(AmberMRParser.Comma_F)
 
@@ -5167,7 +5167,7 @@ class AmberMRParser ( Parser ):
                 self.state = 765
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 764
                     self.match(AmberMRParser.Comma_F)
 
@@ -5177,7 +5177,7 @@ class AmberMRParser ( Parser ):
                 self.state = 769
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 768
                     self.match(AmberMRParser.Comma_F)
 
@@ -5187,7 +5187,7 @@ class AmberMRParser ( Parser ):
                 self.state = 773
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 772
                     self.match(AmberMRParser.Comma_F)
 
@@ -5209,7 +5209,7 @@ class AmberMRParser ( Parser ):
                 self.state = 782
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 781
                     self.match(AmberMRParser.Comma_F)
 
@@ -5219,7 +5219,7 @@ class AmberMRParser ( Parser ):
                 self.state = 786
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 785
                     self.match(AmberMRParser.Comma_F)
 
@@ -5229,7 +5229,7 @@ class AmberMRParser ( Parser ):
                 self.state = 790
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 789
                     self.match(AmberMRParser.Comma_F)
 
@@ -5239,7 +5239,7 @@ class AmberMRParser ( Parser ):
                 self.state = 794
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 793
                     self.match(AmberMRParser.Comma_F)
 
@@ -5249,7 +5249,7 @@ class AmberMRParser ( Parser ):
                 self.state = 798
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 797
                     self.match(AmberMRParser.Comma_F)
 
@@ -5271,7 +5271,7 @@ class AmberMRParser ( Parser ):
                 self.state = 807
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 806
                     self.match(AmberMRParser.Comma_F)
 
@@ -5281,7 +5281,7 @@ class AmberMRParser ( Parser ):
                 self.state = 811
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 810
                     self.match(AmberMRParser.Comma_F)
 
@@ -5291,7 +5291,7 @@ class AmberMRParser ( Parser ):
                 self.state = 815
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 814
                     self.match(AmberMRParser.Comma_F)
 
@@ -5301,7 +5301,7 @@ class AmberMRParser ( Parser ):
                 self.state = 819
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 818
                     self.match(AmberMRParser.Comma_F)
 
@@ -5311,7 +5311,7 @@ class AmberMRParser ( Parser ):
                 self.state = 823
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 822
                     self.match(AmberMRParser.Comma_F)
 
@@ -5413,7 +5413,7 @@ class AmberMRParser ( Parser ):
                 self.state = 834
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 833
                     self.match(AmberMRParser.Comma_F)
 
@@ -5423,7 +5423,7 @@ class AmberMRParser ( Parser ):
                 self.state = 838
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 837
                     self.match(AmberMRParser.Comma_F)
 
@@ -5433,7 +5433,7 @@ class AmberMRParser ( Parser ):
                 self.state = 842
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 841
                     self.match(AmberMRParser.Comma_F)
 
@@ -5443,7 +5443,7 @@ class AmberMRParser ( Parser ):
                 self.state = 846
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 845
                     self.match(AmberMRParser.Comma_F)
 
@@ -5453,7 +5453,7 @@ class AmberMRParser ( Parser ):
                 self.state = 850
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 849
                     self.match(AmberMRParser.Comma_F)
 
@@ -5463,7 +5463,7 @@ class AmberMRParser ( Parser ):
                 self.state = 854
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 853
                     self.match(AmberMRParser.Comma_F)
 
@@ -5473,7 +5473,7 @@ class AmberMRParser ( Parser ):
                 self.state = 858
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 857
                     self.match(AmberMRParser.Comma_F)
 
@@ -5495,7 +5495,7 @@ class AmberMRParser ( Parser ):
                 self.state = 867
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 866
                     self.match(AmberMRParser.Comma_F)
 
@@ -5505,7 +5505,7 @@ class AmberMRParser ( Parser ):
                 self.state = 871
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 870
                     self.match(AmberMRParser.Comma_F)
 
@@ -5515,7 +5515,7 @@ class AmberMRParser ( Parser ):
                 self.state = 875
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 874
                     self.match(AmberMRParser.Comma_F)
 
@@ -5525,7 +5525,7 @@ class AmberMRParser ( Parser ):
                 self.state = 879
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 878
                     self.match(AmberMRParser.Comma_F)
 
@@ -5535,7 +5535,7 @@ class AmberMRParser ( Parser ):
                 self.state = 883
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 882
                     self.match(AmberMRParser.Comma_F)
 
@@ -5545,7 +5545,7 @@ class AmberMRParser ( Parser ):
                 self.state = 887
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 886
                     self.match(AmberMRParser.Comma_F)
 
@@ -5555,7 +5555,7 @@ class AmberMRParser ( Parser ):
                 self.state = 891
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 890
                     self.match(AmberMRParser.Comma_F)
 
@@ -5577,7 +5577,7 @@ class AmberMRParser ( Parser ):
                 self.state = 900
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 899
                     self.match(AmberMRParser.Comma_F)
 
@@ -5587,7 +5587,7 @@ class AmberMRParser ( Parser ):
                 self.state = 904
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 903
                     self.match(AmberMRParser.Comma_F)
 
@@ -5597,7 +5597,7 @@ class AmberMRParser ( Parser ):
                 self.state = 908
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 907
                     self.match(AmberMRParser.Comma_F)
 
@@ -5607,7 +5607,7 @@ class AmberMRParser ( Parser ):
                 self.state = 912
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 911
                     self.match(AmberMRParser.Comma_F)
 
@@ -5617,7 +5617,7 @@ class AmberMRParser ( Parser ):
                 self.state = 916
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 915
                     self.match(AmberMRParser.Comma_F)
 
@@ -5627,7 +5627,7 @@ class AmberMRParser ( Parser ):
                 self.state = 920
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 919
                     self.match(AmberMRParser.Comma_F)
 
@@ -5637,7 +5637,7 @@ class AmberMRParser ( Parser ):
                 self.state = 924
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 923
                     self.match(AmberMRParser.Comma_F)
 
@@ -5878,7 +5878,7 @@ class AmberMRParser ( Parser ):
                 self.state = 958
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 957
                     self.match(AmberMRParser.Comma_F)
 
@@ -5888,7 +5888,7 @@ class AmberMRParser ( Parser ):
                 self.state = 962
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 961
                     self.match(AmberMRParser.Comma_F)
 
@@ -5898,7 +5898,7 @@ class AmberMRParser ( Parser ):
                 self.state = 966
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 965
                     self.match(AmberMRParser.Comma_F)
 
@@ -5920,7 +5920,7 @@ class AmberMRParser ( Parser ):
                 self.state = 975
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 974
                     self.match(AmberMRParser.Comma_F)
 
@@ -5930,7 +5930,7 @@ class AmberMRParser ( Parser ):
                 self.state = 979
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 978
                     self.match(AmberMRParser.Comma_F)
 
@@ -5940,7 +5940,7 @@ class AmberMRParser ( Parser ):
                 self.state = 983
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 982
                     self.match(AmberMRParser.Comma_F)
 
@@ -5962,7 +5962,7 @@ class AmberMRParser ( Parser ):
                 self.state = 992
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 991
                     self.match(AmberMRParser.Comma_F)
 
@@ -5972,7 +5972,7 @@ class AmberMRParser ( Parser ):
                 self.state = 996
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 995
                     self.match(AmberMRParser.Comma_F)
 
@@ -5982,7 +5982,7 @@ class AmberMRParser ( Parser ):
                 self.state = 1000
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==AmberMRParser.Comma_F:
+                if _la==220:
                     self.state = 999
                     self.match(AmberMRParser.Comma_F)
 
@@ -6078,11 +6078,11 @@ class AmberMRParser ( Parser ):
                 self.state = 1016
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & ((1 << (AmberMRParser.COM_F - 216)) | (1 << (AmberMRParser.Integer_F - 216)) | (1 << (AmberMRParser.Ambmask_F - 216)) | (1 << (AmberMRParser.Comma_F - 216)) | (1 << (AmberMRParser.L_paren_F - 216)) | (1 << (AmberMRParser.L_brace_F - 216)) | (1 << (AmberMRParser.L_brakt_F - 216)))) != 0):
+                while (((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & 699) != 0:
                     self.state = 1011
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==AmberMRParser.Comma_F:
+                    if _la==220:
                         self.state = 1010
                         self.match(AmberMRParser.Comma_F)
 
@@ -6108,11 +6108,11 @@ class AmberMRParser ( Parser ):
                 self.state = 1030
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & ((1 << (AmberMRParser.COM_F - 216)) | (1 << (AmberMRParser.Integer_F - 216)) | (1 << (AmberMRParser.Ambmask_F - 216)) | (1 << (AmberMRParser.Comma_F - 216)) | (1 << (AmberMRParser.L_paren_F - 216)) | (1 << (AmberMRParser.L_brace_F - 216)) | (1 << (AmberMRParser.L_brakt_F - 216)))) != 0):
+                while (((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & 699) != 0:
                     self.state = 1025
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==AmberMRParser.Comma_F:
+                    if _la==220:
                         self.state = 1024
                         self.match(AmberMRParser.Comma_F)
 
@@ -6138,11 +6138,11 @@ class AmberMRParser ( Parser ):
                 self.state = 1044
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & ((1 << (AmberMRParser.COM_F - 216)) | (1 << (AmberMRParser.Integer_F - 216)) | (1 << (AmberMRParser.Ambmask_F - 216)) | (1 << (AmberMRParser.Comma_F - 216)) | (1 << (AmberMRParser.L_paren_F - 216)) | (1 << (AmberMRParser.L_brace_F - 216)) | (1 << (AmberMRParser.L_brakt_F - 216)))) != 0):
+                while (((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & 699) != 0:
                     self.state = 1039
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==AmberMRParser.Comma_F:
+                    if _la==220:
                         self.state = 1038
                         self.match(AmberMRParser.Comma_F)
 
@@ -6221,7 +6221,7 @@ class AmberMRParser ( Parser ):
                 self.state = 1056 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==AmberMRParser.Mapping):
+                if not (_la==142):
                     break
 
         except RecognitionException as re:
@@ -6291,7 +6291,7 @@ class AmberMRParser ( Parser ):
                 self.state = 1064 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==AmberMRParser.Simple_name_MP):
+                if not (_la==231):
                     break
 
             self.state = 1066
@@ -6359,7 +6359,7 @@ class AmberMRParser ( Parser ):
                 self.state = 1073 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==AmberMRParser.Ambig):
+                if not (_la==143):
                     break
 
         except RecognitionException as re:
@@ -6427,7 +6427,7 @@ class AmberMRParser ( Parser ):
             self.match(AmberMRParser.Ambig)
             self.state = 1076
             _la = self._input.LA(1)
-            if not(_la==AmberMRParser.Ambig_code_MP or _la==AmberMRParser.Simple_name_MP):
+            if not(_la==229 or _la==231):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -6445,7 +6445,7 @@ class AmberMRParser ( Parser ):
                 self.state = 1082 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==AmberMRParser.Simple_name_MP):
+                if not (_la==231):
                     break
 
             self.state = 1084

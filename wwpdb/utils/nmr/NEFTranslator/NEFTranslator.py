@@ -2831,6 +2831,8 @@ class NEFTranslator:
                                     i[j] = ent[name] = letterToDigit(val, 1)
                                 elif 'default-from' in k and k['default-from'] in tags and i[tags.index(k['default-from'])] not in emptyValue:
                                     i[j] = ent[name] = letterToDigit(i[tags.index(k['default-from'])], 1)
+                                    if ent[name] > 8 and not self.__remediation_mode and 'default' in k:
+                                        i[j] = ent[name] = int(k['default'])
                                 elif 'default-from' in k and k['default-from'].startswith('Auth_asym_ID'):
                                     i[j] = ent[name] = letterToDigit(val, 1)
                                 elif 'default' in k:
@@ -3058,8 +3060,20 @@ class NEFTranslator:
                                                  + f"{name} {val!r} must be {self.readableItemType[type]}.")
                         else:
                             if val in emptyValue:
-                                missing_mandatory_data = True
-                                continue
+                                if 'default-from' in k and k['default-from'] == 'self':
+                                    val = indexToLetter(letterToDigit(val, 1) - 1)
+                                elif 'default-from' in k and k['default-from'] in tags and i[tags.index(k['default-from'])] not in emptyValue:
+                                    val = i[tags.index(k['default-from'])]
+                                elif 'default-from' in k and k['default-from'].startswith('Auth_asym_ID'):
+                                    val = indexToLetter(letterToDigit(val, 1) - 1)
+                                elif 'default' in k:
+                                    val = k['default']
+                                else:
+                                    missing_mandatory_data = True
+                                    continue
+                                if 'uppercase' in k and k['uppercase']:
+                                    val = val.upper()
+                                i[j] = ent[name] = val
                             if ('remove-bad-pattern' in k and k['remove-bad-pattern']) or ('clear-bad-pattern' in k and k['clear-bad-pattern']):
                                 if badPattern.match(val):
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
@@ -3127,6 +3141,8 @@ class NEFTranslator:
                                             i[j] = ent[name] = letterToDigit(val, 1)
                                         elif 'default-from' in d and d['default-from'] in tags and i[tags.index(d['default-from'])] not in emptyValue:
                                             i[j] = ent[name] = letterToDigit(i[tags.index(d['default-from'])], 1)
+                                            if ent[name] > 8 and not self.__remediation_mode and 'default' in d:
+                                                i[j] = ent[name] = int(d['default'])
                                         elif 'default-from' in d and d['default-from'].startswith('Auth_asym_ID'):
                                             i[j] = ent[name] = letterToDigit(val, 1)
                                         elif 'default' in d:
@@ -3813,6 +3829,8 @@ class NEFTranslator:
                                 ent[name] = letterToDigit(val, 1)
                             elif 'default-from' in t and t['default-from'] in sf_tags.keys() and sf_tags[t['default-from']] not in emptyValue:
                                 ent[name] = letterToDigit(sf_tags[t['default-from']], 1)
+                                if ent[name] > 8 and not self.__remediation_mode and 'default' in t:
+                                    ent[name] = int(t['default'])
                             elif 'default-from' in t and t['default-from'].startswith('Auth_asym_ID'):
                                 ent[name] = letterToDigit(val, 1)
                             elif 'default' in t:

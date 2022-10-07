@@ -15521,11 +15521,11 @@ class NmrDpUtility:
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-                            """
-                            if conflict == 0:
-                                if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
-                                    _s2 = fillInnerBlankCompId(_s2)
-                            """
+                            # """
+                            # if conflict == 0:
+                            #     if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                            #         _s2 = fillInnerBlankCompId(_s2)
+                            # """
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
@@ -15898,11 +15898,11 @@ class NmrDpUtility:
                             # """
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-                            """
-                            if conflict == 0:
-                                if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
-                                    _s2 = fillInnerBlankCompId(_s2)
-                            """
+                            # """
+                            # if conflict == 0:
+                            #     if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                            #         _s2 = fillInnerBlankCompId(_s2)
+                            # """
                             if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
@@ -16224,11 +16224,11 @@ class NmrDpUtility:
 
                                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                                     _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-                                    """
-                                    if conflict == 0:
-                                        if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
-                                            _s2 = fillInnerBlankCompId(_s2)
-                                    """
+                                    # """
+                                    # if conflict == 0:
+                                    #     if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                                    #         _s2 = fillInnerBlankCompId(_s2)
+                                    # """
                                     if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                         continue
 
@@ -25642,19 +25642,19 @@ class NmrDpUtility:
         elif content_subtype == 'chem_shift_ref':
             ent['loop'] = lp_data
             ent['saveframe_tag'] = sf_tag_data
-            """
-        else:
+        #     """
+        # else:
 
-            err = f"Not found a module for calculation of statistics on content subtype {content_subtype}."
+        #     err = f"Not found a module for calculation of statistics on content subtype {content_subtype}."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - " + err)
-            self.report.setError()
+        #     self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - " + err)
+        #     self.report.setError()
 
-            if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - {err}\n")
+        #     if self.__verbose:
+        #         self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - {err}\n")
 
-            return
-            """
+        #     return
+        #     """
         has_err = self.report.error.exists(file_name, sf_framecode)
         has_warn = self.report.warning.exists(file_name, sf_framecode)
 
@@ -32104,11 +32104,11 @@ class NmrDpUtility:
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-                            """
-                            if conflict == 0:
-                                if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
-                                    _s2 = fillInnerBlankCompId(_s2)
-                            """
+                            # """
+                            # if conflict == 0:
+                            #     if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                            #         _s2 = fillInnerBlankCompId(_s2)
+                            # """
                             ref_length = len(s1['seq_id'])
 
                             ref_code = getOneLetterCodeSequence(_s1['comp_id'])
@@ -32174,16 +32174,16 @@ class NmrDpUtility:
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-                """
-                if conflict == 0:
-                    has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
-                    has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
+                # """
+                # if conflict == 0:
+                #     has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
+                #     has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
 
-                    if has_inner_gap_2 and not has_inner_gap_1:
-                        _s2 = fillInnerBlankCompId(_s2)
-                    elif has_inner_gap_1 and not has_inner_gap_2:
-                        _s1 = fillInnerBlankCompId(_s1)
-                """
+                #     if has_inner_gap_2 and not has_inner_gap_1:
+                #         _s2 = fillInnerBlankCompId(_s2)
+                #     elif has_inner_gap_1 and not has_inner_gap_2:
+                #         _s1 = fillInnerBlankCompId(_s1)
+                # """
                 if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
                     _s2 = self.__compensateLadderHistidinTag2(chain_id, _s1, _s2)
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
@@ -32283,18 +32283,18 @@ class NmrDpUtility:
                 seq_align_set.append(seq_align)
 
         if len(seq_align_set) > 0:
-            """
-            if has_conflict:
-                err_seq_align = [seq_align for seq_align in seq_align_set
-                                 if seq_align['conflict'] > 0
-                                 and any(_seq_align for _seq_align in seq_align_set if _seq_align['conflict'] == 0
-                                         and (_seq_align['ref_chain_id'] == seq_align['ref_chain_id']
-                                              or _seq_align['test_chain_id'] == seq_align['test_chain_id']))]
+            # """
+            # if has_conflict:
+            #     err_seq_align = [seq_align for seq_align in seq_align_set
+            #                      if seq_align['conflict'] > 0
+            #                      and any(_seq_align for _seq_align in seq_align_set if _seq_align['conflict'] == 0
+            #                              and (_seq_align['ref_chain_id'] == seq_align['ref_chain_id']
+            #                                   or _seq_align['test_chain_id'] == seq_align['test_chain_id']))]
 
-                if len(err_seq_align) > 0:
-                    for seq_align in err_seq_align:
-                        seq_align_set.remove(seq_align)
-            """
+            #     if len(err_seq_align) > 0:
+            #         for seq_align in err_seq_align:
+            #             seq_align_set.remove(seq_align)
+            # """
             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', seq_align_set)
 
         seq_align_set = []
@@ -32328,16 +32328,16 @@ class NmrDpUtility:
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
-                """
-                if conflict == 0:
-                    has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
-                    has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
+                # """
+                # if conflict == 0:
+                #     has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
+                #     has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
 
-                    if has_inner_gap_2 and not has_inner_gap_1:
-                        _s2 = fillInnerBlankCompId(_s2)
-                    elif has_inner_gap_1 and not has_inner_gap_2:
-                        _s1 = fillInnerBlankCompId(_s1)
-                """
+                #     if has_inner_gap_2 and not has_inner_gap_1:
+                #         _s2 = fillInnerBlankCompId(_s2)
+                #     elif has_inner_gap_1 and not has_inner_gap_2:
+                #         _s1 = fillInnerBlankCompId(_s1)
+                # """
                 if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
                     _s1 = self.__compensateLadderHistidinTag2(chain_id, _s2, _s1)
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
@@ -32437,18 +32437,18 @@ class NmrDpUtility:
                 seq_align_set.append(seq_align)
 
         if len(seq_align_set) > 0:
-            """
-            if has_conflict:
-                err_seq_align = [seq_align for seq_align in seq_align_set
-                                 if seq_align['conflict'] > 0
-                                 and any(_seq_align for _seq_align in seq_align_set if _seq_align['conflict'] == 0
-                                         and (_seq_align['ref_chain_id'] == seq_align['ref_chain_id']
-                                              or _seq_align['test_chain_id'] == seq_align['test_chain_id']))]
+            # """
+            # if has_conflict:
+            #     err_seq_align = [seq_align for seq_align in seq_align_set
+            #                      if seq_align['conflict'] > 0
+            #                      and any(_seq_align for _seq_align in seq_align_set if _seq_align['conflict'] == 0
+            #                              and (_seq_align['ref_chain_id'] == seq_align['ref_chain_id']
+            #                                   or _seq_align['test_chain_id'] == seq_align['test_chain_id']))]
 
-                if len(err_seq_align) > 0:
-                    for seq_align in err_seq_align:
-                        seq_align_set.remove(seq_align)
-            """
+            #     if len(err_seq_align) > 0:
+            #         for seq_align in err_seq_align:
+            #             seq_align_set.remove(seq_align)
+            # """
             self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', seq_align_set)
 
         return True

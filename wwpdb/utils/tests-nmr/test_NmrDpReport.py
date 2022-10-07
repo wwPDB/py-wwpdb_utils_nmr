@@ -23,7 +23,7 @@
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraint (DAOTHER-7690, NMR restraint remediation)
 ##
 import unittest
-import json
+# import json
 
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportChainAssignment, NmrDpReportError, NmrDpReportWarning
 
@@ -75,7 +75,7 @@ class TestNmrDpReport(unittest.TestCase):
         # answer = json.dumps(json.loads('{"corrected_warning": null, "error": {"format_issue": ["foo"], "total": 1}, "information": {"chain_assignments": {"model_poly_seq_vs_nmr_poly_seq": "foo", "nmr_poly_seq_vs_model_poly_seq": null}, "cyclic_polymer": false, "diamagnetic": true, "disulfide_bond": false, "input_sources": [{"content_subtype": {"chem_shift": 1, "dist_restraint": 2, "poly_seq": 1}, "content_type": "nmr-data-nef", "disulfide_bond": null, "file_name": null, "file_type": "nef", "non_standard_residue": null, "original_file_name": null, "other_bond": null, "polymer_sequence": null, "polymer_sequence_in_loop": null, "stats_of_exptl_data": null}, {"content_subtype": {"coordinate": 1, "poly_seq": 1}, "content_type": "model", "disulfide_bond": null, "file_name": null, "file_type": "pdbx", "non_standard_residue": null, "original_file_name": null, "other_bond": null, "polymer_sequence": null, "polymer_sequence_in_loop": null, "stats_of_exptl_data": null}], "other_bond": false, "sequence_alignments": {"model_poly_seq_vs_coordinate": null, "model_poly_seq_vs_mr_restraint": null, "model_poly_seq_vs_mr_topology": null, "model_poly_seq_vs_nmr_poly_seq": "foo", "nmr_poly_seq_vs_chem_shift": null, "nmr_poly_seq_vs_dihed_restraint": null, "nmr_poly_seq_vs_dist_restraint": null, "nmr_poly_seq_vs_model_poly_seq": null, "nmr_poly_seq_vs_rdc_restraint": null, "nmr_poly_seq_vs_spectral_peak": null, "nmr_poly_seq_vs_spectral_peak_alt": null}, "status": "Error"}, "warning": {"missing_content": ["foo"], "total": 1}}'), sort_keys=True)  # noqa: E501
 
         # self.assertEqual(result, answer)
-	# """
+        # """
         with self.assertRaises(UserWarning):
             self.report.setWarning()
 

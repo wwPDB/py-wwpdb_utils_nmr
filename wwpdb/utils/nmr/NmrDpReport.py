@@ -71,8 +71,8 @@
 # 08-Jul-2022  M. Yokochi - add 'anomalous_rdc_vector' warning type for artificial RDCs for protein fibrils using solid-state NMR (NMR restraint remediation, 5w3n)
 # 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
 # 06-Sep-2022  M. Yokochi - add support for branched entity and extra restraints in NMR-STAR format (NMR restraint remediation)
-# 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (NMR restraint remediation)
-# 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (NMR restraint remediation)
+# 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (DAOTHER-8059, NMR restraint remediation)
+# 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (DAOTHER-8058, NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi

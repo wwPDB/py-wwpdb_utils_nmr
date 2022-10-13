@@ -212,6 +212,8 @@ class XplorMRParserListener(ParseTreeListener):
     __lfh = None
     __debug = False
     __sel_expr_debug = False
+
+    __createSfDict = True
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
     __correctCircularShift = True
@@ -386,6 +388,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     __cachedDictForAtomIdList = {}
 
+    # dictionary of pynmrstar saveframes
+    sfDict = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
@@ -512,6 +517,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def createSfDict(self, createSfDict):
+        self.__createSfDict = createSfDict
 
     # Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
     def enterXplor_nih_mr(self, ctx: XplorMRParser.Xplor_nih_mrContext):  # pylint: disable=unused-argument
@@ -10743,5 +10751,9 @@ class XplorMRParserListener(ParseTreeListener):
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
+    def getSfDict(self):
+        """ Return a dictionary of pynmrstar saveframes.
+        """
+        return None if len(self.sfDict) == 0 else self.sfDict
 
 # del XplorMRParser

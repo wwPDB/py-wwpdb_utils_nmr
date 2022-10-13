@@ -133,6 +133,8 @@ class DynamoMRParserListener(ParseTreeListener):
     # __lfh = None
     __debug = False
     __remediate = False
+
+    __createSfDict = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
     __correctCircularShift = True
@@ -218,6 +220,9 @@ class DynamoMRParserListener(ParseTreeListener):
 
     reasonsForReParsing = {}
 
+    # dictionary of pynmrstar saveframes
+    sfDict = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
@@ -298,6 +303,9 @@ class DynamoMRParserListener(ParseTreeListener):
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def createSfDict(self, createSfDict):
+        self.__createSfDict = createSfDict
 
     # Enter a parse tree produced by DynamoMRParser#dynamo_mr.
     def enterDynamo_mr(self, ctx: DynamoMRParser.Dynamo_mrContext):  # pylint: disable=unused-argument
@@ -3430,5 +3438,9 @@ class DynamoMRParserListener(ParseTreeListener):
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
+    def getSfDict(self):
+        """ Return a dictionary of pynmrstar saveframes.
+        """
+        return None if len(self.sfDict) == 0 else self.sfDict
 
 # del DynamoMRParser

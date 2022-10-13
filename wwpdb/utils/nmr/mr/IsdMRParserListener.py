@@ -94,6 +94,8 @@ class IsdMRParserListener(ParseTreeListener):
     # __verbose = None
     # __lfh = None
     __debug = False
+
+    __createSfDict = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
 
@@ -164,6 +166,9 @@ class IsdMRParserListener(ParseTreeListener):
     warningMessage = ''
 
     reasonsForReParsing = {}
+
+    # dictionary of pynmrstar saveframes
+    sfDict = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -241,6 +246,9 @@ class IsdMRParserListener(ParseTreeListener):
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def createSfDict(self, createSfDict):
+        self.__createSfDict = createSfDict
 
     # Enter a parse tree produced by IsdMRParser#biosym_mr.
     def enterIsd_mr(self, ctx: IsdMRParser.Isd_mrContext):  # pylint: disable=unused-argument
@@ -1098,5 +1106,10 @@ class IsdMRParserListener(ParseTreeListener):
         """ Return reasons for re-parsing ISD MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
+
+    def getSfDict(self):
+        """ Return a dictionary of pynmrstar saveframes.
+        """
+        return None if len(self.sfDict) == 0 else self.sfDict
 
 # del IsdMRParser

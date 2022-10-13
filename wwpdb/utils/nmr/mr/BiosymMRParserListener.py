@@ -107,6 +107,8 @@ class BiosymMRParserListener(ParseTreeListener):
     # __verbose = None
     # __lfh = None
     __debug = False
+
+    __createSfDict = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
     __correctCircularShift = True
@@ -181,6 +183,9 @@ class BiosymMRParserListener(ParseTreeListener):
     warningMessage = ''
 
     reasonsForReParsing = {}
+
+    # dictionary of pynmrstar saveframes
+    sfDict = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -258,6 +263,9 @@ class BiosymMRParserListener(ParseTreeListener):
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def createSfDict(self, createSfDict):
+        self.__createSfDict = createSfDict
 
     # Enter a parse tree produced by BiosymMRParser#biosym_mr.
     def enterBiosym_mr(self, ctx: BiosymMRParser.Biosym_mrContext):  # pylint: disable=unused-argument
@@ -1701,5 +1709,10 @@ class BiosymMRParserListener(ParseTreeListener):
         """ Return reasons for re-parsing BIOSYM MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
+
+    def getSfDict(self):
+        """ Return a dictionary of pynmrstar saveframes.
+        """
+        return None if len(self.sfDict) == 0 else self.sfDict
 
 # del BiosymMRParser

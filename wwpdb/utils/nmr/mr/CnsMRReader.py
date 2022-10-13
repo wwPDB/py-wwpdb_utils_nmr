@@ -84,7 +84,7 @@ class CnsMRReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def parse(self, mrFilePath, cifFilePath=None, isFilePath=True):
+    def parse(self, mrFilePath, cifFilePath=None, isFilePath=True, createSfDict=False):
         """ Parse CNS MR file.
             @return: CnsMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
@@ -157,6 +157,7 @@ class CnsMRReader:
                                            self.__ccU, self.__csStat, self.__nefT,
                                            self.__reasons)
             listener.setDebugMode(self.__debug)
+            listener.createSfDict(createSfDict)
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

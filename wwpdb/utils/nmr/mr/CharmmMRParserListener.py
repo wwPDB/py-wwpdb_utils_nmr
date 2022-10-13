@@ -117,6 +117,8 @@ class CharmmMRParserListener(ParseTreeListener):
     __lfh = None
     __debug = False
     __sel_expr_debug = False
+
+    __createSfDict = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
     __correctCircularShift = True
@@ -256,6 +258,9 @@ class CharmmMRParserListener(ParseTreeListener):
 
     __cachedDictForAtomIdList = {}
 
+    # dictionary of pynmrstar saveframes
+    sfDict = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
@@ -349,6 +354,9 @@ class CharmmMRParserListener(ParseTreeListener):
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def createSfDict(self, createSfDict):
+        self.__createSfDict = createSfDict
 
     # Enter a parse tree produced by CharmmMRParser#charmm_mr.
     def enterCharmm_mr(self, ctx: CharmmMRParser.Charmm_mrContext):  # pylint: disable=unused-argument
@@ -4335,5 +4343,9 @@ class CharmmMRParserListener(ParseTreeListener):
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
+    def getSfDict(self):
+        """ Return a dictionary of pynmrstar saveframes.
+        """
+        return None if len(self.sfDict) == 0 else self.sfDict
 
 # del CharmmMRParser

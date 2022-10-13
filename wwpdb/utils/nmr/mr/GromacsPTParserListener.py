@@ -1090,5 +1090,4 @@ class GromacsPTParserListener(ParseTreeListener):
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
-
 # del GromacsPTParser

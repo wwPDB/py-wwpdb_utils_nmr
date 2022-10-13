@@ -86,7 +86,7 @@ class GromacsMRReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None, isFilePath=True):
+    def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None, isFilePath=True, createSfDict=False):
         """ Parse GROMACS MR file.
             @return: GromacsMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
@@ -170,6 +170,7 @@ class GromacsMRReader:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                self.__atomNumberDict)
             listener.setDebugMode(self.__debug)
+            listener.createSfDict(createSfDict)
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

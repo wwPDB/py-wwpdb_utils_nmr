@@ -148,6 +148,8 @@ class CyanaMRParserListener(ParseTreeListener):
     __lfh = None
     __debug = False
     __remediate = False
+
+    __createSfDict = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
     __correctCircularShift = True
@@ -257,6 +259,9 @@ class CyanaMRParserListener(ParseTreeListener):
     warningMessage = ''
 
     reasonsForReParsing = {}
+
+    # dictionary of pynmrstar saveframes
+    sfDict = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -373,6 +378,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
     def setRemediateMode(self, remediate):
         self.__remediate = remediate
+
+    def createSfDict(self, createSfDict):
+        self.__createSfDict = createSfDict
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
@@ -6093,5 +6101,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return 'both'
 
+    def getSfDict(self):
+        """ Return a dictionary of pynmrstar saveframes.
+        """
+        return None if len(self.sfDict) == 0 else self.sfDict
 
 # del CyanaMRParser

@@ -94,6 +94,8 @@ class SybylMRParserListener(ParseTreeListener):
     # __verbose = None
     # __lfh = None
     __debug = False
+
+    __createSfDict = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
 
@@ -164,6 +166,9 @@ class SybylMRParserListener(ParseTreeListener):
     warningMessage = ''
 
     reasonsForReParsing = {}
+
+    # dictionary of pynmrstar saveframes
+    sfDict = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -241,6 +246,9 @@ class SybylMRParserListener(ParseTreeListener):
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def createSfDict(self, createSfDict):
+        self.__createSfDict = createSfDict
 
     # Enter a parse tree produced by SybylMRParser#biosym_mr.
     def enterSybyl_mr(self, ctx: SybylMRParser.Sybyl_mrContext):  # pylint: disable=unused-argument
@@ -1119,5 +1127,10 @@ class SybylMRParserListener(ParseTreeListener):
         """ Return reasons for re-parsing SYBYL MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
+
+    def getSfDict(self):
+        """ Return a dictionary of pynmrstar saveframes.
+        """
+        return None if len(self.sfDict) == 0 else self.sfDict
 
 # del SybylMRParser

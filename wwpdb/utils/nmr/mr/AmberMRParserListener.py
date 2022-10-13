@@ -181,6 +181,8 @@ class AmberMRParserListener(ParseTreeListener):
     __verbose = None
     __lfh = None
     __debug = False
+
+    __createSfDict = False
     __omitDistLimitOutlier = True
     __correctCircularShift = True
 
@@ -400,6 +402,9 @@ class AmberMRParserListener(ParseTreeListener):
     warningMessage = ''
 
     reasonsForReParsing = {}
+
+    # dictionary of pynmrstar saveframes
+    sfDict = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -642,6 +647,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def createSfDict(self, createSfDict):
+        self.__createSfDict = createSfDict
 
     # Enter a parse tree produced by AmberMRParser#amber_mr.
     def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
@@ -7328,5 +7336,9 @@ class AmberMRParserListener(ParseTreeListener):
         """
         return self.__hasComments
 
+    def getSfDict(self):
+        """ Return a dictionary of pynmrstar saveframes.
+        """
+        return None if len(self.sfDict) == 0 else self.sfDict
 
 # del AmberMRParser

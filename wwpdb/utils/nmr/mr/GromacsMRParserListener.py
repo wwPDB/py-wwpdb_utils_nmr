@@ -87,6 +87,8 @@ class GromacsMRParserListener(ParseTreeListener):
     # __verbose = None
     # __lfh = None
     __debug = False
+
+    __createSfDict = False
     __omitDistLimitOutlier = True
     __correctCircularShift = True
 
@@ -150,6 +152,9 @@ class GromacsMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
+    # dictionary of pynmrstar saveframes
+    sfDict = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,   # pylint: disable=unused-argument
@@ -205,6 +210,9 @@ class GromacsMRParserListener(ParseTreeListener):
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def createSfDict(self, createSfDict):
+        self.__createSfDict = createSfDict
 
     # Enter a parse tree produced by GromacsMRParser#gromacs_mr.
     def enterGromacs_mr(self, ctx: GromacsMRParser.Gromacs_mrContext):  # pylint: disable=unused-argument
@@ -1249,5 +1257,9 @@ class GromacsMRParserListener(ParseTreeListener):
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
+    def getSfDict(self):
+        """ Return a dictionary of pynmrstar saveframes.
+        """
+        return None if len(self.sfDict) == 0 else self.sfDict
 
 # del GromacsMRParser

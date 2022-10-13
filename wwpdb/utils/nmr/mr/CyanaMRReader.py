@@ -92,7 +92,7 @@ class CyanaMRReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def parse(self, mrFilePath, cifFilePath=None, isFilePath=True):
+    def parse(self, mrFilePath, cifFilePath=None, isFilePath=True, createSfDict=False):
         """ Parse CYANA MR file.
             @return: CyanaMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
@@ -166,6 +166,7 @@ class CyanaMRReader:
                                              self.__reasons, self.__upl_or_lol, self.__file_ext)
             listener.setDebugMode(self.__debug)
             listener.setRemediateMode(self.__remediate)
+            listener.createSfDict(createSfDict)
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

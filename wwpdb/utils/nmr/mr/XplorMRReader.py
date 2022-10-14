@@ -84,7 +84,8 @@ class XplorMRReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def parse(self, mrFilePath, cifFilePath=None, isFilePath=True, createSfDict=False):
+    def parse(self, mrFilePath, cifFilePath=None, isFilePath=True,
+              createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
         """ Parse XPLOR-NIH MR file.
             @return: XplorMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
@@ -158,6 +159,13 @@ class XplorMRReader:
                                              self.__reasons)
             listener.setDebugMode(self.__debug)
             listener.createSfDict(createSfDict)
+            if createSfDict:
+                if originalFileName is not None:
+                    listener.setOriginaFileName(originalFileName)
+                if listIdCounter is not None:
+                    listener.setListIdCounter(listIdCounter)
+                if entryId is not None:
+                    listener.setEntryId(entryId)
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

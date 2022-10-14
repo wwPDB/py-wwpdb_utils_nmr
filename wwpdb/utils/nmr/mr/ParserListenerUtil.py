@@ -14,6 +14,8 @@ import itertools
 
 import numpy
 
+import pynmrstar
+
 try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            MAJOR_ASYM_ID_SET,
@@ -200,6 +202,214 @@ LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND'
                       ]
 
 CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
+
+# UNSUPPORTED SUBTYPES:
+# 'plane_restraint'
+# 'adist_restraint'
+# 'rama_restraint'
+# 'radi_restraint'
+# 'diff_restraint'
+# 'nbase_restraint'
+# 'pre_restraint'
+# 'pcs_restraint'
+# 'prdc_restraint'
+# 'pang_restraint'
+# 'pccr_restraint'
+# 'hbond_restraint'
+# 'geo_restraint'
+
+NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
+                            'dihed_restraint': '_Torsion_angle_constraint_list',
+                            'rdc_restraint': '_RDC_constraint_list',
+                            'noepk_restraint': '_Homonucl_NOE_list',
+                            'jcoup_restraint': '_Coupling_constant_list',
+                            'csa_restraint': '_Chem_shift_anisotropy',
+                            'ddc_restraint': '_Dipolar_coupling_list',
+                            'hvycs_restraint': '_CA_CB_constraint_list',
+                            'procs_restraint': '_H_chem_shift_constraint_list',
+                            'csp_restraint': '_Chem_shift_perturbation_list',
+                            'auto_relax_restraint': '_Auto_relaxation_list',
+                            'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
+                            'ccr_dd_restraint': '_Cross_correlation_DD_list',
+                            'other_restraint': '_Other_data_type_list'
+                            }
+
+NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
+                          'dihed_restraint': 'torsion_angle_constraints',
+                          'rdc_restraint': 'RDC_constraints',
+                          'noepk_restraint': 'homonucl_NOEs',
+                          'jcoup_restraint': 'coupling_constants',
+                          'csa_restraint': 'chem_shift_anisotropy',
+                          'ddc_restraint': 'dipolar_couplings',
+                          'hvycs_restraint': 'CA_CB_chem_shift_constraints',
+                          'procs_restraint': 'H_chem_shift_constraints',
+                          'csp_restraint': 'chem_shift_perturbation',
+                          'auto_relax_restraint': 'auto_relaxation',
+                          'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
+                          'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
+                          'other_restraint': 'other_data_types'
+                          }
+
+NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                            {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
+                                             'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up',
+                                                      'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation',
+                                                      'symmetry', 'general distance', 'mutation', 'chemical shift perturbation',
+                                                      'undefined', 'unknown')},
+                                            {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
+                                             'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic',
+                                                      'square-well-parabolic-linear', 'upper-bound-parabolic',
+                                                      'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                      'lower-bound-parabolic-linear', 'undefined', 'unknown')},
+                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
+                         'dihed_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
+                                              'enum': ('J-couplings', 'backbone chemical shifts', 'undefined', 'unknown')},
+                                             {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
+                                              'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
+                                                       'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                       'lower-bound-parabolic-linear', 'undefined', 'unknown')},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'rdc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
+                                            'enum': ('RDC', 'undefined', 'unknown')},
+                                           {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
+                                            'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
+                                                     'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                     'lower-bound-parabolic-linear', 'undefined', 'unknown')},
+                                           {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
+                                           {'name': 'Tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
+                                           {'name': 'Tensor_auth_asym_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Tensor_auth_seq_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Tensor_auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                         'noepk_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Homonuclear_NOE_val_type', 'type': 'enum', 'mandatory': True,
+                                              'enum': ('peak volume', 'peak height', 'contour count', 'na')},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'jcoup_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                              'enforce-non-zero': True},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                           'enforce-non-zero': True},
+                                           {'name': 'Val_units', 'type': 'enum', 'mandatory': False,
+                                            'enum': ('ppm', 'ppb')},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                         'ddc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                           'enforce-non-zero': True},
+                                           {'name': 'Scaling_factor', 'type': 'positive-float', 'mandatory': False},
+                                           {'name': 'Fitting_procedure', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                         'hvycs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Units', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'procs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Units', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'csp_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Type', 'type': 'enum', 'mandatory': False,
+                                            'enum': ('macromolecular binding', 'ligand binding', 'ligand fragment binding', 'paramagnetic ligand binding')},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                         'auto_relax_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                  {'name': 'Temp_calibration_method', 'type': 'enum', 'mandatory': False,
+                                                   'enum': ('methanol', 'monoethylene glycol', 'no calibration applied')},
+                                                  {'name': 'Temp_control_method', 'type': 'enum', 'mandatory': False,
+                                                   'enum': ('single scan interleaving', 'temperature compensation block',
+                                                            'single scan interleaving and temperature compensation block',
+                                                            'no temperature control applied')},
+                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                   'enforce-non-zero': True},
+                                                  {'name': 'Exact_field_strength', 'type': 'positive-float', 'mandatory': False,
+                                                   'enforce-non-zero': True},
+                                                  {'name': 'Common_relaxation_type_name', 'type': 'enum', 'mandatory': False,
+                                                   'enum': ('R1', 'R2', 'R1rho', 'ZQ relaxation', 'longitudinal spin order',
+                                                            'single quantum antiphase', 'DQ relaxation')},
+                                                  {'name': 'Relaxation_coherence_type', 'type': 'enum', 'mandatory': True,
+                                                   'enum': ('Iz', 'Sz', '(I+)+(I-)', '(S+)+(S-)', 'I+', 'I-', 'S+', 'S-',
+                                                            '(I+S-)+(I-S+)', 'I-S+', 'I+S-', 'IzSz', '((I+)+(I-))Sz', 'Iz((S+)+(S-))',
+                                                            'I+Sz', 'I-Sz', 'IzS+', 'IzS-', '(I+S+)+(I-S-)', 'I+S+', 'I-S-')},
+                                                  {'name': 'Relaxation_val_units', 'type': 'enum', 'mandatory': True,
+                                                   'enum': ('s-1', 'ms-1', 'us-1', 'ns-1', 'ps-1')},
+                                                  {'name': 'Rex_val_units', 'type': 'enum', 'mandatory': False,
+                                                   'enum': ('s-1', 'ms-1', 'us-1')},
+                                                  {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
+                                                   'enforce-non-zero': True},
+                                                  {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                  ],
+                         'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                  'enforce-non-zero': True},
+                                                 {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
+                                                  'enum': ('s-1', 'ms-1', 'us-1')},
+                                                 {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                 ],
+                         'ccr_dd_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                              {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                               'enforce-non-zero': True},
+                                              {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
+                                               'enum': ('s-1', 'ms-1', 'us-1')},
+                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                              ],
+                         'other_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Definition', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ]
+                         }
 
 
 def toNpArray(atom):
@@ -1490,3 +1700,100 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
         return bond
 
     return None
+
+
+def legitimateSubType(subtype):
+    """ Return legitimate content subtype of NmrDpUtility.py.
+    """
+
+    if subtype in ('dist', 'dihed', 'rdc', 'jcoup', 'hvycs', 'procs', 'csa'):
+        return subtype + '_restraint'
+
+    if subtype == 'hbond':
+        return 'dist_restraint'
+
+    if subtype == 'prdc':
+        return 'rdc_restraints'
+
+    return None  # not supported yet
+
+
+def initListIdCounter():
+    """ Initialize list id counter.
+    """
+
+    return {'dist_restraint': 0,
+            'dihed_restraint': 0,
+            'rdc_restraint': 0,
+            'noepk_restraint': 0,
+            'jcoup_restraint': 0,
+            'csa_restraint': 0,
+            'ddc_restraint': 0,
+            'hvycs_restraint': 0,
+            'procs_restraint': 0,
+            'csp_restraint': 0,
+            'auto_relax_restraint': 0,
+            'ccr_d_csa_restraint': 0,
+            'ccr_dd_restraint': 0,
+            'other_restraint': 0
+            }
+
+
+def incListIdCounter(subtype, listIdCounter):
+    """ Increment list id counter for a given content subtype.
+    """
+
+    if len(listIdCounter) == 0:
+        listIdCounter = initListIdCounter()
+
+    _subtype = legitimateSubType(subtype)
+
+    if _subtype is None or _subtype not in listIdCounter:
+        return listIdCounter
+
+    listIdCounter[_subtype] = listIdCounter[_subtype] + 1
+
+    return listIdCounter
+
+
+def getSaveframe(subtype, name, listId=None, entryId=None, fileName=None):
+    """ Return pynmrstar saveframe for a given content subtype and name.
+        @return: pynmrstar saveframe
+    """
+
+    _subtype = legitimateSubType(subtype)
+
+    if _subtype is None:
+        return None
+
+    if _subtype not in NMR_STAR_SF_CATEGORIES:
+        return None
+
+    sf = pynmrstar.Saveframe.from_scratch(name)
+    sf.set_tag_prefix(NMR_STAR_SF_TAG_PREFIXES[_subtype])
+
+    for sf_tag_item in NMR_STAR_SF_TAG_ITEMS[_subtype]:
+        tag_item_name = sf_tag_item['name']
+
+        if tag_item_name == 'Sf_category':
+            sf.add_tag(tag_item_name, NMR_STAR_SF_CATEGORIES[_subtype])
+        elif tag_item_name == 'Sf_framecode':
+            sf.add_tag(tag_item_name, name)
+        elif tag_item_name == 'Data_file_name' and fileName is not None:
+            sf.add_tag(tag_item_name, fileName)
+        elif tag_item_name == 'ID' and listId is not None:
+            sf.add_tag(tag_item_name, listId)
+        elif tag_item_name == 'Entry_ID' and entryId is not None:
+            sf.add_tag(tag_item_name, entryId)
+        elif tag_item_name == 'Data_file_name' and fileName is not None:
+            sf.add_tag(tag_item_name, fileName)
+        elif tag_item_name == 'Constraint_type' and subtype == 'dist':
+            sf.add_tag(tag_item_name, 'NOE')
+        elif tag_item_name == 'Constraint_type' and subtype == 'hbond':
+            sf.add_tag(tag_item_name, 'hydrogen bond')
+        elif tag_item_name == 'Constraint_type' and subtype == 'RDC':
+            sf.add_tag(tag_item_name, 'RDC')
+        else:
+            sf.add_tag(tag_item_name, '.')
+
+    return sf

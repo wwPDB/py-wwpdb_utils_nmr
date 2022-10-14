@@ -19,6 +19,8 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
                                                        isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
+                                                       incListIdCounter,
+                                                       getSaveframe,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
@@ -42,6 +44,8 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
                                            isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
+                                           incListIdCounter,
+                                           getSaveframe,
                                            REPRESENTATIVE_MODEL_ID,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
@@ -152,6 +156,15 @@ class GromacsMRParserListener(ParseTreeListener):
 
     warningMessage = ''
 
+    # original source MR file name
+    __originalFileName = '.'
+
+    # list id counter
+    __listIdCounter = {}
+
+    # entry ID
+    __entryId = '.'
+
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
@@ -213,6 +226,15 @@ class GromacsMRParserListener(ParseTreeListener):
 
     def createSfDict(self, createSfDict):
         self.__createSfDict = createSfDict
+
+    def setOriginaFileName(self, originalFileName):
+        self.__originalFileName = originalFileName
+
+    def setListIdCounter(self, listIdCounter):
+        self.__listIdCounter = listIdCounter
+
+    def setEntryId(self, entryId):
+        self.__entryId = entryId
 
     # Enter a parse tree produced by GromacsMRParser#gromacs_mr.
     def enterGromacs_mr(self, ctx: GromacsMRParser.Gromacs_mrContext):  # pylint: disable=unused-argument
@@ -1229,6 +1251,27 @@ class GromacsMRParserListener(ParseTreeListener):
             return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "
         return ''
 
+    def __getNextSf(self):
+        self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
+
+        if self.__cur_subtype not in self.sfDict:
+            self.sfDict[self.__cur_subtype] = []
+
+        sf = getSaveframe(self.__cur_subtype,
+                          self.__listIdCounter[self.__cur_subtype],
+                          self.__entryId,
+                          self.__originalFileName)
+
+        self.sfDict[self.__cur_subtype].append(sf)
+
+        return sf
+
+    def __getCurrentSf(self):
+        if self.__cur_subtype not in self.sfDict:
+            return self.__getNextSf()
+
+        return self.sfDict[self.__cur_subtype][-1]
+
     def getContentSubtype(self):
         """ Return content subtype of GROMACS MR file.
         """
@@ -1256,6 +1299,11 @@ class GromacsMRParserListener(ParseTreeListener):
         """ Return chain assignment between coordinates and GROMACS MR.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
+
+    def getListIdCounter(self):
+        """ Return updated list id counter.
+        """
+        return None if len(self.__listIdCounter) == 0 else self.__listIdCounter
 
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.

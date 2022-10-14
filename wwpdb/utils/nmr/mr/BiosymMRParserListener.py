@@ -22,6 +22,8 @@ try:
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        isCyclicPolymer,
+                                                       incListIdCounter,
+                                                       getSaveframe,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -58,6 +60,8 @@ except ImportError:
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            isCyclicPolymer,
+                                           incListIdCounter,
+                                           getSaveframe,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -184,6 +188,15 @@ class BiosymMRParserListener(ParseTreeListener):
 
     reasonsForReParsing = {}
 
+    # original source MR file name
+    __originalFileName = '.'
+
+    # list id counter
+    __listIdCounter = {}
+
+    # entry ID
+    __entryId = '.'
+
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
@@ -266,6 +279,15 @@ class BiosymMRParserListener(ParseTreeListener):
 
     def createSfDict(self, createSfDict):
         self.__createSfDict = createSfDict
+
+    def setOriginaFileName(self, originalFileName):
+        self.__originalFileName = originalFileName
+
+    def setListIdCounter(self, listIdCounter):
+        self.__listIdCounter = listIdCounter
+
+    def setEntryId(self, entryId):
+        self.__entryId = entryId
 
     # Enter a parse tree produced by BiosymMRParser#biosym_mr.
     def enterBiosym_mr(self, ctx: BiosymMRParser.Biosym_mrContext):  # pylint: disable=unused-argument
@@ -1679,6 +1701,27 @@ class BiosymMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
+    def __getNextSf(self):
+        self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
+
+        if self.__cur_subtype not in self.sfDict:
+            self.sfDict[self.__cur_subtype] = []
+
+        sf = getSaveframe(self.__cur_subtype,
+                          self.__listIdCounter[self.__cur_subtype],
+                          self.__entryId,
+                          self.__originalFileName)
+
+        self.sfDict[self.__cur_subtype].append(sf)
+
+        return sf
+
+    def __getCurrentSf(self):
+        if self.__cur_subtype not in self.sfDict:
+            return self.__getNextSf()
+
+        return self.sfDict[self.__cur_subtype][-1]
+
     def getContentSubtype(self):
         """ Return content subtype of BIOSYM MR file.
         """
@@ -1709,6 +1752,11 @@ class BiosymMRParserListener(ParseTreeListener):
         """ Return reasons for re-parsing BIOSYM MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
+
+    def getListIdCounter(self):
+        """ Return updated list id counter.
+        """
+        return None if len(self.__listIdCounter) == 0 else self.__listIdCounter
 
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.

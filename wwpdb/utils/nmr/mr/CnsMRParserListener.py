@@ -29,8 +29,11 @@ try:
                                                        isAsymmetricRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        isCyclicPolymer,
+                                                       getValidSubType,
                                                        incListIdCounter,
                                                        getSaveframe,
+                                                       getLoop,
+                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -49,8 +52,7 @@ try:
                                                        XPLOR_ORIGIN_AXIS_COLS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                             ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
                                            MAJOR_ASYM_ID_SET,
                                            monDict3,
@@ -82,8 +84,11 @@ except ImportError:
                                            isAsymmetricRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            isCyclicPolymer,
+                                           getValidSubType,
                                            incListIdCounter,
                                            getSaveframe,
+                                           getLoop,
+                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -102,8 +107,7 @@ except ImportError:
                                            XPLOR_ORIGIN_AXIS_COLS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                 ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
                                MAJOR_ASYM_ID_SET,
                                monDict3,
@@ -7117,24 +7121,29 @@ class CnsMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __getNextSf(self):
+    def __addSf(self):
+        _subtype = getValidSubType(self.__cur_subtype)
+
+        if _subtype is None:
+            return
+
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
         if self.__cur_subtype not in self.sfDict:
             self.sfDict[self.__cur_subtype] = []
 
-        sf = getSaveframe(self.__cur_subtype,
-                          self.__listIdCounter[self.__cur_subtype],
-                          self.__entryId,
-                          self.__originalFileName)
+        list_id = self.__listIdCounter[self.__cur_subtype]
 
-        self.sfDict[self.__cur_subtype].append(sf)
+        sf = getSaveframe(self.__cur_subtype, list_id, self.__entryId, self.__originalFileName)
+        lp = getLoop(self.__cur_subtype)
 
-        return sf
+        sf.add_loop(lp)
 
-    def __getCurrentSf(self):
+        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id, 'entry_id': self.__entryId})
+
+    def __getSf(self):
         if self.__cur_subtype not in self.sfDict:
-            return self.__getNextSf()
+            self.__addSf()
 
         return self.sfDict[self.__cur_subtype][-1]
 

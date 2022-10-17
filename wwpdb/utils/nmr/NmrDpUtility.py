@@ -195,10 +195,6 @@ try:
                                                              PARAMAGNETIC_ELEMENTS,
                                                              FERROMAGNETIC_ELEMENTS,
                                                              NON_METAL_ELEMENTS,
-                                                             ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                             HALF_SPIN_NUCLEUS,
-                                                             ALLOWED_AMBIGUITY_CODES,
-                                                             ALLOWED_ISOTOPE_NUMBERS,
                                                              MAX_DIM_NUM_OF_SPECTRA)
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
     from wwpdb.utils.nmr.AlignUtil import (LOW_SEQ_COVERAGE,
@@ -229,6 +225,10 @@ try:
                                                        checkCoordinates,
                                                        getTypeOfDihedralRestraint,
                                                        startsWithPdbRecord,
+                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                                       HALF_SPIN_NUCLEUS,
+                                                       ALLOWED_AMBIGUITY_CODES,
+                                                       ALLOWED_ISOTOPE_NUMBERS,
                                                        KNOWN_ANGLE_NAMES,
                                                        CS_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_RANGE,
@@ -269,10 +269,6 @@ except ImportError:
                                                  PARAMAGNETIC_ELEMENTS,
                                                  FERROMAGNETIC_ELEMENTS,
                                                  NON_METAL_ELEMENTS,
-                                                 ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                 HALF_SPIN_NUCLEUS,
-                                                 ALLOWED_AMBIGUITY_CODES,
-                                                 ALLOWED_ISOTOPE_NUMBERS,
                                                  MAX_DIM_NUM_OF_SPECTRA)
     from nmr.NmrDpReport import NmrDpReport
     from nmr.AlignUtil import (LOW_SEQ_COVERAGE,
@@ -303,6 +299,10 @@ except ImportError:
                                            checkCoordinates,
                                            getTypeOfDihedralRestraint,
                                            startsWithPdbRecord,
+                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                           HALF_SPIN_NUCLEUS,
+                                           ALLOWED_AMBIGUITY_CODES,
+                                           ALLOWED_ISOTOPE_NUMBERS,
                                            KNOWN_ANGLE_NAMES,
                                            CS_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_RANGE,

@@ -29,8 +29,11 @@ try:
                                                        isAsymmetricRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        isCyclicPolymer,
+                                                       getValidSubType,
                                                        incListIdCounter,
                                                        getSaveframe,
+                                                       getLoop,
+                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -58,7 +61,6 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                             ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                              PARAMAGNETIC_ELEMENTS,
                                                              FERROMAGNETIC_ELEMENTS,
                                                              LANTHANOID_ELEMENTS)
@@ -93,8 +95,11 @@ except ImportError:
                                            isAsymmetricRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            isCyclicPolymer,
+                                           getValidSubType,
                                            incListIdCounter,
                                            getSaveframe,
+                                           getLoop,
+                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -122,7 +127,6 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                 ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                  PARAMAGNETIC_ELEMENTS,
                                                  FERROMAGNETIC_ELEMENTS,
                                                  LANTHANOID_ELEMENTS)
@@ -724,7 +728,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.symmDplus = None
 
         if self.__createSfDict:
-            self.__getNextSf()
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
@@ -738,7 +742,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.scale = 1.0
 
         if self.__createSfDict:
-            self.__getNextSf()
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
@@ -753,7 +757,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.scale = 1.0
 
         if self.__createSfDict:
-            self.__getNextSf()
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
@@ -795,7 +799,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'jcoup'
 
         if self.__createSfDict:
-            self.__getNextSf()
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#coupling_restraint.
     def exitCoupling_restraint(self, ctx: XplorMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
@@ -856,7 +860,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'csa'
 
         if self.__createSfDict:
-            self.__getNextSf()
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#csa_restraint.
     def exitCsa_restraint(self, ctx: XplorMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
@@ -868,7 +872,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'csa'
 
         if self.__createSfDict:
-            self.__getNextSf()
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#pcsa_restraint.
     def exitPcsa_restraint(self, ctx: XplorMRParser.Pcsa_restraintContext):  # pylint: disable=unused-argument
@@ -946,7 +950,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'hbond'
 
         if self.__createSfDict:
-            self.__getNextSf()
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#hbond_restraint.
     def exitHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
@@ -958,7 +962,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'hbond'
 
         if self.__createSfDict:
-            self.__getNextSf()
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#hbond_db_restraint.
     def exitHbond_db_restraint(self, ctx: XplorMRParser.Hbond_db_restraintContext):  # pylint: disable=unused-argument
@@ -1276,7 +1280,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             for i in range(0, len(self.atomSelectionSet), 2):
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
@@ -1580,7 +1584,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
@@ -1971,7 +1975,7 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -2352,7 +2356,7 @@ class XplorMRParserListener(ParseTreeListener):
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -2609,7 +2613,7 @@ class XplorMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -2858,7 +2862,7 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -3016,7 +3020,7 @@ class XplorMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -3405,7 +3409,7 @@ class XplorMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             if len(self.atomSelectionSet) == 4:
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -3560,7 +3564,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                        self.atomSelectionSet[1],
@@ -3706,7 +3710,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             if lenAtomSelectionSet == 1:
                 for atom1 in self.atomSelectionSet[0]:
@@ -4808,7 +4812,7 @@ class XplorMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[4],
                                                          self.atomSelectionSet[5],
@@ -5740,7 +5744,7 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getCurrentSf()
+                lp = self.__getSf()['loop']
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -6343,7 +6347,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__lfh.write(f"+XplorMRParserListener.exitHbond_assign() ++ Error  - {str(e)}\n")
 
         if self.__createSfDict:
-            sf = self.__getCurrentSf()
+            lp = self.__getSf()['loop']
 
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
@@ -6464,7 +6468,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__lfh.write(f"+XplorMRParserListener.exitHbond_db_assign() ++ Error  - {str(e)}\n")
 
         if self.__createSfDict:
-            sf = self.__getCurrentSf()
+            lp = self.__getSf()['loop']
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[self.donor_columnSel],
                                               self.atomSelectionSet[self.acceptor_columnSel]):
@@ -10727,24 +10731,29 @@ class XplorMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __getNextSf(self):
+    def __addSf(self):
+        _subtype = getValidSubType(self.__cur_subtype)
+
+        if _subtype is None:
+            return
+
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
         if self.__cur_subtype not in self.sfDict:
             self.sfDict[self.__cur_subtype] = []
 
-        sf = getSaveframe(self.__cur_subtype,
-                          self.__listIdCounter[self.__cur_subtype],
-                          self.__entryId,
-                          self.__originalFileName)
+        list_id = self.__listIdCounter[self.__cur_subtype]
 
-        self.sfDict[self.__cur_subtype].append(sf)
+        sf = getSaveframe(self.__cur_subtype, list_id, self.__entryId, self.__originalFileName)
+        lp = getLoop(self.__cur_subtype)
 
-        return sf
+        sf.add_loop(lp)
 
-    def __getCurrentSf(self):
+        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id, 'entry_id': self.__entryId})
+
+    def __getSf(self):
         if self.__cur_subtype not in self.sfDict:
-            return self.__getNextSf()
+            self.__addSf()
 
         return self.sfDict[self.__cur_subtype][-1]
 

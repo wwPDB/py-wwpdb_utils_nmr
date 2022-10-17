@@ -19,8 +19,11 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
                                                        isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
+                                                       getValidSubType,
                                                        incListIdCounter,
                                                        getSaveframe,
+                                                       getLoop,
+                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
@@ -31,8 +34,7 @@ try:
                                                        RDC_RESTRAINT_ERROR)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                             ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (updatePolySeqRstFromAtomSelectionSet,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -44,8 +46,11 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (checkCoordinates,
                                            isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
+                                           getValidSubType,
                                            incListIdCounter,
                                            getSaveframe,
+                                           getLoop,
+                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
@@ -56,8 +61,7 @@ except ImportError:
                                            RDC_RESTRAINT_ERROR)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                 ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (updatePolySeqRstFromAtomSelectionSet,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -1251,24 +1255,29 @@ class GromacsMRParserListener(ParseTreeListener):
             return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "
         return ''
 
-    def __getNextSf(self):
+    def __addSf(self):
+        _subtype = getValidSubType(self.__cur_subtype)
+
+        if _subtype is None:
+            return
+
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
         if self.__cur_subtype not in self.sfDict:
             self.sfDict[self.__cur_subtype] = []
 
-        sf = getSaveframe(self.__cur_subtype,
-                          self.__listIdCounter[self.__cur_subtype],
-                          self.__entryId,
-                          self.__originalFileName)
+        list_id = self.__listIdCounter[self.__cur_subtype]
 
-        self.sfDict[self.__cur_subtype].append(sf)
+        sf = getSaveframe(self.__cur_subtype, list_id, self.__entryId, self.__originalFileName)
+        lp = getLoop(self.__cur_subtype)
 
-        return sf
+        sf.add_loop(lp)
 
-    def __getCurrentSf(self):
+        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id, 'entry_id': self.__entryId})
+
+    def __getSf(self):
         if self.__cur_subtype not in self.sfDict:
-            return self.__getNextSf()
+            self.__addSf()
 
         return self.sfDict[self.__cur_subtype][-1]
 

@@ -108,11 +108,15 @@ try:
                                            letterToDigit, indexToLetter)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                                       ALLOWED_AMBIGUITY_CODES)
 except ImportError:
     from nmr.AlignUtil import (emptyValue, trueValue, monDict3,
                                letterToDigit, indexToLetter)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                           ALLOWED_AMBIGUITY_CODES)
 
 __version__ = '3.2.0'
 
@@ -162,32 +166,6 @@ LANTHANOID_ELEMENTS = ('LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY
 
 # non-metal elements
 NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
-
-
-# isotope numbers of NMR observable nucleus
-ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS = {'H': [1, 2, 3],
-                                   'C': [13],
-                                   'N': [15, 14],
-                                   'O': [17],
-                                   'P': [31],
-                                   'S': [33],
-                                   'F': [19],
-                                   'CD': [113, 111],
-                                   'CA': [43]
-                                   }
-
-
-# nucleus with half spin
-HALF_SPIN_NUCLEUS = ('H', 'C', 'N', 'P', 'F', 'CD')
-
-
-# allowed BMRB ambiguity codes
-ALLOWED_AMBIGUITY_CODES = (1, 2, 3, 4, 5, 6, 9)
-
-
-ALLOWED_ISOTOPE_NUMBERS = []
-for isotopeNums in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.values():
-    ALLOWED_ISOTOPE_NUMBERS.extend(isotopeNums)
 
 
 # limit number of dimensions

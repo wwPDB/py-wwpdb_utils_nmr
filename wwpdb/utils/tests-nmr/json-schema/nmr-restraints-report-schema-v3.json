@@ -633,7 +633,7 @@
           }
         },
         "auth_seq_id": {
-          "description": "List of author sequence ID of a chain when the insertion code exists (PDBx/mmCIF specific, aka. atom_site.auth_seq_id).",
+          "description": "List of auth sequence ID of a chain when the insertion code exists (PDBx/mmCIF specific, aka. atom_site.auth_seq_id).",
           "type": "array",
           "items": {
             "type": "integer"
@@ -652,6 +652,13 @@
           "items": {
             "type": "string",
             "minLength": 1
+          }
+        },
+        "auth_comp_id": {
+          "description": "List of auth chemical component ID of a chain.",
+          "type": "array",
+          "items": {
+            "type": "integer"
           }
         },
         "struct_conf": {

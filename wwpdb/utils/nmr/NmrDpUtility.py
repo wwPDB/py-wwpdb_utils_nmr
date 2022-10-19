@@ -162,6 +162,7 @@
 # 06-Sep-2022  M. Yokochi - add support for branched entity (NMR restraint remediation)
 # 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (DAOTHER-8059, NMR restraint remediation)
 # 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (DAOTHER-8058, NMR restraint remediation)
+# 19-Oct-2022  M. Yokochi - report recommendation message when there is no distance restraints for leagacy NMR deposition, instead of error (DAOTHER-8088, 1-b)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1004,6 +1005,8 @@ class NmrDpUtility:
         # whether entity category exists (nmr-star specific)
         self.__has_star_entity = False
 
+        # whether allow missing distance restraints
+        self.__allow_missing_legacy_dist_restraint = True
         # whether legacy distance restraint has been uploaded
         self.__legacy_dist_restraint_uploaded = False
 
@@ -4829,7 +4832,8 @@ class NmrDpUtility:
                                               },
                                               'entity': None,
                                               'chem_shift': {
-                                                  '_Ambiguous_atom_chem_shift': ['Sf_ID', 'Entry_ID']
+                                                  '_Ambiguous_atom_chem_shift': ['Ambiguous_shift_set_ID', 'Atom_chem_shift_ID',
+                                                                                 'Sf_ID', 'Entry_ID', 'Assigned_chem_shift_list_ID']
                                               },
                                               'chem_shift_ref': None,
                                               'dist_restraint': None,
@@ -5151,6 +5155,8 @@ class NmrDpUtility:
 
         # suspended error items for lazy evaluation
         self.__suspended_errors_for_lazy_eval = []
+        # suspended warning items for lazy evaluation
+        self.__suspended_warnings_for_lazy_eval = []
 
         # atom name mapping of public MR file between the coordinates and submitted file
         self.__mr_atom_name_mapping = None
@@ -9500,35 +9506,55 @@ class NmrDpUtility:
 
                 if content_subtype is None:
 
-                    err = "NMR restraint file does not include mandatory distance restraints or is not recognized properly. "\
-                        "Please re-upload the NMR restraint file."
+                    if self.__allow_missing_legacy_dist_restraint:
 
-                    self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                                 {'file_name': file_name, 'description': err}})
+                        err = "NMR restraint file is not recognized properly. "\
+                            "Please re-upload the NMR restraint file."
 
-                    # self.report.error.appendDescription('content_mismatch',
-                    #                                     {'file_name': file_name, 'description': err})
-                    # self.report.setError()
+                        self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                                     {'file_name': file_name, 'description': err}})
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+
+                    else:
+
+                        err = "NMR restraint file does not include mandatory distance restraints or is not recognized properly. "\
+                            "Please re-upload the NMR restraint file."
+
+                        self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                                     {'file_name': file_name, 'description': err}})
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
                 elif 'chem_shift' not in content_subtype:
 
                     if not self.__remediation_mode:
 
-                        err = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
-                            "However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
+                        if self.__allow_missing_legacy_dist_restraint:
 
-                        self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                                     {'file_name': file_name, 'description': err}})
+                            warn = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
+                                "However, there is no distance restranits in the set of uploaded restraint files. "\
+                                "The wwPDB NMR Validation Task Force highly recommends the submission of distance restranits "\
+                                "unless you have a legitimate claim not to do so."
 
-                        # self.report.error.appendDescription('content_mismatch',
-                        #                                     {'file_name': file_name, 'description': err})
-                        # self.report.setError()
+                            self.__suspended_warnings_for_lazy_eval.append({'missing_content':
+                                                                            {'file_name': file_name, 'description': warn}})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Warning  - {warn}\n")
+
+                        else:
+
+                            err = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
+                                "However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
+
+                            self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                                         {'file_name': file_name, 'description': err}})
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {err}\n")
 
         md5_set = set(md5_list)
 
@@ -9579,6 +9605,7 @@ class NmrDpUtility:
             self.__lp_category_list = []
 
             self.__suspended_errors_for_lazy_eval = []
+            self.__suspended_warnings_for_lazy_eval = []
 
             for content_subtype in self.__lp_data:
                 self.__lp_data[content_subtype] = []
@@ -31308,6 +31335,13 @@ class NmrDpUtility:
                                     self.report.error.appendDescription(k, v)
                                     self.report.setError()
                             self.__suspended_errors_for_lazy_eval = []
+
+                        if len(self.__suspended_warnings_for_lazy_eval) > 0:
+                            for msg in self.__suspended_warnings_for_lazy_eval:
+                                for k, v in msg.items():
+                                    self.report.warning.appendDescription(k, v)
+                                    self.report.setWarning()
+                            self.__suspended_warnings_for_lazy_eval = []
 
                     elif 'ribonucleotide' in type:
                         rmsd_label = 'p_rmsd'

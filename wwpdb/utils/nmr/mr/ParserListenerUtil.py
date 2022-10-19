@@ -620,8 +620,6 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                          }
 
 NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
-                                             # {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
-                                             # 'enforce-non-zero': True},
                                              {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                               'enforce-non-zero': True},
                                              {'name': 'Member_logic_code', 'type': 'enum', 'mandatory': False,
@@ -647,15 +645,6 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                         'coexist-with': None,  # ['Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                         'smaller-than': None,
                                                         'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
-                                             {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
-                                              'range': DIST_RESTRAINT_RANGE,
-                                              'group': {'member-with': ['Target_val',
-                                                                        'Lower_linear_limit',
-                                                                        'Distance_lower_bound_val',
-                                                                        'Distance_upper_bound_val'],
-                                                        'coexist-with': None,  # ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
-                                                        'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
-                                                        'larger-than': None}},
                                              {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False,
                                               'group-mandatory': True, 'void-zero': True,
                                               'range': DIST_RESTRAINT_RANGE,
@@ -670,6 +659,15 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                         'coexist-with': None,  # ['Distance_lower_bound_val'],
                                                         'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                         'larger-than': ['Upper_linear_limit']}},
+                                             {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                              'range': DIST_RESTRAINT_RANGE,
+                                              'group': {'member-with': ['Target_val',
+                                                                        'Lower_linear_limit',
+                                                                        'Distance_lower_bound_val',
+                                                                        'Distance_upper_bound_val'],
+                                                        'coexist-with': None,  # ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                        'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                        'larger-than': None}},
                                              {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
                                                       'range': DIST_RESTRAINT_RANGE},
                                              {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
@@ -679,35 +677,20 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                              {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                              {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
                                              {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Auth_atom_name_1', 'type': 'str', 'mandatory': False},
                                              {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                              {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                              {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Auth_atom_name_2', 'type': 'str', 'mandatory': False},
                                              {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                              'default': '1', 'default-from': 'parent'}
+                                              'default': '1', 'default-from': 'parent'},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                              ],
                           'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
-                                              # {'name': 'ID', 'type': 'index-int', 'mandatory': True,
-                                              # 'enforce-non-zero': True},
                                               {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                'enforce-non-zero': True},
                                               {'name': 'Torsion_angle_name', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                               'range': ANGLE_RESTRAINT_RANGE,
-                                               'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
-                                                                         'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
-                                                         'coexist-with': None,  # ['Angle_upper_bound_val'],
-                                                         'smaller-than': ['Angle_lower_linear_limit'],
-                                                         'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
-                                                         'circular-shift': 360.0}},
-                                              {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                               'range': ANGLE_RESTRAINT_RANGE,
-                                               'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
-                                                                         'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
-                                                         'coexist-with': None,  # ['Angle_lower_bound_val'],
-                                                         'smaller-than': ['Angle_lower_bound_val', 'Angle_upper_linear_limit'],
-                                                         'larger-than': ['Angle_upper_linear_limit'],
-                                                         'circular-shift': 360.0}},
                                               {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                'range': ANGLE_RESTRAINT_RANGE,
                                                'group': {'member-with': ['Angle_lower_linear_limit',
@@ -728,6 +711,22 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                          'smaller-than': None,
                                                          'larger-than': ['Angle_lower_bound_val', 'Angle_upper_bound', 'Angle_upper_linear_limit'],
                                                          'circular-shift': 360.0}},
+                                              {'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                               'range': ANGLE_RESTRAINT_RANGE,
+                                               'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
+                                                                         'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
+                                                         'coexist-with': None,  # ['Angle_upper_bound_val'],
+                                                         'smaller-than': ['Angle_lower_linear_limit'],
+                                                         'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
+                                                         'circular-shift': 360.0}},
+                                              {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                               'range': ANGLE_RESTRAINT_RANGE,
+                                               'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
+                                                                         'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
+                                                         'coexist-with': None,  # ['Angle_lower_bound_val'],
+                                                         'smaller-than': ['Angle_lower_bound_val', 'Angle_upper_linear_limit'],
+                                                         'larger-than': ['Angle_upper_linear_limit'],
+                                                         'circular-shift': 360.0}},
                                               {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                'range': ANGLE_RESTRAINT_RANGE,
                                                'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
@@ -743,24 +742,27 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_name_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_name_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_name_3', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_name_4', 'type': 'str', 'mandatory': False},
                                               {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                               'default': '1', 'default-from': 'parent'}
+                                               'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
                           'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
-                                            # {'name': 'ID', 'type': 'index-int', 'mandatory': True,
-                                            # 'enforce-non-zero': True},
                                             {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                              'enforce-non-zero': True},
                                             {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
@@ -774,6 +776,12 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                        'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                             {'name': 'Target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                              'range': RDC_UNCERTAINTY_RANGE},
+                                            {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                             'range': RDC_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                       'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                       'smaller-than': None,
+                                                       'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                             {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                              'range': RDC_RESTRAINT_RANGE,
                                              'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
@@ -786,12 +794,6 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                        'coexist-with': None,  # ['RDC_lower_bound'],
                                                        'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                        'larger-than': ['RDC_upper_linear_limit']}},
-                                            {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                             'range': RDC_RESTRAINT_RANGE,
-                                             'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
-                                                       'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
-                                                       'smaller-than': None,
-                                                       'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                             {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                              'range': RDC_RESTRAINT_RANGE,
                                              'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
@@ -810,11 +812,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                             {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
                                             {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_atom_name_1', 'type': 'str', 'mandatory': False},
                                             {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                             {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                             {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                            {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
+                                            {'name': 'Auth_atom_name_2', 'type': 'str', 'mandatory': False},
+                                            {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                             ],
                           'noepk_restraint': [{'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                'group': {'member-with': ['Val_min', 'Val_max'],
@@ -841,7 +846,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Homonucl_NOE_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
+                                              {'name': 'Homonucl_NOE_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
                           'jcoup_restraint': [{'name': 'Code', 'type': 'str', 'mandatory': True},
                                               {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
@@ -893,7 +899,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Coupling_constant_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                               'default': '1', 'default-from': 'parent'}
+                                               'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
                           'csa_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                              'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
@@ -936,7 +943,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                             {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                             {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
                                             {'name': 'Chem_shift_anisotropy_ID', 'type': 'pointer-index', 'mandatory': True,
-                                             'default': '1', 'default-from': 'parent'}
+                                             'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                             ],
                           'ddc_restraint': [{'name': 'Dipolar_coupling_code', 'type': 'str', 'mandatory': True},
                                             {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
@@ -1003,7 +1011,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                             {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                             {'name': 'Dipolar_coupling_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                             'default': '1', 'default-from': 'parent'}
+                                             'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                             ],
                           'hvycs_restraint': [{'name': 'CA_chem_shift_val', 'type': 'range-float', 'mandatory': True,
                                                'range': CS_RESTRAINT_RANGE},
@@ -1036,7 +1045,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Auth_comp_ID_5', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_5', 'type': 'str', 'mandatory': False},
                                               {'name': 'CA_CB_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                               'default': '1', 'default-from': 'parent'}
+                                               'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
                           'procs_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
@@ -1054,7 +1064,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
                                               {'name': 'H_chem_shift_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                               'default': '1', 'default-from': 'parent'}
+                                               'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
                           'csp_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                              'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
@@ -1075,7 +1086,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                             {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                             {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
                                             {'name': 'Chem_shift_perturbation_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                             'default': '1', 'default-from': 'parent'}
+                                             'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                             ],
                           'auto_relax_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                     'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
@@ -1096,7 +1108,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                    {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                                    {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
                                                    {'name': 'Auto_relaxation_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                                    'default': '1', 'default-from': 'parent'}
+                                                    'default': '1', 'default-from': 'parent'},
+                                                   {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                    ],
                           'ccr_d_csa_restraint': [{'name': 'Dipole_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
                                                    'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
@@ -1143,7 +1156,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                   {'name': 'CSA_auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                   {'name': 'CSA_auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                                   {'name': 'Cross_correlation_D_CSA_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                                   'default': '1', 'default-from': 'parent'}
+                                                   'default': '1', 'default-from': 'parent'},
+                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                   ],
                           'ccr_dd_restraint': [{'name': 'Dipole_1_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_1_atom_ID_1',
                                                 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
@@ -1190,7 +1204,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                {'name': 'Dipole_2_auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                {'name': 'Dipole_2_auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                                {'name': 'Cross_correlation_DD_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                                'default': '1', 'default-from': 'parent'}
+                                                'default': '1', 'default-from': 'parent'},
+                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                ],
                           'other_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
@@ -1206,7 +1221,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
                                               {'name': 'Other_data_type_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                               'default': '1', 'default-from': 'parent'}
+                                               'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
                           }
 
@@ -2514,7 +2530,7 @@ def getValidSubType(subtype):
     if subtype == 'prdc':
         return 'rdc_restraints'
 
-    return None  # not supported yet
+    raise KeyError(f'Internal subtype {subtype!r} is not defined.')
 
 
 def initListIdCounter():
@@ -2608,15 +2624,96 @@ def getLoop(subtype):
     if _subtype is None:
         return None
 
-    if _subtype not in NMR_STAR_SF_CATEGORIES:
+    if _subtype not in NMR_STAR_LP_CATEGORIES:
         return None
+
+    prefix = NMR_STAR_LP_CATEGORIES[_subtype] + '.'
 
     lp = pynmrstar.Loop.from_scratch()
 
-    tags = [NMR_STAR_LP_CATEGORIES[_subtype] + '.' + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[_subtype]]
-    tags.extend([NMR_STAR_LP_DATA_ITEMS[_subtype] + '.' + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[_subtype]])
+    tags = [prefix + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[_subtype]]
+    tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[_subtype]])
 
     for tag in tags:
         lp.add_tag(tag)
 
     return lp
+
+
+def getRow(subtype, id, indexId, combinationId, memberLogicCode, listId, entryId, dstFunc, atom1, atom2):
+    """ Return row data for a distance restraint.
+        @return: data array
+    """
+
+    _subtype = getValidSubType(subtype)
+
+    if _subtype is None:
+        return None
+
+    key_size = len(NMR_STAR_LP_KEY_ITEMS)
+    data_size = len(NMR_STAR_LP_DATA_ITEMS)
+
+    row = [None] * (key_size + data_size)
+
+    row[0] = id
+
+    row[-2] = listId
+    row[-1] = entryId
+
+    if subtype == 'dist':
+        row[1] = atom1['chain_id']
+        row[2] = atom1['seq_id']
+        row[3] = atom1['comp_id']
+        row[4] = atom1['atom_id']
+        row[5] = atom2['chain_id']
+        row[6] = atom2['seq_id']
+        row[7] = atom2['comp_id']
+        row[8] = atom2['atom_id']
+
+        row[key_size] = indexId
+        row[key_size + 1] = combinationId
+        if isinstance(combinationId, int):
+            row[key_size + 2] = memberLogicCode
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size + 3] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+            row[key_size + 4] = dstFunc['target_value_uncertainty']
+        if hasKeyValue(dstFunc, 'lower_linear_limit'):
+            row[key_size + 5] = dstFunc['lower_linear_limit']
+        if hasKeyValue(dstFunc, 'lower_limit'):
+            row[key_size + 6] = dstFunc['lower_limit']
+        if hasKeyValue(dstFunc, 'upper_limit'):
+            row[key_size + 7] = dstFunc['upper_limit']
+        if hasKeyValue(dstFunc, 'upper_linear_limit'):
+            row[key_size + 8] = dstFunc['upper_linear_limit']
+        # Distance_val
+        if hasKeyValue(dstFunc, 'weight'):
+            row[key_size + 10] = dstFunc['weight']
+        row[key_size + 11] = atom1['chain_id']
+        row[key_size + 12] = atom1['seq_id']
+        row[key_size + 13] = atom1['comp_id']
+        row[key_size + 14] = atom1['atom_id']
+        if hasKeyValue(atom1, 'atom_name'):
+            row[key_size + 15] = atom1['atom_name']
+        row[key_size + 16] = atom2['chain_id']
+        row[key_size + 17] = atom2['seq_id']
+        row[key_size + 18] = atom2['comp_id']
+        row[key_size + 19] = atom2['atom_id']
+        if hasKeyValue(atom2, 'atom_name'):
+            row[key_size + 20] = atom2['atom_name']
+
+    return row
+
+
+def hasKeyValue(d=None, key=None):
+    """ Return whether a given dictionary has effective value for a key.
+        @return: True if d[key] has effective value, False otherwise
+    """
+
+    if d is None or key is None:
+        return False
+
+    if key in d:
+        return not d[key] is None
+
+    return False

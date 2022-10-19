@@ -33,6 +33,7 @@ try:
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
+                                                       getRow,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -99,6 +100,7 @@ except ImportError:
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
+                                           getRow,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -301,6 +303,7 @@ class XplorMRParserListener(ParseTreeListener):
     __cur_subtype_altered = False
     __with_axis = False
     __with_para = False
+    __cur_atom_name = ''
 
     # vector statement
     __cur_vector_mode = ''
@@ -808,6 +811,10 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#carbon_shift_restraint.
     def enterCarbon_shift_restraint(self, ctx: XplorMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
         self.hvycsStatements += 1
+        self.__cur_subtype = 'hvycs'
+
+        if self.__createSfDict:
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_restraint.
     def exitCarbon_shift_restraint(self, ctx: XplorMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
@@ -816,6 +823,10 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#proton_shift_restraint.
     def enterProton_shift_restraint(self, ctx: XplorMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
         self.procsStatements += 1
+        self.__cur_subtype = 'procs'
+
+        if self.__createSfDict:
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_restraint.
     def exitProton_shift_restraint(self, ctx: XplorMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
@@ -1280,14 +1291,24 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
+                combinationId = '.' if len(self.atomSelectionSet) == 2 else 0
 
             for i in range(0, len(self.atomSelectionSet), 2):
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        memberLogicCode = '.' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else 'OR'
+                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                               combinationId, memberLogicCode,
+                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
         finally:
             self.numberSelection.clear()
@@ -1584,7 +1605,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
@@ -1975,7 +1997,8 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -2356,7 +2379,8 @@ class XplorMRParserListener(ParseTreeListener):
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -2613,7 +2637,8 @@ class XplorMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -2862,7 +2887,8 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -3020,7 +3046,8 @@ class XplorMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -3409,7 +3436,8 @@ class XplorMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             if len(self.atomSelectionSet) == 4:
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -3564,7 +3592,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                        self.atomSelectionSet[1],
@@ -3710,7 +3739,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             if lenAtomSelectionSet == 1:
                 for atom1 in self.atomSelectionSet[0]:
@@ -4812,7 +4842,8 @@ class XplorMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[4],
                                                          self.atomSelectionSet[5],
@@ -5744,7 +5775,8 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                lp = self.__getSf()['loop']
+                sf = self.__getSf()
+                sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -6347,7 +6379,8 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__lfh.write(f"+XplorMRParserListener.exitHbond_assign() ++ Error  - {str(e)}\n")
 
         if self.__createSfDict:
-            lp = self.__getSf()['loop']
+            sf = self.__getSf()
+            sf['id'] += 1
 
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
@@ -6468,7 +6501,8 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__lfh.write(f"+XplorMRParserListener.exitHbond_db_assign() ++ Error  - {str(e)}\n")
 
         if self.__createSfDict:
-            lp = self.__getSf()['loop']
+            sf = self.__getSf()
+            sf['id'] += 1
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[self.donor_columnSel],
                                               self.atomSelectionSet[self.acceptor_columnSel]):
@@ -6741,6 +6775,13 @@ class XplorMRParserListener(ParseTreeListener):
                 self.paramagCenter = copy.copy(_factor)
 
             self.__retrieveLocalSeqScheme()
+
+        if 'atom_id' in _factor and len(_factor['atom_id']) == 1:
+            self.__cur_atom_name = _factor['atom_id'][0]
+        elif 'atom_ids' in _factor and len(_factor['atom_ids']) == 1:
+            self.__cur_atom_name = _factor['atom_ids'][0]
+        else:
+            self.__cur_atom_name = ''
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
@@ -7614,7 +7655,10 @@ class XplorMRParserListener(ParseTreeListener):
                                     _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
+                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId}
+                                        if len(self.__cur_atom_name) > 0:
+                                            selection['atom_name'] = self.__cur_atom_name
+                                        _atomSelection.append(selection)
                                 else:
                                     ccdCheck = True
 
@@ -7642,7 +7686,10 @@ class XplorMRParserListener(ParseTreeListener):
                                             continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
+                                        if len(self.__cur_atom_name) > 0:
+                                            selection['atom_name'] = self.__cur_atom_name
+                                        _atomSelection.append(selection)
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             if self.__cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
@@ -10749,7 +10796,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         sf.add_loop(lp)
 
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id, 'entry_id': self.__entryId})
+        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                                'id': 0, 'index_id': 0})
 
     def __getSf(self):
         if self.__cur_subtype not in self.sfDict:

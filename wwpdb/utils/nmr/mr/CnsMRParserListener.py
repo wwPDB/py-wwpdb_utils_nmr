@@ -33,6 +33,7 @@ try:
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
+                                                       getRow,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -88,6 +89,7 @@ except ImportError:
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
+                                           getRow,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -249,6 +251,7 @@ class CnsMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = ''
     __with_axis = False
+    __cur_atom_name = ''
 
     # vector statement
     __cur_vector_mode = ''
@@ -641,6 +644,9 @@ class CnsMRParserListener(ParseTreeListener):
         self.symmDminus = None
         self.symmDplus = None
 
+        if self.__createSfDict:
+            self.__addSf()
+
     # Exit a parse tree produced by CnsMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CnsMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
         pass
@@ -651,6 +657,9 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'dihed'
 
         self.scale = 1.0
+
+        if self.__createSfDict:
+            self.__addSf()
 
     # Exit a parse tree produced by CnsMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: CnsMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
@@ -685,6 +694,9 @@ class CnsMRParserListener(ParseTreeListener):
         self.potential = 'square'  # default potential
         self.scale = 1.0
 
+        if self.__createSfDict:
+            self.__addSf()
+
     # Exit a parse tree produced by CnsMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: CnsMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         pass
@@ -694,6 +706,9 @@ class CnsMRParserListener(ParseTreeListener):
         self.jcoupStatements += 1
         self.__cur_subtype = 'jcoup'
 
+        if self.__createSfDict:
+            self.__addSf()
+
     # Exit a parse tree produced by CnsMRParser#coupling_restraint.
     def exitCoupling_restraint(self, ctx: CnsMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
         pass
@@ -701,6 +716,10 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#carbon_shift_restraint.
     def enterCarbon_shift_restraint(self, ctx: CnsMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
         self.hvycsStatements += 1
+        self.__cur_subtype = 'hvycs'
+
+        if self.__createSfDict:
+            self.__addSf()
 
     # Exit a parse tree produced by CnsMRParser#carbon_shift_restraint.
     def exitCarbon_shift_restraint(self, ctx: CnsMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
@@ -709,6 +728,10 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#proton_shift_restraint.
     def enterProton_shift_restraint(self, ctx: CnsMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
         self.procsStatements += 1
+        self.__cur_subtype = 'procs'
+
+        if self.__createSfDict:
+            self.__addSf()
 
     # Exit a parse tree produced by CnsMRParser#proton_shift_restraint.
     def exitProton_shift_restraint(self, ctx: CnsMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
@@ -993,12 +1016,25 @@ class CnsMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+                combinationId = '.' if len(self.atomSelectionSet) == 2 else 0
+
             for i in range(0, len(self.atomSelectionSet), 2):
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        memberLogicCode = '.' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else 'OR'
+                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                               combinationId, memberLogicCode,
+                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
         finally:
             self.numberSelection.clear()
@@ -3397,6 +3433,13 @@ class CnsMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) == 0:
             self.__retrieveLocalSeqScheme()
 
+        if 'atom_id' in _factor and len(_factor['atom_id']) == 1:
+            self.__cur_atom_name = _factor['atom_id'][0]
+        elif 'atom_ids' in _factor and len(_factor['atom_ids']) == 1:
+            self.__cur_atom_name = _factor['atom_ids'][0]
+        else:
+            self.__cur_atom_name = ''
+
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
                 _factor['chain_id'] = [self.__representativeAsymId]
@@ -4260,7 +4303,10 @@ class CnsMRParserListener(ParseTreeListener):
                                     _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
+                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId}
+                                        if len(self.__cur_atom_name) > 0:
+                                            selection['atom_name'] = self.__cur_atom_name
+                                        _atomSelection.append(selection)
                                 else:
                                     ccdCheck = True
 
@@ -4288,7 +4334,10 @@ class CnsMRParserListener(ParseTreeListener):
                                             continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
+                                        if len(self.__cur_atom_name) > 0:
+                                            selection['atom_name'] = self.__cur_atom_name
+                                        _atomSelection.append(selection)
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             if self.__cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
@@ -7139,7 +7188,8 @@ class CnsMRParserListener(ParseTreeListener):
 
         sf.add_loop(lp)
 
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id, 'entry_id': self.__entryId})
+        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                                'id': 0, 'index_id': 0})
 
     def __getSf(self):
         if self.__cur_subtype not in self.sfDict:

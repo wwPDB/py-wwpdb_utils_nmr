@@ -6073,7 +6073,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         sf.add_loop(lp)
 
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id, 'entry_id': self.__entryId})
+        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                                'id': 0, 'index_id': 0})
 
     def __getSf(self):
         if self.__cur_subtype not in self.sfDict:

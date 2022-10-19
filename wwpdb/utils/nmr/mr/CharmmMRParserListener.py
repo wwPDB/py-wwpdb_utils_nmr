@@ -31,6 +31,7 @@ try:
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
+                                                       getRow,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -74,6 +75,7 @@ except ImportError:
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
+                                           getRow,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -202,6 +204,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
     # current restraint subtype
     __cur_subtype = ''
+    __cur_atom_name = ''
 
     # last comment
     lastComment = None
@@ -582,6 +585,9 @@ class CharmmMRParserListener(ParseTreeListener):
         # self.tCon = 0.0
         self.rExp = -1.0 / 6.0
 
+        if self.__createSfDict:
+            self.__addSf()
+
     # Exit a parse tree produced by CharmmMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CharmmMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
 
@@ -625,11 +631,21 @@ class CharmmMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                           '.', memberLogicCode,
+                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
         finally:
             self.numberSelection.clear()
@@ -645,6 +661,9 @@ class CharmmMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CharmmMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: CharmmMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dihed'
+
+        if self.__createSfDict:
+            self.__addSf()
 
     # Exit a parse tree produced by CharmmMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: CharmmMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
@@ -1769,6 +1788,13 @@ class CharmmMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) == 0:
             self.__retrieveLocalSeqScheme()
 
+        if 'atom_id' in _factor and len(_factor['atom_id']) == 1:
+            self.__cur_atom_name = _factor['atom_id'][0]
+        elif 'atom_ids' in _factor and len(_factor['atom_ids']) == 1:
+            self.__cur_atom_name = _factor['atom_ids'][0]
+        else:
+            self.__cur_atom_name = ''
+
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
                 _factor['chain_id'] = [self.__representativeAsymId]
@@ -2612,7 +2638,10 @@ class CharmmMRParserListener(ParseTreeListener):
                                     _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId})
+                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId}
+                                        if len(self.__cur_atom_name) > 0:
+                                            selection['atom_name'] = self.__cur_atom_name
+                                        _atomSelection.append(selection)
                                 else:
                                     ccdCheck = True
 
@@ -2640,7 +2669,10 @@ class CharmmMRParserListener(ParseTreeListener):
                                             continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
+                                        if len(self.__cur_atom_name) > 0:
+                                            selection['atom_name'] = self.__cur_atom_name
+                                        _atomSelection.append(selection)
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             if self.__cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
@@ -4356,7 +4388,8 @@ class CharmmMRParserListener(ParseTreeListener):
 
         sf.add_loop(lp)
 
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id, 'entry_id': self.__entryId})
+        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                                'id': 0, 'index_id': 0})
 
     def __getSf(self):
         if self.__cur_subtype not in self.sfDict:

@@ -658,7 +658,7 @@
           "description": "List of auth chemical component ID of a chain.",
           "type": "array",
           "items": {
-            "type": "integer"
+            "type": "string"
           }
         },
         "struct_conf": {

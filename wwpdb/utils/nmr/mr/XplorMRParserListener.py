@@ -29,6 +29,7 @@ try:
                                                        isAsymmetricRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        isCyclicPolymer,
+                                                       getRestraintName,
                                                        getValidSubType,
                                                        incListIdCounter,
                                                        getSaveframe,
@@ -96,6 +97,7 @@ except ImportError:
                                            isAsymmetricRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            isCyclicPolymer,
+                                           getRestraintName,
                                            getValidSubType,
                                            incListIdCounter,
                                            getSaveframe,
@@ -221,6 +223,7 @@ class XplorMRParserListener(ParseTreeListener):
     __verbose = None
     __lfh = None
     __debug = False
+    __remediate = False
     __sel_expr_debug = False
 
     __createSfDict = True
@@ -537,6 +540,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     def setDebugMode(self, debug):
         self.__debug = debug
+
+    def setRemediateMode(self, remediate):
+        self.__remediate = remediate
 
     def createSfDict(self, createSfDict):
         self.__createSfDict = createSfDict
@@ -1308,9 +1314,10 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         memberLogicCode = '.' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else 'OR'
-                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                               combinationId, memberLogicCode,
-                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     combinationId, memberLogicCode,
+                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                        sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()
@@ -10793,7 +10800,10 @@ class XplorMRParserListener(ParseTreeListener):
 
         list_id = self.__listIdCounter[self.__cur_subtype]
 
-        sf = getSaveframe(self.__cur_subtype, list_id, self.__entryId, self.__originalFileName)
+        sf_framecode = ('XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH')\
+            + '_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
+
+        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
         lp = getLoop(self.__cur_subtype)
 
         sf.add_loop(lp)

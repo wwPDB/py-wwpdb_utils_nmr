@@ -2516,8 +2516,62 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
     return None
 
 
+def getRestraintName(subtype):
+    """ Return human-readable restraint name for a given internal content subtype.
+    """
+
+    if subtype == 'dist':
+        return "Distance restraints"
+    if subtype == 'dihed':
+        return "Dihedral angle restraints"
+    if subtype == 'rdc':
+        return "RDC restraints"
+    if subtype == 'plane':
+        return "Planarity restraints"
+    if subtype == 'hbond':
+        return "Hydrogen bond restraints"
+    if subtype == 'ssbond':
+        return "Disulfide bond restraints"
+    if subtype == 'adist':
+        return "Anti-distance restraints"
+    if subtype == 'jcoup':
+        return "Scalar J-coupling restraints"
+    if subtype == 'hvycs':
+        return "Carbon chemical shift restraints"
+    if subtype == 'procs':
+        return "Proton chemical shift restraints"
+    if subtype == 'rama':
+        return "Dihedral angle database restraints"
+    if subtype == 'radi':
+        return "Radius of gyration restraints"
+    if subtype == 'diff':
+        return "Diffusion anisotropy restraints"
+    if subtype == 'nbase':
+        return "Nucleic acid base orientation database restraints"
+    if subtype == 'csa':
+        return "CSA restraints"
+    if subtype == 'ang':
+        return "Angle database restraints"
+    if subtype == 'pre':
+        return "PRE restraints"
+    if subtype == 'pcs':
+        return "PCS restraints, "
+    if subtype == 'prdc':
+        return "Paramagnetic RDC restraints"
+    if subtype == 'pang':
+        return "Paramagnetic orientation restraints"
+    if subtype == 'pccr':
+        return "Paramagnetic CCR restraints"
+    if subtype == 'geo':
+        return "Coordinate geometry restraints"
+    if subtype == 'noepk':
+        return "NOESY peak volume restraints"
+
+    raise KeyError(f'Internal subtype {subtype!r} is not defined.')
+
+
 def getValidSubType(subtype):
-    """ Return legitimate content subtype of NmrDpUtility.py.
+    """ Return legitimate content subtype of NmrDpUtility.py for a given internal content subtype.
     """
 
     if subtype in ('dist', 'dihed', 'rdc', 'jcoup', 'hvycs', 'procs', 'csa'):
@@ -2557,7 +2611,7 @@ def initListIdCounter():
 
 
 def incListIdCounter(subtype, listIdCounter):
-    """ Increment list id counter for a given content subtype.
+    """ Increment list id counter for a given internal content subtype.
     """
 
     if len(listIdCounter) == 0:
@@ -2573,8 +2627,8 @@ def incListIdCounter(subtype, listIdCounter):
     return listIdCounter
 
 
-def getSaveframe(subtype, name, listId=None, entryId=None, fileName=None):
-    """ Return pynmrstar saveframe for a given content subtype and name.
+def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None):
+    """ Return pynmrstar saveframe for a given internal content subtype and name.
         @return: pynmrstar saveframe
     """
 
@@ -2586,7 +2640,7 @@ def getSaveframe(subtype, name, listId=None, entryId=None, fileName=None):
     if _subtype not in NMR_STAR_SF_CATEGORIES:
         return None
 
-    sf = pynmrstar.Saveframe.from_scratch(name)
+    sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
     sf.set_tag_prefix(NMR_STAR_SF_TAG_PREFIXES[_subtype])
 
     for sf_tag_item in NMR_STAR_SF_TAG_ITEMS[_subtype]:
@@ -2595,7 +2649,7 @@ def getSaveframe(subtype, name, listId=None, entryId=None, fileName=None):
         if tag_item_name == 'Sf_category':
             sf.add_tag(tag_item_name, NMR_STAR_SF_CATEGORIES[_subtype])
         elif tag_item_name == 'Sf_framecode':
-            sf.add_tag(tag_item_name, name)
+            sf.add_tag(tag_item_name, sf_framecode)
         elif tag_item_name == 'Data_file_name' and fileName is not None:
             sf.add_tag(tag_item_name, fileName)
         elif tag_item_name == 'ID' and listId is not None:

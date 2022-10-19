@@ -25,6 +25,7 @@ try:
                                                        translateToStdResName,
                                                        isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
+                                                       getRestraintName,
                                                        getValidSubType,
                                                        incListIdCounter,
                                                        getSaveframe,
@@ -66,6 +67,7 @@ except ImportError:
                                            translateToStdResName,
                                            isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
+                                           getRestraintName,
                                            getValidSubType,
                                            incListIdCounter,
                                            getSaveframe,
@@ -1110,9 +1112,10 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict and sf is not None:
                                     sf['index_id'] += 1
                                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
-                                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                           '.', memberLogicCode,
-                                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                                 '.', memberLogicCode,
+                                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                    sf['loop'].add_data(row)
 
                         # generalized distance
                         else:
@@ -1733,9 +1736,10 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict and sf is not None:
                                     sf['index_id'] += 1
                                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
-                                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                           '.', memberLogicCode,
-                                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                                 '.', memberLogicCode,
+                                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                    sf['loop'].add_data(row)
 
                         # generalized distance
                         else:
@@ -7347,7 +7351,9 @@ class AmberMRParserListener(ParseTreeListener):
 
         list_id = self.__listIdCounter[self.__cur_subtype]
 
-        sf = getSaveframe(self.__cur_subtype, list_id, self.__entryId, self.__originalFileName)
+        sf_framecode = 'AMBER_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
+
+        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
         lp = getLoop(self.__cur_subtype)
 
         sf.add_loop(lp)

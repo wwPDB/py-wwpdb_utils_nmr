@@ -23,6 +23,7 @@ try:
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
+                                                       getRow,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -50,6 +51,7 @@ except ImportError:
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
+                                           getRow,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -367,6 +369,10 @@ class GromacsMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 2:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -374,6 +380,12 @@ class GromacsMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}) "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                           '.', memberLogicCode,
+                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
         except ValueError:
             self.distRestraints -= 1

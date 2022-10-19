@@ -239,7 +239,6 @@ CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cc
 # 'prdc_restraint'
 # 'pang_restraint'
 # 'pccr_restraint'
-# 'hbond_restraint'
 # 'geo_restraint'
 
 NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
@@ -2527,6 +2526,9 @@ def getValidSubType(subtype):
     if subtype == 'hbond':
         return 'dist_restraint'
 
+    if subtype == 'ssbond':
+        return 'dist_restraint'
+
     if subtype == 'prdc':
         return 'rdc_restraints'
 
@@ -2606,6 +2608,8 @@ def getSaveframe(subtype, name, listId=None, entryId=None, fileName=None):
             sf.add_tag(tag_item_name, 'NOE')
         elif tag_item_name == 'Constraint_type' and subtype == 'hbond':
             sf.add_tag(tag_item_name, 'hydrogen bond')
+        elif tag_item_name == 'Constraint_type' and subtype == 'ssbond':
+            sf.add_tag(tag_item_name, 'disulfide bond')
         elif tag_item_name == 'Constraint_type' and subtype == 'RDC':
             sf.add_tag(tag_item_name, 'RDC')
         else:
@@ -2695,12 +2699,16 @@ def getRow(subtype, id, indexId, combinationId, memberLogicCode, listId, entryId
         row[key_size + 14] = atom1['atom_id']
         if hasKeyValue(atom1, 'atom_name'):
             row[key_size + 15] = atom1['atom_name']
+        elif hasKeyValue(atom1, 'auth_atom_id'):
+            row[key_size + 15] = atom1['atom_name']
         row[key_size + 16] = atom2['chain_id']
         row[key_size + 17] = atom2['seq_id']
         row[key_size + 18] = atom2['comp_id']
         row[key_size + 19] = atom2['atom_id']
         if hasKeyValue(atom2, 'atom_name'):
             row[key_size + 20] = atom2['atom_name']
+        if hasKeyValue(atom2, 'auth_atom_id'):
+            row[key_size + 20] = atom2['auth_atom_id']
 
     return row
 

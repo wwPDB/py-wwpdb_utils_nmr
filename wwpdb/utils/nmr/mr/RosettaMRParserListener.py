@@ -30,6 +30,7 @@ try:
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
+                                                       getRow,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -75,6 +76,7 @@ except ImportError:
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
+                                           getRow,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -313,6 +315,7 @@ class RosettaMRParserListener(ParseTreeListener):
         self.dihedRestraints = 0     # ROSETTA: Dihedral angle restraints
         self.rdcRestraints = 0       # ROSETTA: Residual dipolar coupling restraints
         self.geoRestraints = 0       # ROSETTA: Coordinate geometry restraints
+        self.ssbondRestraints = 0    # ROSETTA: Disulfide bond geometry restraints
 
         self.concat_resnum_chain_pat = re.compile(r'^(\d+)(\S+)$')
 
@@ -618,6 +621,10 @@ class RosettaMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             if self.__cur_nest is not None:
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
@@ -631,6 +638,12 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                           '.', memberLogicCode,
+                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
         finally:
             self.atomSelectionInComment.clear()
@@ -1064,6 +1077,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         atomSelection = []
 
+        authAtomId = atomId
+
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
@@ -1115,7 +1130,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 continue
 
             for cifAtomId in _atomId:
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
+                                      'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
                 self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
 
@@ -3240,7 +3256,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by RosettaMRParser#disulfide_bond_linkages.
     def enterDisulfide_bond_linkages(self, ctx: RosettaMRParser.Disulfide_bond_linkagesContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'geo'
+        self.__cur_subtype = 'ssbond'
 
     # Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkages.
     def exitDisulfide_bond_linkages(self, ctx: RosettaMRParser.Disulfide_bond_linkagesContext):
@@ -3248,7 +3264,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
     def enterDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):  # pylint: disable=unused-argument
-        self.geoRestraints += 1
+        self.ssbondRestraints += 1
 
         self.atomSelectionSet.clear()
 
@@ -3261,7 +3277,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 seqId1 = int(str(ctx.Integer(0)))
                 seqId2 = int(str(ctx.Integer(1)))
             except ValueError:
-                self.geoRestraints -= 1
+                self.ssbondRestraints -= 1
                 return
 
             if not self.__hasPolySeq:
@@ -3344,6 +3360,10 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     self.__lfh.write(f"+RosettaMRParserListener.exitDisulfide_bond_linkage() ++ Error  - {str(e)}\n")
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -3351,8 +3371,14 @@ class RosettaMRParserListener(ParseTreeListener):
                 if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
                     continue
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (CS-ROSETTA: disulfide bond linkage) id={self.geoRestraints} "
+                    print(f"subtype={self.__cur_subtype} (CS-ROSETTA: disulfide bond linkage) id={self.ssbondRestraints} "
                           f"atom1={atom1} atom2={atom2}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                           '.', memberLogicCode,
+                           sf['list_id'], self.__entryId, None, atom1, atom2)
 
         finally:
             self.atomSelectionSet.clear()
@@ -3398,6 +3424,8 @@ class RosettaMRParserListener(ParseTreeListener):
             return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
         if self.__cur_subtype == 'geo':
             return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "
+        if self.__cur_subtype == 'ssbond':
+            return f"[Check the {self.ssbondRestraints}th row of disulfide bond restraints] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -3413,6 +3441,8 @@ class RosettaMRParserListener(ParseTreeListener):
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.rdcRestraints)] = self.__preferAuthSeq
         elif self.__cur_subtype == 'geo':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'ssbond':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.ssbondRestraints)] = self.__preferAuthSeq
         if not self.__preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
@@ -3435,6 +3465,8 @@ class RosettaMRParserListener(ParseTreeListener):
             key = (self.__cur_subtype, self.rdcRestraints)
         elif self.__cur_subtype == 'geo':
             key = (self.__cur_subtype, self.geoRestraints)
+        elif self.__cur_subtype == 'ssbond':
+            key = (self.__cur_subtype, self.ssbondRestraints)
         else:
             return
 
@@ -3476,7 +3508,8 @@ class RosettaMRParserListener(ParseTreeListener):
                           'ang_restraint': self.angRestraints,
                           'dihed_restraint': self.dihedRestraints,
                           'rdc_restraint': self.rdcRestraints,
-                          'geo_restraint': self.geoRestraints
+                          'geo_restraint': self.geoRestraints,
+                          'ssbond_restraint': self.ssbondRestraints
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}

@@ -251,7 +251,7 @@ class CnsMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = ''
     __with_axis = False
-    __cur_atom_name = ''
+    __cur_auth_atom_id = ''
 
     # vector statement
     __cur_vector_mode = ''
@@ -1016,10 +1016,12 @@ class CnsMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf()
                 sf['id'] += 1
-                combinationId = '.' if len(self.atomSelectionSet) == 2 else 0
+                if len(self.atomSelectionSet) > 2:
+                    combinationId = 0
 
             for i in range(0, len(self.atomSelectionSet), 2):
                 if isinstance(combinationId, int):
@@ -3434,11 +3436,11 @@ class CnsMRParserListener(ParseTreeListener):
             self.__retrieveLocalSeqScheme()
 
         if 'atom_id' in _factor and len(_factor['atom_id']) == 1:
-            self.__cur_atom_name = _factor['atom_id'][0]
+            self.__cur_auth_atom_id = _factor['atom_id'][0]
         elif 'atom_ids' in _factor and len(_factor['atom_ids']) == 1:
-            self.__cur_atom_name = _factor['atom_ids'][0]
+            self.__cur_auth_atom_id = _factor['atom_ids'][0]
         else:
-            self.__cur_atom_name = ''
+            self.__cur_auth_atom_id = ''
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
@@ -4304,8 +4306,8 @@ class CnsMRParserListener(ParseTreeListener):
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId}
-                                        if len(self.__cur_atom_name) > 0:
-                                            selection['atom_name'] = self.__cur_atom_name
+                                        if len(self.__cur_auth_atom_id) > 0:
+                                            selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         _atomSelection.append(selection)
                                 else:
                                     ccdCheck = True
@@ -4335,8 +4337,8 @@ class CnsMRParserListener(ParseTreeListener):
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
-                                        if len(self.__cur_atom_name) > 0:
-                                            selection['atom_name'] = self.__cur_atom_name
+                                        if len(self.__cur_auth_atom_id) > 0:
+                                            selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         _atomSelection.append(selection)
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             if self.__cur_subtype != 'plane' and coordAtomSite is not None:

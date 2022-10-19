@@ -877,6 +877,8 @@ def concat_nmr_restraint_names(content_subtype):
             subtype_name += "Planarity restraints, "
         if k == 'hbond_restraint':
             subtype_name += "Hydrogen bond restraints, "
+        if k == 'ssbond_restraint':
+            subtype_name += "Disulfide bond restraints, "
         if k == 'adist_restraint':
             subtype_name += "Anti-distance restraints, "
         if k == 'jcoup_restraint':
@@ -9266,6 +9268,7 @@ class NmrDpUtility:
                                 has_rdc_restraint = 'rdc_restraint' in content_subtype
                                 has_plane_restraint = 'plane_restraint' in content_subtype
                                 has_hbond_restraint = 'hbond_restraint' in content_subtype
+                                has_ssbond_restraint = 'ssbond_restraint' in content_subtype
 
                                 if file_type == 'nm-res-cya' and has_dist_restraint:
                                     ar['dist_type'] = listener.getTypeOfDistanceRestraints()
@@ -9287,7 +9290,7 @@ class NmrDpUtility:
                     self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMR() ++ Error  - {str(e)}\n")
 
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
-                    and not has_plane_restraint and not has_hbond_restraint:
+                    and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint:
 
                 if not is_aux_amb and not is_aux_gro:
                     err = f"The {mr_format_name} restraint file includes coordinates. "\
@@ -9306,7 +9309,7 @@ class NmrDpUtility:
                 has_chem_shift = False
 
             elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint and not has_dihed_restraint\
-                    and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint:
+                    and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint:
 
                 if has_rdc_origins:
 
@@ -9364,6 +9367,7 @@ class NmrDpUtility:
                                    'rdc_restraint': 1 if has_rdc_restraint else 0,
                                    'plane_restraint': 1 if has_plane_restraint else 0,
                                    'hbond_restraint': 1 if has_hbond_restraint else 0,
+                                   'ssbond_restraint': 1 if has_ssbond_restraint else 0,
                                    'coordinate': 1 if has_coordinate else 0,
                                    'topology': 1 if has_topology else 0}
             else:
@@ -9377,9 +9381,11 @@ class NmrDpUtility:
                     has_plane_restraint = True
                 if 'hbond_restraint' in content_subtype:
                     has_hbond_restraint = True
+                if 'ssbond_restraint' in content_subtype:
+                    has_ssbond_restraint = True
 
             if not is_aux_amb and not is_aux_gro and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
-               and not has_plane_restraint and not has_hbond_restraint and not valid:
+               and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint and not valid:
 
                 hint = ""
                 if len(concat_nmr_restraint_names(content_subtype)) == 0:
@@ -9416,6 +9422,8 @@ class NmrDpUtility:
                     subtype_name += "Planarity restraints, "
                 if has_hbond_restraint:
                     subtype_name += "Hydrogen bond restraints, "
+                if has_ssbond_restraint:
+                    subtype_name += "Disulfide bond restraints, "
                 if has_amb_inpcrd:
                     subtype_name += "AMBER restart coordinates (aka. .crd or .rst file), "
 
@@ -9454,6 +9462,8 @@ class NmrDpUtility:
                     subtype_name += "Planarity restraints, "
                 if has_hbond_restraint:
                     subtype_name += "Hydrogen bond restraints, "
+                if has_ssbond_restraint:
+                    subtype_name += "Disulfide bond restraints, "
 
                 if len(subtype_name) > 0:
                     subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"

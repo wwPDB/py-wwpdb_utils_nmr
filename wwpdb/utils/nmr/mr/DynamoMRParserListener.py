@@ -28,6 +28,7 @@ try:
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
+                                                       getRow,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -75,6 +76,7 @@ except ImportError:
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
+                                           getRow,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -629,6 +631,10 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -638,6 +644,12 @@ class DynamoMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}, group={group}) "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                           '.', memberLogicCode,
+                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
         except ValueError:
             self.distRestraints -= 1
@@ -744,11 +756,21 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}, group={group}) "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                           '.', memberLogicCode,
+                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
         except ValueError:
             self.distRestraints -= 1
@@ -856,11 +878,21 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}, group={group}) "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                           '.', memberLogicCode,
+                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
         except ValueError:
             self.distRestraints -= 1
@@ -1245,6 +1277,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
         atomSelection = []
 
+        authAtomId = atomId
+
         _atomId = atomId
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
@@ -1300,7 +1334,8 @@ class DynamoMRParserListener(ParseTreeListener):
                 continue
 
             for cifAtomId in _atomId:
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
+                                      'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
                 self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, index, group)
 

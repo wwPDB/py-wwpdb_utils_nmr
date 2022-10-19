@@ -28,6 +28,7 @@ try:
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
+                                                       getRow,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -81,6 +82,7 @@ except ImportError:
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
+                                           getRow,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -389,6 +391,7 @@ class CyanaMRParserListener(ParseTreeListener):
         self.jcoupRestraints = 0     # CYANA: Scalar coupling constant restraint file (.cco)
         self.geoRestraints = 0       # CYANA: Coordinate geometry restraints
         self.hbondRestraints = 0     # CYANA: Hydrogen bond geometry restraints
+        self.ssbondRestraints = 0    # CYANA: Disulfide bond geometry restraints
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -904,6 +907,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -913,6 +920,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                               '.', memberLogicCode,
+                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
             else:  # cco
 
@@ -1272,6 +1285,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -1281,6 +1298,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                               '.', memberLogicCode,
+                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
             else:  # cco
 
@@ -2340,6 +2363,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         atomSelection = []
 
+        authAtomId = atomId
+
         _atomId = atomId
 
         if compId is not None:
@@ -2451,7 +2476,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 continue
 
             for cifAtomId in _atomId:
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
+                                      'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
                 self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
 
@@ -3647,6 +3673,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -3656,6 +3686,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                               '.', memberLogicCode,
+                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
                 if num_col > 0:
                     self.distRestraints += 1
@@ -3852,6 +3888,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -3861,6 +3901,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                               '.', memberLogicCode,
+                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
                 if num_col > 0:
                     self.distRestraints += 1
@@ -3998,6 +4044,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -4007,6 +4057,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                               '.', memberLogicCode,
+                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
                 if num_col > 0:
                     self.distRestraints += 1
@@ -4154,6 +4210,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -4163,6 +4223,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                               '.', memberLogicCode,
+                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
                 if num_col > 0:
                     self.distRestraints += 1
@@ -4359,6 +4425,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -4368,6 +4438,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                               '.', memberLogicCode,
+                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
                 if num_col > 0:
                     self.distRestraints += 1
@@ -4505,6 +4581,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -4514,6 +4594,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                        getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                               '.', memberLogicCode,
+                               sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
                 if num_col > 0:
                     self.distRestraints += 1
@@ -4603,6 +4689,10 @@ class CyanaMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -4612,6 +4702,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                           '.', memberLogicCode,
+                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
         except ValueError:
             self.distRestraints -= 1
@@ -4941,11 +5037,21 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 2:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                           '.', memberLogicCode,
+                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
 
         except ValueError:
             self.distRestraints -= 1
@@ -5482,7 +5588,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#ssbond_macro.
     def enterSsbond_macro(self, ctx: CyanaMRParser.Ssbond_macroContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'geo'
+        self.__cur_subtype = 'ssbond'
 
         self.atomSelectionSet.clear()
 
@@ -5491,13 +5597,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
         try:
 
-            self.geoRestraints += 1
+            self.ssbondRestraints += 1
 
             try:
                 _seqId1, _seqId2 = str(ctx.Ssbond_resids()).split('-')
                 seqId1, seqId2 = int(_seqId1), int(_seqId2)
             except ValueError:
-                self.geoRestraints -= 1
+                self.ssbondRestraints -= 1
                 return
 
             if not self.__hasPolySeq:
@@ -5524,14 +5630,14 @@ class CyanaMRParserListener(ParseTreeListener):
                 if atom1['comp_id'] != 'CYS':
                     self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
                         f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
-                    self.geoRestraints -= 1
+                    self.ssbondRestraints -= 1
                     return
 
             for atom2 in self.atomSelectionSet[1]:
                 if atom2['comp_id'] != 'CYS':
                     self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
                         f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
-                    self.geoRestraints -= 1
+                    self.ssbondRestraints -= 1
                     return
 
             chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -5592,7 +5698,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if has_inter_chain and atom1['chain_id'] != atom2['chain_id']:
                     continue
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (CYANA macro: disulfide bond linkage) id={self.geoRestraints} "
+                    print(f"subtype={self.__cur_subtype} (CYANA macro: disulfide bond linkage) id={self.ssbondRestraints} "
                           f"atom1={atom1} atom2={atom2}")
 
         finally:
@@ -6003,7 +6109,9 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'geo':
             return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "
         if self.__cur_subtype == 'hbond':
-            return f"[Check the {self.geoRestraints}th row of hydrogen bond restraints] "
+            return f"[Check the {self.hbondRestraints}th row of hydrogen bond restraints] "
+        if self.__cur_subtype == 'ssbond':
+            return f"[Check the {self.ssbondRestraints}th row of disulfide bond restraints] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -6021,8 +6129,12 @@ class CyanaMRParserListener(ParseTreeListener):
             self.reasonsForReParsing['loca_seq_scheme'][(self.__cur_subtype, self.noepkRestraints)] = self.__preferAuthSeq
         elif self.__cur_subtype == 'jcoup':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.jcoupRestraints)] = self.__preferAuthSeq
-        elif self.__cur_subtype in ('geo', 'hbond'):
+        elif self.__cur_subtype == 'geo':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'hbond':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.hbondRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'ssbond':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.ssbondRestraints)] = self.__preferAuthSeq
         if not self.__preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
@@ -6047,8 +6159,12 @@ class CyanaMRParserListener(ParseTreeListener):
             key = (self.__cur_subtype, self.noepkRestraints)
         elif self.__cur_subtype == 'jcoup':
             key = (self.__cur_subtype, self.jcoupRestraints)
-        elif self.__cur_subtype in ('geo', 'hbond'):
+        elif self.__cur_subtype == 'geo':
             key = (self.__cur_subtype, self.geoRestraints)
+        elif self.__cur_subtype == 'hbond':
+            key = (self.__cur_subtype, self.hbondRestraints)
+        elif self.__cur_subtype == 'ssbond':
+            key = (self.__cur_subtype, self.ssbondRestraints)
         else:
             return
 
@@ -6093,7 +6209,8 @@ class CyanaMRParserListener(ParseTreeListener):
                           'noepk_restraint': self.noepkRestraints,
                           'jcoup_restraint': self.jcoupRestraints,
                           'geo_restraint': self.geoRestraints,
-                          'hbond_restraint': self.hbondRestraints
+                          'hbond_restraint': self.hbondRestraints,
+                          'ssbond_restraint': self.ssbondRestraints
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}

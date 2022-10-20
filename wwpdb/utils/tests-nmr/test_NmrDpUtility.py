@@ -31,7 +31,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def tearDown(self):
         pass
-    """
+
     def test_init(self):
         nmr_content_subtypes = set(self.utility.nmr_content_subtypes)
 
@@ -97,13 +97,13 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + '2l9rnonstandard-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
-    """
+
     def test_nmr_nef_consistency_check_no_distance(self):
         self.utility.setSource(self.data_dir_path + '2l9r-no-distance.nef')
         self.utility.setLog(self.data_dir_path + '2l9rnodistance-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
-    """
+
     def test_nmr_nef_consistency_check_former_nef(self):
         self.utility.setSource(self.data_dir_path + '2l9rold.nef')
         self.utility.setLog(self.data_dir_path + '2l9rold-nef-consistency-log.json')
@@ -325,7 +325,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-nef2str-deposit')
-    """
+
     def test_nmr_nef2str_deposit_no_distance(self):
         if not os.access(self.data_dir_path + '2l9rnodistance-nef-consistency-log.json', os.F_OK):
             self.test_nmr_nef_consistency_check_no_distance()
@@ -341,7 +341,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-nef2str-deposit')
-    """
+
     def test_nmr_str2str_deposit_bmrb_merged(self):
         self.utility.setSource(self.data_dir_path + 'merged_30562_6nox.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '6nox.cif', type='file')
@@ -435,7 +435,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-str2str-deposit')
-    """
+
 
 if __name__ == '__main__':
     unittest.main()

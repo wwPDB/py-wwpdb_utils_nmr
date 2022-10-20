@@ -873,6 +873,10 @@ class CyanaMRParserListener(ParseTreeListener):
                             if dstFunc is None:
                                 return
 
+                            if self.__createSfDict:
+                                sf = self.__getSf()
+                                sf['id'] += 1
+
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
                                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -880,6 +884,12 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                                if self.__createSfDict and sf is not None:
+                                    sf['index_id'] += 1
+                                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                                 '.', None,
+                                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                    sf['loop'].add_data(row)
 
                             self.__cur_subtype = 'dist'
 
@@ -1271,6 +1281,10 @@ class CyanaMRParserListener(ParseTreeListener):
                             if dstFunc is None:
                                 return
 
+                            if self.__createSfDict:
+                                sf = self.__getSf()
+                                sf['id'] += 1
+
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
                                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -1278,6 +1292,12 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                                if self.__createSfDict and sf is not None:
+                                    sf['index_id'] += 1
+                                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                                 '.', None,
+                                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                    sf['loop'].add_data(row)
 
                             self.__cur_subtype = 'dist'
 
@@ -3266,6 +3286,10 @@ class CyanaMRParserListener(ParseTreeListener):
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -3273,6 +3297,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None,
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                    sf['loop'].add_data(row)
 
         except ValueError:
             self.rdcRestraints -= 1
@@ -5027,6 +5057,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         if dstFunc is None:
                             return
 
+                        if self.__createSfDict:
+                            sf = self.__getSf()
+                            sf['id'] += 1
+
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                               self.atomSelectionSet[1]):
                             if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -5034,6 +5068,12 @@ class CyanaMRParserListener(ParseTreeListener):
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                                       f"atom1={atom1} atom2={atom2} {dstFunc}")
+                            if self.__createSfDict and sf is not None:
+                                sf['index_id'] += 1
+                                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                             '.', None,
+                                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                sf['loop'].add_data(row)
 
                         self.__cur_subtype = 'dist'
 

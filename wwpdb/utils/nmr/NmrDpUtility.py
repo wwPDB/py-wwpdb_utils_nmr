@@ -5292,6 +5292,9 @@ class NmrDpUtility:
                                 del d['default-from']
 
             self.__nefT.set_remediation_mode(True)
+            self.__nefT.allow_missing_dist_restraint(True)
+
+            self.__allow_missing_dist_restraint = self.__allow_missing_legacy_dist_restraint = True
 
         self.__release_mode = 'release' in op
 

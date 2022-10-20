@@ -766,7 +766,12 @@ class XplorMRParserListener(ParseTreeListener):
         self.scale = 1.0
 
         if self.__createSfDict:
-            self.__addSf()
+            if ctx.VeAngle():
+                self.__cur_subtype = 'dihed'
+                self.__addSf('intervector angle determined by RDC')
+                self.__cur_subtype = 'rdc'
+            else:
+                self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
@@ -2033,6 +2038,12 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None,
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                    sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()
@@ -2404,6 +2415,12 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XDIP) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None,
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                    sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()
@@ -2568,9 +2585,15 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit_2 = center_2 - range_2
             upper_limit_2 = center_2 + range_2
 
-            dstFunc = self.validateAngleRange2(1.0,
+            dstFunc = self.validateAngleRange2(self.scale,
                                                target_value_1, lower_limit_1, upper_limit_1,
                                                target_value_2, lower_limit_2, upper_limit_2)
+
+            if self.__createSfDict:
+                dstFunc1 = self.validateAngleRange(self.scale, {'potential': self.potential},
+                                                   target_value_1, lower_limit_1, upper_limit_2)
+                dstFunc2 = self.validateAngleRange(self.scale, {'potential': self.potential},
+                                                   target_value_2, lower_limit_2, upper_limit_2)
 
             if dstFunc is None:
                 return
@@ -2652,7 +2675,9 @@ class XplorMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                self.__cur_subtype = 'dihed'
+                sf = self.__getSf('intervector angle determined by RDC')
+                self.__cur_subtype = 'rdc'
                 sf['id'] += 1
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -2665,6 +2690,19 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (VEAN) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    self.__cur_subtype = 'dihed'
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 1, 'VEAN',
+                                 sf['list_id'], self.__entryId, dstFunc1, atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 2, 'VEAN',
+                                 sf['list_id'], self.__entryId, dstFunc2, atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
+                    self.__cur_subtype = 'rdc'
 
         finally:
             self.numberSelection.clear()
@@ -2912,6 +2950,12 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (TENSO) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None,
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                    sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()
@@ -3059,10 +3103,6 @@ class XplorMRParserListener(ParseTreeListener):
                                 "Found an RDC vector over multiple covalent bonds in the 'ANISotropy' statement; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                             return
-
-            if self.__createSfDict:
-                sf = self.__getSf()
-                sf['id'] += 1
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -10793,7 +10833,7 @@ class XplorMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self):
+    def __addSf(self, constraintType=None):
         _subtype = getValidSubType(self.__cur_subtype)
 
         if _subtype is None:
@@ -10811,7 +10851,8 @@ class XplorMRParserListener(ParseTreeListener):
         sf_framecode = ('XPLOR-NIH/CNS' if self.__remediate and self.__cur_subtype in cns_compatible_types else 'XPLOR-NIH')\
             + '_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
-        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
+        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
+                          constraintType)
         lp = getLoop(self.__cur_subtype)
 
         sf.add_loop(lp)
@@ -10819,9 +10860,9 @@ class XplorMRParserListener(ParseTreeListener):
         self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
                                                 'id': 0, 'index_id': 0})
 
-    def __getSf(self):
+    def __getSf(self, constraintType=None):
         if self.__cur_subtype not in self.sfDict:
-            self.__addSf()
+            self.__addSf(constraintType)
 
         return self.sfDict[self.__cur_subtype][-1]
 

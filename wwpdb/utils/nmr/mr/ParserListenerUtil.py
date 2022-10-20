@@ -667,11 +667,11 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                         'coexist-with': None,  # ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                         'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                         'larger-than': None}},
-                                             {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
-                                                      'range': DIST_RESTRAINT_RANGE},
                                              {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
                                               'range': WEIGHT_RANGE},
                                              # 'enforce-non-zero': True},
+                                             {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
+                                                      'range': DIST_RESTRAINT_RANGE},
                                              {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                              {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                              {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -764,9 +764,6 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                           'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                             {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                              'enforce-non-zero': True},
-                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
-                                             'range': WEIGHT_RANGE},
-                                            # 'enforce-non-zero': True},
                                             {'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                              'range': RDC_RESTRAINT_RANGE,
                                              'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
@@ -799,6 +796,9 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                        'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                        'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                        'larger-than': None}},
+                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
+                                             'range': WEIGHT_RANGE},
+                                            # 'enforce-non-zero': True},
                                             {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
                                              'range': RDC_RESTRAINT_RANGE},
                                             {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
@@ -2628,7 +2628,7 @@ def incListIdCounter(subtype, listIdCounter):
 
 
 def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None, constraintType=None):
-    """ Return pynmrstar saveframe for a given internal content subtype and name.
+    """ Return pynmrstar saveframe for a given internal content subtype.
         @return: pynmrstar saveframe
     """
 
@@ -2650,8 +2650,6 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, NMR_STAR_SF_CATEGORIES[_subtype])
         elif tag_item_name == 'Sf_framecode':
             sf.add_tag(tag_item_name, sf_framecode)
-        elif tag_item_name == 'Data_file_name' and fileName is not None:
-            sf.add_tag(tag_item_name, fileName)
         elif tag_item_name == 'ID' and listId is not None:
             sf.add_tag(tag_item_name, listId)
         elif tag_item_name == 'Entry_ID' and entryId is not None:
@@ -2665,7 +2663,7 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
         elif tag_item_name == 'Constraint_type' and subtype == 'ssbond':
             sf.add_tag(tag_item_name, 'disulfide bond')
         elif tag_item_name == 'Constraint_type' and constraintType is not None:
-           sf.add_tag(tag_item_name, constraintType) 
+            sf.add_tag(tag_item_name, constraintType)
         elif tag_item_name == 'Constraint_type' and subtype == 'RDC':
             sf.add_tag(tag_item_name, 'RDC')
         else:
@@ -2701,7 +2699,7 @@ def getLoop(subtype):
 
 
 def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, atom1, atom2, atom3=None, atom4=None):
-    """ Return row data for a distance restraint.
+    """ Return row data for a given restraint.
         @return: data array
     """
 
@@ -2717,14 +2715,15 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
 
     row[0] = id
 
+    row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+    row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+    row[key_size] = indexId
+
     row[-2] = listId
     row[-1] = entryId
 
     if subtype == 'dist':
-        row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-
-        row[key_size] = indexId
         row[key_size + 1] = combinationId
         if isinstance(combinationId, int):
             row[key_size + 2] = code
@@ -2740,9 +2739,9 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             row[key_size + 7] = dstFunc['upper_limit']
         if hasKeyValue(dstFunc, 'upper_linear_limit'):
             row[key_size + 8] = dstFunc['upper_linear_limit']
-        # Distance_val
         if hasKeyValue(dstFunc, 'weight'):
-            row[key_size + 10] = dstFunc['weight']
+            row[key_size + 9] = dstFunc['weight']
+        # Distance val
 
         row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
@@ -2754,12 +2753,9 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             row[key_size + 20] = atom2['auth_atom_id']
 
     elif subtype == 'dihed':
-        row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         row[9], row[10], row[11], row[12] = atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
         row[13], row[14], row[15], row[16] = atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
 
-        row[key_size] = indexId
         # row[key_size + 1] = combinationId
         row[key_size + 2] = code
         if hasKeyValue(dstFunc, 'target_value'):
@@ -2793,6 +2789,36 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
         if hasKeyValue(atom4, 'auth_atom_id'):
             row[key_size + 29] = atom4['auth_atom_id']
+
+    elif subtype == 'rdc':
+        # row[key_size + 1] = combinationId
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size + 2] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+            row[key_size + 3] = dstFunc['target_value_uncertainty']
+        if hasKeyValue(dstFunc, 'lower_linear_limit'):
+            row[key_size + 4] = dstFunc['lower_linear_limit']
+        if hasKeyValue(dstFunc, 'lower_limit'):
+            row[key_size + 5] = dstFunc['lower_limit']
+        if hasKeyValue(dstFunc, 'upper_limit'):
+            row[key_size + 6] = dstFunc['upper_limit']
+        if hasKeyValue(dstFunc, 'upper_linear_limit'):
+            row[key_size + 7] = dstFunc['upper_linear_limit']
+        if hasKeyValue(dstFunc, 'weight'):
+            row[key_size + 8] = dstFunc['weight']
+        # Rdc_val
+        # Rdc_val_err
+        # RDC_val_scale_factor
+        # RDC_distance_depedent
+
+        row[key_size + 13], row[key_size + 14], row[key_size + 15], row[key_size + 16] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if hasKeyValue(atom1, 'auth_atom_id'):
+            row[key_size + 17] = atom1['auth_atom_id']
+        row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if hasKeyValue(atom2, 'auth_atom_id'):
+            row[key_size + 22] = atom2['auth_atom_id']
 
     return row
 

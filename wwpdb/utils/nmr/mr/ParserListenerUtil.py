@@ -2520,51 +2520,51 @@ def getRestraintName(subtype):
     """ Return human-readable restraint name for a given internal content subtype.
     """
 
-    if subtype == 'dist':
+    if subtype.startswith('dist'):
         return "Distance restraints"
-    if subtype == 'dihed':
+    if subtype.startswith('dihed'):
         return "Dihedral angle restraints"
-    if subtype == 'rdc':
+    if subtype.startswith('rdc'):
         return "RDC restraints"
-    if subtype == 'plane':
+    if subtype.startswith('plane'):
         return "Planarity restraints"
-    if subtype == 'hbond':
+    if subtype.startswith('hbond'):
         return "Hydrogen bond restraints"
-    if subtype == 'ssbond':
+    if subtype.startswith('ssbond'):
         return "Disulfide bond restraints"
-    if subtype == 'adist':
+    if subtype.startswith('adist'):
         return "Anti-distance restraints"
-    if subtype == 'jcoup':
+    if subtype.startswith('jcoup'):
         return "Scalar J-coupling restraints"
-    if subtype == 'hvycs':
+    if subtype.startswith('hvycs'):
         return "Carbon chemical shift restraints"
-    if subtype == 'procs':
+    if subtype.startswith('procs'):
         return "Proton chemical shift restraints"
-    if subtype == 'rama':
+    if subtype.startswith('rama'):
         return "Dihedral angle database restraints"
-    if subtype == 'radi':
+    if subtype.startswith('radi'):
         return "Radius of gyration restraints"
-    if subtype == 'diff':
+    if subtype.startswith('diff'):
         return "Diffusion anisotropy restraints"
-    if subtype == 'nbase':
+    if subtype.startswith('nbase'):
         return "Nucleic acid base orientation database restraints"
-    if subtype == 'csa':
+    if subtype.startswith('csa'):
         return "CSA restraints"
-    if subtype == 'ang':
+    if subtype.startswith('ang'):
         return "Angle database restraints"
-    if subtype == 'pre':
+    if subtype.startswith('pre'):
         return "PRE restraints"
-    if subtype == 'pcs':
+    if subtype.startswith('pcs'):
         return "PCS restraints, "
-    if subtype == 'prdc':
+    if subtype.startswith('prdc'):
         return "Paramagnetic RDC restraints"
-    if subtype == 'pang':
+    if subtype.startswith('pang'):
         return "Paramagnetic orientation restraints"
-    if subtype == 'pccr':
+    if subtype.startswith('pccr'):
         return "Paramagnetic CCR restraints"
-    if subtype == 'geo':
+    if subtype.startswith('geo'):
         return "Coordinate geometry restraints"
-    if subtype == 'noepk':
+    if subtype.startswith('noepk'):
         return "NOESY peak volume restraints"
 
     raise KeyError(f'Internal subtype {subtype!r} is not defined.')

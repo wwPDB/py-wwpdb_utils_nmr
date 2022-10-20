@@ -87,6 +87,7 @@
 # 04-Jul-2022  M. Yokochi - add support for old XPLOR atom nomenclature, i.e. 1HB (v3.1.4, NMR restraint remediation)
 # 01-Sep-2022  M. Yokochi - fix NEF atom name conversion for excess wild card (v3.1.5, NMR restraint remediation)
 # 09-Sep-2022  M. Yokochi - add support for NEF atom name conversion starting with wild card, i.e. '%HN' (v3.2.0, NMR restraint remediation)
+# 20-Oct-2022  M. Yokochi - allow missing distance restraints via allow_missing_dist_restraint(bool) (v3.2.1, DAOTHER-8088 1.b, 8108)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -118,7 +119,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            ALLOWED_AMBIGUITY_CODES)
 
-__version__ = '3.2.0'
+__version__ = '3.3.1'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -577,6 +578,8 @@ class NEFTranslator:
 
         # whether to enable remediation routine
         self.__remediation_mode = False
+        # whether allow missing distance restraints
+        self.__allow_missing_dist_restraint = False
 
         libDirPath = os.path.dirname(__file__) + '/lib/'
 
@@ -623,11 +626,17 @@ class NEFTranslator:
         self.__cachedDictForStarAtom = {}
         self.__cachedDictForNefAtom = {}
 
-    def set_remediation(self, flag):
+    def set_remediation_mode(self, flag):
         """ Set remediation mode.
         """
 
         self.__remediation_mode = flag
+
+    def allow_missing_dist_restraint(self, flag):
+        """ Whether allow missing distance restraint.
+        """
+
+        self.__allow_missing_dist_restraint = flag
 
     def load_csv_data(self, csv_file, transpose=False):
         """ Load CSV data to list.
@@ -840,6 +849,19 @@ class NEFTranslator:
                                               'chem_shift_perturbation', 'auto_relaxation',
                                               'dipole_CSA_cross_correlations', 'dipole_dipole_cross_correlations',
                                               'other_data_types']
+
+                if self.__allow_missing_dist_restraint:
+                    minimal_lp_category_nef_a = ['_nef_chemical_shift']
+                    minimal_lp_category_nef_r = ['']
+
+                    minimal_lp_category_star_a = ['_Atom_chem_shift']
+                    minimal_lp_category_star_r = []
+
+                    minimal_sf_category_nef_a = ['nef_chemical_shift_list']
+                    minimal_sf_category_nef_r = []
+
+                    minimal_sf_category_star_a = ['assigned_chemical_shifts']
+                    minimal_sf_category_star_r = []
 
                 sf_list, lp_list = self.get_inventory_list(star_data, data_type)
 

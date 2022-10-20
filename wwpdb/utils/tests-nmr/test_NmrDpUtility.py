@@ -13,6 +13,7 @@
 # 24-Aug-2021  M. Yokochi - add support for XPLOR-NIH planarity restraints (DAOTHER-7265)
 # 27-Jan-2022  M. Yokochi - add restraint types described by XPLOR-NIH, CNS, CYANA, and AMBER systems (NMR restraint remediation)
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraint (DAOTHER-7690, NMR restraint remediation)
+# 20-Oct-2022  M. Yokochi - add support for CYANA/ROSETTA disulfide bond restraint (NMR restraint remediation)
 #
 import unittest
 import os
@@ -30,7 +31,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def tearDown(self):
         pass
-
+    """
     def test_init(self):
         nmr_content_subtypes = set(self.utility.nmr_content_subtypes)
 
@@ -47,7 +48,7 @@ class TestNmrDpUtility(unittest.TestCase):
                             'rama_restraint', 'radi_restraint', 'diff_restraint',
                             'nbase_restraint', 'ang_restraint', 'pre_restraint',
                             'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
-                            'hbond_restraint', 'geo_restraint',
+                            'hbond_restraint', 'ssbond_restraint', 'geo_restraint',
                             'coordinate', 'branch', 'non_poly', 'topology'})
 
         # data directory exists
@@ -96,7 +97,13 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + '2l9rnonstandard-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
+    """
+    def test_nmr_nef_consistency_check_no_distance(self):
+        self.utility.setSource(self.data_dir_path + '2l9r-no-distance.nef')
+        self.utility.setLog(self.data_dir_path + '2l9rnodistance-nef-consistency-log.json')
 
+        self.utility.op('nmr-nef-consistency-check')
+    """
     def test_nmr_nef_consistency_check_former_nef(self):
         self.utility.setSource(self.data_dir_path + '2l9rold.nef')
         self.utility.setLog(self.data_dir_path + '2l9rold-nef-consistency-log.json')
@@ -318,7 +325,23 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-nef2str-deposit')
+    """
+    def test_nmr_nef2str_deposit_no_distance(self):
+        if not os.access(self.data_dir_path + '2l9rnodistance-nef-consistency-log.json', os.F_OK):
+            self.test_nmr_nef_consistency_check_no_distance()
 
+        self.utility.setSource(self.data_dir_path + '2l9r-no-distance.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2l9rnodistance-nef-consistency-log.json', type='file')
+        self.utility.setLog(self.data_dir_path + '2l9rnodistance-nef2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + '2l9r-no-distance-next.nef')
+        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2l9r-no-distance-nef2str.str', type='file')
+        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + '2l9rnodistance-nef2str-str-deposit-log.json', type='file')
+        self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-nef2str-deposit')
+    """
     def test_nmr_str2str_deposit_bmrb_merged(self):
         self.utility.setSource(self.data_dir_path + 'merged_30562_6nox.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '6nox.cif', type='file')
@@ -412,7 +435,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-str2str-deposit')
-
+    """
 
 if __name__ == '__main__':
     unittest.main()

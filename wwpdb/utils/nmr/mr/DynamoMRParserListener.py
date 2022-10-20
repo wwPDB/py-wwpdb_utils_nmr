@@ -1643,7 +1643,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf('backbone chemical shifts')
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1751,7 +1751,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf('backbone chemical shifts')
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1859,7 +1859,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf('backbone chemical shifts')
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -3259,7 +3259,7 @@ class DynamoMRParserListener(ParseTreeListener):
                         return
 
                     if self.__createSfDict:
-                        sf = self.__getSf()
+                        sf = self.__getSf('backbone chemical shifts')
                         sf['id'] += 1
 
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -3433,7 +3433,7 @@ class DynamoMRParserListener(ParseTreeListener):
                         return
 
                     if self.__createSfDict:
-                        sf = self.__getSf()
+                        sf = self.__getSf('backbone chemical shifts')
                         sf['id'] += 1
 
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -3522,7 +3522,7 @@ class DynamoMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self):
+    def __addSf(self, constraintType=None):
         _subtype = getValidSubType(self.__cur_subtype)
 
         if _subtype is None:
@@ -3537,7 +3537,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
         sf_framecode = 'DYNAMO/PALES/TALOS_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
-        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
+        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
+                          constraintType)
         lp = getLoop(self.__cur_subtype)
 
         sf.add_loop(lp)
@@ -3545,9 +3546,9 @@ class DynamoMRParserListener(ParseTreeListener):
         self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
                                                 'id': 0, 'index_id': 0})
 
-    def __getSf(self):
+    def __getSf(self, constraintType=None):
         if self.__cur_subtype not in self.sfDict:
-            self.__addSf()
+            self.__addSf(constraintType)
 
         return self.sfDict[self.__cur_subtype][-1]
 

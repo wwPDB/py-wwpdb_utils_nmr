@@ -2627,7 +2627,7 @@ def incListIdCounter(subtype, listIdCounter):
     return listIdCounter
 
 
-def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None):
+def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None, constraintType=None):
     """ Return pynmrstar saveframe for a given internal content subtype and name.
         @return: pynmrstar saveframe
     """
@@ -2664,6 +2664,8 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, 'hydrogen bond')
         elif tag_item_name == 'Constraint_type' and subtype == 'ssbond':
             sf.add_tag(tag_item_name, 'disulfide bond')
+        elif tag_item_name == 'Constraint_type' and constraintType is not None:
+           sf.add_tag(tag_item_name, constraintType) 
         elif tag_item_name == 'Constraint_type' and subtype == 'RDC':
             sf.add_tag(tag_item_name, 'RDC')
         else:

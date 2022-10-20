@@ -1613,6 +1613,10 @@ class RosettaMRParserListener(ParseTreeListener):
         if not self.areUniqueCoordAtoms('a Dihedral angle'):
             return
 
+        if self.__createSfDict:
+            sf = self.__getSf()
+            sf['id'] += 1
+
         compId = self.atomSelectionSet[0][0]['comp_id']
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1631,6 +1635,12 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                             '.', angleName,
+                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                sf['loop'].add_data(row)
 
     # Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
     def enterDihedral_pair_restraints(self, ctx: RosettaMRParser.Dihedral_pair_restraintsContext):  # pylint: disable=unused-argument
@@ -1707,6 +1717,10 @@ class RosettaMRParserListener(ParseTreeListener):
         if not self.areUniqueCoordAtoms('a Dihedral angle pair'):
             return
 
+        if self.__createSfDict:
+            sf = self.__getSf()
+            sf['id'] += 1
+
         compId = self.atomSelectionSet[0][0]['comp_id']
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1725,6 +1739,12 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                             1, angleName,
+                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                sf['loop'].add_data(row)
 
         compId = self.atomSelectionSet[4][0]['comp_id']
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
@@ -1740,6 +1760,12 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                       f"atom5={atom1} atom6={atom2} atom7={atom3} atom8={atom4} {dstFunc}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                             2, angleName,
+                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                sf['loop'].add_data(row)
 
     # Enter a parse tree produced by RosettaMRParser#coordinate_restraints.
     def enterCoordinate_restraints(self, ctx: RosettaMRParser.Coordinate_restraintsContext):  # pylint: disable=unused-argument

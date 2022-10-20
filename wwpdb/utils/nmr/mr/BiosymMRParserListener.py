@@ -1357,6 +1357,10 @@ class BiosymMRParserListener(ParseTreeListener):
             if not self.areUniqueCoordAtoms('a Dihedral angle'):
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1378,6 +1382,30 @@ class BiosymMRParserListener(ParseTreeListener):
                         _dstFunc += f" {dstFunc4}"
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {_dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.' if dstFunc2 is None else 1, angleName,
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
+                    if dstFunc2 is not None:
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     2, angleName,
+                                     sf['list_id'], self.__entryId, dstFunc2, atom1, atom2, atom3, atom4)
+                        sf['loop'].add_data(row)
+                    if dstFunc3 is not None:
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     3, angleName,
+                                     sf['list_id'], self.__entryId, dstFunc3, atom1, atom2, atom3, atom4)
+                        sf['loop'].add_data(row)
+                    if dstFunc4 is not None:
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     4, angleName,
+                                     sf['list_id'], self.__entryId, dstFunc4, atom1, atom2, atom3, atom4)
+                        sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()
@@ -1454,6 +1482,10 @@ class BiosymMRParserListener(ParseTreeListener):
             if not self.areUniqueCoordAtoms('a Dihedral angle'):
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1468,6 +1500,12 @@ class BiosymMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', angleName,
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()

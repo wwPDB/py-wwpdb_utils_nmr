@@ -1214,6 +1214,10 @@ class AmberMRParserListener(ParseTreeListener):
                         if len(self.atomSelectionSet[0]) == 0:
                             return
 
+                        if self.__createSfDict:
+                            sf = self.__getSf()
+                            sf['id'] += 1
+
                         compId = self.atomSelectionSet[0][0]['comp_id']
                         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1228,6 +1232,11 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                            if self.__createSfDict and sf is not None:
+                                sf['index_id'] += 1
+                                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                             '.', angleName,
+                                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
 
                     # plane-(point/plane) angle
                     else:
@@ -1884,6 +1893,10 @@ class AmberMRParserListener(ParseTreeListener):
                         if len(self.atomSelectionSet[0]) == 0:
                             return
 
+                        if self.__createSfDict:
+                            sf = self.__getSf()
+                            sf['id'] += 1
+
                         compId = self.atomSelectionSet[0][0]['comp_id']
                         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1898,6 +1911,11 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                            if self.__createSfDict and sf is not None:
+                                sf['index_id'] += 1
+                                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                             '.', angleName,
+                                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
 
                     # plane-(point/plane) angle
                     else:

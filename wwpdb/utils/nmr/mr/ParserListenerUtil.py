@@ -2698,7 +2698,7 @@ def getLoop(subtype):
     return lp
 
 
-def getRow(subtype, id, indexId, combinationId, memberLogicCode, listId, entryId, dstFunc, atom1, atom2):
+def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, atom1, atom2, atom3=None, atom4=None):
     """ Return row data for a distance restraint.
         @return: data array
     """
@@ -2719,19 +2719,13 @@ def getRow(subtype, id, indexId, combinationId, memberLogicCode, listId, entryId
     row[-1] = entryId
 
     if subtype == 'dist':
-        row[1] = atom1['chain_id']
-        row[2] = atom1['seq_id']
-        row[3] = atom1['comp_id']
-        row[4] = atom1['atom_id']
-        row[5] = atom2['chain_id']
-        row[6] = atom2['seq_id']
-        row[7] = atom2['comp_id']
-        row[8] = atom2['atom_id']
+        row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
         row[key_size] = indexId
         row[key_size + 1] = combinationId
         if isinstance(combinationId, int):
-            row[key_size + 2] = memberLogicCode
+            row[key_size + 2] = code
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 3] = dstFunc['target_value']
         if hasKeyValue(dstFunc, 'target_value_uncertainty'):
@@ -2747,22 +2741,56 @@ def getRow(subtype, id, indexId, combinationId, memberLogicCode, listId, entryId
         # Distance_val
         if hasKeyValue(dstFunc, 'weight'):
             row[key_size + 10] = dstFunc['weight']
-        row[key_size + 11] = atom1['chain_id']
-        row[key_size + 12] = atom1['seq_id']
-        row[key_size + 13] = atom1['comp_id']
-        row[key_size + 14] = atom1['atom_id']
-        if hasKeyValue(atom1, 'atom_name'):
-            row[key_size + 15] = atom1['atom_name']
-        elif hasKeyValue(atom1, 'auth_atom_id'):
-            row[key_size + 15] = atom1['atom_name']
-        row[key_size + 16] = atom2['chain_id']
-        row[key_size + 17] = atom2['seq_id']
-        row[key_size + 18] = atom2['comp_id']
-        row[key_size + 19] = atom2['atom_id']
-        if hasKeyValue(atom2, 'atom_name'):
-            row[key_size + 20] = atom2['atom_name']
+
+        row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if hasKeyValue(atom1, 'auth_atom_id'):
+            row[key_size + 15] = atom1['auth_atom_id']
+        row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 20] = atom2['auth_atom_id']
+
+    elif subtype == 'dihed':
+        row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        row[9], row[10], row[11], row[12] = atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        row[13], row[14], row[15], row[16] = atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+
+        row[key_size] = indexId
+        # row[key_size + 1] = combinationId
+        row[key_size + 2] = code
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size + 3] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+            row[key_size + 4] = dstFunc['target_value_uncertainty']
+        if hasKeyValue(dstFunc, 'lower_linear_limit'):
+            row[key_size + 5] = dstFunc['lower_linear_limit']
+        if hasKeyValue(dstFunc, 'lower_limit'):
+            row[key_size + 6] = dstFunc['lower_limit']
+        if hasKeyValue(dstFunc, 'upper_limit'):
+            row[key_size + 7] = dstFunc['upper_limit']
+        if hasKeyValue(dstFunc, 'upper_linear_limit'):
+            row[key_size + 8] = dstFunc['upper_linear_limit']
+        if hasKeyValue(dstFunc, 'weight'):
+            row[key_size + 9] = dstFunc['weight']
+
+        row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if hasKeyValue(atom1, 'auth_atom_id'):
+            row[key_size + 14] = atom1['auth_atom_id']
+        row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if hasKeyValue(atom2, 'auth_atom_id'):
+            row[key_size + 19] = atom2['auth_atom_id']
+        row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
+            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        if hasKeyValue(atom3, 'auth_atom_id'):
+            row[key_size + 24] = atom3['auth_atom_id']
+        row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
+            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+        if hasKeyValue(atom4, 'auth_atom_id'):
+            row[key_size + 29] = atom4['auth_atom_id']
 
     return row
 

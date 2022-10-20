@@ -1642,6 +1642,10 @@ class DynamoMRParserListener(ParseTreeListener):
             if not self.areUniqueCoordAtoms('a Torsion angle'):
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1656,6 +1660,12 @@ class DynamoMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', angleName,
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
 
         except ValueError:
             self.dihedRestraints -= 1
@@ -1740,6 +1750,10 @@ class DynamoMRParserListener(ParseTreeListener):
             if not self.areUniqueCoordAtoms('a Torsion angle'):
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1754,6 +1768,12 @@ class DynamoMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', angleName,
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
 
         except ValueError:
             self.dihedRestraints -= 1
@@ -1838,6 +1858,10 @@ class DynamoMRParserListener(ParseTreeListener):
             if not self.areUniqueCoordAtoms('a Torsion angle'):
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
@@ -1852,6 +1876,12 @@ class DynamoMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', angleName,
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
 
         except ValueError:
             self.dihedRestraints -= 1
@@ -3228,6 +3258,10 @@ class DynamoMRParserListener(ParseTreeListener):
                     if not self.areUniqueCoordAtoms('a Torsion angle (TALOS)'):
                         return
 
+                    if self.__createSfDict:
+                        sf = self.__getSf()
+                        sf['id'] += 1
+
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
@@ -3237,6 +3271,12 @@ class DynamoMRParserListener(ParseTreeListener):
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', angleName,
+                                         sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                            sf['loop'].add_data(row)
 
         except ValueError:
             self.dihedRestraints -= 1
@@ -3392,6 +3432,10 @@ class DynamoMRParserListener(ParseTreeListener):
                     if not self.areUniqueCoordAtoms('a Torsion angle (TALOS)'):
                         return
 
+                    if self.__createSfDict:
+                        sf = self.__getSf()
+                        sf['id'] += 1
+
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
@@ -3401,6 +3445,12 @@ class DynamoMRParserListener(ParseTreeListener):
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} className={_class} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', angleName,
+                                         sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                            sf['loop'].add_data(row)
 
         except ValueError:
             self.dihedRestraints -= 1

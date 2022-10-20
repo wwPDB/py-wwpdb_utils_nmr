@@ -2893,6 +2893,10 @@ class CyanaMRParserListener(ParseTreeListener):
                     if not self.areUniqueCoordAtoms('a Torsion angle'):
                         return
 
+                    if self.__createSfDict:
+                        sf = self.__getSf()
+                        sf['id'] += 1
+
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
@@ -2902,6 +2906,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', angleName,
+                                         sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                            sf['loop'].add_data(row)
 
             # phase angle of pseudorotation
             else:
@@ -5342,6 +5352,10 @@ class CyanaMRParserListener(ParseTreeListener):
                     if not self.areUniqueCoordAtoms('a Torsion angle'):
                         return
 
+                    if self.__createSfDict:
+                        sf = self.__getSf()
+                        sf['id'] += 1
+
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
@@ -5351,6 +5365,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', angleName,
+                                         sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                            sf['loop'].add_data(row)
 
             # phase angle of pseudorotation
             else:

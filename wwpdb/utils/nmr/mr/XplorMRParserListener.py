@@ -3795,7 +3795,7 @@ class XplorMRParserListener(ParseTreeListener):
             if obs_value_2 is None:
                 dstFunc = {'obs_value': obs_value}
             else:
-                dstFunc = {'obs_value_1': obs_value, 'obs_value_2': obs_value_2}
+                dstFunc = {'obs_value': obs_value, 'obs_value_2': obs_value_2}
 
             lenAtomSelectionSet = len(self.atomSelectionSet)
 
@@ -3824,6 +3824,12 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
                               f"atom={atom1} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     '.', '.',
+                                     sf['list_id'], self.__entryId, dstFunc, atom1)
+                        sf['loop'].add_data(row)
 
             else:
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -3831,6 +3837,18 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     1, '.',
+                                     sf['list_id'], self.__entryId, dstFunc, atom1)
+                        sf['loop'].add_data(row)
+                        #
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     2, '.',
+                                     sf['list_id'], self.__entryId, dstFunc, None, atom2)
+                        sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()

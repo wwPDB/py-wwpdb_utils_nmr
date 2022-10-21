@@ -2665,6 +2665,8 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, 'peak volume')
         elif tag_item_name == 'Val_units' and subtype == 'csa':
             sf.add_tag(tag_item_name, 'ppm')
+        elif tag_item_name == 'Units' and subtype in ('hvycs', 'procs'):
+            sf.add_tag(tag_item_name, 'ppm')
         else:
             sf.add_tag(tag_item_name, '.')
 
@@ -2895,6 +2897,19 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
         row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
             atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id']
+
+    elif subtype == 'procs':
+        row[key_size] = atomType = atom1['atom_id'][0]
+        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        row[key_size + 2] = dstFunc['obs_value'] if atom2 is None else dstFunc['obs_value_2']
+        # Chem_shift_val_err
+
+        if atom2 is None:
+            row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        else:
+            row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
     return row
 

@@ -768,7 +768,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             if ctx.VeAngle():
                 self.__cur_subtype = 'dihed'
-                self.__addSf('intervector angle determined by RDC')
+                self.__addSf('intervector projection angle determined by RDC')
                 self.__cur_subtype = 'rdc'
             else:
                 self.__addSf()
@@ -2676,7 +2676,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 self.__cur_subtype = 'dihed'
-                sf = self.__getSf('intervector angle determined by RDC')
+                sf = self.__getSf('intervector projection angle determined by RDC')
                 self.__cur_subtype = 'rdc'
                 sf['id'] += 1
 

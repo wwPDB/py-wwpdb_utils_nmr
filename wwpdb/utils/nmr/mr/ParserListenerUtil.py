@@ -825,6 +825,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                          'coexist-with': None,
                                                          'smaller-than': None,
                                                          'larger-than': None}},
+                                              {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                               'range': {'min_inclusive': 0.0}},
                                               {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                'group': {'member-with': ['Val', 'Val_max'],
                                                          'coexist-with': None,
@@ -835,8 +837,6 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                          'coexist-with': None,
                                                          'smaller-than': ['Val_min'],
                                                          'larger-than': None}},
-                                              {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                               'range': {'min_inclusive': 0.0}},
                                               {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -2819,6 +2819,26 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 22] = atom2['auth_atom_id']
+
+    elif subtype == 'noepk':
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+            row[key_size + 1] = dstFunc['target_value_uncertainty']
+        if hasKeyValue(dstFunc, 'lower_limit'):
+            row[key_size + 2] = dstFunc['linear_limit']
+        if hasKeyValue(dstFunc, 'upper_limit'):
+            row[key_size + 3] = dstFunc['upper_limit']
+
+        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 8] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 9], row[key_size + 10], row[key_size + 11], row[key_size + 12] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+        if hasKeyValue(atom1, 'auth_atom_id'):
+            row[4] = row[key_size + 8] = atom1['auth_atom_id']
+        if hasKeyValue(atom2, 'auth_atom_id'):
+            row[8] = row[key_size + 12] = atom1['auth_atom_id']
 
     return row
 

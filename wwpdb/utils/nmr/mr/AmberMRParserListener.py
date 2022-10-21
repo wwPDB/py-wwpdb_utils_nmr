@@ -4529,6 +4529,9 @@ class AmberMRParserListener(ParseTreeListener):
         self.taumet = 0.0001  # ns
         self.id2o = 0
 
+        if self.__createSfDict:
+            self.__addSf()
+
     # Exit a parse tree produced by AmberMRParser#noeexp_statement.
     def exitNoeexp_statement(self, ctx: AmberMRParser.Noeexp_statementContext):  # pylint: disable=unused-argument
         imixes = self.npeak.keys()
@@ -4635,6 +4638,10 @@ class AmberMRParserListener(ParseTreeListener):
 
                     dstFunc = self.validateNoexpRange(imix, ipeak, awt, arange)
 
+                    if self.__createSfDict:
+                        sf = self.__getSf()
+                        sf['id'] += 1
+
                     updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
                     for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -4642,6 +4649,12 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} dataset={imix} mixing_time={mix} peak={ipeak} "
                                   f"atom1={atom1} atom2={atom2} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', '.',
+                                         sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                            sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\

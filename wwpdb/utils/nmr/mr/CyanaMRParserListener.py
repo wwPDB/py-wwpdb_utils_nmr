@@ -3737,8 +3737,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                      '.', memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
                         sf['loop'].add_data(row)
+                        if self.__cur_subtype == 'noepk':
+                            break
 
-                if num_col > 0:
+                if num_col > 0 and self.__cur_dist_type == 'dist':
                     self.distRestraints += 1
 
                 int_col += 1
@@ -3953,8 +3955,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                      '.', memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
                         sf['loop'].add_data(row)
+                        if self.__cur_subtype == 'noepk':
+                            break
 
-                if num_col > 0:
+                if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
 
                 int_col += 1
@@ -4110,8 +4114,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                      '.', memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
                         sf['loop'].add_data(row)
+                        if self.__cur_subtype == 'noepk':
+                            break
 
-                if num_col > 0:
+                if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
 
                 int_col += 1
@@ -4277,8 +4283,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                      '.', memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
                         sf['loop'].add_data(row)
+                        if self.__cur_subtype == 'noepk':
+                            break
 
-                if num_col > 0:
+                if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
 
                 int_col += 1
@@ -4493,8 +4501,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                      '.', memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
                         sf['loop'].add_data(row)
+                        if self.__cur_subtype == 'noepk':
+                            break
 
-                if num_col > 0:
+                if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
 
                 int_col += 1
@@ -4650,8 +4660,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                      '.', memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
                         sf['loop'].add_data(row)
+                        if self.__cur_subtype == 'noepk':
+                            break
 
-                if num_col > 0:
+                if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
 
                 int_col += 1

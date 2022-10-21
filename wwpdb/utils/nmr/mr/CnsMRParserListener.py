@@ -2382,6 +2382,10 @@ class CnsMRParserListener(ParseTreeListener):
                     "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].\n"
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                        self.atomSelectionSet[1],
                                                                        self.atomSelectionSet[2],
@@ -2392,6 +2396,12 @@ class CnsMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CARB) id={self.hvycsRestraints} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', '.',
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4, atom5)
+                    sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()

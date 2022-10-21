@@ -887,13 +887,11 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                          'coexist-with': None,
                                                          'smaller-than': ['Val_min'],
                                                          'larger-than': None}},
-                                              {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Auth_aysm_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Auth_aysm_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
@@ -1021,25 +1019,23 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                'range': CS_RESTRAINT_RANGE},
                                               {'name': 'CB_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                'range': CS_UNCERTAINTY_RANGE},
-                                              {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Auth_aysm_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Auth_aysm_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Auth_aysm_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Auth_aysm_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Auth_aysm_ID_5', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_5', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_5', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_5', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_5', 'type': 'str', 'mandatory': False},
@@ -1057,8 +1053,7 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                'range': CS_RESTRAINT_RANGE},
                                               {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                'range': CS_UNCERTAINTY_RANGE},
-                                              {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Auth_aysm_ID', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
@@ -2702,7 +2697,7 @@ def getLoop(subtype):
     return lp
 
 
-def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, atom1, atom2=None, atom3=None, atom4=None):
+def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, atom1, atom2=None, atom3=None, atom4=None, atom5=None):
     """ Return row data for a given restraint.
         @return: data array
     """
@@ -2722,7 +2717,8 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
     row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
     row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
-    row[key_size] = indexId
+    if subtype in ('dist', 'dihed', 'rdc'):
+        row[key_size] = indexId
 
     row[-2] = listId
     row[-1] = entryId
@@ -2883,6 +2879,22 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
 
         row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    elif subtype == 'hvycs':
+        row[key_size] = dstFunc['ca_shift']
+        # CA_chem_shift_val_err
+        row[key_size + 2] = dstFunc['cb_shift']
+        # CB_chem_shift_val_err
+        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 8], row[key_size + 9], row[key_size + 10], row[key_size + 11] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
+            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
+            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+        row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
+            atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id']
 
     return row
 

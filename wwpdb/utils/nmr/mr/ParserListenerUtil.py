@@ -873,6 +873,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                          'coexist-with': None,
                                                          'smaller-than': None,
                                                          'larger-than': None}},
+                                              {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                               'range': {'min_inclusive': 0.0}},
                                               {'name': 'Val_min', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                'range': RDC_RESTRAINT_RANGE,
                                                'group': {'member-with': ['Val_max'],
@@ -885,8 +887,6 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                          'coexist-with': None,
                                                          'smaller-than': ['Val_min'],
                                                          'larger-than': None}},
-                                              {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                               'range': {'min_inclusive': 0.0}},
                                               {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_aysm_ID_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -969,6 +969,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                        'coexist-with': None,
                                                        'smaller-than': None,
                                                        'larger-than': None}},
+                                            {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                             'range': {'min_inclusive': 0.0}},
                                             {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                              'group': {'member-with': ['Val_max'],
                                                        'coexist-with': None,
@@ -979,8 +981,6 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                        'coexist-with': None,
                                                        'smaller-than': ['Val_min'],
                                                        'larger-than': None}},
-                                            {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                             'range': {'min_inclusive': 0.0}},
                                             {'name': 'Principal_Euler_angle_alpha_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
                                              'range': ANGLE_RESTRAINT_RANGE,
                                              'group': {'member-with': ['Principal_Euler_angle_beta_val', 'Principal_Euler_angle_gamma_val'],
@@ -2664,8 +2664,10 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, 'disulfide bond')
         elif tag_item_name == 'Constraint_type' and constraintType is not None:
             sf.add_tag(tag_item_name, constraintType)
-        elif tag_item_name == 'Constraint_type' and subtype == 'RDC':
+        elif tag_item_name == 'Constraint_type' and subtype == 'rdc':
             sf.add_tag(tag_item_name, 'RDC')
+        elif tag_item_name == 'Homonuclear_NOE_val_type' and subtype == 'noepk':
+            sf.add_tag(tag_item_name, 'peak volume')
         else:
             sf.add_tag(tag_item_name, '.')
 
@@ -2839,6 +2841,28 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             row[4] = row[key_size + 8] = atom1['auth_atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[8] = row[key_size + 12] = atom1['auth_atom_id']
+
+    elif subtype == 'jcoup':
+        row[key_size] = code
+        row[key_size + 1] = atomType = atom1['atom_id'][0]
+        row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        # Ambiguity_code_1
+        row[key_size + 4] = atomType = atom2['atom_id'][0]
+        row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        # Ambiguity_code_2
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size + 7] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+            row[key_size + 8] = dstFunc['target_value_uncertainty']
+        if hasKeyValue(dstFunc, 'lower_limit'):
+            row[key_size + 9] = dstFunc['lower_limit']
+        if hasKeyValue(dstFunc, 'upper_limit'):
+            row[key_size + 10] = dstFunc['upper_limit']
+
+        row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
     return row
 

@@ -3502,12 +3502,16 @@ class XplorMRParserListener(ParseTreeListener):
                     if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
-                        if dstFunc2 is None:
-                            print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
-                        else:
-                            print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} {dstFunc2}")
+                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
+                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     '.', couplingCode,
+                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                        sf['loop'].add_data(row)
 
             else:
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -3517,12 +3521,16 @@ class XplorMRParserListener(ParseTreeListener):
                     if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
-                        if dstFunc2 is None:
-                            print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
-                        else:
-                            print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc} {dstFunc2}")
+                        print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
+                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     '.', couplingCode,
+                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                        sf['loop'].add_data(row)
 
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
                                                                     self.atomSelectionSet[5],
@@ -3536,7 +3544,15 @@ class XplorMRParserListener(ParseTreeListener):
                                   f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc}")
                         else:
                             print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
-                                  f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc} {dstFunc2}")
+                                  f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc2}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
+                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     '.', couplingCode,
+                                     sf['list_id'], self.__entryId, dstFunc if dstFunc2 is None else dstFunc2, atom1, atom2)
+                        sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()

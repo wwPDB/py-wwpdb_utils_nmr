@@ -6302,6 +6302,9 @@ class AmberMRParserListener(ParseTreeListener):
         self.ncsa = -1
         self.datasetc = 1
 
+        if self.__createSfDict:
+            self.__addSf()
+
     # Exit a parse tree produced by AmberMRParser#csa_statement.
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
         if self.ncsa < 0 and len(self.icsa.keys()) > 0:  # pylint: disable=chained-comparison
@@ -6542,6 +6545,10 @@ class AmberMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
                 for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
@@ -6552,6 +6559,12 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} dataset={self.datasetc} n={n} "
                               f"atom1={atom1} atom2(CSA central)={atom2} atom3={atom3} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     '.', '.',
+                                     sf['list_id'], self.__entryId, dstFunc, atom2)
+                        sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
                 self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\

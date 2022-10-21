@@ -4924,6 +4924,12 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.csaRestraints} "
                           f"atom1(CSA central)={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', '.',
+                                 sf['list_id'], self.__entryId, dstFunc, atom2)
+                    sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()

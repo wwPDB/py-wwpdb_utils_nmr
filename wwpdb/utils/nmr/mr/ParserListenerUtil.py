@@ -2668,6 +2668,8 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, 'RDC')
         elif tag_item_name == 'Homonuclear_NOE_val_type' and subtype == 'noepk':
             sf.add_tag(tag_item_name, 'peak volume')
+        elif tag_item_name == 'Val_units' and subtype == 'csa':
+            sf.add_tag(tag_item_name, 'ppm')
         else:
             sf.add_tag(tag_item_name, '.')
 
@@ -2700,7 +2702,7 @@ def getLoop(subtype):
     return lp
 
 
-def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, atom1, atom2, atom3=None, atom4=None):
+def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, atom1, atom2=None, atom3=None, atom4=None):
     """ Return row data for a given restraint.
         @return: data array
     """
@@ -2863,6 +2865,24 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+    elif subtype == 'csa':
+        row[key_size] = atomType = atom1['atom_id'][0]
+        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size + 2] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+            row[key_size + 3] = dstFunc['target_value_uncertainty']
+        # Principal_value_sigma_11_val
+        # Principal_value_sigma_22_val
+        # Principal_value_sigma_33_val
+        # Principal_Euler_angle_alpha_val
+        # Principal_Euler_angle_beta_val
+        # Principal_Euler_angle_gamma_val
+        # Bond_length
+
+        row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     return row
 

@@ -925,6 +925,9 @@ class XplorMRParserListener(ParseTreeListener):
         self.preStatements += 1
         self.__cur_subtype = 'pre'
 
+        if self.__createSfDict:
+            self.__addSf()
+
     # Exit a parse tree produced by XplorMRParser#pre_restraint.
     def exitPre_restraint(self, ctx: XplorMRParser.Pre_restraintContext):  # pylint: disable=unused-argument
         pass
@@ -933,6 +936,9 @@ class XplorMRParserListener(ParseTreeListener):
     def enterPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         self.pcsStatements += 1
         self.__cur_subtype = 'pcs'
+
+        if self.__createSfDict:
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
@@ -5314,6 +5320,10 @@ class XplorMRParserListener(ParseTreeListener):
                     f"Not a proton;  {chain_id}:{seq_id}:{comp_id}:{atom_id}.\n"
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             for atom1 in self.atomSelectionSet[1]:
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
@@ -5581,12 +5591,22 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
 
             for atom1 in self.atomSelectionSet[4]:
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
                           f"paramag_center={atom_id_0} atom={atom1} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', '.',
+                                 sf['list_id'], self.__entryId, dstFunc, atom1)
+                    sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()

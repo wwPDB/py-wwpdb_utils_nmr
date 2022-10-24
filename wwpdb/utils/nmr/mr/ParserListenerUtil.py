@@ -2581,6 +2581,12 @@ def getValidSubType(subtype):
     if subtype == 'prdc':
         return 'rdc_restraints'
 
+    if subtype == 'pcs':
+        return 'csp_restraints'
+
+    if subtype == 'pre':
+        return 'auto_realx_restraint'
+
     raise KeyError(f'Internal subtype {subtype!r} is not defined.')
 
 
@@ -2667,6 +2673,8 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, 'ppm')
         elif tag_item_name == 'Units' and subtype in ('hvycs', 'procs'):
             sf.add_tag(tag_item_name, 'ppm')
+        elif tag_item_name == 'Type' and subtype == 'pcs':
+            sf.add_tag(tag_item_name, 'paramagnetic ligand binding')
         else:
             sf.add_tag(tag_item_name, '.')
 
@@ -2716,8 +2724,12 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
 
     row[0] = id
 
-    row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-    row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+    if atom1 is not None:
+        row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+    elif atom2 is not None:  # procs
+        row[1], row[2], row[3], row[4] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+    elif atom2 is not None:
+        row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
     if subtype in ('dist', 'dihed', 'rdc'):
         row[key_size] = indexId
@@ -2910,6 +2922,22 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
         else:
             row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+    elif subtype == 'pcs':
+        row[key_size] = atomType = atom1['atom_id'][0]
+        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        # Chem_shift_val
+        # Chem_shift_val_err
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size + 4] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'lower_value') and hasKeyValue(dstFunc, 'upper_value'):
+            row[key_size + 5] = (dstFunc['upper_value'] - dstFunc['lower_value']) / 2.0
+
+        row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    elif subtype == 'pre':
+        pass
 
     return row
 

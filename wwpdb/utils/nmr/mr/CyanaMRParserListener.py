@@ -3162,6 +3162,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.numberSelection.clear()
 
+        if self.__createSfDict:
+            self.__addSf()
+
     # Enter a parse tree produced by CyanaMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
@@ -3462,6 +3465,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.numberSelection.clear()
 
+        if self.__createSfDict:
+            self.__addSf()
+
     # Enter a parse tree produced by CyanaMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         self.pcsRestraints += 1
@@ -3528,10 +3534,20 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 1:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             for atom in self.atomSelectionSet[0]:
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
                           f"atom={atom} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', '.',
+                                 sf['list_id'], self.__entryId, dstFunc, atom)
+                    sf['loop'].add_data(row)
 
         except ValueError:
             self.pcsRestraints -= 1

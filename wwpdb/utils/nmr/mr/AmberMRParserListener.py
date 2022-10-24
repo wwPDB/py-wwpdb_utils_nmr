@@ -4877,6 +4877,9 @@ class AmberMRParserListener(ParseTreeListener):
         self.nter = 1
         self.cter = -1
 
+        if self.__createSfDict:
+            self.__addSf()
+
     # Exit a parse tree produced by AmberMRParser#shf_statement.
     def exitShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
         if self.nprot < 0 and len(self.iprot.keys()) > 0:  # pylint: disable=chained-comparison
@@ -4947,10 +4950,20 @@ class AmberMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 for atom in self.atomSelectionSet[0]:
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} n={n} "
                               f"atom={atom} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     '.', '.',
+                                     sf['list_id'], self.__entryId, dstFunc, atom)
+                        sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
                 self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
@@ -5427,12 +5440,22 @@ class AmberMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
                 updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
                 for atom in self.atomSelectionSet[0]:
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} dataset={self.nmpmc} n={n} "
                               f"atom={atom} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     '.', '.',
+                                     sf['list_id'], self.__entryId, dstFunc, atom)
+                        sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
                 self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\

@@ -73,6 +73,7 @@
 # 06-Sep-2022  M. Yokochi - add support for branched entity and extra restraints in NMR-STAR format (NMR restraint remediation)
 # 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (DAOTHER-8059, NMR restraint remediation)
 # 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (DAOTHER-8058, NMR restraint remediation)
+# 24-Oct-2022  M. Yokochi - add support for floating chiral stereo assignments (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1704,7 +1705,7 @@ class NmrDpReportInputSource:
                                  'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
                                  'hbond_restraint', 'ssbond_restraint', 'geo_restraint', 'noepk_restraint',
                                  'rdc_raw_data', 'ddc_restraint', 'csp_restraint', 'auto_relax_restraint',
-                                 'ccr_d_csa_restraint', 'ccr_dd_restraint', 'other_restraint',
+                                 'ccr_d_csa_restraint', 'ccr_dd_restraint', 'fchiral_restraint', 'other_restraint',
                                  'spectral_peak', 'spectral_peak_alt', 'topology')
 
         self.__contents = {item: None for item in self.items}
@@ -1796,14 +1797,6 @@ class NmrDpReportSequenceAlignment:
         self.__lfh = log
 
         self.items = ('model_poly_seq_vs_coordinate', 'model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq',
-                      # 'model_poly_seq_vs_dist_restraint', 'model_poly_seq_vs_dihed_restraint', 'model_poly_seq_vs_rdc_restraint',
-                      # 'model_poly_seq_vs_plane_restraint', 'model_poly_seq_vs_adist_restraint', 'model_poly_seq_vs_jcoup_restraint',
-                      # 'model_poly_seq_vs_hvycs_restraint', 'model_poly_seq_vs_procs_restraint', 'model_poly_seq_vs_rama_restraint',
-                      # 'model_poly_seq_vs_radi_restraint', 'model_poly_seq_vs_diff_restraint', 'model_poly_seq_vs_nbase_restraint',
-                      # 'model_poly_seq_vs_csa_restraint', 'model_poly_seq_vs_ang_restraint', 'model_poly_seq_vs_pre_restraint',
-                      # 'model_poly_seq_vs_pcs_restraint', 'model_poly_seq_vs_prdc_restraint', 'model_poly_seq_vs_pang_restraint',
-                      # 'model_poly_seq_vs_pccr_restraint', 'model_poly_seq_vs_hbond_restraint', 'model_poly_seq_vs_geo_restraint',
-                      # 'model_poly_seq_vs_noepk_restraint',
                       'model_poly_seq_vs_mr_restraint', 'model_poly_seq_vs_mr_topology',
                       'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint',
                       'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak', 'nmr_poly_seq_vs_spectral_peak_alt',
@@ -1812,7 +1805,7 @@ class NmrDpReportSequenceAlignment:
                       'nmr_poly_seq_vs_ddc_restraint', 'nmr_poly_seq_vs_hvycs_restraint',
                       'nmr_poly_seq_vs_procs_restraint', 'nmr_poly_seq_vs_csp_restraint',
                       'nmr_poly_seq_vs_auto_relax_restraint', 'nmr_poly_seq_vs_ccr_d_csa_restraint',
-                      'nmr_poly_seq_vs_ccr_dd_restraint', 'nmr_poly_seq_vs_other_restraint')
+                      'nmr_poly_seq_vs_ccr_dd_restraint', 'nmr_poly_seq_vs_fchiral_restraint', 'nmr_poly_seq_vs_other_restraint')
 
         self.__contents = {item: None for item in self.items}
 

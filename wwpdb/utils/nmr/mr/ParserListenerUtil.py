@@ -252,6 +252,7 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'auto_relax_restraint': '_Auto_relaxation_list',
                             'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                             'ccr_dd_restraint': '_Cross_correlation_DD_list',
+                            'fchiral_restraint': '_Floating_chirality_assign',
                             'other_restraint': '_Other_data_type_list'
                             }
 
@@ -268,6 +269,7 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'auto_relax_restraint': 'auto_relaxation',
                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
+                          'fchiral_restraint': 'floating_chiral_stereo_assign',
                           'other_restraint': 'other_data_types'
                           }
 
@@ -423,6 +425,11 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                               {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
+                         'fchiral_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                               {'name': 'Stereo_count', 'type': 'int', 'mandatory': True},
+                                               {'name': 'Stereo_assigned_count', 'type': 'int', 'mandatory': True}
+                                               ],
                          'other_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                              {'name': 'Definition', 'type': 'str', 'mandatory': True},
@@ -445,6 +452,7 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'auto_relax_restraint': '_Auto_relaxation',
                           'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                           'ccr_dd_restraint': '_Cross_correlation_DD',
+                          'fchical_restraint': 'Floating_chirality',
                           'other_restraint': '_Other_data'
                           }
 
@@ -608,6 +616,16 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                               {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
                                               {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}
                                               ],
+                         'fchiral_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                               {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                               {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                               {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                               {'name': 'Atom_ID_1', 'type': 'str'},
+                                               {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                               {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                               {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                               {'name': 'Atom_ID_2', 'type': 'str'}
+                                               ],
                          'other_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                              {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
                                              {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
@@ -1199,6 +1217,16 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                 'default': '1', 'default-from': 'parent'},
                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                ],
+                          'fchiral_restraint': [{'name': 'Stereospecific_assignment_code', 'type': 'str', 'mandatory': True},
+                                                {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
+                                                ],
                           'other_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                'enforce-enum': True},
@@ -2520,11 +2548,13 @@ def getRestraintName(subtype):
     if subtype.startswith('rdc'):
         return "RDC restraints"
     if subtype.startswith('plane'):
-        return "Planarity restraints"
+        return "Planarity constraints"
     if subtype.startswith('hbond'):
         return "Hydrogen bond restraints"
     if subtype.startswith('ssbond'):
-        return "Disulfide bond restraints"
+        return "Disulfide bond constraints"
+    if subtype.startswith('fchiral'):
+        return "Floating chiral stereo assignments"
     if subtype.startswith('adist'):
         return "Anti-distance restraints"
     if subtype.startswith('jcoup'):
@@ -2559,7 +2589,6 @@ def getRestraintName(subtype):
         return "Coordinate geometry restraints"
     if subtype.startswith('noepk'):
         return "NOESY peak volume restraints"
-
     raise KeyError(f'Internal subtype {subtype!r} is not defined.')
 
 
@@ -2567,7 +2596,7 @@ def getValidSubType(subtype):
     """ Return legitimate content subtype of NmrDpUtility.py for a given internal content subtype.
     """
 
-    if subtype in ('dist', 'dihed', 'rdc', 'jcoup', 'hvycs', 'procs', 'csa'):
+    if subtype in ('dist', 'dihed', 'rdc', 'jcoup', 'hvycs', 'procs', 'csa', 'fchical'):
         return subtype + '_restraint'
 
     if subtype == 'hbond':
@@ -2605,6 +2634,7 @@ def initListIdCounter():
             'auto_relax_restraint': 0,
             'ccr_d_csa_restraint': 0,
             'ccr_dd_restraint': 0,
+            'fchiral_restraint': 0,
             'other_restraint': 0
             }
 
@@ -2735,13 +2765,13 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
     elif atom2 is not None:
         row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
-    if subtype in ('dist', 'dihed', 'rdc'):
+    if subtype in ('dist', 'dihed', 'rdc', 'hbond', 'ssbond'):
         row[key_size] = indexId
 
     row[-2] = listId
     row[-1] = entryId
 
-    if subtype == 'dist':
+    if subtype in ('dist', 'hbond', 'ssbond'):
         row[key_size + 1] = combinationId
         if isinstance(combinationId, int):
             row[key_size + 2] = code
@@ -2952,6 +2982,13 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
 
         row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    elif subtype == 'fchiral':
+        row[key_size] = code
+        row[key_size + 1], row[key_size + 2], row[key_size + 3], row[key_size + 4] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
     return row
 

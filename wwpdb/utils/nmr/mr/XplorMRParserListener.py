@@ -6517,6 +6517,20 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (HBDA) id={self.hbondRestraints} "
                       f"donor={atom1} hydrogen={atom2} acceptor={atom3}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                memberLogicCode = 'AND'
+                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                             1, memberLogicCode,
+                             sf['list_id'], self.__entryId, None, atom1, atom3)
+                sf['loop'].add_data(row)
+                #
+                sf['index_id'] += 1
+                memberLogicCode = 'AND'
+                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                             2, memberLogicCode,
+                             sf['list_id'], self.__entryId, None, atom2, atom3)
+                sf['loop'].add_data(row)
 
     # Enter a parse tree produced by XplorMRParser#hbond_db_statement.
     def enterHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):  # pylint: disable=unused-argument
@@ -6636,6 +6650,12 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (HBDB) id={self.hbondRestraints} "
                       f"donor={atom1} acceptor={atom2}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                             '.', '.',
+                             sf['list_id'], self.__entryId, None, atom1, atom2)
+                sf['loop'].add_data(row)
 
     # Enter a parse tree produced by XplorMRParser#ncs_restraint.
     def enterNcs_restraint(self, ctx: XplorMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument

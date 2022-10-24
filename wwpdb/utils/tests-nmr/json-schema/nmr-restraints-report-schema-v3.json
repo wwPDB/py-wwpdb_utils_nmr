@@ -117,7 +117,7 @@
               "minimum": 1
             },
             "plane_restraint": {
-              "description": "The number of lists associated with planarity restraints.",
+              "description": "The number of lists associated with planarity constraints.",
               "type": "integer",
               "minimum": 1
             },
@@ -202,7 +202,7 @@
               "minimum": 1
             },
             "ssbond_restraint": {
-              "description": "The number of lists associated with disulfide bond geometry restraints.",
+              "description": "The number of lists associated with disulfide bond geometry constraints.",
               "type": "integer",
               "minimum": 1
             },
@@ -213,6 +213,16 @@
             },
             "noepk_restraint": {
               "description": "The number of lists associated with NOESY peak volume restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "fchiral_restraint": {
+              "description": "The number of lists associated with floating chiral stereo assignments.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "other_restraint": {
+              "description": "The number of lists associated with other restraints.",
               "type": "integer",
               "minimum": 1
             },
@@ -280,7 +290,7 @@
               }
             },
             "plane_restraint": {
-              "description": "The array provides the polymer sequences in data loops for planarity restraints.",
+              "description": "The array provides the polymer sequences in data loops for planarity constraints.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/polymer_sequence_in_loop"
@@ -399,7 +409,7 @@
               }
             },
             "ssbond_restraint": {
-              "description": "The array provides the polymer sequences in data loops for disulfide bond geometry restraints.",
+              "description": "The array provides the polymer sequences in data loops for disulfide bond geometry constraints.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/polymer_sequence_in_loop"
@@ -4309,6 +4319,23 @@
             },
             "nmr_poly_seq_vs_ccr_dd_restraint": {
               "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for dipole-dipole cross correlation restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_nmr"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "nmr_poly_seq_vs_fchiral_restraint": {
+              "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for floating chiral stereo assigments.",
               "type": [
                 "array",
                 "null"

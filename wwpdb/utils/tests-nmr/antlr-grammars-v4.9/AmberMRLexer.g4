@@ -593,6 +593,6 @@ Equ_op_MP:		'=';
 SPACE_MP:		[ \t]+ -> skip;
 RETURN_MP:		[\r\n] -> popMode;
 
-SECTION_COMMENT_MP:	('#' | '!' | ';' | '\\' | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+) ' '* [\r\n]+ -> channel(HIDDEN);
+//SECTION_COMMENT_MP:	('#' | '!' | ';' | '\\' | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT_MP:	('#' | '!' | ';' | '\\' | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+) ~[\r\n]* -> channel(HIDDEN);
 

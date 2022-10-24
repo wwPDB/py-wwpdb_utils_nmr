@@ -10,6 +10,7 @@
 import sys
 import itertools
 import numpy
+import re
 
 from antlr4 import ParseTreeListener
 
@@ -394,6 +395,7 @@ class CyanaMRParserListener(ParseTreeListener):
         self.geoRestraints = 0       # CYANA: Coordinate geometry restraints
         self.hbondRestraints = 0     # CYANA: Hydrogen bond geometry restraints
         self.ssbondRestraints = 0    # CYANA: Disulfide bond geometry restraints
+        self.fchiralRestraints = 0   # CYANA: Floating chiral stereo assignments
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -5827,6 +5829,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     self.__lfh.write(f"+CyanaMRParserListener.exitSsbond_macro() ++ Error  - {str(e)}\n")
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -5836,6 +5842,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CYANA macro: disulfide bond linkage) id={self.ssbondRestraints} "
                           f"atom1={atom1} atom2={atom2}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', '.',
+                                 sf['list_id'], self.__entryId, None, atom1, atom2)
+                    sf['loop'].add_data(row)
 
         finally:
             self.atomSelectionSet.clear()
@@ -5929,6 +5941,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__verbose:
                     self.__lfh.write(f"+CyanaMRParserListener.exitHbond_macro() ++ Error  - {str(e)}\n")
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -5938,6 +5954,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CYANA macro: hydrogen bond linkage) id={self.hbondRestraints} "
                           f"atom1={atom1} atom2={atom2}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', '.',
+                                 sf['list_id'], self.__entryId, None, atom1, atom2)
+                    sf['loop'].add_data(row)
 
         finally:
             self.atomSelectionSet.clear()
@@ -6043,6 +6065,240 @@ class CyanaMRParserListener(ParseTreeListener):
 
         finally:
             self.atomSelectionSet.clear()
+
+    # Enter a parse tree produced by CyanaMRParser#stereoassign_macro.
+    def enterStereoassign_macro(self, ctx: CyanaMRParser.Stereoassign_macroContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'fchiral'
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CyanaMRParser#stereoassign_macro.
+    def exitStereoassign_macro(self, ctx: CyanaMRParser.Stereoassign_macroContext):
+
+        try:
+
+            self.fchiralRestraints += 1
+
+            _strip = str(ctx.Double_quote_string()).strip('"').strip()
+            _split = re.sub(' +', ' ', _strip).split(' ')
+
+            len_split = len(_split)
+
+            if len_split < 3:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.\n"
+                return
+
+            atomId1 = _split[0].upper()
+            atomId2 = None
+
+            if not atomId1.isalnum():
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.\n"
+                return
+
+            if _split[1].isdecimal():
+                seq_id_offset = 1
+            else:
+                seq_id_offset = 2
+                atomId2 = _split[1].upper()
+
+            for l in range(seq_id_offset, len_split):
+                if not _split[l].isdecimal():
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.\n"
+                    return
+
+            if not self.__hasPolySeq:
+                return
+
+            self.__retrieveLocalSeqScheme()
+
+            seqId1 = int(_split[seq_id_offset])
+
+            chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+
+            if atomId2 is not None:
+
+                chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId2)
+
+                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    return
+
+                self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+                self.selectCoordAtoms(chainAssign2, seqId1, None, atomId2)
+
+                if len(self.atomSelectionSet) < 2:
+                    return
+
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                      self.atomSelectionSet[1]):
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
+                              f"atom1={atom1} atom2={atom2}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     '.', '.',
+                                     sf['list_id'], self.__entryId, None, atom1, atom2)
+                        sf['loop'].add_data(row)
+
+                for l in range(seq_id_offset + 1, len_split):
+                    self.atomSelectionSet.clear()
+
+                    seqId1 = int(_split[l])
+
+                    chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+                    chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId2)
+
+                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        return
+
+                    self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId1, None, atomId2)
+
+                    if len(self.atomSelectionSet) < 2:
+                        return
+
+                    for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                          self.atomSelectionSet[1]):
+                        if self.__debug:
+                            print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
+                                  f"atom1={atom1} atom2={atom2}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', '.',
+                                         sf['list_id'], self.__entryId, None, atom1, atom2)
+                            sf['loop'].add_data(row)
+
+            else:
+
+                if len(chainAssign1) == 0:
+                    return
+
+                self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+
+                if len(self.atomSelectionSet) < 1:
+                    return
+
+                comp_id = self.atomSelectionSet[0][0]['comp_id']
+                atom_id = self.atomSelectionSet[0][0]['atom_id']
+
+                atomId2 = self.__csStat.getGeminalAtom(comp_id, atom_id)
+
+                if atomId2 is None:
+                    return
+
+                chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId2)
+
+                if len(chainAssign2) == 0:
+                    return
+
+                self.selectCoordAtoms(chainAssign2, seqId1, None, atomId2)
+
+                if len(self.atomSelectionSet) < 2:
+                    return
+
+                if self.__createSfDict:
+                    sf = self.__getSf()
+                    sf['id'] += 1
+
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                      self.atomSelectionSet[1]):
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
+                              f"atom1={atom1} atom2={atom2}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     '.', '.',
+                                     sf['list_id'], self.__entryId, None, atom1, atom2)
+                        sf['loop'].add_data(row)
+
+                for l in range(seq_id_offset + 1, len_split):
+                    self.atomSelectionSet.clear()
+
+                    seqId1 = int(_split[l])
+
+                    chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+
+                    if len(chainAssign1) == 0:
+                        return
+
+                    self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+
+                    if len(self.atomSelectionSet) < 1:
+                        return
+
+                    comp_id = self.atomSelectionSet[0][0]['comp_id']
+                    atom_id = self.atomSelectionSet[0][0]['atom_id']
+
+                    atomId2 = self.__csStat.getGeminalAtom(comp_id, atom_id)
+
+                    if atomId2 is None:
+                        return
+
+                    chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId2)
+
+                    if len(chainAssign2) == 0:
+                        return
+
+                    self.selectCoordAtoms(chainAssign2, seqId1, None, atomId2)
+
+                    if len(self.atomSelectionSet) < 2:
+                        return
+
+                    for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                          self.atomSelectionSet[1]):
+                        if self.__debug:
+                            print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
+                                  f"atom1={atom1} atom2={atom2}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', '.',
+                                         sf['list_id'], self.__entryId, None, atom1, atom2)
+                            sf['loop'].add_data(row)
+
+        finally:
+            self.atomSelectionSet.clear()
+
+    # Enter a parse tree produced by CyanaMRParser#declare_variable.
+    def enterDeclare_variable(self, ctx: CyanaMRParser.Declare_variableContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#declare_variable.
+    def exitDeclare_variable(self, ctx: CyanaMRParser.Declare_variableContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#set_variable.
+    def enterSet_variable(self, ctx: CyanaMRParser.Set_variableContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#set_variable.
+    def exitSet_variable(self, ctx: CyanaMRParser.Set_variableContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#unset_variable.
+    def enterUnset_variable(self, ctx: CyanaMRParser.Unset_variableContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#unset_variable.
+    def exitUnset_variable(self, ctx: CyanaMRParser.Unset_variableContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#print_macro.
+    def enterPrint_macro(self, ctx: CyanaMRParser.Print_macroContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#print_macro.
+    def exitPrint_macro(self, ctx: CyanaMRParser.Print_macroContext):  # pylint: disable=unused-argument
+        pass
 
     # Enter a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
     def enterUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext):
@@ -6248,6 +6504,8 @@ class CyanaMRParserListener(ParseTreeListener):
             return f"[Check the {self.hbondRestraints}th row of hydrogen bond restraints] "
         if self.__cur_subtype == 'ssbond':
             return f"[Check the {self.ssbondRestraints}th row of disulfide bond restraints] "
+        if self.__cur_subtype == 'fchiral':
+            return f"[Check the {self.fchiralRestraints}th row of floating chiral stereo assignments] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -6271,6 +6529,8 @@ class CyanaMRParserListener(ParseTreeListener):
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.hbondRestraints)] = self.__preferAuthSeq
         elif self.__cur_subtype == 'ssbond':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.ssbondRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'fchiral':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.fchiralRestraints)] = self.__preferAuthSeq
         if not self.__preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
@@ -6301,6 +6561,8 @@ class CyanaMRParserListener(ParseTreeListener):
             key = (self.__cur_subtype, self.hbondRestraints)
         elif self.__cur_subtype == 'ssbond':
             key = (self.__cur_subtype, self.ssbondRestraints)
+        elif self.__cur_subtype == 'fchiral':
+            key = (self.__cur_subtype, self.fchiralRestraints)
         else:
             return
 
@@ -6348,7 +6610,8 @@ class CyanaMRParserListener(ParseTreeListener):
                           'jcoup_restraint': self.jcoupRestraints,
                           'geo_restraint': self.geoRestraints,
                           'hbond_restraint': self.hbondRestraints,
-                          'ssbond_restraint': self.ssbondRestraints
+                          'ssbond_restraint': self.ssbondRestraints,
+                          'fchiral_restraint': self.fchiralRestraints
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}

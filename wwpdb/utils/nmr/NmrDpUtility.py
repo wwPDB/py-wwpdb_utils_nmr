@@ -163,6 +163,7 @@
 # 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (DAOTHER-8059, NMR restraint remediation)
 # 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (DAOTHER-8058, NMR restraint remediation)
 # 20-Oct-2022  M. Yokochi - report recommendation message when there is no distance restraints for NMR deposition, instead of blocker (DAOTHER-8088 1.b, 8108)
+# 24-Oct-2022  M. Yokochi - add support for floating chiral stereo assignments (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1189,7 +1190,7 @@ class NmrDpUtility:
                                      'hvycs_restraint', 'procs_restraint',
                                      'csp_restraint', 'auto_relax_restraint',
                                      'ccr_d_csa_restraint', 'ccr_dd_restraint',
-                                     'other_restraint')
+                                     'fchiral_restraint', 'other_restraint')
 
         self.cif_content_subtypes = ('poly_seq', 'non_poly', 'branch', 'coordinate')
 
@@ -1234,6 +1235,7 @@ class NmrDpUtility:
                                       'auto_relax_restraint': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
+                                      'fchiral_restraint': None,
                                       'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': 'entry_information',
@@ -1257,6 +1259,7 @@ class NmrDpUtility:
                                            'auto_relax_restraint': 'auto_relaxation',
                                            'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                                            'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
+                                           'fchiral_restraint': 'floating_chiral_stereo_assign',
                                            'other_restraint': 'other_data_types'
                                            }
                               }
@@ -1283,6 +1286,7 @@ class NmrDpUtility:
                                       'auto_relax_restraint': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
+                                      'fchical_restraint': None,
                                       'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': '_Software_applied_methods',
@@ -1306,6 +1310,7 @@ class NmrDpUtility:
                                            'auto_relax_restraint': '_Auto_relaxation',
                                            'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                                            'ccr_dd_restraint': '_Cross_correlation_DD',
+                                           'fchiral_restraint': '_Floating_chirality_assign',
                                            'other_restraint': '_Other_data'
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
@@ -1381,6 +1386,7 @@ class NmrDpUtility:
                                    'auto_relax_restraint': None,
                                    'ccr_d_csa_restraint': None,
                                    'ccr_dd_restraint': None,
+                                   'fchiral_restraint': None,
                                    'other_restraint': None
                                    },
                            'nmr-star': {'entry_info': None,
@@ -1404,6 +1410,7 @@ class NmrDpUtility:
                                         'auto_relax_restraint': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
+                                        'fchiral_restraint': None,
                                         'other_restraint': None
                                         },
                            'pdbx': {'poly_seq': None,
@@ -1435,6 +1442,7 @@ class NmrDpUtility:
                                     'auto_relax_restraint': None,
                                     'ccr_d_csa_restraint': None,
                                     'ccr_dd_restraint': None,
+                                    'fchical_restraint': None,
                                     'other_restraint': None
                                     },
                             'nmr-star': {'entry_info': None,
@@ -1458,6 +1466,7 @@ class NmrDpUtility:
                                          'auto_relax_restraint': None,
                                          'ccr_d_csa_restraint': None,
                                          'ccr_dd_restraint': None,
+                                         'fchiral_restraint': None,
                                          'other_restraint': None
                                          },
                             'pdbx': {'poly_seq': None,
@@ -1489,6 +1498,7 @@ class NmrDpUtility:
                                         'auto_relax_restraint': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
+                                        'fchiral_restraint': None,
                                         'other_restraint': None
                                         },
                                 'nmr-star': {'dist_restraint': 'ID',
@@ -1507,6 +1517,7 @@ class NmrDpUtility:
                                              'auto_relax_restraint': 'ID',
                                              'ccr_d_csa_restraint': 'ID',
                                              'ccr_dd_restraint': 'ID',
+                                             'fchiral_restraint': 'ID',
                                              'other_restraint': 'ID'
                                              }
                                 }
@@ -1578,6 +1589,7 @@ class NmrDpUtility:
                                   'auto_relax_restraint': None,
                                   'ccr_d_csa_restraint': None,
                                   'ccr_dd_restraint': None,
+                                  'fchiral_restraint': None,
                                   'other_restraint': None
                                   },
                           'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID'},
@@ -1764,6 +1776,16 @@ class NmrDpUtility:
                                                             {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
                                                             {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}
                                                             ],
+                                       'fchical_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                             {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                                             {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                                             {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                             {'name': 'Atom_ID_1', 'type': 'str'},
+                                                             {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                                             {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                                             {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                             {'name': 'Atom_ID_2', 'type': 'str'}
+                                                             ],
                                        'other_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                            {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
                                                            {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
@@ -1874,6 +1896,7 @@ class NmrDpUtility:
                                           'auto_relax_restraint': None,
                                           'ccr_d_csa_restraint': None,
                                           'ccr_dd_restraint': None,
+                                          'fchiral_restraint': None,
                                           'other_restraint': None
                                           },
                                   'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
@@ -2082,6 +2105,19 @@ class NmrDpUtility:
                                                                     {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                     {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}
                                                                     ],
+                                               'fchiral_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                      'default': '1'},
+                                                                     {'name': 'Comp_index_ID_1', 'type': 'int',
+                                                                      'default-from': 'Seq_ID_1'},
+                                                                     {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                     {'name': 'Atom_ID_1', 'type': 'str'},
+                                                                     {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                      'default': '1'},
+                                                                     {'name': 'Comp_index_ID_2', 'type': 'int',
+                                                                      'default-from': 'Seq_ID_2'},
+                                                                     {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                     {'name': 'Atom_ID_2', 'type': 'str'}
+                                                                     ],
                                                'other_restraint': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str',
                                                                     'default': '1'},
                                                                    {'name': 'Comp_index_ID', 'type': 'int',
@@ -2273,6 +2309,7 @@ class NmrDpUtility:
                                    'auto_relax_restraint': None,
                                    'ccr_d_csa_restraint': None,
                                    'ccr_dd_restraint': None,
+                                   'fchiral_restraint': None,
                                    'other_restraint': None
                                    },
                            'nmr-star': {'poly_seq': [{'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
@@ -2967,6 +3004,16 @@ class NmrDpUtility:
                                                              {'name': 'Cross_correlation_DD_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                               'default': '1', 'default-from': 'parent'}
                                                              ],
+                                        'fchiral_restraint': [{'name': 'Stereospecific_assignment_code', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                              {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                              {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                              {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                              {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                              {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                              {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
+                                                              ],
                                         'other_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                              'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                              'enforce-enum': True},
@@ -3099,6 +3146,7 @@ class NmrDpUtility:
                                            'auto_relax_restraint': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
+                                           'fchical_restraint': None,
                                            'other_restraint': None
                                            },
                                    'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -3262,6 +3310,7 @@ class NmrDpUtility:
                                                 'auto_relax_restraint': None,
                                                 'ccr_d_csa_restraint': None,
                                                 'ccr_dd_restraint': None,
+                                                'fchical_restraint': None,
                                                 'other_restraint': None
                                                 }
                                    }
@@ -3405,6 +3454,7 @@ class NmrDpUtility:
                                      'auto_relax_restraint': None,
                                      'ccr_d_csa_restraint': None,
                                      'ccr_dd_restraint': None,
+                                     'fchiral_restraint': None,
                                      'other_restraint': None
                                      },
                              'nmr-star': {'entry_info': ['Software_ID', 'Software_label', 'Methods_ID', 'Methods_label', 'Software_name',
@@ -3680,6 +3730,14 @@ class NmrDpUtility:
                                                                'Dipole_2_auth_entity_assembly_ID_1', 'Dipole_2_auth_seq_ID_1', 'Dipole_2_auth_comp_ID_1', 'Dipole_2_auth_atom_ID_1',
                                                                'Dipole_2_auth_entity_assembly_ID_2', 'Dipole_2_auth_seq_ID_2', 'Dipole_2_auth_comp_ID_2', 'Dipole_2_auth_atom_ID_2',
                                                                'Sf_ID', 'Entry_ID', 'Cross_correlation_DD_list_ID'],
+                                          'fchiral_restraint': ['ID', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1',
+                                                                'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Resonance_ID_1',
+                                                                'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2',
+                                                                'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Resonance_ID_2',
+                                                                'Stereospecific_assignment_code',
+                                                                'Auth_asym_ID_1', 'Auth_entity_assembly_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
+                                                                'Auth_asym_ID_2', 'Auth_entity_assembly_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
+                                                                'Sf_ID', 'Entry_ID', 'Floating_chirality_assign_ID'],
                                           'other_restraint': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
                                                               'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
                                                               'Val', 'Val_err', 'Resonance_ID',
@@ -3723,6 +3781,7 @@ class NmrDpUtility:
                                         'auto_relax_restraint': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
+                                        'fchiral_restraint': None,
                                         'other_restraint': None
                                         },
                                 'nmr-star': {'entry_info': '_Entry',
@@ -3746,6 +3805,7 @@ class NmrDpUtility:
                                              'auto_relax_restraint': '_Auto_relaxation_list',
                                              'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                                              'ccr_dd_restraint': '_Cross_correlation_DD_list',
+                                             'fchiral_restraint': '_Floating_chirality_assign',
                                              'other_restraint': '_Other_data_type_list'
                                              }
                                 }
@@ -3834,6 +3894,7 @@ class NmrDpUtility:
                                      'auto_relax_restraint': None,
                                      'ccr_d_csa_restraint': None,
                                      'ccr_dd_restraint': None,
+                                     'fchiral_restraint': None,
                                      'other_restraint': None
                                      },
                              'nmr-star': {'entry_info': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -4010,6 +4071,11 @@ class NmrDpUtility:
                                                                {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
                                                                 'enum': ('s-1', 'ms-1', 'us-1')}
                                                                ],
+                                          'fchiral_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                                {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                                {'name': 'Stereo_count', 'type': 'int', 'mandatory': True},
+                                                                {'name': 'Stereo_assigned_count', 'type': 'int', 'mandatory': True}
+                                                                ],
                                           'other_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Definition', 'type': 'str', 'mandatory': True}
@@ -4039,6 +4105,7 @@ class NmrDpUtility:
                                       'auto_relax_restraint': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
+                                      'fchiral_restraint': None,
                                       'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': None,
@@ -4062,6 +4129,7 @@ class NmrDpUtility:
                                            'auto_relax_restraint': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
+                                           'fchical_restraint': None,
                                            'other_restraint': None
                                            }
                               }
@@ -4092,6 +4160,7 @@ class NmrDpUtility:
                                         'auto_relax_restraint': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
+                                        'fchiral_restraint': None,
                                         'other_restraint': None
                                         },
                                 'nmr-star': {'entry_info': ['Sf_category', 'Sf_framecode', 'Sf_ID', 'ID', 'Title', 'Type',
@@ -4196,6 +4265,8 @@ class NmrDpUtility:
                                              'ccr_dd_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
                                                                   'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H',
                                                                   'Val_units', 'Details', 'Text_data_format', 'Text_data'],
+                                             'fchiral_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                                   'Details', 'Stereo_count', 'Stereo_assigned_count'],
                                              'other_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Definition', 'Data_file_name',
                                                                  'Sample_condition_list_ID', 'Sample_condition_list_label', 'Details', 'Text_data_format', 'Text_data']
                                              }
@@ -4226,6 +4297,7 @@ class NmrDpUtility:
                                           'auto_relax_restraint': None,
                                           'ccr_d_csa_restraint': None,
                                           'ccr_dd_restraint': None,
+                                          'fchiral_restraint': None,
                                           'other_restraint': None
                                           },
                                   'nmr-star': {'entry_info': None,
@@ -4249,6 +4321,7 @@ class NmrDpUtility:
                                                'auto_relax_restraint': None,
                                                'ccr_d_csa_restraint': None,
                                                'ccr_dd_restraint': None,
+                                               'fchical_restraint': None,
                                                'other_restraint': None
                                                }
                                   }
@@ -4275,6 +4348,7 @@ class NmrDpUtility:
                                              'auto_relax_restraint': [],
                                              'ccr_d_csa_restraint': [],
                                              'ccr_dd_restraint': [],
+                                             'fchical_restraint': [],
                                              'other_restraint': []
                                              },
                                      'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author',
@@ -4428,6 +4502,7 @@ class NmrDpUtility:
                                                   'ccr_d_csa_restraint': ['Cross_correlation_D_CSA_experiment', 'Cross_correlation_D_CSA_software',
                                                                           'Cross_correlation_D_CSA'],
                                                   'ccr_dd_restraint': ['Cross_correlation_DD_experiment', 'Cross_correlation_DD_software', 'Cross_correlation_DD'],
+                                                  'fchical_restraint': ['Floating_chirality_software', 'Floating_chirality'],
                                                   'other_restraint': ['Other_data_experiment', 'Other_data_software', 'Other_data']
                                                   }
                                      }
@@ -4474,6 +4549,7 @@ class NmrDpUtility:
                                       'auto_relax_restraint': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
+                                      'fchiral_restraint': None,
                                       'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': None,
@@ -4540,6 +4616,7 @@ class NmrDpUtility:
                                            'auto_relax_restraint': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
+                                           'fchiral_restraint': None,
                                            'other_restraint': None
                                            }
                               }
@@ -4594,6 +4671,7 @@ class NmrDpUtility:
                                        'auto_relax_restraint': None,
                                        'ccr_d_csa_restraint': None,
                                        'ccr_dd_restraint': None,
+                                       'fchical_restraint': None,
                                        'other_restraint': None
                                        },
                                'nmr-star': {'entry_info': None,
@@ -4727,6 +4805,7 @@ class NmrDpUtility:
                                             'auto_relax_restraint': None,
                                             'ccr_d_csa_restraint': None,
                                             'ccr_dd_restraint': None,
+                                            'fchiral_restraint': None,
                                             'other_restraint': None
                                             }
                                }
@@ -4763,6 +4842,7 @@ class NmrDpUtility:
                                          'auto_relax_restraint': None,
                                          'ccr_d_csa_restraint': None,
                                          'ccr_dd_restraint': None,
+                                         'fchical_restraint': None,
                                          'other_restraint': None
                                          },
                                  'nmr-star': {'entry_info': None,
@@ -4832,6 +4912,7 @@ class NmrDpUtility:
                                               'auto_relax_restraint': None,
                                               'ccr_d_csa_restraint': None,
                                               'ccr_dd_restraint': None,
+                                              'fchical_restraint': None,
                                               'other_restraint': None
                                               }
                                  }
@@ -5006,6 +5087,7 @@ class NmrDpUtility:
                           'auto_relax_restraint': [],
                           'ccr_d_csa_restraint': [],
                           'ccr_dd_restraint': [],
+                          'fchiral_restraint': [],
                           'other_restraint': []
                           }
 
@@ -5031,6 +5113,7 @@ class NmrDpUtility:
                            'auto_relax_restraint': [],
                            'ccr_d_csa_restraint': [],
                            'ccr_dd_restraint': [],
+                           'fchiral_restraint': [],
                            'other_restraint': []
                            }
 
@@ -5056,6 +5139,7 @@ class NmrDpUtility:
                               'auto_relax_restraint': [],
                               'ccr_d_csa_restraint': [],
                               'ccr_dd_restraint': [],
+                              'fchiral_restraint': [],
                               'other_restraint': []
                               }
 
@@ -10927,7 +11011,7 @@ class NmrDpUtility:
                                 j3 += 1
 
                         is_done = True
-
+                """
                 if not is_done and err_input.startswith('var info echo'):
 
                     i = j = j2 = 0
@@ -10944,6 +11028,7 @@ class NmrDpUtility:
                                 ofp.write(line)
                                 j += 1
                                 continue
+
                             if line.startswith('var info echo')\
                                or line.startswith('echo:')\
                                or line.startswith('info:')\
@@ -10952,6 +11037,7 @@ class NmrDpUtility:
                                 ofp2.write(line)
                                 j2 += 1
                                 continue
+
                             if not (line.isspace() or comment_pattern.match(line)
                                     or (gromacs_file_type and gromacs_comment_pattern.match(line))):
                                 dst_has_content = True
@@ -10972,7 +11058,7 @@ class NmrDpUtility:
                             print('PEEL-MR-EXIT #4')
 
                         return True
-
+                """
         if not is_done:
 
             i = j = j2 = j3 = 0
@@ -13054,7 +13140,7 @@ class NmrDpUtility:
                         split_file_list.append(_ar)
 
                         continue
-
+                    """
                     if file_ext in ('finalstereo', 'cya'):
                         is_finalstereo = False
                         with open(dst_file, 'r') as ifp:
@@ -13083,7 +13169,7 @@ class NmrDpUtility:
                             split_file_list.append(_ar)
 
                             continue
-
+                    """
                     designated = False
 
                     for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',

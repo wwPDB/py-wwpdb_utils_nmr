@@ -234,8 +234,6 @@ CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cc
 # 'radi_restraint'
 # 'diff_restraint'
 # 'nbase_restraint'
-# 'pre_restraint'
-# 'pcs_restraint'
 # 'prdc_restraint'
 # 'pang_restraint'
 # 'pccr_restraint'
@@ -2675,6 +2673,12 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, 'ppm')
         elif tag_item_name == 'Type' and subtype == 'pcs':
             sf.add_tag(tag_item_name, 'paramagnetic ligand binding')
+        elif tag_item_name == 'Common_relaxation_type_name' and subtype == 'pre':
+            sf.add_tag(tag_item_name, 'paramagnetic relaxation enhancement')
+        elif tag_item_name == 'Relaxation_coherence_type' and subtype == 'pre':
+            sf.add_tag(tag_item_name, "S+")
+        elif tag_item_name == 'Relaxation_val_units' and subtype == 'pre':
+            sf.add_tag(tag_item_name, 's-1')
         else:
             sf.add_tag(tag_item_name, '.')
 
@@ -2937,7 +2941,17 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     elif subtype == 'pre':
-        pass
+        row[key_size] = atomType = atom1['atom_id'][0]
+        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size + 2] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'lower_value') and hasKeyValue(dstFunc, 'upper_value'):
+            row[key_size + 3] = (dstFunc['upper_value'] - dstFunc['lower_value']) / 2.0
+        # Rex_val
+        # Rex_val_err
+
+        row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     return row
 

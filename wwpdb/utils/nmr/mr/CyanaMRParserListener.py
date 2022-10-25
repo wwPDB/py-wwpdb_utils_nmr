@@ -3547,7 +3547,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', '.',
+                                 '.', None,
                                  sf['list_id'], self.__entryId, dstFunc, atom)
                     sf['loop'].add_data(row)
 
@@ -5845,7 +5845,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', '.',
+                                 '.', None,
                                  sf['list_id'], self.__entryId, None, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -5957,7 +5957,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', '.',
+                                 '.', None,
                                  sf['list_id'], self.__entryId, None, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -6143,7 +6143,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', '.',
+                                     '.', None,
                                      sf['list_id'], self.__entryId, None, atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -6172,7 +6172,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__createSfDict and sf is not None:
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', '.',
+                                         '.', None,
                                          sf['list_id'], self.__entryId, None, atom1, atom2)
                             sf['loop'].add_data(row)
 
@@ -6216,7 +6216,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', '.',
+                                     '.', None,
                                      sf['list_id'], self.__entryId, None, atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -6261,7 +6261,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__createSfDict and sf is not None:
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', '.',
+                                         '.', None,
                                          sf['list_id'], self.__entryId, None, atom1, atom2)
                             sf['loop'].add_data(row)
 

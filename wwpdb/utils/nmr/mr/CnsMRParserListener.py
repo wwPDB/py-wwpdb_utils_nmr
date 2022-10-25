@@ -2399,7 +2399,7 @@ class CnsMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', '.',
+                                 '.', None,
                                  sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4, atom5)
                     sf['loop'].add_data(row)
 
@@ -2549,7 +2549,7 @@ class CnsMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', '.',
+                                     '.', None,
                                      sf['list_id'], self.__entryId, dstFunc, atom1)
                         sf['loop'].add_data(row)
 

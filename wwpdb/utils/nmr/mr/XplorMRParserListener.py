@@ -3685,7 +3685,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', '.',
+                                 '.', None,
                                  sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4, atom5)
                     sf['loop'].add_data(row)
 
@@ -3833,7 +3833,7 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', '.',
+                                     '.', None,
                                      sf['list_id'], self.__entryId, dstFunc, atom1)
                         sf['loop'].add_data(row)
 
@@ -4957,7 +4957,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', '.',
+                                 '.', None,
                                  sf['list_id'], self.__entryId, dstFunc, atom2)
                     sf['loop'].add_data(row)
 
@@ -5331,7 +5331,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', '.',
+                                 '.', None,
                                  sf['list_id'], self.__entryId, dstFunc, atom1)
                     sf['loop'].add_data(row)
 
@@ -5610,7 +5610,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', '.',
+                                 '.', None,
                                  sf['list_id'], self.__entryId, dstFunc, atom1)
                     sf['loop'].add_data(row)
 
@@ -5912,6 +5912,12 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XRDC) id={self.prdcRestraints} "
                           f"paramag_center={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None,
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                    sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()
@@ -6178,13 +6184,23 @@ class XplorMRParserListener(ParseTreeListener):
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 
+            if self.__createSfDict:
+                sf = self.__getSf()
+                sf['id'] += 1
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
                                                   self.atomSelectionSet[2]):
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (XCCR) id={self.prdcRestraints} "
+                    print(f"subtype={self.__cur_subtype} (XCCR) id={self.pccrRestraints} "
                           f"paramag_center={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None,
+                                 sf['list_id'], self.__entryId, dstFunc, atom_id_0, None, atom1, atom2)
+                    sf['loop'].add_data(row)
 
         finally:
             self.numberSelection.clear()
@@ -6653,7 +6669,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__createSfDict and sf is not None:
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             '.', '.',
+                             '.', None,
                              sf['list_id'], self.__entryId, None, atom1, atom2)
                 sf['loop'].add_data(row)
 

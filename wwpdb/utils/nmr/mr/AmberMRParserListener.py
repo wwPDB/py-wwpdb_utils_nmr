@@ -4652,7 +4652,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__createSfDict and sf is not None:
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', '.',
+                                         '.', None,
                                          sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
                             sf['loop'].add_data(row)
 
@@ -4961,7 +4961,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', '.',
+                                     '.', None,
                                      sf['list_id'], self.__entryId, dstFunc, atom)
                         sf['loop'].add_data(row)
 
@@ -5453,7 +5453,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', '.',
+                                     '.', None,
                                      sf['list_id'], self.__entryId, dstFunc, atom)
                         sf['loop'].add_data(row)
 
@@ -6585,7 +6585,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', '.',
+                                     '.', None,
                                      sf['list_id'], self.__entryId, dstFunc, atom2)
                         sf['loop'].add_data(row)
 

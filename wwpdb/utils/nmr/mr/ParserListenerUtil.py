@@ -234,9 +234,7 @@ CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cc
 # 'radi_restraint'
 # 'diff_restraint'
 # 'nbase_restraint'
-# 'prdc_restraint'
 # 'pang_restraint'
-# 'pccr_restraint'
 # 'geo_restraint'
 
 NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
@@ -2614,6 +2612,9 @@ def getValidSubType(subtype):
     if subtype == 'pre':
         return 'auto_realx_restraint'
 
+    if subtype == 'pccr':
+        return 'ccr_dd_restraint'
+
     raise KeyError(f'Internal subtype {subtype!r} is not defined.')
 
 
@@ -2697,7 +2698,7 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, 'RDC')
         elif tag_item_name == 'Homonuclear_NOE_val_type' and subtype == 'noepk':
             sf.add_tag(tag_item_name, 'peak volume')
-        elif tag_item_name == 'Val_units' and subtype == 'csa':
+        elif tag_item_name == 'Val_units' and subtype in ('csa', 'pccr'):
             sf.add_tag(tag_item_name, 'ppm')
         elif tag_item_name == 'Units' and subtype in ('hvycs', 'procs'):
             sf.add_tag(tag_item_name, 'ppm')
@@ -2989,6 +2990,34 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+    elif subtype == 'pccr':
+        row[9], row[10], row[11], row[12] = atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        row[13], row[14], row[15], row[16] = atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+
+        row[key_size] = atom1['atom_id']
+        # Dipole_1_atom_isotope_number_1
+        # Dipole_1_atom_type_2
+        # Dipole_1_atom_isotope_number_2
+        row[key_size + 4] = atomType = atom3['atom_id'][0]
+        row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        row[key_size + 6] = atomType = atom4['atom_id'][0]
+        row[key_size + 7] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size + 8] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'lower_value') and hasKeyValue(dstFunc, 'upper_value'):
+            row[key_size + 9] = (dstFunc['upper_value'] - dstFunc['lower_value']) / 2.0
+
+        row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        # Dipole_1_auth_entity_assembly_ID_2
+        # Dipole_1_auth_seq_ID_2
+        # Dipole_1_auth_comp_ID_2
+        # Dipole_1_auth_atom_ID_2
+        row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 22], row[key_size + 23], row[key_size + 24], row[key_size + 25] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     return row
 

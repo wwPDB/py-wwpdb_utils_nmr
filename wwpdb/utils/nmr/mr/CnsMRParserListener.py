@@ -672,6 +672,9 @@ class CnsMRParserListener(ParseTreeListener):
         self.planeStatements += 1
         self.__cur_subtype = 'plane'
 
+        if self.__createSfDict:
+            self.__addSf('planality restraint, CNS PLANE/GROUP statement')
+
     # Exit a parse tree produced by CnsMRParser#plane_restraint.
     def exitPlane_restraint(self, ctx: CnsMRParser.Plane_restraintContext):  # pylint: disable=unused-argument
         pass
@@ -683,6 +686,9 @@ class CnsMRParserListener(ParseTreeListener):
 
         self.squareExponent = 2.0
         self.vector3D = [0.0] * 3
+
+        if self.__createSfDict:
+            self.__addSf('NCS restraint, CNS HARMonic statement')
 
     # Exit a parse tree produced by CnsMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -742,6 +748,10 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#conformation_db_restraint.
     def enterConformation_db_restraint(self, ctx: CnsMRParser.Conformation_db_restraintContext):  # pylint: disable=unused-argument
         self.ramaStatements += 1
+        self.__cur_subtype = 'rama'
+
+        if self.__createSfDict:
+            self.__addSf('dihedral angle database restraint, CNS CONFormation statement')
 
     # Exit a parse tree produced by CnsMRParser#conformation_db_restraint.
     def exitConformation_db_restraint(self, ctx: CnsMRParser.Conformation_db_restraintContext):  # pylint: disable=unused-argument
@@ -750,6 +760,10 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#diffusion_anisotropy_restraint.
     def enterDiffusion_anisotropy_restraint(self, ctx: CnsMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
         self.diffStatements += 1
+        self.__cur_subtype = 'diff'
+
+        if self.__createSfDict:
+            self.__addSf('diffusion anisotropy restraint, CNS DANIsotropy statement')
 
     # Exit a parse tree produced by CnsMRParser#diffusion_anisotropy_restraint.
     def exitDiffusion_anisotropy_restraint(self, ctx: CnsMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
@@ -1644,7 +1658,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             for atom1 in self.atomSelectionSet[0]:
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (HARM) id={self.planeRestraints} "
+                    print(f"subtype={self.__cur_subtype} (HARM) id={self.geoRestraints} "
                           f"atom={atom1} normal_vector={self.vector3D}")
 
         finally:
@@ -3260,6 +3274,9 @@ class CnsMRParserListener(ParseTreeListener):
     def enterNcs_restraint(self, ctx: CnsMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
         self.geoStatements += 1
         self.__cur_subtype = 'geo'
+
+        if self.__createSfDict:
+            self.__addSf('NCS restraint, CNS NCS/GROUP statement')
 
     # Exit a parse tree produced by CnsMRParser#ncs_restraint.
     def exitNcs_restraint(self, ctx: CnsMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
@@ -7247,7 +7264,7 @@ class CnsMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self):
+    def __addSf(self, constraintType=None):
         _subtype = getValidSubType(self.__cur_subtype)
 
         if _subtype is None:
@@ -7255,26 +7272,32 @@ class CnsMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        if self.__cur_subtype not in self.sfDict:
-            self.sfDict[self.__cur_subtype] = []
+        key = (self.__cur_subtype, constraintType, None)
+
+        if key not in self.sfDict:
+            self.sfDict[key] = []
 
         list_id = self.__listIdCounter[self.__cur_subtype]
 
         sf_framecode = 'CNS_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
-        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
+        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
+                          constraintType)
+
         lp = getLoop(self.__cur_subtype)
+        if not isinstance(lp, str):
+            sf.add_loop(lp)
 
-        sf.add_loop(lp)
+        self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                 'id': 0, 'index_id': 0})
 
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                                'id': 0, 'index_id': 0})
+    def __getSf(self, constraintType=None):
+        key = (self.__cur_subtype, constraintType, None)
 
-    def __getSf(self):
-        if self.__cur_subtype not in self.sfDict:
-            self.__addSf()
+        if key not in self.sfDict:
+            self.__addSf(constraintType)
 
-        return self.sfDict[self.__cur_subtype][-1]
+        return self.sfDict[key][-1]
 
     def getContentSubtype(self):
         """ Return content subtype of CNS MR file.

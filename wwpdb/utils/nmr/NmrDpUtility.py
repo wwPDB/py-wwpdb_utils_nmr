@@ -11011,54 +11011,54 @@ class NmrDpUtility:
                                 j3 += 1
 
                         is_done = True
-                """
-                if not is_done and err_input.startswith('var info echo'):
-
-                    i = j = j2 = 0
-
-                    dst_has_content = False
-
-                    with open(file_path, 'r') as ifp,\
-                            open(div_src_file, 'w') as ofp,\
-                            open(div_ext_file, 'w') as ofp2,\
-                            open(div_try_file, 'w') as ofp3:
-                        for line in ifp:
-                            i += 1
-                            if i < err_line_number:
-                                ofp.write(line)
-                                j += 1
-                                continue
-
-                            if line.startswith('var info echo')\
-                               or line.startswith('echo:')\
-                               or line.startswith('info:')\
-                               or line.startswith('atom stereo')\
-                               or cyana_unset_info_pattern.match(line) or cyana_print_pattern.match(line):
-                                ofp2.write(line)
-                                j2 += 1
-                                continue
-
-                            if not (line.isspace() or comment_pattern.match(line)
-                                    or (gromacs_file_type and gromacs_comment_pattern.match(line))):
-                                dst_has_content = True
-                            ofp3.write(line)
-                            j3 += 1
-
-                    if dst_has_content:
-                        is_done = True
-
-                    else:
-
-                        if div_src:
-                            os.remove(file_path)
-                        if os.path.exists(div_try_file):
-                            os.remove(div_try_file)
-
-                        if self.__mr_debug:
-                            print('PEEL-MR-EXIT #4')
-
-                        return True
-                """
+                # """
+                # if not is_done and err_input.startswith('var info echo'):
+                #
+                #    i = j = j2 = 0
+                #
+                #     dst_has_content = False
+                #
+                #     with open(file_path, 'r') as ifp,\
+                #             open(div_src_file, 'w') as ofp,\
+                #             open(div_ext_file, 'w') as ofp2,\
+                #             open(div_try_file, 'w') as ofp3:
+                #         for line in ifp:
+                #             i += 1
+                #             if i < err_line_number:
+                #                 ofp.write(line)
+                #                 j += 1
+                #                 continue
+                #
+                #             if line.startswith('var info echo')\
+                #                or line.startswith('echo:')\
+                #                or line.startswith('info:')\
+                #                or line.startswith('atom stereo')\
+                #                or cyana_unset_info_pattern.match(line) or cyana_print_pattern.match(line):
+                #                 ofp2.write(line)
+                #                 j2 += 1
+                #                 continue
+                #
+                #             if not (line.isspace() or comment_pattern.match(line)
+                #                     or (gromacs_file_type and gromacs_comment_pattern.match(line))):
+                #                 dst_has_content = True
+                #             ofp3.write(line)
+                #             j3 += 1
+                #
+                #     if dst_has_content:
+                #         is_done = True
+                #
+                #     else:
+                #
+                #         if div_src:
+                #             os.remove(file_path)
+                #         if os.path.exists(div_try_file):
+                #             os.remove(div_try_file)
+                #
+                #         if self.__mr_debug:
+                #             print('PEEL-MR-EXIT #4')
+                #
+                #         return True
+                # """
         if not is_done:
 
             i = j = j2 = j3 = 0
@@ -13140,36 +13140,36 @@ class NmrDpUtility:
                         split_file_list.append(_ar)
 
                         continue
-                    """
-                    if file_ext in ('finalstereo', 'cya'):
-                        is_finalstereo = False
-                        with open(dst_file, 'r') as ifp:
-                            for pos, line in enumerate(ifp, start=1):
-                                if pos == 1:
-                                    if not line.startswith('var info echo'):
-                                        break
-                                elif pos == 2:
-                                    if not line.startswith('echo:'):
-                                        break
-                                elif pos == 3:
-                                    if not line.startswith('info:'):
-                                        break
-                                elif pos == 4:
-                                    if line.startswith('atom stereo'):
-                                        is_finalstereo = True
-                                    break
-
-                        if is_finalstereo:
-                            shutil.copyfile(dst_file, ign_ext_file)  # ignore AMBER input coordinate file for the next time
-
-                            _ar = ar.copy()
-
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-oth'
-                            split_file_list.append(_ar)
-
-                            continue
-                    """
+                    # """
+                    # if file_ext in ('finalstereo', 'cya'):
+                    #     is_finalstereo = False
+                    #     with open(dst_file, 'r') as ifp:
+                    #         for pos, line in enumerate(ifp, start=1):
+                    #             if pos == 1:
+                    #                 if not line.startswith('var info echo'):
+                    #                     break
+                    #             elif pos == 2:
+                    #                 if not line.startswith('echo:'):
+                    #                     break
+                    #             elif pos == 3:
+                    #                 if not line.startswith('info:'):
+                    #                     break
+                    #             elif pos == 4:
+                    #                 if line.startswith('atom stereo'):
+                    #                     is_finalstereo = True
+                    #                 break
+                    #
+                    #     if is_finalstereo:
+                    #         shutil.copyfile(dst_file, ign_ext_file)  # ignore AMBER input coordinate file for the next time
+                    #
+                    #         _ar = ar.copy()
+                    #
+                    #         _ar['file_name'] = dst_file
+                    #         _ar['file_type'] = 'nm-res-oth'
+                    #         split_file_list.append(_ar)
+                    #
+                    #         continue
+                    # """
                     designated = False
 
                     for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',

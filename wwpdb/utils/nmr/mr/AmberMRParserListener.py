@@ -513,6 +513,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.pcsRestraints = 0       # AMBER: Psuedocontact shift restraints
         self.rdcRestraints = 0       # AMBER: Direct dipolar coupling restraints
         self.csaRestraints = 0       # AMBER: Residual CSA or pseudo-CSA restraints
+        self.geoRestraints = 0       # AMBER: Generalized distance restraints
 
         # last Sander comment
         self.lastComment = None
@@ -963,6 +964,8 @@ class AmberMRParserListener(ParseTreeListener):
                     subtype_name = ''
                     if self.__cur_subtype == 'dist':
                         subtype_name = ' as a distance restraint'
+                    elif self.__cur_subtype == 'geo':
+                        subtype_name = ' as a generalized distance restraint'
                     elif self.__cur_subtype == 'ang':
                         subtype_name = ' as an angle restraint'
                     elif self.__cur_subtype == 'dihed':
@@ -1088,7 +1091,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
-                    if self.__cur_subtype == 'dist':
+                    if self.__cur_subtype in ('dist', 'geo'):
 
                         dstFunc = self.validateDistanceRange(1.0)
 
@@ -1122,12 +1125,17 @@ class AmberMRParserListener(ParseTreeListener):
 
                             # generalized distance 2
                             if lenIat == COL_DIST_COORD2:
+
+                                if self.__createSfDict:
+                                    sf = self.__getSf('AMBER generalized distance restraint of 4 atoms')
+                                    sf['id'] += 1
+
                                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                                     self.atomSelectionSet[1],
                                                                                     self.atomSelectionSet[2],
                                                                                     self.atomSelectionSet[3]):
                                     if self.__debug:
-                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                        print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight=[{self.rstwt[0]}, {self.rstwt[1]}] "
                                               f"|atom1={atom1} atom2={atom2}| "
                                               f"|atom3={atom3} atom4={atom4}| "
@@ -1135,6 +1143,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                             # generalized distance 3
                             elif lenIat == COL_DIST_COORD3:
+
+                                if self.__createSfDict:
+                                    sf = self.__getSf('AMBER generalized distance restraint of 6 atoms')
+                                    sf['id'] += 1
+
                                 for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
                                                                                                   self.atomSelectionSet[1],
                                                                                                   self.atomSelectionSet[2],
@@ -1142,7 +1155,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                   self.atomSelectionSet[4],
                                                                                                   self.atomSelectionSet[5]):
                                     if self.__debug:
-                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                        print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight=[{self.rstwt[0]}, {self.rstwt[1]}, {self.rstwt[2]}] "
                                               f"|atom1={atom1} atom2={atom2}| "
                                               f"|atom3={atom3} atom4={atom4}| "
@@ -1151,6 +1164,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                             # generalized distance 4
                             else:
+
+                                if self.__createSfDict:
+                                    sf = self.__getSf('AMBER generalized distance restraint of 8 atoms')
+                                    sf['id'] += 1
+
                                 for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                                 self.atomSelectionSet[1],
                                                                                                                 self.atomSelectionSet[2],
@@ -1160,7 +1178,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                                 self.atomSelectionSet[6],
                                                                                                                 self.atomSelectionSet[7]):
                                     if self.__debug:
-                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                        print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight={self.rstwt} "
                                               f"|atom1={atom1} atom2={atom2}| "
                                               f"|atom3={atom3} atom4={atom4}| "
@@ -1185,6 +1203,10 @@ class AmberMRParserListener(ParseTreeListener):
 
                         if dstFunc is None:
                             return
+
+                        if self.__createSfDict:
+                            sf = self.__getSf('angle restraint')
+                            sf['id'] += 1
 
                         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                      self.atomSelectionSet[1],
@@ -1256,6 +1278,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                         # plane-point angle
                         if lenIat == COL_PLANE_POINT:
+
+                            if self.__createSfDict:
+                                sf = self.__getSf('AMBER plane-point angle restraint')
+                                sf['id'] += 1
+
                             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                                        self.atomSelectionSet[1],
                                                                                        self.atomSelectionSet[2],
@@ -1263,12 +1290,17 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                        self.atomSelectionSet[4]):
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
-                                          f"plane: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
+                                          f"plane: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
                                           f"point: atom={atom5}"
                                           f"{dstFunc}")
 
                         # plane-plane angle
                         else:
+
+                            if self.__createSfDict:
+                                sf = self.__getSf('AMBER plane-plane angle restraint')
+                                sf['id'] += 1
+
                             for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                             self.atomSelectionSet[1],
                                                                                                             self.atomSelectionSet[2],
@@ -1279,8 +1311,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                             self.atomSelectionSet[7]):
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
-                                          f"plane_1: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
-                                          f"plane_2: |atom_1={atom5} atom_2={atom6} atom_3={atom7} atom_4={atom8}| "
+                                          f"plane1: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
+                                          f"plane2: |atom1={atom5} atom2={atom6} atom3={atom7} atom4={atom8}| "
                                           f"{dstFunc}")
 
                 # try to update AMBER atom number dictionary based on Sander comments
@@ -1723,7 +1755,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
-                    if self.__cur_subtype == 'dist':
+                    if self.__cur_subtype in ('dist', 'geo'):
 
                         dstFunc = self.validateDistanceRange(1.0)
 
@@ -1789,12 +1821,17 @@ class AmberMRParserListener(ParseTreeListener):
 
                             # generalized distance 2
                             if lenWeight == 2:
+
+                                if self.__createSfDict:
+                                    sf = self.__getSf('AMBER generalized distance restraint of 4 atoms')
+                                    sf['id'] += 1
+
                                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                                     self.atomSelectionSet[1],
                                                                                     self.atomSelectionSet[2],
                                                                                     self.atomSelectionSet[3]):
                                     if self.__debug:
-                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                        print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight={self.inGenDist_weight} "
                                               f"|atom1={atom1} atom2={atom2}| "
                                               f"|atom3={atom3} atom4={atom4}| "
@@ -1802,6 +1839,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                             # generalized distance 3
                             elif lenWeight == 3:
+
+                                if self.__createSfDict:
+                                    sf = self.__getSf('AMBER generalized distance restraint of 6 atoms')
+                                    sf['id'] += 1
+
                                 for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
                                                                                                   self.atomSelectionSet[1],
                                                                                                   self.atomSelectionSet[2],
@@ -1809,7 +1851,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                   self.atomSelectionSet[4],
                                                                                                   self.atomSelectionSet[5]):
                                     if self.__debug:
-                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                        print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight={self.inGenDist_weight} "
                                               f"|atom1={atom1} atom2={atom2}| "
                                               f"|atom3={atom3} atom4={atom4}| "
@@ -1818,6 +1860,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                             # generalized distance 4
                             else:
+
+                                if self.__createSfDict:
+                                    sf = self.__getSf('AMBER generalized distance restraint of 8 atoms')
+                                    sf['id'] += 1
+
                                 for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                                 self.atomSelectionSet[1],
                                                                                                                 self.atomSelectionSet[2],
@@ -1827,7 +1874,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                                 self.atomSelectionSet[6],
                                                                                                                 self.atomSelectionSet[7]):
                                     if self.__debug:
-                                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                                        print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight={self.inGenDist_weight} "
                                               f"|atom1={atom1} atom2={atom2}| "
                                               f"|atom3={atom3} atom4={atom4}| "
@@ -1859,6 +1906,10 @@ class AmberMRParserListener(ParseTreeListener):
                         if dstFunc is None:
                             return
 
+                        if self.__createSfDict:
+                            sf = self.__getSf('angle restraint')
+                            sf['id'] += 1
+
                         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                      self.atomSelectionSet[1],
                                                                      self.atomSelectionSet[2]):
@@ -1866,7 +1917,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 continue
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
-                                      f"atom1={atom1} atom2={atom2} atom_3={atom3} {dstFunc}")
+                                      f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
                     # torsional angle
                     elif self.__cur_subtype == 'dihed':
@@ -1940,6 +1991,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-point angle restraint.\n"
                                     return
 
+                            if self.__createSfDict:
+                                sf = self.__getSf('AMBER plane-point angle restraint')
+                                sf['id'] += 1
+
                             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                                        self.atomSelectionSet[1],
                                                                                        self.atomSelectionSet[2],
@@ -1947,7 +2002,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                        self.atomSelectionSet[4]):
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
-                                          f"plane: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
+                                          f"plane: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
                                           f"point: atom={atom5}"
                                           f"{dstFunc}")
 
@@ -1984,6 +2039,10 @@ class AmberMRParserListener(ParseTreeListener):
 
                                 self.atomSelectionSet.append(atomSelection)
 
+                            if self.__createSfDict:
+                                sf = self.__getSf('AMBER plane-plane angle restraint')
+                                sf['id'] += 1
+
                             for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                             self.atomSelectionSet[1],
                                                                                                             self.atomSelectionSet[2],
@@ -1994,8 +2053,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                             self.atomSelectionSet[7]):
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
-                                          f"plane_1: |atom_1={atom1} atom_2={atom2} atom_3={atom3} atom_4={atom4}| "
-                                          f"plane_2: |atom_1={atom5} atom_2={atom6} atom_3={atom7} atom_4={atom8}| "
+                                          f"plane1: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
+                                          f"plane2: |atom1={atom5} atom2={atom6} atom3={atom7} atom4={atom8}| "
                                           f"{dstFunc}")
 
                 # try to update AMBER atom number dictionary based on Sander comments
@@ -4484,8 +4543,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         elif self.numIatCol == COL_DIHED:  # torsional angle or generalized distance 2
             if likeDist:
-                self.distRestraints += 1
-                self.__cur_subtype = 'dist'
+                self.geoRestraints += 1
+                self.__cur_subtype = 'geo'
             else:
                 self.dihedRestraints += 1
                 self.__cur_subtype = 'dihed'
@@ -4495,13 +4554,13 @@ class AmberMRParserListener(ParseTreeListener):
             self.__cur_subtype = 'plane'
 
         elif self.numIatCol == COL_DIST_COORD3:  # generalized distance 3
-            self.distRestraints += 1
-            self.__cur_subtype = 'dist'
+            self.geoRestraints += 1
+            self.__cur_subtype = 'geo'
 
         elif self.numIatCol == COL_PLANE_PLANE:  # plane-plane angle or generalized distance 4
             if likeDist:
-                self.distRestraints += 1
-                self.__cur_subtype = 'dist'
+                self.geoRestraints += 1
+                self.__cur_subtype = 'geo'
             else:
                 self.planeRestraints += 1
                 self.__cur_subtype = 'plane'
@@ -6859,8 +6918,8 @@ class AmberMRParserListener(ParseTreeListener):
             print("  " * self.depth + "enter_coordinate2_rst_func")
 
         if self.depth == 0:
-            self.distRestraints += 1
-            self.__cur_subtype = 'dist'
+            self.geoRestraints += 1
+            self.__cur_subtype = 'geo'
 
         self.depth += 1
 
@@ -6881,8 +6940,8 @@ class AmberMRParserListener(ParseTreeListener):
             print("  " * self.depth + "enter_coordinate3_rst_func")
 
         if self.depth == 0:
-            self.distRestraints += 1
-            self.__cur_subtype = 'dist'
+            self.geoRestraints += 1
+            self.__cur_subtype = 'geo'
 
         self.depth += 1
 
@@ -6904,8 +6963,8 @@ class AmberMRParserListener(ParseTreeListener):
             print("  " * self.depth + "enter_coordinate4_rst_func")
 
         if self.depth == 0:
-            self.distRestraints += 1
-            self.__cur_subtype = 'dist'
+            self.geoRestraints += 1
+            self.__cur_subtype = 'geo'
 
         self.depth += 1
 
@@ -7416,9 +7475,11 @@ class AmberMRParserListener(ParseTreeListener):
             if dataset is None or n is None:
                 return f"[Check the {self.csaRestraints}th row of residual CSA or pseudo-CSA restraints] "
             return f"[Check the {n}th row of residual CSA or pseudo-CSA restraints (dataset={dataset})] "
+        if self.__cur_subtype == 'geo':
+            return f"[Check the {self.geoRestraints}th row of generalized distance restraints] "
         return f"[Check the {self.nmrRestraints}th row of NMR restraints] "
 
-    def __addSf(self):
+    def __addSf(self, constraintType=None):
         _subtype = getValidSubType(self.__cur_subtype)
 
         if _subtype is None:
@@ -7426,26 +7487,32 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        if self.__cur_subtype not in self.sfDict:
-            self.sfDict[self.__cur_subtype] = []
+        key = (self.__cur_subtype, constraintType, None)
+
+        if key not in self.sfDict:
+            self.sfDict[key] = []
 
         list_id = self.__listIdCounter[self.__cur_subtype]
 
         sf_framecode = 'AMBER_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
-        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
+        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
+                          constraintType)
+
         lp = getLoop(self.__cur_subtype)
+        if not isinstance(lp, str):
+            sf.add_loop(lp)
 
-        sf.add_loop(lp)
+        self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                 'id': 0, 'index_id': 0})
 
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                                'id': 0, 'index_id': 0})
+    def __getSf(self, constraintType=None):
+        key = (self.__cur_subtype, constraintType, None)
 
-    def __getSf(self):
-        if self.__cur_subtype not in self.sfDict:
-            self.__addSf()
+        if key not in self.sfDict:
+            self.__addSf(constraintType)
 
-        return self.sfDict[self.__cur_subtype][-1]
+        return self.sfDict[key][-1]
 
     def getContentSubtype(self):
         """ Return content subtype of AMBER MR file.
@@ -7459,7 +7526,8 @@ class AmberMRParserListener(ParseTreeListener):
                           'noepk_restraint': self.noepkRestraints,
                           'procs_restraint': self.procsRestraints,
                           'pcs_restraint': self.pcsRestraints,
-                          'csa_restraint': self.csaRestraints
+                          'csa_restraint': self.csaRestraints,
+                          'geo_restraint': self.geoRestraints
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}

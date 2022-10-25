@@ -227,16 +227,6 @@ LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND'
 
 CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
 
-# UNSUPPORTED SUBTYPES:
-# 'plane_restraint'
-# 'adist_restraint'
-# 'rama_restraint'
-# 'radi_restraint'
-# 'diff_restraint'
-# 'nbase_restraint'
-# 'pang_restraint'
-# 'geo_restraint'
-
 NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'dihed_restraint': '_Torsion_angle_constraint_list',
                             'rdc_restraint': '_RDC_constraint_list',
@@ -2615,6 +2605,9 @@ def getValidSubType(subtype):
     if subtype == 'pccr':
         return 'ccr_dd_restraint'
 
+    if subtype in ('plane', 'adist', 'rama', 'radi', 'diff', 'nbase', 'pang', 'geo'):
+        return 'other_restraint'
+
     raise KeyError(f'Internal subtype {subtype!r} is not defined.')
 
 
@@ -2657,7 +2650,8 @@ def incListIdCounter(subtype, listIdCounter):
     return listIdCounter
 
 
-def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None, constraintType=None):
+def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None,
+                 constraintType=None, alignCenter=None):
     """ Return pynmrstar saveframe for a given internal content subtype.
         @return: pynmrstar saveframe
     """
@@ -2710,6 +2704,14 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, "S+")
         elif tag_item_name == 'Relaxation_val_units' and subtype == 'pre':
             sf.add_tag(tag_item_name, 's-1')
+        elif tag_item_name == 'Definition' and _subtype == 'other_restraint' and constraintType is not None:
+            sf.add_tag(tag_item_name, constraintType)
+        elif tag_item_name == 'Tensor_auth_asym_ID' and subtype == 'prdc' and alignCenter is not None:
+            sf.add_tag(tag_item_name, alignCenter['chain_id'])
+        elif tag_item_name == 'Tensor_auth_seq_ID' and subtype == 'prdc' and alignCenter is not None:
+            sf.add_tag(tag_item_name, alignCenter['seq_id'])
+        elif tag_item_name == 'Tensor_auth_comp_ID' and subtype == 'prdc' and alignCenter is not None:
+            sf.add_tag(tag_item_name, alignCenter['comp_id'])
         else:
             sf.add_tag(tag_item_name, '.')
 
@@ -2728,6 +2730,9 @@ def getLoop(subtype):
 
     if _subtype not in NMR_STAR_LP_CATEGORIES:
         return None
+
+    if _subtype == 'other_restraint':
+        return ''  # free text for _Other_data_type_list.Text_data
 
     prefix = NMR_STAR_LP_CATEGORIES[_subtype] + '.'
 
@@ -2802,8 +2807,14 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             row[key_size + 20] = atom2['auth_atom_id']
 
     elif subtype == 'dihed':
-        row[9], row[10], row[11], row[12] = atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
-        row[13], row[14], row[15], row[16] = atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+        if atom1 is not None:
+            row[9], row[10], row[11], row[12] = atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        elif atom5 is not None:  # PPA, phase angle of pseudorotation
+            row[9], row[10], row[11] = atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
+        if atom2 is not None:
+            row[13], row[14], row[15], row[16] = atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+        elif atom5 is not None:  # PPA, phase angle of pseudorotation
+            row[13], row[14], row[15] = atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
 
         # row[key_size + 1] = combinationId
         row[key_size + 2] = code
@@ -2822,22 +2833,38 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
         if hasKeyValue(dstFunc, 'weight'):
             row[key_size + 9] = dstFunc['weight']
 
-        row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        if hasKeyValue(atom1, 'auth_atom_id'):
-            row[key_size + 14] = atom1['auth_atom_id']
-        row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
-            row[key_size + 19] = atom2['auth_atom_id']
-        row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
-            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
-        if hasKeyValue(atom3, 'auth_atom_id'):
-            row[key_size + 24] = atom3['auth_atom_id']
-        row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
-            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
-        if hasKeyValue(atom4, 'auth_atom_id'):
-            row[key_size + 29] = atom4['auth_atom_id']
+        if atom1 is not None:
+            row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+            if hasKeyValue(atom1, 'auth_atom_id'):
+                row[key_size + 14] = atom1['auth_atom_id']
+        elif atom5 is not None:  # PPA, phase angle of pseudorotation
+            row[key_size + 10], row[key_size + 11], row[key_size + 12] =\
+                atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
+        if atom2 is not None:
+            row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+            if hasKeyValue(atom2, 'auth_atom_id'):
+                row[key_size + 19] = atom2['auth_atom_id']
+        elif atom5 is not None:  # PPA, phase angle of pseudorotation
+            row[key_size + 15], row[key_size + 16], row[key_size + 17] =\
+                atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
+        if atom3 is not None:
+            row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
+                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+            if hasKeyValue(atom3, 'auth_atom_id'):
+                row[key_size + 24] = atom3['auth_atom_id']
+        elif atom5 is not None:  # PPA, phase angle of pseudorotation
+            row[key_size + 20], row[key_size + 21], row[key_size + 22] =\
+                atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
+        if atom4 is not None:
+            row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
+                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+            if hasKeyValue(atom4, 'auth_atom_id'):
+                row[key_size + 29] = atom4['auth_atom_id']
+        elif atom5 is not None:  # PPA, phase angle of pseudorotation
+            row[key_size + 25], row[key_size + 26], row[key_size + 27] =\
+                atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
 
     elif subtype == 'rdc':
         # row[key_size + 1] = combinationId

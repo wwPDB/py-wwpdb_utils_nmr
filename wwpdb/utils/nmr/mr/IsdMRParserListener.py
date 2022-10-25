@@ -1130,26 +1130,31 @@ class IsdMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        if self.__cur_subtype not in self.sfDict:
-            self.sfDict[self.__cur_subtype] = []
+        key = (self.__cur_subtype, None, None)
+
+        if key not in self.sfDict:
+            self.sfDict[key] = []
 
         list_id = self.__listIdCounter[self.__cur_subtype]
 
         sf_framecode = 'ISD_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
+
         lp = getLoop(self.__cur_subtype)
+        if not isinstance(lp, str):
+            sf.add_loop(lp)
 
-        sf.add_loop(lp)
-
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                                'id': 0, 'index_id': 0})
+        self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                 'id': 0, 'index_id': 0})
 
     def __getSf(self):
-        if self.__cur_subtype not in self.sfDict:
+        key = (self.__cur_subtype, None, None)
+
+        if key not in self.sfDict:
             self.__addSf()
 
-        return self.sfDict[self.__cur_subtype][-1]
+        return self.sfDict[key][-1]
 
     def getContentSubtype(self):
         """ Return content subtype of ISD MR file.

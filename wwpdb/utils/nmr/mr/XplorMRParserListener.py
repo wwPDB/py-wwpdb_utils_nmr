@@ -768,7 +768,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             if ctx.VeAngle():
                 self.__cur_subtype = 'dihed'
-                self.__addSf('intervector projection angle determined by RDC')
+                self.__addSf('intervector projection angle')
                 self.__cur_subtype = 'rdc'
             else:
                 self.__addSf()
@@ -782,6 +782,10 @@ class XplorMRParserListener(ParseTreeListener):
         self.planeStatements += 1
         self.__cur_subtype = 'plane'
 
+        if self.__createSfDict:
+            software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
+            self.__addSf(f'planality restraint, {software_name} PLANAR/GROUP statement')
+
     # Exit a parse tree produced by XplorMRParser#planar_restraint.
     def exitPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
         pass
@@ -794,6 +798,10 @@ class XplorMRParserListener(ParseTreeListener):
         self.squareExponent = 2.0
         self.vector3D = [0.0] * 3
 
+        if self.__createSfDict:
+            software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
+            self.__addSf(f'NCS restraint, {software_name} HARMonic statement')
+
     # Exit a parse tree produced by XplorMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
         pass
@@ -802,6 +810,9 @@ class XplorMRParserListener(ParseTreeListener):
     def enterAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
         self.adistStatements += 1
         self.__cur_subtype = 'adist'
+
+        if self.__createSfDict:
+            self.__addSf('anti-distance restraint, XPLOR-NIH XADC statement')
 
     # Exit a parse tree produced by XplorMRParser#antidistance_restraint.
     def exitAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
@@ -845,7 +856,12 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def enterDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
-        self.dihedStatements += 1
+        self.ramaStatements += 1
+        self.__cur_subtype = 'rama'
+
+        if self.__createSfDict:
+            software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
+            self.__addSf(f'dihedral angle database restraint, {software_name} RAMAchandran/CONFormation statement')
 
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def exitDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
@@ -856,6 +872,9 @@ class XplorMRParserListener(ParseTreeListener):
         self.radiStatements += 1
         self.__cur_subtype = 'radi'
 
+        if self.__createSfDict:
+            self.__addSf('radius of gyration restraint, XPLOR-NIH COLLapse statement')
+
     # Exit a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
     def exitRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext):  # pylint: disable=unused-argument
         pass
@@ -863,6 +882,11 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
     def enterDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
         self.diffStatements += 1
+        self.__cur_subtype = 'diff'
+
+        if self.__createSfDict:
+            software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
+            self.__addSf(f'diffusion anisotropy restraint, {software_name} DANIsotropy statement')
 
     # Exit a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
     def exitDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
@@ -871,6 +895,11 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#orientation_db_restraint.
     def enterOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
         self.nbaseStatements += 1
+        self.__cur_subtype = 'nbase'
+
+        if self.__createSfDict:
+            software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
+            self.__addSf(f'orientation database restraint, {software_name} ORIEnt statement')
 
     # Exit a parse tree produced by XplorMRParser#orientation_db_restraint.
     def exitOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
@@ -947,8 +976,11 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#prdc_restraint.
     def enterPrdc_restraint(self, ctx: XplorMRParser.Prdc_restraintContext):  # pylint: disable=unused-argument
         self.prdcStatements += 1
+        self.__cur_subtype = 'prdc'
 
         self.potential = 'square'  # default potential
+
+        # do not add saveframe here which requires paramagnetic center information
 
     # Exit a parse tree produced by XplorMRParser#prdc_restraint.
     def exitPrdc_restraint(self, ctx: XplorMRParser.Prdc_restraintContext):  # pylint: disable=unused-argument
@@ -956,7 +988,11 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#porientation_restraint.
     def enterPorientation_restraint(self, ctx: XplorMRParser.Porientation_restraintContext):  # pylint: disable=unused-argument
-        self.prdcStatements += 1
+        self.pangStatements += 1
+        self.__cur_subtype = 'pang'
+
+        if self.__createSfDict:
+            self.__addSf('paramagnetic orientation restraint, XPLOR-NIH XANGle statement')
 
     # Exit a parse tree produced by XplorMRParser#porientation_restraint.
     def exitPorientation_restraint(self, ctx: XplorMRParser.Porientation_restraintContext):  # pylint: disable=unused-argument
@@ -965,8 +1001,12 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#pccr_restraint.
     def enterPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
         self.pccrStatements += 1
+        self.__cur_subtype = 'pccr'
 
         self.potential = 'square'  # default potential
+
+        if self.__createSfDict:
+            self.__addSf()
 
     # Exit a parse tree produced by XplorMRParser#pccr_restraint.
     def exitPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
@@ -2682,7 +2722,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 self.__cur_subtype = 'dihed'
-                sf = self.__getSf('intervector projection angle determined by RDC')
+                sf = self.__getSf('intervector projection angle')
                 self.__cur_subtype = 'rdc'
                 sf['id'] += 1
 
@@ -3176,7 +3216,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
-                print(f"subtype={self.__cur_subtype} (PLANAR/GROU) id={self.planeRestraints} "
+                print(f"subtype={self.__cur_subtype} (PLANAR/GROUP) id={self.planeRestraints} "
                       f"atom={atom1} weight={self.scale}")
 
     # Enter a parse tree produced by XplorMRParser#harmonic_statement.
@@ -3248,7 +3288,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1 in self.atomSelectionSet[0]:
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} (HARM) id={self.planeRestraints} "
+                    print(f"subtype={self.__cur_subtype} (HARM) id={self.geoRestraints} "
                           f"atom={atom1} normal_vector={self.vector3D}")
 
         finally:
@@ -5321,7 +5361,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(alignCenter=atom_id_0)
                 sf['id'] += 1
 
             for atom1 in self.atomSelectionSet[1]:
@@ -5597,11 +5637,11 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq:
                 return
 
-            if self.__createSfDict:
-                sf = self.__getSf()
-                sf['id'] += 1
-
             atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
+
+            if self.__createSfDict:
+                sf = self.__getSf(alignCenter=atom_id_0)
+                sf['id'] += 1
 
             for atom1 in self.atomSelectionSet[4]:
                 if self.__debug:
@@ -5902,7 +5942,7 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(alignCenter=atom_id_0)
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
@@ -6185,7 +6225,7 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(alignCenter=atom_id_0)
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
@@ -6678,6 +6718,10 @@ class XplorMRParserListener(ParseTreeListener):
         self.geoStatements += 1
         self.__cur_subtype = 'geo'
 
+        if self.__createSfDict:
+            software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
+            self.__addSf(f'NCS restraint, {software_name} NCS/GROUP statement')
+
     # Exit a parse tree produced by XplorMRParser#ncs_restraint.
     def exitNcs_restraint(self, ctx: XplorMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
         pass
@@ -6741,7 +6785,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
-                print(f"subtype={self.__cur_subtype} (NCS/GROU) id={self.geoRestraints} "
+                print(f"subtype={self.__cur_subtype} (NCS/GROUP) id={self.geoRestraints} "
                       f"atom={atom1} weight={self.scale}")
 
     # Enter a parse tree produced by XplorMRParser#selection.
@@ -10941,7 +10985,7 @@ class XplorMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None):
+    def __addSf(self, constraintType=None, alignCenter=None):
         _subtype = getValidSubType(self.__cur_subtype)
 
         if _subtype is None:
@@ -10949,8 +10993,10 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
+        key = (self.__cur_subtype, constraintType, None if alignCenter is None else str(alignCenter))
+
         if self.__cur_subtype not in self.sfDict:
-            self.sfDict[self.__cur_subtype] = []
+            self.sfDict[key] = []
 
         list_id = self.__listIdCounter[self.__cur_subtype]
 
@@ -10960,19 +11006,22 @@ class XplorMRParserListener(ParseTreeListener):
             + '_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
-                          constraintType)
+                          constraintType, alignCenter)
+
         lp = getLoop(self.__cur_subtype)
+        if not isinstance(lp, str):
+            sf.add_loop(lp)
 
-        sf.add_loop(lp)
+        self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                 'id': 0, 'index_id': 0})
 
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                                'id': 0, 'index_id': 0})
+    def __getSf(self, constraintType=None, alignCenter=None):
+        key = (self.__cur_subtype, constraintType, None if alignCenter is None else str(alignCenter))
 
-    def __getSf(self, constraintType=None):
-        if self.__cur_subtype not in self.sfDict:
-            self.__addSf(constraintType)
+        if key not in self.sfDict:
+            self.__addSf(constraintType, alignCenter)
 
-        return self.sfDict[self.__cur_subtype][-1]
+        return self.sfDict[key][-1]
 
     def getContentSubtype(self):
         """ Return content subtype of XPLOR-NIH MR file.

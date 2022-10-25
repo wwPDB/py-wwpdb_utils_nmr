@@ -1369,6 +1369,10 @@ class RosettaMRParserListener(ParseTreeListener):
         if not self.areUniqueCoordAtoms('an Angle'):
             return
 
+        if self.__createSfDict:
+            sf = self.__getSf('angle restraint')
+            sf['id'] += 1
+
         if self.__cur_nest is not None:
             if self.__debug:
                 print(f"NESTED: {self.__cur_nest}")
@@ -1379,7 +1383,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                 continue
             if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} "
+                print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
     def validateAngleRange(self, weight):
@@ -1855,6 +1859,10 @@ class RosettaMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf('harmonic coordinate restraint, ROSETTA CoordinateConstraint')
+                sf['id'] += 1
+
             if self.__cur_nest is not None:
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
@@ -1935,6 +1943,10 @@ class RosettaMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 4:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf('local harmonic coordinate restraint, ROSETTA LocalCoordinateConstraint')
+                sf['id'] += 1
+
             if self.__cur_nest is not None:
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
@@ -2012,6 +2024,10 @@ class RosettaMRParserListener(ParseTreeListener):
                     f"must not in the opposing chain {opposingChainId!r}.\n"
                 return
 
+        if self.__createSfDict:
+            sf = self.__getSf('ambiguous site restraint (atom to other chain), ROSETTA SiteConstraint')
+            sf['id'] += 1
+
         if self.__cur_nest is not None:
             if self.__debug:
                 print(f"NESTED: {self.__cur_nest}")
@@ -2074,6 +2090,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if len(self.atomSelectionSet) < 3:
             return
+
+        if self.__createSfDict:
+            sf = self.__getSf('ambiguous site restraint (atom to other residue), ROSETTA SiteConstraintResidues')
+            sf['id'] += 1
 
         if self.__cur_nest is not None:
             if self.__debug:
@@ -2150,6 +2170,10 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
+            if self.__createSfDict:
+                sf = self.__getSf('ambiguous site restraint (residue to other residue), ROSETTA MinResidueAtomicDistance')
+                sf['id'] += 1
+
             if self.__cur_nest is not None:
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
@@ -2167,7 +2191,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by RosettaMRParser#big_bin_restraints.
     def enterBig_bin_restraints(self, ctx: RosettaMRParser.Big_bin_restraintsContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dihed'
+        self.__cur_subtype = 'geo'
 
     # Exit a parse tree produced by RosettaMRParser#big_bin_restraints.
     def exitBig_bin_restraints(self, ctx: RosettaMRParser.Big_bin_restraintsContext):  # pylint: disable=unused-argument
@@ -2175,7 +2199,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by RosettaMRParser#big_bin_restraint.
     def enterBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):  # pylint: disable=unused-argument
-        self.dihedRestraints += 1
+        self.geoRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
@@ -2232,6 +2256,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                     f"The 'sdev={sDev}' should be within range {DIST_RESTRAINT_RANGE}.\n"
 
+            if self.__createSfDict:
+                sf = self.__getSf("dihedral angle restraint, ROSETTA BigBin "
+                                  "('O' for cis-like OMEGA, 'G' for PHI,PSI in 100,100, 'E' for 100,-90, 'A' for -50,30, 'B' for 100,175)")
+                sf['id'] += 1
+
             if self.__cur_nest is not None:
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
@@ -2242,7 +2271,7 @@ class RosettaMRParserListener(ParseTreeListener):
                           f"residue={res} binChar={binChar} {dstFunc}")
 
         except ValueError:
-            self.dihedRestraints -= 1
+            self.geoRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -3512,7 +3541,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self):
+    def __addSf(self, constraintType=None):
         _subtype = getValidSubType(self.__cur_subtype)
 
         if _subtype is None:
@@ -3520,26 +3549,32 @@ class RosettaMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        if self.__cur_subtype not in self.sfDict:
-            self.sfDict[self.__cur_subtype] = []
+        key = (self.__cur_subtype, constraintType, None)
+
+        if key not in self.sfDict:
+            self.sfDict[key] = []
 
         list_id = self.__listIdCounter[self.__cur_subtype]
 
         sf_framecode = 'ROSETTA_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
-        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
+        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
+                          constraintType)
+
         lp = getLoop(self.__cur_subtype)
+        if not isinstance(lp, str):
+            sf.add_loop(lp)
 
-        sf.add_loop(lp)
+        self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                 'id': 0, 'index_id': 0})
 
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                                'id': 0, 'index_id': 0})
+    def __getSf(self, constraintType=None):
+        key = (self.__cur_subtype, constraintType, None)
 
-    def __getSf(self):
-        if self.__cur_subtype not in self.sfDict:
-            self.__addSf()
+        if key not in self.sfDict:
+            self.__addSf(constraintType)
 
-        return self.sfDict[self.__cur_subtype][-1]
+        return self.sfDict[key][-1]
 
     def getContentSubtype(self):
         """ Return content subtype of ROSETTA MR file.

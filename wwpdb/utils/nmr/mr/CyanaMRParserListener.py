@@ -3037,6 +3037,10 @@ class CyanaMRParserListener(ParseTreeListener):
                     if not self.areUniqueCoordAtoms('a Torsion angle'):
                         return
 
+                    if self.__createSfDict:
+                        sf = self.__getSf()
+                        sf['id'] += 1
+
                     for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                                self.atomSelectionSet[1],
                                                                                self.atomSelectionSet[2],
@@ -3047,6 +3051,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', angleName,
+                                         sf['list_id'], self.__entryId, dstFunc, None, None, None, None, atom5)
+                            sf['loop'].add_data(row)
 
         except ValueError:
             self.dihedRestraints -= 1
@@ -5544,6 +5554,10 @@ class CyanaMRParserListener(ParseTreeListener):
                     if not self.areUniqueCoordAtoms('a Torsion angle'):
                         return
 
+                    if self.__createSfDict:
+                        sf = self.__getSf()
+                        sf['id'] += 1
+
                     for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                                self.atomSelectionSet[1],
                                                                                self.atomSelectionSet[2],
@@ -5554,6 +5568,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', angleName,
+                                         sf['list_id'], self.__entryId, dstFunc, None, None, None, None, atom5)
+                            sf['loop'].add_data(row)
 
         except ValueError:
             self.dihedRestraints -= 1
@@ -6052,6 +6072,10 @@ class CyanaMRParserListener(ParseTreeListener):
             except Exception as e:
                 if self.__verbose:
                     self.__lfh.write(f"+CyanaMRParserListener.exitLink_statement() ++ Error  - {str(e)}\n")
+
+            if self.__createSfDict:
+                sf = self.__getSf('covalent bond linkage')
+                sf['id'] += 1
 
             has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
 
@@ -6569,7 +6593,7 @@ class CyanaMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self):
+    def __addSf(self, constraintType=None):
         _subtype = getValidSubType(self.__cur_subtype)
 
         if _subtype is None:
@@ -6577,26 +6601,32 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        if self.__cur_subtype not in self.sfDict:
-            self.sfDict[self.__cur_subtype] = []
+        key = (self.__cur_subtype, constraintType, None)
+
+        if key not in self.sfDict:
+            self.sfDict[key] = []
 
         list_id = self.__listIdCounter[self.__cur_subtype]
 
         sf_framecode = 'CYANA_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
-        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
+        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
+                          constraintType)
+
         lp = getLoop(self.__cur_subtype)
+        if not isinstance(lp, str):
+            sf.add_loop(lp)
 
-        sf.add_loop(lp)
+        self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                 'id': 0, 'index_id': 0})
 
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                                'id': 0, 'index_id': 0})
+    def __getSf(self, constraintType=None):
+        key = (self.__cur_subtype, constraintType, None)
 
-    def __getSf(self):
-        if self.__cur_subtype not in self.sfDict:
-            self.__addSf()
+        if key not in self.sfDict:
+            self.__addSf(constraintType)
 
-        return self.sfDict[self.__cur_subtype][-1]
+        return self.sfDict[key][-1]
 
     def getContentSubtype(self):
         """ Return content subtype of CYANA MR file.

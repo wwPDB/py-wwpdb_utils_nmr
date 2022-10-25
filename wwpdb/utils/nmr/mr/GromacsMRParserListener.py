@@ -1049,6 +1049,10 @@ class GromacsMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 4:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf('angle restraint' if len_atom_sorts == 3 else 'angle restraint (intervector projection angle)')
+                sf['id'] += 1
+
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
             if len_atom_sorts == 3:
@@ -1176,6 +1180,10 @@ class GromacsMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 2:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf('angle restraint (intervector projection angle with z-axis)')
+                sf['id'] += 1
+
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -1246,15 +1254,19 @@ class GromacsMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 1:
                 return
 
+            if self.__createSfDict:
+                sf = self.__getSf('harmonic coordinate restraint, GROMACS position restraint')
+                sf['id'] += 1
+
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
             for atom1 in self.atomSelectionSet[0]:
                 if self.__debug:
                     if funct == 1:
-                        print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
+                        print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                               f"atom={atom1} (kx, ky, kz)=({a}, {b}, {c})")
                     else:
-                        print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
+                        print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                               f"atom={atom1} (g, r, k)=({a}, {b}, {c})")
 
         except ValueError:
@@ -1290,7 +1302,7 @@ class GromacsMRParserListener(ParseTreeListener):
             return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "
         return ''
 
-    def __addSf(self):
+    def __addSf(self, constraintType=None):
         _subtype = getValidSubType(self.__cur_subtype)
 
         if _subtype is None:
@@ -1298,26 +1310,32 @@ class GromacsMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        if self.__cur_subtype not in self.sfDict:
-            self.sfDict[self.__cur_subtype] = []
+        key = (self.__cur_subtype, constraintType, None)
+
+        if key not in self.sfDict:
+            self.sfDict[key] = []
 
         list_id = self.__listIdCounter[self.__cur_subtype]
 
         sf_framecode = 'GROMACS_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
-        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
+        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
+                          constraintType)
+
         lp = getLoop(self.__cur_subtype)
+        if not isinstance(lp, str):
+            sf.add_loop(lp)
 
-        sf.add_loop(lp)
+        self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                                 'id': 0, 'index_id': 0})
 
-        self.sfDict[self.__cur_subtype].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                                'id': 0, 'index_id': 0})
+    def __getSf(self, constraintType=None):
+        key = (self.__cur_subtype, constraintType, None)
 
-    def __getSf(self):
-        if self.__cur_subtype not in self.sfDict:
+        if key not in self.sfDict:
             self.__addSf()
 
-        return self.sfDict[self.__cur_subtype][-1]
+        return self.sfDict[key][-1]
 
     def getContentSubtype(self):
         """ Return content subtype of GROMACS MR file.

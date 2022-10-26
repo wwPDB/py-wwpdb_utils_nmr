@@ -372,6 +372,16 @@ class XplorMRParserListener(ParseTreeListener):
     ncsSigb = 2.0
     ncsWeight = 300.0
 
+    # Rama
+    ramaScale = 1.0
+    ramaCutoff = None
+    ramaForceConst = 1.0
+    ramaShape = None
+    ramaSize = None
+    ramaPhase = None
+    ramaGaussian = None
+    ramaQuartic = None
+
     # generic statements
     classification = None
     coefficients = None
@@ -885,7 +895,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         if self.__createSfDict:
             software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
-            self.__addSf(f'dihedral angle database restraint, {software_name} RAMAchandran/CONFormation statement')
+            statement_name = 'RAMAchandran/CONFormation' if self.__remediate else 'RAMAchandran'
+            self.__addSf(f'dihedral angle database restraint, {software_name} {statement_name} statement')
 
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def exitDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
@@ -4236,29 +4247,114 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#ramachandran_statement.
     def enterRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):
         if ctx.Scale():
-            self.scale = self.getNumber_s(ctx.number_s(0))
-            if isinstance(self.scale, str):
-                if self.scale in self.evaluate:
-                    self.scale = self.evaluate[self.scale]
+            self.ramaScale = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.ramaScale, str):
+                if self.ramaScale in self.evaluate:
+                    self.ramaScale = self.evaluate[self.ramaScale]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'RAMA {str(ctx.Scale())} {self.scale} END' "\
-                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
-                    self.scale = 1.0
-            if self.scale < 0.0:
+                        f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' "\
+                        f"where the symbol {self.ramaScale!r} is not defined so that set the default value.\n"
+                    self.ramaScale = 1.0
+            if self.ramaScale < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'RAMA {str(ctx.Scale())} {self.scale} END' must not be a negative value.\n"
-            elif self.scale == 0.0:
+                    f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' must not be a negative value.\n"
+            elif self.ramaScale == 0.0:
                 self.warningMessage += "[Range value warning] "\
-                    f"The scale value 'RAMA {str(ctx.Scale())} {self.scale} END' should be a positive value.\n"
+                    f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' should be a positive value.\n"
+
+        elif ctx.Cutoff():
+            self.ramaCutoff = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.ramaCutoff, str):
+                if self.ramaCutoff in self.evaluate:
+                    self.ramaCutoff = self.evaluate[self.ramaCutoff]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The scale value 'RAMA {str(ctx.Cutoff())} {self.ramaCutoff} END'"
+
+        elif ctx.ForceConstant():
+            self.ramaForceConst = self.getNumber_s(ctx.number_s(0))
+
+        elif ctx.Shape():
+            self.ramaShape = str(ctx.Gauss_or_Quart()).lower()
+
+        elif ctx.Size():
+            self.ramaSize = []
+            dim = str(ctx.Dimensions()).lower()
+            self.ramaSize.append(self.getNumber_s(ctx.number_s(0)))
+            if dim in ('twod', 'threed', 'fourd'):
+                self.ramaSize.append(self.getNumber_s(ctx.number_s(1)))
+            if dim in ('threed', 'fourd'):
+                self.ramaSize.append(self.getNumber_s(ctx.number_s(2)))
+            if dim == 'fourd':
+                self.ramaSize.append(self.getNumber_s(ctx.number_s(3)))
+
+        elif ctx.Phase():
+            self.ramaPhase = []
+            for d in range(4):
+                offset = d * 3
+                if ctx.number_s(offset):
+                    phase = []
+                    for i in range(3):
+                        if ctx.number_s(offset + i):
+                            phase.append(self.getNumber_s(ctx.number_s(offset + i)))
+                        else:
+                            break
+                    self.ramaPhase.append(phase)
+                else:
+                    break
+
+        elif ctx.Gaussian():
+            self.ramaGaussian = []
+            for d in range(4):
+                offset = d * 3
+                if ctx.number_s(offset):
+                    phase = []
+                    for i in range(3):
+                        if ctx.number_s(offset + i):
+                            phase.append(self.getNumber_s(ctx.number_s(offset + i)))
+                        else:
+                            break
+                    self.ramaGaussian.append(phase)
+                else:
+                    break
+
+        elif ctx.Quartic():
+            self.ramaQuartic = []
+            for d in range(4):
+                offset = d * 3
+                if ctx.number_s(offset):
+                    phase = []
+                    for i in range(3):
+                        if ctx.number_s(offset + i):
+                            phase.append(self.getNumber_s(ctx.number_s(offset + i)))
+                        else:
+                            break
+                    self.ramaQuartic.append(phase)
+                else:
+                    break
 
         elif ctx.Reset():
-            self.scale = 1.0
+            self.ramaScale = 1.0
+            self.ramaCutoff = None
+            self.ramaForceConst = 1.0
+            self.ramaShape = None
+            self.ramaSize = None
+            self.ramaPhase = None
+            self.ramaGaussian = None
+            self.ramaQuartic = None
+
+        elif ctx.Zero():
+            self.ramaGaussian = None
+            self.ramaQuartic = None
 
     # Exit a parse tree produced by XplorMRParser#ramachandran_statement.
     def exitRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (RAMA) classification={self.classification!r}")
+            print(f"subtype={self.__cur_subtype} (RAMA) classification={self.classification!r} "
+                  f"scale={self.ramaScale} cutoff={self.ramaCutoff} force_constant={self.ramaForceConst} "
+                  f"shape={self.ramaShape} size={self.ramaSize} phase={self.ramaPhase} "
+                  f"gaussian={self.ramaGaussian} quartic={self.ramaQuartic}")
 
     # Enter a parse tree produced by XplorMRParser#rama_assign.
     def enterRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
@@ -4344,6 +4440,30 @@ class XplorMRParserListener(ParseTreeListener):
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 
+        if self.__createSfDict:
+            software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
+            statement_name = 'RAMAchandran/CONFormation' if self.__remediate else 'RAMAchandran'
+            sf = self.__getSf(f'dihedral angle database restraint, {software_name} {statement_name} statement')
+            sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id', 'combination_id',
+                                      'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                      'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                      'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                      'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
+                                      'list_id', 'entry_id']
+                sf['tags'].append(['classification', self.classification])
+                sf['tags'].append(['scale', self.ramaScale])
+                sf['tags'].append(['cutoff', self.ramaCutoff])
+                sf['tags'].append(['force_constant', self.ramaForceConst])
+                sf['tags'].append(['shape', self.ramaShape])
+                sf['tags'].append(['size', self.ramaSize])
+                sf['tags'].append(['phase', self.ramaPhase])
+                if self.ramaGaussian is not None:
+                    sf['tags'].append(['gaussian_param'], self.ramaGaussian)
+                if self.ramaQuartic is not None:
+                    sf['tags'].append(['quartic_param'], self.ramaQuartic)
+
         for i in range(0, len(self.atomSelectionSet), 4):
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[i],
                                                                 self.atomSelectionSet[i + 1],
@@ -4353,7 +4473,16 @@ class XplorMRParserListener(ParseTreeListener):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (RAMA) id={self.ramaRestraints} "
-                          f"atom{i+1}={atom1} atom{i+2}={atom2} atom{i+3}={atom3} atom{i+4}={atom4}")
+                          f"atom{i+1}={atom1} atom{i+2}={atom2} atom{i+3}={atom3} atom{i+4}={atom4} "
+                          f"scale={self.ramaScale} cutoff={self.ramaCutoff}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'], '.' if len(self.atomSelectionSet) == 4 else (i + 1),
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                               atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                               atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                               sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by XplorMRParser#collapse_statement.
     def enterCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):

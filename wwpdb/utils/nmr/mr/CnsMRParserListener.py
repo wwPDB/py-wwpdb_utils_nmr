@@ -304,6 +304,9 @@ class CnsMRParserListener(ParseTreeListener):
     ncsSigb = 2.0
     ncsWeight = 300.0
 
+    # Rama
+    ramaScale = 1.0
+
     # generic statements
     classification = None
     coefficients = None

@@ -400,6 +400,9 @@ class XplorMRParserListener(ParseTreeListener):
     nbaseSizeMin = None
     nbaseSizeMax = None
 
+    # paramagnetic orientation
+    pangForceConst = 1.0
+
     # generic statements
     classification = None
     coefficients = None
@@ -6356,13 +6359,17 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#porientation_statement.
     def enterPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):  # pylint: disable=no-self-use
-        if ctx.Reset():
-            pass
+        if ctx.ForceConstant():
+            self.pangForceConst = self.getNumber_s(ctx.number_s())
+
+        elif ctx.Reset():
+            self.pangForceConst = 1.0
 
     # Exit a parse tree produced by XplorMRParser#porientation_statement.
     def exitPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (XANG) classification={self.classification!r}")
+            print(f"subtype={self.__cur_subtype} (XANG) classification={self.classification!r} "
+                  f"force_constant={self.pangForceConst}")
 
     # Enter a parse tree produced by XplorMRParser#porientation_assign.
     def enterPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
@@ -6479,6 +6486,18 @@ class XplorMRParserListener(ParseTreeListener):
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 
+            if self.__createSfDict:
+                sf = self.__getSf('paramagnetic orientation restraint, XPLOR-NIH XANGle statement')
+                sf['id'] += 1
+                if len(sf['loop']['tag']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                          'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                          'theta', 'phi', 'err',
+                                          'list_id', 'entry_id']
+                    sf['tags'].append(['classification', self.classification])
+                    sf['tags'].append(['force_constant', self.nbaseForceConst])
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -6486,6 +6505,13 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XANG) id={self.pangRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc} {dstFunc2}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                               theta, phi, delta,
+                                               sf['list_id'], self.__entryId])
 
         finally:
             self.numberSelection.clear()

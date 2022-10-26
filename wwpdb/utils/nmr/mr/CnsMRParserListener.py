@@ -313,6 +313,11 @@ class CnsMRParserListener(ParseTreeListener):
     ramaExpectGrid = None
     ramaExpectValue = None
 
+    # diffusion
+    diffCoef = None
+    diffForceConst = 1.0
+    diffPotential = None
+
     # generic statements
     classification = None
     coefficients = None
@@ -3059,35 +3064,40 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#diffusion_statement.
     def enterDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):
-        if ctx.Potential_types():
+        if ctx.Coefficients():
+            self.diffCoef = {'Tc': self.getNumber_s(ctx.number_s(0)),
+                             'anisotropy': self.getNumber_s(ctx.number_s(1)),
+                             'rhombicity': self.getNumber_s(ctx.number_s(2)),
+                             'frequency_1h': self.getNumber_s(ctx.number_s(3)),
+                             'frequency_15n': self.getNumber_s(ctx.number_s(4))
+                             }
+
+        elif ctx.ForceConstant():
+            self.diffForceConst = self.getNumber_s(ctx.number_s(0))
+
+        elif ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
-                self.potential = 'square'
+                self.diffPotential = 'square'
             elif code.startswith('HARM'):
-                self.potential = 'harmonic'
+                self.diffPotential = 'harmonic'
             else:
-                self.potential = 'square'
+                self.diffPotential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DANIsotropy' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                    f"Instead, set the default potential {self.diffPotential!r}.\n"
 
         elif ctx.Reset():
-            self.potential = 'square'
-            self.coefficients = None
-
-        elif ctx.Coefficients():
-            self.coefficients = {'Tc': self.getNumber_s(ctx.number_s(0)),
-                                 'anisotropy': self.getNumber_s(ctx.number_s(1)),
-                                 'rhombicity': self.getNumber_s(ctx.number_s(2)),
-                                 'frequency_1h': self.getNumber_s(ctx.number_s(3)),
-                                 'frequency_15n': self.getNumber_s(ctx.number_s(4))
-                                 }
+            self.diffCoef = None
+            self.diffForceConst = 1.0
+            self.diffPotential = 'square'
 
     # Exit a parse tree produced by CnsMRParser#diffusion_statement.
     def exitDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
             print(f"subtype={self.__cur_subtype} (DANI) classification={self.classification!r} "
-                  f"coefficients={self.coefficients}")
+                  f"coefficients={self.diffCoef} force_constant={self.diffForceConst} "
+                  f"potential={self.diffPotential}")
 
     # Enter a parse tree produced by CnsMRParser#dani_assign.
     def enterDani_assign(self, ctx: CnsMRParser.Dani_assignContext):  # pylint: disable=unused-argument
@@ -3199,6 +3209,20 @@ class CnsMRParserListener(ParseTreeListener):
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 
+            if self.__createSfDict:
+                sf = self.__getSf('diffusion anisotropy restraint, CNS DANIsotropy statement')
+                sf['id'] += 1
+                if len(sf['loop']['tag']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                          'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                          't1/t2_ratio', 't1/t2_ratio_err'
+                                          'list_id', 'entry_id']
+                    sf['tags'].append(['classification', self.classification])
+                    sf['tags'].append(['coefficients', self.diffCoef])
+                    sf['tags'].append(['force_constant', self.diffForceConst])
+                    sf['tags'].append(['potential', self.diffPotential])
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -3206,6 +3230,13 @@ class CnsMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (DANI) id={self.diffRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                               target, delta,
+                                               sf['list_id'], self.__entryId])
 
         finally:
             self.numberSelection.clear()

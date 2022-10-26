@@ -388,6 +388,18 @@ class XplorMRParserListener(ParseTreeListener):
     diffPotential = None
     diffType = None
 
+    # orientation database
+    nbaseCutoff = None
+    nbaseHeight = None
+    nbaseForceConst = 1.0
+    nbaseGaussian = None
+    nbaseMaxGauss = None
+    nbaseNewGauss = None
+    nbaseQuartic = None
+    nbaseResidues = None
+    nbaseSizeMin = None
+    nbaseSizeMax = None
+
     # generic statements
     classification = None
     coefficients = None
@@ -943,8 +955,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'nbase'
 
         if self.__createSfDict:
-            software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
-            self.__addSf(f'orientation database restraint, {software_name} ORIEnt statement')
+            self.__addSf('orientation database restraint, XPLOR-NIH ORIEnt statement')
 
     # Exit a parse tree produced by XplorMRParser#orientation_db_restraint.
     def exitOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
@@ -4901,13 +4912,82 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#orientation_statement.
     def enterOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):  # pylint: disable=no-self-use
-        if ctx.Reset():
-            pass
+        if ctx.Cutoff():
+            self.nbaseCutoff = self.getNumber_s(ctx.number_s(0))
+
+        elif ctx.Height():
+            self.nbaseHeight = self.getNumber_s(ctx.number_s(0))
+
+        elif ctx.ForceConstant():
+            self.nbaseForceConst = self.getNumber_s(ctx.number_s(0))
+
+        elif ctx.Gaussian():
+            self.nbaseGaussian = {'height': self.getNumber_s(ctx.number_s(0)),
+                                  'x_center': self.getNumber_s(ctx.number_s(1)),
+                                  'x_width': self.getNumber_s(ctx.number_s(2)),
+                                  'y_center': self.getNumber_s(ctx.number_s(3)),
+                                  'y_width': self.getNumber_s(ctx.number_s(4)),
+                                  'z_center': self.getNumber_s(ctx.number_s(5)),
+                                  'z_width': self.getNumber_s(ctx.number_s(6))
+                                  }
+
+        elif ctx.MaxGaussians():
+            self.nbaseMaxGauss = int(str(ctx.Integer()))
+
+        elif ctx.NewGaussian():
+            self.nbaseNewGauss = {'height': self.getNumber_s(ctx.number_s(0)),
+                                  'x_center': self.getNumber_s(ctx.number_s(1)),
+                                  'x_width': self.getNumber_s(ctx.number_s(2)),
+                                  'y_center': self.getNumber_s(ctx.number_s(3)),
+                                  'y_width': self.getNumber_s(ctx.number_s(4)),
+                                  'z_center': self.getNumber_s(ctx.number_s(5)),
+                                  'z_width': self.getNumber_s(ctx.number_s(6)),
+                                  'baseline_correction': self.getNumber_s(ctx.number_s(7))
+                                  }
+
+        elif ctx.Quartic():
+            self.nbaseQuartic = {'height': self.getNumber_s(ctx.number_s(0)),
+                                 'x_center': self.getNumber_s(ctx.number_s(1)),
+                                 'x_width': self.getNumber_s(ctx.number_s(2)),
+                                 'y_center': self.getNumber_s(ctx.number_s(3)),
+                                 'y_width': self.getNumber_s(ctx.number_s(4)),
+                                 'z_center': self.getNumber_s(ctx.number_s(5)),
+                                 'z_width': self.getNumber_s(ctx.number_s(6))
+                                 }
+
+        elif ctx.Reset():
+            self.nbaseCutoff = None
+            self.nbaseHeight = None
+            self.nbaseForceConst = 1.0
+            self.nbaseGaussian = None
+            self.nbaseMaxGauss = None
+            self.nbaseNewGauss = None
+            self.nbaseQuartic = None
+            self.nbaseResidues = None
+            self.nbaseSizeMin = None
+            self.nbaseSizeMax = None
+
+        elif ctx.Residue():
+            self.nbaseResidues = int(str(ctx.Integer()))
+
+        elif ctx.Size():
+            self.nbaseSizeMin = self.getNumber_s(ctx.number_s(0))
+            self.nbaseSizeMax = self.getNumber_s(ctx.number_s(1))
+
+        elif ctx.Zero():
+            self.nbaseGaussian = None
+            self.nbaseMaxGauss = None
+            self.nbaseNewGauss = None
+            self.nbaseQuartic = None
 
     # Exit a parse tree produced by XplorMRParser#orientation_statement.
     def exitOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (ORIE) classification={self.classification!r}")
+            print(f"subtype={self.__cur_subtype} (ORIE) classification={self.classification!r} "
+                  f"cutoff={self.nbaseCutoff} height={self.nbaseHeight} force_constant={self.nbaseForceConst} "
+                  f"gaussian={self.nbaseGaussian} max_gaussians={self.nbaseMaxGauss} new_gaussian={self.nbaseNewGauss} "
+                  f"quartic={self.nbaseQuartic} residues={self.nbaseResidues} "
+                  f"min_size={self.nbaseSizeMin} max_size={self.nbaseSizeMax}")
 
     # Enter a parse tree produced by XplorMRParser#orie_assign.
     def enterOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
@@ -4992,6 +5072,32 @@ class XplorMRParserListener(ParseTreeListener):
                     f"{chain_id_4}:{seq_id_4}:{comp_id_4}:{atom_id_4}).\n"
                 return
 
+        if self.__createSfDict:
+            sf = self.__getSf('orientation database restraint, XPLOR-NIH ORIEnt statement')
+            sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                      'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                      'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                      'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
+                                      'list_id', 'entry_id']
+                sf['tags'].append(['classification', self.classification])
+                sf['tags'].append(['cutoff', self.nbaseCutoff])
+                sf['tags'].append(['height', self.nbaseHeight])
+                sf['tags'].append(['force_constant', self.nbaseForceConst])
+                if self.nbaseGaussian is not None:
+                    sf['tags'].append(['gaussian', self.nbaseGaussian])
+                if self.nbaseMaxGauss is not None:
+                    sf['tags'].append(['max_gaussians', self.nbaseMaxGauss])
+                if self.nbaseNewGauss is not None:
+                    sf['tags'].append(['new_gaussian', self.nbaseNewGauss])
+                if self.nbaseQuartic is not None:
+                    sf['tags'].append(['quartic', self.nbaseQuartic])
+                sf['tags'].append(['residues', self.nbaseResidues])
+                sf['tags'].append(['min_size', self.nbaseSizeMin])
+                sf['tags'].append(['max_size', self.nbaseSizeMax])
+
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
@@ -5001,6 +5107,14 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (ORIE) id={self.nbaseRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                           atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                           atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                           sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by XplorMRParser#csa_statement.
     def enterCsa_statement(self, ctx: XplorMRParser.Csa_statementContext):

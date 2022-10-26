@@ -452,7 +452,6 @@ class CnsMRParserListener(ParseTreeListener):
         self.procsRestraints = 0     # CNS: Proton chemical shift restraints
         self.ramaRestraints = 0      # CNS: Conformation database restraints
         self.diffRestraints = 0      # CNS: Diffusion anisotropy restraints
-        self.nbaseRestraints = 0     # CNS: Residue-residue position/orientation database restraints
         # self.angRestraints = 0       # CNS: Angle database restraints
         self.geoRestraints = 0       # CNS: Harmonic coordinate/NCS restraints
 
@@ -465,7 +464,6 @@ class CnsMRParserListener(ParseTreeListener):
         self.procsStatements = 0     # CNS: Proton chemical shift statements
         self.ramaStatements = 0      # CNS: Conformation database statements
         self.diffStatements = 0      # CNS: Diffusion anisotropy statements
-        self.nbaseStatements = 0     # CNS: Residue-residue position/orientation database statements
         # self.angStatements = 0       # CNS: Angle database statements
         self.geoStatements = 0       # CNS: Harmonic coordinate/NCS restraints
 
@@ -7364,8 +7362,6 @@ class CnsMRParserListener(ParseTreeListener):
             return f"[Check the {self.ramaRestraints}th row of conformation database restraints] "
         if self.__cur_subtype == 'diff':
             return f"[Check the {self.diffRestraints}th row of duffusion anisotropy restraints] "
-        if self.__cur_subtype == 'nbase':
-            return f"[Check the {self.nbaseRestraints}th row of residue-residue position/orientation database restraints] "
         # if self.__cur_subtype == 'ang':
         #     return f"[Check the {self.angRestraints}th row of angle database restraints] "
         if self.__cur_subtype == 'geo':
@@ -7393,8 +7389,6 @@ class CnsMRParserListener(ParseTreeListener):
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.ramaRestraints)] = self.__preferAuthSeq
         elif self.__cur_subtype == 'diff':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.diffRestraints)] = self.__preferAuthSeq
-        elif self.__cur_subtype == 'nbase':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.nbaseRestraints)] = self.__preferAuthSeq
         # elif self.__cur_subtype == 'ang':
         #     self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.angRestraints)] = self.__preferAuthSeq
         elif self.__cur_subtype == 'geo':
@@ -7429,8 +7423,6 @@ class CnsMRParserListener(ParseTreeListener):
             key = (self.__cur_subtype, self.ramaRestraints)
         elif self.__cur_subtype == 'diff':
             key = (self.__cur_subtype, self.diffRestraints)
-        elif self.__cur_subtype == 'nbase':
-            key = (self.__cur_subtype, self.nbaseRestraints)
         # elif self.__cur_subtype == 'ang':
         #     key = (self.__cur_subtype, self.angRestraints)
         elif self.__cur_subtype == 'geo':
@@ -7515,9 +7507,6 @@ class CnsMRParserListener(ParseTreeListener):
         if self.diffStatements == 0 and self.diffRestraints > 0:
             self.diffStatements = 1
 
-        if self.nbaseStatements == 0 and self.nbaseRestraints > 0:
-            self.nbaseStatements = 1
-
         # if self.angStatements == 0 and self.angRestraints > 0:
         #     self.angStatements = 1
 
@@ -7533,7 +7522,6 @@ class CnsMRParserListener(ParseTreeListener):
                           'procs_restraint': self.procsStatements,
                           'rama_restraint': self.ramaStatements,
                           'diff_restraint': self.diffStatements,
-                          'nbase_restraint': self.nbaseStatements,
                           # 'ang_restraint': self.angStatements
                           'geo_restraint': self.geoStatements
                           }

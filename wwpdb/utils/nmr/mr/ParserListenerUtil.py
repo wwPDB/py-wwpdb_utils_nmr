@@ -111,6 +111,7 @@ WEIGHT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 100.0}
 
 SCALE_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 100.0}
 
+PROBABILITY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 1.0}
 
 # @see: https://x3dna.org/highlights/torsion-angles-of-nucleic-acid-structures for nucleic acids
 KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
@@ -2732,7 +2733,7 @@ def getLoop(subtype):
         return None
 
     if _subtype == 'other_restraint':
-        return ''  # free text for _Other_data_type_list.Text_data
+        return {'tag': [], 'data': []}  # dictionary for _Other_data_type_list.Text_data
 
     prefix = NMR_STAR_LP_CATEGORIES[_subtype] + '.'
 
@@ -2755,6 +2756,9 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
     _subtype = getValidSubType(subtype)
 
     if _subtype is None:
+        return None
+
+    if _subtype == 'other_restraint':
         return None
 
     key_size = len(NMR_STAR_LP_KEY_ITEMS)

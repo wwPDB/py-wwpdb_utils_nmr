@@ -57,6 +57,7 @@ try:
                                                        CS_RESTRAINT_ERROR,
                                                        T1T2_RESTRAINT_RANGE,
                                                        T1T2_RESTRAINT_ERROR,
+                                                       PROBABILITY_RANGE,
                                                        XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                                        XPLOR_NITROXIDE_NAMES,
                                                        XPLOR_ORIGIN_AXIS_COLS)
@@ -125,6 +126,7 @@ except ImportError:
                                            CS_RESTRAINT_ERROR,
                                            T1T2_RESTRAINT_RANGE,
                                            T1T2_RESTRAINT_ERROR,
+                                           PROBABILITY_RANGE,
                                            XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                            XPLOR_NITROXIDE_NAMES,
                                            XPLOR_ORIGIN_AXIS_COLS)
@@ -333,7 +335,11 @@ class XplorMRParserListener(ParseTreeListener):
     rSwitch = 10.0
     scale = 1.0
     scale_a = None
-    adistExpect = -1.0
+    adistExpectGrid = None
+    adistExpectValue = 0.0
+    adistSizeMaxDist = 10.0
+    adistSizeStep = None
+    adistForceConst = 1.0
     symmTarget = None
     symmDminus = None
     symmDplus = None
@@ -359,8 +365,12 @@ class XplorMRParserListener(ParseTreeListener):
     # CS
     csExpect = None
 
+    # planality
+    planeWeight = 300.0
+
     # NCS
-    bfactor = None
+    ncsSigb = 2.0
+    ncsWeight = 300.0
 
     # generic statements
     classification = None
@@ -723,6 +733,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.distStatements += 1
         self.__cur_subtype = 'dist'
 
@@ -759,6 +771,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.rdcStatements += 1
         self.__cur_subtype = 'rdc'
 
@@ -808,6 +822,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#antidistance_restraint.
     def enterAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.adistStatements += 1
         self.__cur_subtype = 'adist'
 
@@ -820,6 +836,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#coupling_restraint.
     def enterCoupling_restraint(self, ctx: XplorMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.jcoupStatements += 1
         self.__cur_subtype = 'jcoup'
 
@@ -832,6 +850,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_restraint.
     def enterCarbon_shift_restraint(self, ctx: XplorMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.hvycsStatements += 1
         self.__cur_subtype = 'hvycs'
 
@@ -844,6 +864,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_restraint.
     def enterProton_shift_restraint(self, ctx: XplorMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.procsStatements += 1
         self.__cur_subtype = 'procs'
 
@@ -856,6 +878,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def enterDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.ramaStatements += 1
         self.__cur_subtype = 'rama'
 
@@ -881,6 +905,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
     def enterDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.diffStatements += 1
         self.__cur_subtype = 'diff'
 
@@ -894,6 +920,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#orientation_db_restraint.
     def enterOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.nbaseStatements += 1
         self.__cur_subtype = 'nbase'
 
@@ -907,6 +935,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#csa_restraint.
     def enterCsa_restraint(self, ctx: XplorMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.csaStatements += 1  # either CSA or pseudo CSA
         self.__cur_subtype = 'csa'
 
@@ -919,6 +949,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#pcsa_restraint.
     def enterPcsa_restraint(self, ctx: XplorMRParser.Pcsa_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.csaStatements += 1  # either CSA or pseudo CSA
         self.__cur_subtype = 'csa'
 
@@ -951,6 +983,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#pre_restraint.
     def enterPre_restraint(self, ctx: XplorMRParser.Pre_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.preStatements += 1
         self.__cur_subtype = 'pre'
 
@@ -963,6 +997,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.pcsStatements += 1
         self.__cur_subtype = 'pcs'
 
@@ -975,6 +1011,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#prdc_restraint.
     def enterPrdc_restraint(self, ctx: XplorMRParser.Prdc_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.prdcStatements += 1
         self.__cur_subtype = 'prdc'
 
@@ -988,6 +1026,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#porientation_restraint.
     def enterPorientation_restraint(self, ctx: XplorMRParser.Porientation_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.pangStatements += 1
         self.__cur_subtype = 'pang'
 
@@ -1000,6 +1040,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#pccr_restraint.
     def enterPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.pccrStatements += 1
         self.__cur_subtype = 'pccr'
 
@@ -1014,6 +1056,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#hbond_restraint.
     def enterHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.hbondStatements += 1
         self.__cur_subtype = 'hbond'
 
@@ -3164,8 +3208,9 @@ class XplorMRParserListener(ParseTreeListener):
             self.numberSelection.clear()
 
     # Enter a parse tree produced by XplorMRParser#planar_statement.
-    def enterPlanar_statement(self, ctx: XplorMRParser.Planar_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterPlanar_statement(self, ctx: XplorMRParser.Planar_statementContext):
+        if ctx.Initialize():
+            self.planeWeight = 300.0
 
     # Exit a parse tree produced by XplorMRParser#planar_statement.
     def exitPlanar_statement(self, ctx: XplorMRParser.Planar_statementContext):  # pylint: disable=unused-argument
@@ -3190,21 +3235,21 @@ class XplorMRParserListener(ParseTreeListener):
         self.__warningInAtomSelection = ''
 
         if ctx.Weight():
-            self.scale = self.getNumber_s(ctx.number_s())
-            if isinstance(self.scale, str):
-                if self.scale in self.evaluate:
-                    self.scale = self.evaluate[self.scale]
+            self.planeWeight = self.getNumber_s(ctx.number_s())
+            if isinstance(self.planeWeight, str):
+                if self.planeWeight in self.evaluate:
+                    self.planeWeight = self.evaluate[self.planeWeight]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
-                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
-                    self.scale = 1.0
-            if self.scale < 0.0:
+                        f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' "\
+                        f"where the symbol {self.planeWeight!r} is not defined so that set the default value.\n"
+                    self.planeWeight = 300.0
+            if self.planeWeight < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must not be a negative value.\n"
-            elif self.scale == 0.0:
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' must not be a negative value.\n"
+            elif self.planeWeight == 0.0:
                 self.warningMessage += "[Range value warning] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' should be a positive value.\n"
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' should be a positive value.\n"
 
     # Exit a parse tree produced by XplorMRParser#group_statement.
     def exitGroup_statement(self, ctx: XplorMRParser.Group_statementContext):  # pylint: disable=unused-argument
@@ -3214,10 +3259,25 @@ class XplorMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) == 0:
             return
 
+        if self.__createSfDict:
+            software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
+            sf = self.__getSf(f'planality restraint, {software_name} PLANAR/GROUP statement')
+            sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                      'list_id', 'entry_id']
+                sf['tags'].append(['weight', self.planeWeight])
+
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (PLANAR/GROUP) id={self.planeRestraints} "
                       f"atom={atom1} weight={self.scale}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by XplorMRParser#harmonic_statement.
     def enterHarmonic_statement(self, ctx: XplorMRParser.Harmonic_statementContext):
@@ -3297,30 +3357,60 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#antidistance_statement.
     def enterAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):
         if ctx.Reset():
-            self.adistExpect = -1.0
+            self.adistExpectGrid = None
+            self.adistExpectValue = 0.0
+            self.adistSizeMaxDist = 10.0
+            self.adistSizeStep = None
+            self.adistForceConst = 1.0
 
         elif ctx.Expectation():
-            self.adistExpect = self.getNumber_s(ctx.number_s())
-            if isinstance(self.adistExpect, str):
-                if self.adistExpect in self.evaluate:
-                    self.adistExpect = self.evaluate[self.adistExpect]
+            self.adistExpectValue = self.getNumber_s(ctx.number_s())
+            if isinstance(self.adistExpectValue, str):
+                if self.adistExpectValue in self.evaluate:
+                    self.adistExpectValue = self.evaluate[self.adistExpectValue]
                 else:
                     self.warningMessage += "[Invalid data] "\
-                        f"The symbol {self.adistExpect!r} in the 'XADC' statement is not defined.\n"
+                        f"The symbol {self.adistExpectValue!r} in the 'XADC' statement is not defined.\n"
                     return
 
-            if DIST_ERROR_MIN < self.adistExpect < DIST_ERROR_MAX:
+            if 0.0 <= self.adistExpectValue <= 1.0:
                 pass
             else:
                 self.warningMessage += "[Range value error] "\
-                    f"The expectation distance 'XADC {str(ctx.Expectation())} {str(ctx.Integer())} {self.scale} END' "\
+                    f"The expectation distance 'XADC {str(ctx.Expectation())} {str(ctx.Integer())} {self.adistExpectValue} END' "\
+                    f"must be within range {PROBABILITY_RANGE}.\n"
+
+            self.adistExpectGrid = int(str(ctx.Integer()))
+
+        elif ctx.Size():
+            self.adistSizeMaxDist = self.getNumber_s(ctx.number_s())
+            if isinstance(self.adistSizeMaxDist, str):
+                if self.adistSizeMaxDist in self.evaluate:
+                    self.adistSizeMaxDist = self.evaluate[self.adistSizeMaxDist]
+                else:
+                    self.warningMessage += "[Invalid data] "\
+                        f"The symbol {self.adistSizeMaxDist!r} in the 'XADC' statement is not defined.\n"
+                    return
+
+            if DIST_ERROR_MIN < self.adistSizeMaxDist < DIST_ERROR_MAX:
+                pass
+            else:
+                self.warningMessage += "[Range value error] "\
+                    f"The expectation distance 'XADC {str(ctx.Size())} {self.adistSizeMaxDist} {str(ctx.Integer())} END' "\
                     f"must be within range {DIST_RESTRAINT_ERROR}.\n"
+
+            self.adistSizeStep = int(str(ctx.Integer()))
+
+        elif ctx.ForceConstant():
+            self.adistForceConst = self.getNumber_s(ctx.number_s())
 
     # Exit a parse tree produced by XplorMRParser#antidistance_statement.
     def exitAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
             print(f"subtype={self.__cur_subtype} (XADC) classification={self.classification!r} "
-                  f"coefficients={self.coefficients} expectation={self.adistExpect}")
+                  f"expectation={self.adistExpectGrid} {self.adistExpectValue}"
+                  f"size={self.adistSizeMaxDist} {self.adistSizeStep}"
+                  f"force_constant={self.adistForceConst}")
 
     # Enter a parse tree produced by XplorMRParser#xadc_assign.
     def enterXadc_assign(self, ctx: XplorMRParser.Xadc_assignContext):  # pylint: disable=unused-argument
@@ -3337,11 +3427,33 @@ class XplorMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return
 
+        if self.__createSfDict:
+            sf = self.__getSf('anti-distance restraint, XPLOR-NIH XADC statement')
+            sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                      'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                      'list_id', 'entry_id']
+                sf['tags'].append(['classification', self.classification])
+                sf['tags'].append(['expect_grid', self.adistExpectGrid])
+                sf['tags'].append(['expect_value', self.adistExpectValue])
+                sf['tags'].append(['max_distance', self.adistSizeMaxDist])
+                sf['tags'].append(['num_of_bins', self.adistSizeStep])
+                sf['tags'].append(['force_constant', self.adistForceConst])
+
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (XADC) id={self.adistRestraints} "
-                      f"atom1={atom1} atom2={atom2}")
+                      f"atom1={atom1} atom2={atom2} "
+                      f"expectaion_value={self.adistExpectValue} max_distance={self.adistSizeMaxDist} force_constant={self.adistForceConst}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                           sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by XplorMRParser#coupling_statement.
     def enterCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):
@@ -6727,8 +6839,10 @@ class XplorMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by XplorMRParser#ncs_statement.
-    def enterNcs_statement(self, ctx: XplorMRParser.Ncs_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterNcs_statement(self, ctx: XplorMRParser.Ncs_statementContext):
+        if ctx.Initialize():
+            self.ncsSigb = 2.0
+            self.ncsWeight = 300.0
 
     # Exit a parse tree produced by XplorMRParser#ncs_statement.
     def exitNcs_statement(self, ctx: XplorMRParser.Ncs_statementContext):  # pylint: disable=unused-argument
@@ -6745,35 +6859,35 @@ class XplorMRParserListener(ParseTreeListener):
         self.__warningInAtomSelection = ''
 
         if ctx.Sigb():
-            self.bfactor = self.getNumber_s(ctx.number_s())
-            if isinstance(self.bfactor, str):
-                if self.bfactor in self.evaluate:
-                    self.bfactor = self.evaluate[self.bfactor]
+            self.ncsSigb = self.getNumber_s(ctx.number_s())
+            if isinstance(self.ncsSigb, str):
+                if self.ncsSigb in self.evaluate:
+                    self.ncsSigb = self.evaluate[self.ncsSigb]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.bfactor} END' "\
-                        f"where the symbol {self.bfactor!r} is not defined so that set the default value.\n"
-                    self.bfactor = 2.0
-            if self.bfactor <= 0.0:
+                        f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' "\
+                        f"where the symbol {self.ncsSigb!r} is not defined so that set the default value.\n"
+                    self.ncsSigb = 2.0
+            if self.ncsSigb <= 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.bfactor} END' must be a positive value.\n"
+                    f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' must be a positive value.\n"
 
-        if ctx.Weight():
-            self.scale = self.getNumber_s(ctx.number_s())
-            if isinstance(self.scale, str):
-                if self.scale in self.evaluate:
-                    self.scale = self.evaluate[self.scale]
+        elif ctx.Weight():
+            self.ncsWeight = self.getNumber_s(ctx.number_s())
+            if isinstance(self.ncsWeight, str):
+                if self.ncsWeight in self.evaluate:
+                    self.ncsWeight = self.evaluate[self.ncsWeight]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
-                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
-                    self.scale = 1.0
-            if self.scale < 0.0:
+                        f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' "\
+                        f"where the symbol {self.ncsWeight!r} is not defined so that set the default value.\n"
+                    self.ncsWeight = 300.0
+            if self.ncsWeight < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must not be a negative value.\n"
-            elif self.scale == 0.0:
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' must not be a negative value.\n"
+            elif self.ncsWeight == 0.0:
                 self.warningMessage += "[Range value warning] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' should be a positive value.\n"
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' should be a positive value.\n"
 
     # Exit a parse tree produced by XplorMRParser#ncs_group_statement.
     def exitNcs_group_statement(self, ctx: XplorMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument
@@ -6783,10 +6897,26 @@ class XplorMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) == 0:
             return
 
+        if self.__createSfDict:
+            software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
+            sf = self.__getSf(f'NCS restraint, {software_name} NCS/GROUP statement')
+            sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                      'list_id', 'entry_id']
+                sf['tags'].append(['sigma_b_factor', self.ncsSigb])
+                sf['tags'].append(['weight', self.ncsWeight])
+
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (NCS/GROUP) id={self.geoRestraints} "
-                      f"atom={atom1} weight={self.scale}")
+                      f"atom={atom1} sigb={self.ncsSigb} weight={self.ncsWeight}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
@@ -11008,12 +11138,20 @@ class XplorMRParserListener(ParseTreeListener):
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType, alignCenter)
 
-        lp = getLoop(self.__cur_subtype)
-        if not isinstance(lp, str):
-            sf.add_loop(lp)
+        not_valid = True
 
-        self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                 'id': 0, 'index_id': 0})
+        lp = getLoop(self.__cur_subtype)
+        if not isinstance(lp, dict):
+            sf.add_loop(lp)
+            not_valid = False
+
+        item = {'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                'id': 0, 'index_id': 0}
+
+        if not_valid:
+            item['tags'] = []
+
+        self.sfDict[key].append(item)
 
     def __getSf(self, constraintType=None, alignCenter=None):
         key = (self.__cur_subtype, constraintType, None if alignCenter is None else str(alignCenter))

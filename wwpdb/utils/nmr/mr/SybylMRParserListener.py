@@ -1163,7 +1163,7 @@ class SybylMRParserListener(ParseTreeListener):
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
 
         lp = getLoop(self.__cur_subtype)
-        if not isinstance(lp, str):
+        if not isinstance(lp, dict):
             sf.add_loop(lp)
 
         self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,

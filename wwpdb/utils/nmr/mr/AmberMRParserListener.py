@@ -7499,12 +7499,20 @@ class AmberMRParserListener(ParseTreeListener):
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType)
 
-        lp = getLoop(self.__cur_subtype)
-        if not isinstance(lp, str):
-            sf.add_loop(lp)
+        not_valid = True
 
-        self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                 'id': 0, 'index_id': 0})
+        lp = getLoop(self.__cur_subtype)
+        if not isinstance(lp, dict):
+            sf.add_loop(lp)
+            not_valid = False
+
+        item = {'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                'id': 0, 'index_id': 0}
+
+        if not_valid:
+            item['tags'] = []
+
+        self.sfDict[key].append(item)
 
     def __getSf(self, constraintType=None):
         key = (self.__cur_subtype, constraintType, None)

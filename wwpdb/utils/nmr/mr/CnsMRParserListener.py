@@ -297,8 +297,12 @@ class CnsMRParserListener(ParseTreeListener):
     # CS
     csExpect = None
 
+    # planality
+    planeWeight = 300.0
+
     # NCS
-    bfactor = None
+    ncsSigb = 2.0
+    ncsWeight = 300.0
 
     # generic statements
     classification = None
@@ -633,6 +637,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: CnsMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.distStatements += 1
         self.__cur_subtype = 'dist'
 
@@ -696,6 +702,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: CnsMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.rdcStatements += 1
         self.__cur_subtype = 'rdc'
 
@@ -711,6 +719,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#coupling_restraint.
     def enterCoupling_restraint(self, ctx: CnsMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.jcoupStatements += 1
         self.__cur_subtype = 'jcoup'
 
@@ -723,6 +733,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#carbon_shift_restraint.
     def enterCarbon_shift_restraint(self, ctx: CnsMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.hvycsStatements += 1
         self.__cur_subtype = 'hvycs'
 
@@ -735,6 +747,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#proton_shift_restraint.
     def enterProton_shift_restraint(self, ctx: CnsMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.procsStatements += 1
         self.__cur_subtype = 'procs'
 
@@ -747,6 +761,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#conformation_db_restraint.
     def enterConformation_db_restraint(self, ctx: CnsMRParser.Conformation_db_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.ramaStatements += 1
         self.__cur_subtype = 'rama'
 
@@ -759,6 +775,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#diffusion_anisotropy_restraint.
     def enterDiffusion_anisotropy_restraint(self, ctx: CnsMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
+        self.classification = '.'
+
         self.diffStatements += 1
         self.__cur_subtype = 'diff'
 
@@ -1534,8 +1552,9 @@ class CnsMRParserListener(ParseTreeListener):
         return True
 
     # Enter a parse tree produced by CnsMRParser#plane_statement.
-    def enterPlane_statement(self, ctx: CnsMRParser.Plane_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterPlane_statement(self, ctx: CnsMRParser.Plane_statementContext):
+        if ctx.Initialize():
+            self.planeWeight = 300.0
 
     # Exit a parse tree produced by CnsMRParser#plane_statement.
     def exitPlane_statement(self, ctx: CnsMRParser.Plane_statementContext):  # pylint: disable=unused-argument
@@ -1560,21 +1579,21 @@ class CnsMRParserListener(ParseTreeListener):
         self.__warningInAtomSelection = ''
 
         if ctx.Weight():
-            self.scale = self.getNumber_s(ctx.number_s())
-            if isinstance(self.scale, str):
-                if self.scale in self.evaluate:
-                    self.scale = self.evaluate[self.scale]
+            self.planeWeight = self.getNumber_s(ctx.number_s())
+            if isinstance(self.planeWeight, str):
+                if self.planeWeight in self.evaluate:
+                    self.planeWeight = self.evaluate[self.planeWeight]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
-                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
-                    self.scale = 1.0
-            if self.scale < 0.0:
+                        f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' "\
+                        f"where the symbol {self.planeWeight!r} is not defined so that set the default value.\n"
+                    self.planeWeight = 300.0
+            if self.planeWeight < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must not be a negative value.\n"
-            elif self.scale == 0.0:
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' must not be a negative value.\n"
+            elif self.planeWeight == 0.0:
                 self.warningMessage += "[Range value warning] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' should be a positive value.\n"
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' should be a positive value.\n"
 
     # Exit a parse tree produced by CnsMRParser#group_statement.
     def exitGroup_statement(self, ctx: CnsMRParser.Group_statementContext):  # pylint: disable=unused-argument
@@ -1584,10 +1603,24 @@ class CnsMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) == 0:
             return
 
+        if self.__createSfDict:
+            sf = self.__getSf('planality restraint, CNS PLANE/GROUP statement')
+            sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                      'list_id', 'entry_id']
+                sf['tags'].append(['weight', self.planeWeight])
+
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
-                print(f"subtype={self.__cur_subtype} (PLANE/GROU) id={self.planeRestraints} "
-                      f"atom={atom1} weight={self.scale}")
+                print(f"subtype={self.__cur_subtype} (PLANE/GROUP) id={self.planeRestraints} "
+                      f"atom={atom1} weight={self.planeWeight}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by CnsMRParser#harmonic_statement.
     def enterHarmonic_statement(self, ctx: CnsMRParser.Harmonic_statementContext):
@@ -3283,8 +3316,10 @@ class CnsMRParserListener(ParseTreeListener):
         pass
 
     # Enter a parse tree produced by CnsMRParser#ncs_statement.
-    def enterNcs_statement(self, ctx: CnsMRParser.Ncs_statementContext):  # pylint: disable=unused-argument
-        pass
+    def enterNcs_statement(self, ctx: CnsMRParser.Ncs_statementContext):
+        if ctx.Initialize():
+            self.ncsSigb = 2.0
+            self.ncsWeight = 300.0
 
     # Exit a parse tree produced by CnsMRParser#ncs_statement.
     def exitNcs_statement(self, ctx: CnsMRParser.Ncs_statementContext):  # pylint: disable=unused-argument
@@ -3301,35 +3336,35 @@ class CnsMRParserListener(ParseTreeListener):
         self.__warningInAtomSelection = ''
 
         if ctx.Sigb():
-            self.bfactor = self.getNumber_s(ctx.number_s())
-            if isinstance(self.bfactor, str):
-                if self.bfactor in self.evaluate:
-                    self.bfactor = self.evaluate[self.bfactor]
+            self.ncsSigb = self.getNumber_s(ctx.number_s())
+            if isinstance(self.ncsSigb, str):
+                if self.ncsSigb in self.evaluate:
+                    self.ncsSigb = self.evaluate[self.ncsSigb]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.bfactor} END' "\
-                        f"where the symbol {self.bfactor!r} is not defined so that set the default value.\n"
-                    self.bfactor = 2.0
-            if self.bfactor <= 0.0:
+                        f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' "\
+                        f"where the symbol {self.ncsSigb!r} is not defined so that set the default value.\n"
+                    self.ncsSigb = 2.0
+            if self.ncsSigb <= 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.bfactor} END' must be a positive value.\n"
+                    f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' must be a positive value.\n"
 
-        if ctx.Weight():
-            self.scale = self.getNumber_s(ctx.number_s())
-            if isinstance(self.scale, str):
-                if self.scale in self.evaluate:
-                    self.scale = self.evaluate[self.scale]
+        elif ctx.Weight():
+            self.ncsWeight = self.getNumber_s(ctx.number_s())
+            if isinstance(self.ncsWeight, str):
+                if self.ncsWeight in self.evaluate:
+                    self.ncsWeight = self.evaluate[self.ncsWeight]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' "\
-                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
-                    self.scale = 1.0
-            if self.scale < 0.0:
+                        f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' "\
+                        f"where the symbol {self.ncsWeight!r} is not defined so that set the default value.\n"
+                    self.ncsWeight = 300.0
+            if self.ncsWeight < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' must not be a negative value.\n"
-            elif self.scale == 0.0:
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' must not be a negative value.\n"
+            elif self.ncsWeight == 0.0:
                 self.warningMessage += "[Range value warning] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.scale} END' should be a positive value.\n"
+                    f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' should be a positive value.\n"
 
     # Exit a parse tree produced by CnsMRParser#ncs_group_statement.
     def exitNcs_group_statement(self, ctx: CnsMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument
@@ -3339,10 +3374,25 @@ class CnsMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) == 0:
             return
 
+        if self.__createSfDict:
+            sf = self.__getSf('NCS restraint, CNS NCS/GROUP statement')
+            sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                      'list_id', 'entry_id']
+                sf['tags'].append(['sigma_b_factor', self.ncsSigb])
+                sf['tags'].append(['weight', self.ncsWeight])
+
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
-                print(f"subtype={self.__cur_subtype} (NCS/GROU) id={self.geoRestraints} "
-                      f"atom={atom1} weight={self.scale}")
+                print(f"subtype={self.__cur_subtype} (NCS/GROUP) id={self.geoRestraints} "
+                      f"atom={atom1} sigb={self.ncsSigb} weight={self.ncsWeight}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by CnsMRParser#selection.
     def enterSelection(self, ctx: CnsMRParser.SelectionContext):  # pylint: disable=unused-argument
@@ -7284,12 +7334,20 @@ class CnsMRParserListener(ParseTreeListener):
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType)
 
-        lp = getLoop(self.__cur_subtype)
-        if not isinstance(lp, str):
-            sf.add_loop(lp)
+        not_valid = True
 
-        self.sfDict[key].append({'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                 'id': 0, 'index_id': 0})
+        lp = getLoop(self.__cur_subtype)
+        if not isinstance(lp, dict):
+            sf.add_loop(lp)
+            not_valid = False
+
+        item = {'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                'id': 0, 'index_id': 0}
+
+        if not_valid:
+            item['tags'] = []
+
+        self.sfDict[key].append(item)
 
     def __getSf(self, constraintType=None):
         key = (self.__cur_subtype, constraintType, None)

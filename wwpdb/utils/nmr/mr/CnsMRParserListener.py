@@ -305,7 +305,13 @@ class CnsMRParserListener(ParseTreeListener):
     ncsWeight = 300.0
 
     # Rama
-    ramaScale = 1.0
+    ramaPotential = None
+    ramaError = None
+    ramaForceConst = 1.0
+    ramaSize = None
+    ramaPhase = None
+    ramaExpectGrid = None
+    ramaExpectValue = None
 
     # generic statements
     classification = None
@@ -2849,25 +2855,85 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CnsMRParser#conformation_statement.
     def enterConformation_statement(self, ctx: CnsMRParser.Conformation_statementContext):
-        if ctx.Potential_types():
+        if ctx.Error():
+            self.ramaError = self.getNumber_s(ctx.number_s())
+            if isinstance(self.ramaError, str):
+                if self.ramaError in self.evaluate:
+                    self.ramaError = self.evaluate[self.ramaError]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The error value 'CONF {str(ctx.Error())} {self.ramaError} END'"
+
+        elif ctx.ForceConstant():
+            self.ramaForceConst = self.getNumber_s(ctx.number_s())
+
+        elif ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
-                self.potential = 'square'
+                self.ramaPotential = 'square'
             elif code.startswith('HARM'):
-                self.potential = 'harmonic'
+                self.ramaPotential = 'harmonic'
             else:
-                self.potential = 'square'
+                self.ramaPotential = 'square'
                 self.warningMessage += "[Enum mismatch ignorable] "\
                     f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'CONFormation' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                    f"Instead, set the default potential {self.ramaPotential!r}.\n"
+
+        elif ctx.Size():
+            self.ramaSize = []
+            dim = str(ctx.Dimensions()).lower()
+            self.ramaSize.append(int(str(ctx.Integer(0))))
+            if dim in ('twod', 'threed', 'fourd'):
+                self.ramaSize.append(int(str(ctx.Integer(1))))
+            if dim in ('threed', 'fourd'):
+                self.ramaSize.append(int(str(ctx.Integer(2))))
+            if dim == 'fourd':
+                self.ramaSize.append(int(str(ctx.Integer(3))))
+
+        elif ctx.Phase():
+            self.ramaPhase = []
+            for d in range(4):
+                offset = d * 3
+                if ctx.Integer(offset):
+                    phase = []
+                    for i in range(3):
+                        if ctx.Integer(offset + i):
+                            phase.append(int(str(ctx.Integer(offset + i))))
+                        else:
+                            break
+                    self.ramaPhase.append(phase)
+                else:
+                    break
+
+        elif ctx.Expectation():
+            self.ramaExpectValue = self.getNumber_s(ctx.number_s())
+
+            self.ramaExpectGrid = []
+            for d in range(4):
+                if ctx.Integer(d):
+                    self.ramaExpectGrid.append(int(str(ctx.Integer(d))))
+                else:
+                    break
 
         elif ctx.Reset():
-            self.potential = 'square'
+            self.ramaError = None
+            self.ramaForceConst = 1.0
+            self.ramaPotential = 'square'
+            self.ramaSize = None
+            self.ramaPhase = None
+            self.ramaExpectGrid = None
+            self.ramaExpectValue = None
+
+        elif ctx.Zero():
+            self.ramaExpectGrid = None
+            self.ramaExpectValue = None
 
     # Exit a parse tree produced by CnsMRParser#conformation_statement.
     def exitConformation_statement(self, ctx: CnsMRParser.Conformation_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
-            print(f"subtype={self.__cur_subtype} (CONF) classification={self.classification!r}")
+            print(f"subtype={self.__cur_subtype} (CONF) classification={self.classification!r} "
+                  f"error={self.ramaError} force_constant={self.ramaForceConst} potential={self.ramaPotential} "
+                  f"size={self.ramaSize} phase={self.ramaSize} expectation={self.ramaExpectGrid} {self.ramaExpectValue}")
 
     # Enter a parse tree produced by CnsMRParser#conf_assign.
     def enterConf_assign(self, ctx: CnsMRParser.Conf_assignContext):  # pylint: disable=unused-argument
@@ -2953,6 +3019,25 @@ class CnsMRParserListener(ParseTreeListener):
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         return
 
+        if self.__createSfDict:
+            sf = self.__getSf('dihedral angle database restraint, CNS CONFormation statement')
+            sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id', 'combination_id',
+                                      'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                      'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                      'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                      'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
+                                      'list_id', 'entry_id']
+                sf['tags'].append(['classification', self.classification])
+                sf['tags'].append(['error', self.ramaError])
+                sf['tags'].append(['force_constant', self.ramaForceConst])
+                sf['tags'].append(['potential', self.ramaPotential])
+                sf['tags'].append(['size', self.ramaSize])
+                sf['tags'].append(['phase', self.ramaPhase])
+                sf['tags'].append(['expect_grid', self.ramaExpectGrid])
+                sf['tags'].append(['expect_value', self.ramaExpectValue])
+
         for i in range(0, len(self.atomSelectionSet), 4):
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[i],
                                                                 self.atomSelectionSet[i + 1],
@@ -2963,6 +3048,14 @@ class CnsMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CONF) id={self.ramaRestraints} "
                           f"atom{i+1}={atom1} atom{i+2}={atom2} atom{i+3}={atom3} atom{i+4}={atom4}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'], '.' if len(self.atomSelectionSet) == 4 else (i + 1),
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                               atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                               atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                               sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by CnsMRParser#diffusion_statement.
     def enterDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):

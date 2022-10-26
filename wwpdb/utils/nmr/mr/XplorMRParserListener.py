@@ -3419,8 +3419,8 @@ class XplorMRParserListener(ParseTreeListener):
     def exitAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):  # pylint: disable=unused-argument
         if self.__debug:
             print(f"subtype={self.__cur_subtype} (XADC) classification={self.classification!r} "
-                  f"expectation={self.adistExpectGrid} {self.adistExpectValue}"
-                  f"size={self.adistSizeMaxDist} {self.adistSizeStep}"
+                  f"expectation={self.adistExpectGrid} {self.adistExpectValue} "
+                  f"size={self.adistSizeMaxDist} {self.adistSizeStep} "
                   f"force_constant={self.adistForceConst}")
 
     # Enter a parse tree produced by XplorMRParser#xadc_assign.
@@ -4473,8 +4473,7 @@ class XplorMRParserListener(ParseTreeListener):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (RAMA) id={self.ramaRestraints} "
-                          f"atom{i+1}={atom1} atom{i+2}={atom2} atom{i+3}={atom3} atom{i+4}={atom4} "
-                          f"scale={self.ramaScale} cutoff={self.ramaCutoff}")
+                          f"atom{i+1}={atom1} atom{i+2}={atom2} atom{i+3}={atom3} atom{i+4}={atom4}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     sf['loop']['data'].append([sf['index_id'], sf['id'], '.' if len(self.atomSelectionSet) == 4 else (i + 1),

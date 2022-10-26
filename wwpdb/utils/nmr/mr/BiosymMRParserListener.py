@@ -1626,7 +1626,7 @@ class BiosymMRParserListener(ParseTreeListener):
             return
 
         if self.__createSfDict:
-            self.__addSf('BIOSYM chirality constraint')
+            self.__getSf('BIOSYM chirality constraint')
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
@@ -1681,7 +1681,7 @@ class BiosymMRParserListener(ParseTreeListener):
             return
 
         if self.__createSfDict:
-            self.__addSf('BIOSYM prochirality constraint')
+            self.__getSf('BIOSYM prochirality constraint')
 
         for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                    self.atomSelectionSet[1],

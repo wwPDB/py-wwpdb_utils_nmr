@@ -382,6 +382,9 @@ class XplorMRParserListener(ParseTreeListener):
     ramaGaussian = None
     ramaQuartic = None
 
+    # radius of gyration
+    radiScale = 1.0
+
     # diffusion
     diffCoef = None
     diffForceConst = 1.0
@@ -4506,28 +4509,30 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#collapse_statement.
     def enterCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):
         if ctx.Scale():
-            self.scale = self.getNumber_s(ctx.number_s(0))
-            if isinstance(self.scale, str):
-                if self.scale in self.evaluate:
-                    self.scale = self.evaluate[self.scale]
+            self.radiScale = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.radiScale, str):
+                if self.radiScale in self.evaluate:
+                    self.radiScale = self.evaluate[self.radiScale]
                 else:
                     self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'COLL {str(ctx.Scale())} {self.scale} END' "\
-                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
-                    self.scale = 1.0
-            if self.scale < 0.0:
+                        f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' "\
+                        f"where the symbol {self.radiScale!r} is not defined so that set the default value.\n"
+                    self.radiScale = 1.0
+            if self.radiScale < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'COLL {str(ctx.Scale())} {self.scale} END' must not be a negative value.\n"
-            elif self.scale == 0.0:
+                    f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' must not be a negative value.\n"
+            elif self.radiScale == 0.0:
                 self.warningMessage += "[Range value warning] "\
-                    f"The scale value 'COLL {str(ctx.Scale())} {self.scale} END' should be a positive value.\n"
+                    f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' should be a positive value.\n"
 
         elif ctx.Reset():
-            self.scale = 1.0
+            self.radiScale = 1.0
 
     # Exit a parse tree produced by XplorMRParser#collapse_statement.
     def exitCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):  # pylint: disable=unused-argument
-        pass
+        if self.__debug:
+            print(f"subtype={self.__cur_subtype} (COLL) classification={self.classification!r} "
+                  f"scale={self.radiScale}")
 
     # Enter a parse tree produced by XplorMRParser#coll_assign.
     def enterColl_assign(self, ctx: XplorMRParser.Coll_assignContext):  # pylint: disable=unused-argument
@@ -4562,15 +4567,32 @@ class XplorMRParserListener(ParseTreeListener):
                     f"The target Rgyr value {targetRgyr} must be within range {DIST_RESTRAINT_ERROR}.\n"
                 return
 
-            dstFunc = {'weight': self.scale, 'target_Rgyr': targetRgyr, 'force_const': forceConst}
+            dstFunc = {'target_Rgyr': targetRgyr, 'force_const': forceConst}
 
             if not self.__hasPolySeq:
                 return
+
+            if self.__createSfDict:
+                sf = self.__getSf('radius of gyration restraint, XPLOR-NIH COLLapse statement')
+                sf['id'] += 1
+                if len(sf['loop']['tag']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                          'target_Rgry', 'force_constant'
+                                          'list_id', 'entry_id']
+                    sf['tags'].append(['classification', self.classification])
+                    sf['tags'].append(['scale', self.radiScale])
 
             for atom1 in self.atomSelectionSet[0]:
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (COLL) id={self.radiRestraints} "
                           f"atom={atom1} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               targetRgyr, forceConst,
+                                               sf['list_id'], self.__entryId])
 
         finally:
             self.numberSelection.clear()

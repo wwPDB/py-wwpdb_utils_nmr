@@ -1052,6 +1052,26 @@ class GromacsMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('angle restraint' if len_atom_sorts == 3 else 'angle restraint (intervector projection angle)')
                 sf['id'] += 1
+                if len(sf['loop']['tag']) == 0:
+                    if len_atom_sorts == 3:
+                        sf['loop']['tags'] = ['index_id', 'id',
+                                              'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                              'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                              'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                              'target_value', 'target_value_uncertainty',
+                                              'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                              'multiplicity',
+                                              'list_id', 'entry_id']
+                    else:
+                        sf['loop']['tags'] = ['index_id', 'id',
+                                              'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                              'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                              'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
+                                              'target_value', 'target_value_uncertainty',
+                                              'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                              'multiplicity',
+                                              'list_id', 'entry_id']
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -1075,6 +1095,19 @@ class GromacsMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                   atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                   atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                   atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                   mult,
+                                                   sf['list_id'], self.__entryId])
 
             else:
 
@@ -1087,6 +1120,20 @@ class GromacsMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        sf['index_id'] += 1
+                        sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                   atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                   atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                   atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                   atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                   mult,
+                                                   sf['list_id'], self.__entryId])
 
         except ValueError:
             self.angRestraints -= 1
@@ -1183,6 +1230,14 @@ class GromacsMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('angle restraint (intervector projection angle with z-axis)')
                 sf['id'] += 1
+                if len(sf['loop']['tag']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                          'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                          'target_value', 'target_value_uncertainty',
+                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                          'multiplicity',
+                                          'list_id', 'entry_id']
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -1193,6 +1248,18 @@ class GromacsMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.angRestraints} mult={mult} "
                           f"atom1={atom1} atom2={atom2} z-axis {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                               mult,
+                                               sf['list_id'], self.__entryId])
 
         except ValueError:
             self.angRestraints -= 1
@@ -1257,6 +1324,17 @@ class GromacsMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('harmonic coordinate restraint, GROMACS position restraint')
                 sf['id'] += 1
+                if len(sf['loop']['tag']) == 0:
+                    if funct == 1:
+                        sf['loop']['tags'] = ['index_id', 'id',
+                                              'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                              'kx', 'ky', 'kz',
+                                              'list_id', 'entry_id']
+                    else:
+                        sf['loop']['tags'] = ['index_id', 'id',
+                                              'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                              'g', 'r', 'k',
+                                              'list_id', 'entry_id']
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -1268,6 +1346,12 @@ class GromacsMRParserListener(ParseTreeListener):
                     else:
                         print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                               f"atom={atom1} (g, r, k)=({a}, {b}, {c})")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               a, b, c,
+                                               sf['list_id'], self.__entryId])
 
         except ValueError:
             self.geoRestraints -= 1

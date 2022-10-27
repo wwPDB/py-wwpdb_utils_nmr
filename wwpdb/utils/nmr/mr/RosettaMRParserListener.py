@@ -2369,7 +2369,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if len(sf['loop']['tag']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1',
-                                          'bin_identifier', 'standard_deviation',
+                                          'bin_code', 'standard_deviation',
                                           'list_id', 'entry_id']
 
             if self.__cur_nest is not None:

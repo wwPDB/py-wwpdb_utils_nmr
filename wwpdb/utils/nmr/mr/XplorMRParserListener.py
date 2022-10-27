@@ -7245,7 +7245,7 @@ class XplorMRParserListener(ParseTreeListener):
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                       'list_id', 'entry_id']
-                sf['tags'].append(['sigma_b_factor', self.ncsSigb])
+                sf['tags'].append(['sigma_b', self.ncsSigb])
                 sf['tags'].append(['weight', self.ncsWeight])
 
         for atom1 in self.atomSelectionSet[0]:

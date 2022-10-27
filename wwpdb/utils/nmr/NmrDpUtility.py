@@ -4029,7 +4029,8 @@ class NmrDpUtility:
                                           'csp_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                             {'name': 'Type', 'type': 'enum', 'mandatory': False,
-                                                             'enum': ('macromolecular binding', 'ligand binding', 'ligand fragment binding', 'paramagnetic ligand binding')}
+                                                             'enum': ('macromolecular binding', 'ligand binding', 'ligand fragment binding', 'paramagnetic ligand binding')},
+                                                            {'name': 'Details', 'type': 'str', 'mandatory': False}
                                                             ],
                                           'auto_relax_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                                    {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},

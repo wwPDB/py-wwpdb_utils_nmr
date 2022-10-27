@@ -361,6 +361,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                            {'name': 'Type', 'type': 'enum', 'mandatory': False,
                                             'enum': ('macromolecular binding', 'ligand binding', 'ligand fragment binding', 'paramagnetic ligand binding')},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -2670,7 +2671,7 @@ def incListIdCounter(subtype, listIdCounter):
 
 
 def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None,
-                 constraintType=None, alignCenter=None):
+                 constraintType=None, alignCenter=None, cyanaParameter=None):
     """ Return pynmrstar saveframe for a given internal content subtype.
         @return: pynmrstar saveframe
     """
@@ -2731,6 +2732,14 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, alignCenter['seq_id'])
         elif tag_item_name == 'Tensor_auth_comp_ID' and subtype == 'prdc' and alignCenter is not None:
             sf.add_tag(tag_item_name, alignCenter['comp_id'])
+        elif tag_item_name == 'Tensor_magnitude' and subtype == 'rdc' and cyanaParameter is not None:
+            sf.add_tag(tag_item_name, cyanaParameter['magnitude'])
+        elif tag_item_name == 'Tensor_rhombicity' and subtype == 'rdc' and cyanaParameter is not None:
+            sf.add_tag(tag_item_name, cyanaParameter['rhombicity'])
+        elif tag_item_name == 'Details' and subtype == 'pcs' and cyanaParameter is not None:
+            sf.add_tag(tag_item_name, f"Tensor_magnitude {cyanaParameter['magnitude']}, "
+                       f"Tensor_rhombicity {cyanaParameter['rhombicity']}, "
+                       f"Paramagnetic_center_seq_ID {cyanaParameter['orientation_center_seq_id']}")
         else:
             sf.add_tag(tag_item_name, '.')
 

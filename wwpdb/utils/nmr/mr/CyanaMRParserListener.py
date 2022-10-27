@@ -876,7 +876,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                 return
 
                             if self.__createSfDict:
-                                sf = self.__getSf()
+                                sf = self.__getSf(constraintType='RDC')
                                 sf['id'] += 1
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -1296,7 +1296,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                 return
 
                             if self.__createSfDict:
-                                sf = self.__getSf()
+                                sf = self.__getSf(constraintType='RDC')
                                 sf['id'] += 1
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -3175,7 +3175,7 @@ class CyanaMRParserListener(ParseTreeListener):
         self.numberSelection.clear()
 
         if self.__createSfDict:
-            self.__addSf()
+            self.__addSf(constraintType='RDC', orientationId=orientation, cyanaParameter=self.rdcParameterDict[orientation])
 
     # Enter a parse tree produced by CyanaMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
@@ -3478,7 +3478,7 @@ class CyanaMRParserListener(ParseTreeListener):
         self.numberSelection.clear()
 
         if self.__createSfDict:
-            self.__addSf()
+            self.__addSf(orientationId=orientation, cyanaParameter=self.pcsParameterDict[orientation])
 
     # Enter a parse tree produced by CyanaMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
@@ -5122,7 +5122,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             return
 
                         if self.__createSfDict:
-                            sf = self.__getSf()
+                            sf = self.__getSf(constraintType='RDC')
                             sf['id'] += 1
 
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -6604,7 +6604,7 @@ class CyanaMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None):
+    def __addSf(self, constraintType=None, orientationId=None, cyanaParameter=None):
         _subtype = getValidSubType(self.__cur_subtype)
 
         if _subtype is None:
@@ -6612,7 +6612,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, constraintType, None)
+        key = (self.__cur_subtype, constraintType, orientationId)
 
         if key not in self.sfDict:
             self.sfDict[key] = []
@@ -6622,7 +6622,7 @@ class CyanaMRParserListener(ParseTreeListener):
         sf_framecode = 'CYANA_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
-                          constraintType)
+                          constraintType, cyanaParameter=cyanaParameter)
 
         not_valid = True
 
@@ -6639,11 +6639,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None):
-        key = (self.__cur_subtype, constraintType, None)
+    def __getSf(self, constraintType=None, orientationId=None, cyanaParameter=None):
+        key = (self.__cur_subtype, constraintType, orientationId)
 
         if key not in self.sfDict:
-            self.__addSf(constraintType)
+            self.__addSf(constraintType, orientationId, cyanaParameter)
 
         return self.sfDict[key][-1]
 

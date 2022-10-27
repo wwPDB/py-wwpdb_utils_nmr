@@ -1626,12 +1626,24 @@ class BiosymMRParserListener(ParseTreeListener):
             return
 
         if self.__createSfDict:
-            self.__getSf('BIOSYM chirality constraint')
+            sf = self.__getSf('BIOSYM chirality constraint')
+            sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                      'chirality',
+                                      'list_id', 'entry_id']
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                       f"atom={atom1} chirality={chirality}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           chirality,
+                                           sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by BiosymMRParser#prochirality_constraints.
     def enterProchirality_constraints(self, ctx: BiosymMRParser.Prochirality_constraintsContext):  # pylint: disable=unused-argument
@@ -1681,7 +1693,16 @@ class BiosymMRParserListener(ParseTreeListener):
             return
 
         if self.__createSfDict:
-            self.__getSf('BIOSYM prochirality constraint')
+            sf = self.__getSf('BIOSYM prochirality constraint')
+            sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                      'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                      'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                      'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
+                                      'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
+                                      'list_id', 'entry_id']
 
         for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                    self.atomSelectionSet[1],
@@ -1691,6 +1712,15 @@ class BiosymMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                           atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                           atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                           atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
+                                           sf['list_id'], self.__entryId])
 
     def areUniqueCoordAtoms(self, subtype_name):
         """ Check whether atom selection sets are uniquely assigned.

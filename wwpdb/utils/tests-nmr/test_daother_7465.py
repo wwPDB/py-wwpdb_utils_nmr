@@ -75,9 +75,9 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
         if cs_type == 'daother-7465':
-           # DAOTHER-8108
-           self.assertIn('missing_content', report['warning'])
-           self.assertEqual(1, len(report['warning']['missing_content']))
+            # DAOTHER-8108
+            self.assertIn('missing_content', report['warning'])
+            self.assertEqual(1, len(report['warning']['missing_content']))
         else:
             self.assertIn('content_mismatch', report['error'])
             self.assertEqual(1, report['error']['total'])

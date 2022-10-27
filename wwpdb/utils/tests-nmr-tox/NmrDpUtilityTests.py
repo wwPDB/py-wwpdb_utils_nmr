@@ -73,6 +73,7 @@ class TestNmrDpUtility(unittest.TestCase):
                 "pang_restraint",
                 "pccr_restraint",
                 "hbond_restraint",
+                "ssbond_restraint",
                 "geo_restraint",
                 "coordinate",
                 "branch",

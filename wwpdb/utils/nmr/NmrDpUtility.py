@@ -1286,7 +1286,7 @@ class NmrDpUtility:
                                       'auto_relax_restraint': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
-                                      'fchical_restraint': None,
+                                      'fchiral_restraint': None,
                                       'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': '_Software_applied_methods',
@@ -1442,7 +1442,7 @@ class NmrDpUtility:
                                     'auto_relax_restraint': None,
                                     'ccr_d_csa_restraint': None,
                                     'ccr_dd_restraint': None,
-                                    'fchical_restraint': None,
+                                    'fchiral_restraint': None,
                                     'other_restraint': None
                                     },
                             'nmr-star': {'entry_info': None,
@@ -1776,7 +1776,7 @@ class NmrDpUtility:
                                                             {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
                                                             {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}
                                                             ],
-                                       'fchical_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                       'fchiral_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                              {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
                                                              {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                              {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -3146,7 +3146,7 @@ class NmrDpUtility:
                                            'auto_relax_restraint': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
-                                           'fchical_restraint': None,
+                                           'fchiral_restraint': None,
                                            'other_restraint': None
                                            },
                                    'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -3310,7 +3310,7 @@ class NmrDpUtility:
                                                 'auto_relax_restraint': None,
                                                 'ccr_d_csa_restraint': None,
                                                 'ccr_dd_restraint': None,
-                                                'fchical_restraint': None,
+                                                'fchiral_restraint': None,
                                                 'other_restraint': None
                                                 }
                                    }
@@ -4129,7 +4129,7 @@ class NmrDpUtility:
                                            'auto_relax_restraint': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
-                                           'fchical_restraint': None,
+                                           'fchiral_restraint': None,
                                            'other_restraint': None
                                            }
                               }
@@ -4321,7 +4321,7 @@ class NmrDpUtility:
                                                'auto_relax_restraint': None,
                                                'ccr_d_csa_restraint': None,
                                                'ccr_dd_restraint': None,
-                                               'fchical_restraint': None,
+                                               'fchiral_restraint': None,
                                                'other_restraint': None
                                                }
                                   }
@@ -4348,7 +4348,7 @@ class NmrDpUtility:
                                              'auto_relax_restraint': [],
                                              'ccr_d_csa_restraint': [],
                                              'ccr_dd_restraint': [],
-                                             'fchical_restraint': [],
+                                             'fchiral_restraint': [],
                                              'other_restraint': []
                                              },
                                      'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author',
@@ -4502,7 +4502,7 @@ class NmrDpUtility:
                                                   'ccr_d_csa_restraint': ['Cross_correlation_D_CSA_experiment', 'Cross_correlation_D_CSA_software',
                                                                           'Cross_correlation_D_CSA'],
                                                   'ccr_dd_restraint': ['Cross_correlation_DD_experiment', 'Cross_correlation_DD_software', 'Cross_correlation_DD'],
-                                                  'fchical_restraint': ['Floating_chirality_software', 'Floating_chirality'],
+                                                  'fchiral_restraint': ['Floating_chirality_software', 'Floating_chirality'],
                                                   'other_restraint': ['Other_data_experiment', 'Other_data_software', 'Other_data']
                                                   }
                                      }
@@ -4671,7 +4671,7 @@ class NmrDpUtility:
                                        'auto_relax_restraint': None,
                                        'ccr_d_csa_restraint': None,
                                        'ccr_dd_restraint': None,
-                                       'fchical_restraint': None,
+                                       'fchiral_restraint': None,
                                        'other_restraint': None
                                        },
                                'nmr-star': {'entry_info': None,
@@ -4842,7 +4842,7 @@ class NmrDpUtility:
                                          'auto_relax_restraint': None,
                                          'ccr_d_csa_restraint': None,
                                          'ccr_dd_restraint': None,
-                                         'fchical_restraint': None,
+                                         'fchiral_restraint': None,
                                          'other_restraint': None
                                          },
                                  'nmr-star': {'entry_info': None,
@@ -4912,7 +4912,7 @@ class NmrDpUtility:
                                               'auto_relax_restraint': None,
                                               'ccr_d_csa_restraint': None,
                                               'ccr_dd_restraint': None,
-                                              'fchical_restraint': None,
+                                              'fchiral_restraint': None,
                                               'other_restraint': None
                                               }
                                  }

@@ -1129,6 +1129,16 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 4 atoms')
                                     sf['id'] += 1
+                                    if len(sf['loop']['tag']) == 0:
+                                        sf['loop']['tags'] = ['index_id', 'id',
+                                                              'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                                              'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                                              'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'target_value', 'target_value_uncertainty',
+                                                              'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                              'weight_1', 'weight_2',
+                                                              'list_id', 'entry_id']
 
                                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                                     self.atomSelectionSet[1],
@@ -1136,10 +1146,24 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                     self.atomSelectionSet[3]):
                                     if self.__debug:
                                         print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
-                                              f"weight=[{self.rstwt[0]}, {self.rstwt[1]}] "
+                                              f"weight={self.inGenDist_weight} "
                                               f"|atom1={atom1} atom2={atom2}| "
                                               f"|atom3={atom3} atom4={atom4}| "
                                               f"{dstFunc}")
+                                    if self.__createSfDict and sf is not None:
+                                        sf['index_id'] += 1
+                                        sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                                   atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                                   atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                                   atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                                   atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                                   self.inGenDist_weight[0], self.inGenDist_weight[1],
+                                                                   sf['list_id'], self.__entryId])
 
                             # generalized distance 3
                             elif lenIat == COL_DIST_COORD3:
@@ -1147,6 +1171,18 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 6 atoms')
                                     sf['id'] += 1
+                                    if len(sf['loop']['tag']) == 0:
+                                        sf['loop']['tags'] = ['index_id', 'id',
+                                                              'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                                              'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                                              'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
+                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6'
+                                                              'target_value', 'target_value_uncertainty',
+                                                              'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                              'weight_1', 'weight_2', 'weight_3',
+                                                              'list_id', 'entry_id']
 
                                 for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
                                                                                                   self.atomSelectionSet[1],
@@ -1156,11 +1192,27 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                   self.atomSelectionSet[5]):
                                     if self.__debug:
                                         print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
-                                              f"weight=[{self.rstwt[0]}, {self.rstwt[1]}, {self.rstwt[2]}] "
+                                              f"weight={self.inGenDist_weight} "
                                               f"|atom1={atom1} atom2={atom2}| "
                                               f"|atom3={atom3} atom4={atom4}| "
                                               f"|atom5={atom5} atom6={atom6}| "
                                               f"{dstFunc}")
+                                    if self.__createSfDict and sf is not None:
+                                        sf['index_id'] += 1
+                                        sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                                   atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                                   atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                                   atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                                   atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                                   atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
+                                                                   atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
+                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                                   self.inGenDist_weight[0], self.inGenDist_weight[1], self.inGenDist_weight[2],
+                                                                   sf['list_id'], self.__entryId])
 
                             # generalized distance 4
                             else:
@@ -1168,6 +1220,20 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 8 atoms')
                                     sf['id'] += 1
+                                    if len(sf['loop']['tag']) == 0:
+                                        sf['loop']['tags'] = ['index_id', 'id',
+                                                              'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                                              'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                                              'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
+                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6'
+                                                              'auth_asym_id_7', 'auth_seq_id_7', 'auth_comp_id_7', 'auth_atom_id_7',
+                                                              'auth_asym_id_8', 'auth_seq_id_8', 'auth_comp_id_8', 'auth_atom_id_8'
+                                                              'target_value', 'target_value_uncertainty',
+                                                              'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                              'weight_1', 'weight_2', 'weight_3', 'weight_4',
+                                                              'list_id', 'entry_id']
 
                                 for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                                 self.atomSelectionSet[1],
@@ -1179,12 +1245,30 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                                 self.atomSelectionSet[7]):
                                     if self.__debug:
                                         print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
-                                              f"weight={self.rstwt} "
+                                              f"weight={self.inGenDist_weight} "
                                               f"|atom1={atom1} atom2={atom2}| "
                                               f"|atom3={atom3} atom4={atom4}| "
                                               f"|atom5={atom5} atom6={atom6}| "
                                               f"|atom7={atom7} atom8={atom8}| "
                                               f"{dstFunc}")
+                                    if self.__createSfDict and sf is not None:
+                                        sf['index_id'] += 1
+                                        sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                                   atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                                   atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                                   atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                                   atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                                   atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
+                                                                   atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
+                                                                   atom7['chain_id'], atom7['seq_id'], atom7['comp_id'], atom7['atom_id'],
+                                                                   atom8['chain_id'], atom8['seq_id'], atom8['comp_id'], atom8['atom_id'],
+                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                                   self.inGenDist_weight[0], self.inGenDist_weight[1], self.inGenDist_weight[2], self.inGenDist_weight[3],
+                                                                   sf['list_id'], self.__entryId])
 
                             self.rstwt = [0.0, 0.0, 0.0, 0.0]
 
@@ -1207,6 +1291,14 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__createSfDict:
                             sf = self.__getSf('angle restraint')
                             sf['id'] += 1
+                            if len(sf['loop']['tag']) == 0:
+                                sf['loop']['tags'] = ['index_id', 'id',
+                                                      'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                                      'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                                      'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                                      'target_value', 'target_value_uncertainty',
+                                                      'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                      'list_id', 'entry_id']
 
                         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                      self.atomSelectionSet[1],
@@ -1216,6 +1308,18 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
                                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+                            if self.__createSfDict and sf is not None:
+                                sf['index_id'] += 1
+                                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                           atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                           atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                           dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                           dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                           dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                           dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                           dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                           sf['list_id'], self.__entryId])
 
                     # torsional angle
                     elif self.__cur_subtype == 'dihed':
@@ -1282,6 +1386,16 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__createSfDict:
                                 sf = self.__getSf('AMBER plane-point angle restraint')
                                 sf['id'] += 1
+                                if len(sf['loop']['tag']) == 0:
+                                    sf['loop']['tags'] = ['index_id', 'id',
+                                                          'plane_auth_asym_id_1', 'plane_auth_seq_id_1', 'plane_auth_comp_id_1', 'plane_auth_atom_id_1',
+                                                          'plane_auth_asym_id_2', 'plane_auth_seq_id_2', 'plane_auth_comp_id_2', 'plane_auth_atom_id_2',
+                                                          'plane_auth_asym_id_3', 'plane_auth_seq_id_3', 'plane_auth_comp_id_3', 'plane_auth_atom_id_3',
+                                                          'plane_auth_asym_id_4', 'plane_auth_seq_id_4', 'plane_auth_comp_id_4', 'plane_auth_atom_id_4'
+                                                          'point_auth_asym_id', 'point_auth_seq_id', 'ponit_auth_comp_id', 'point_auth_atom_id',
+                                                          'target_value', 'target_value_uncertainty',
+                                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                          'list_id', 'entry_id']
 
                             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                                        self.atomSelectionSet[1],
@@ -1293,6 +1407,20 @@ class AmberMRParserListener(ParseTreeListener):
                                           f"plane: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
                                           f"point: atom={atom5}"
                                           f"{dstFunc}")
+                                if self.__createSfDict and sf is not None:
+                                    sf['index_id'] += 1
+                                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                               atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                               atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                               atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
+                                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                               sf['list_id'], self.__entryId])
 
                         # plane-plane angle
                         else:
@@ -1300,6 +1428,19 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__createSfDict:
                                 sf = self.__getSf('AMBER plane-plane angle restraint')
                                 sf['id'] += 1
+                                if len(sf['loop']['tag']) == 0:
+                                    sf['loop']['tags'] = ['index_id', 'id',
+                                                          'plane_1_auth_asym_id_1', 'plane_1_auth_seq_id_1', 'plane_1_auth_comp_id_1', 'plane_1_auth_atom_id_1',
+                                                          'plane_1_auth_asym_id_2', 'plane_1_auth_seq_id_2', 'plane_1_auth_comp_id_2', 'plane_1_auth_atom_id_2',
+                                                          'plane_1_auth_asym_id_3', 'plane_1_auth_seq_id_3', 'plane_1_auth_comp_id_3', 'plane_1_auth_atom_id_3',
+                                                          'plane_1_auth_asym_id_4', 'plane_1_auth_seq_id_4', 'plane_1_auth_comp_id_4', 'plane_1_auth_atom_id_4'
+                                                          'plane_2_auth_asym_id_5', 'plane_2_auth_seq_id_5', 'plane_2_auth_comp_id_5', 'plane_2_auth_atom_id_5',
+                                                          'plane_2_auth_asym_id_6', 'plane_2_auth_seq_id_6', 'plane_2_auth_comp_id_6', 'plane_2_auth_atom_id_6'
+                                                          'plane_2_auth_asym_id_7', 'plane_2_auth_seq_id_7', 'plane_2_auth_comp_id_7', 'plane_2_auth_atom_id_7',
+                                                          'plane_2_auth_asym_id_8', 'plane_2_auth_seq_id_8', 'plane_2_auth_comp_id_8', 'plane_2_auth_atom_id_8'
+                                                          'target_value', 'target_value_uncertainty',
+                                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                          'list_id', 'entry_id']
 
                             for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                             self.atomSelectionSet[1],
@@ -1314,6 +1455,23 @@ class AmberMRParserListener(ParseTreeListener):
                                           f"plane1: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
                                           f"plane2: |atom1={atom5} atom2={atom6} atom3={atom7} atom4={atom8}| "
                                           f"{dstFunc}")
+                                if self.__createSfDict and sf is not None:
+                                    sf['index_id'] += 1
+                                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                               atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                               atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                               atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
+                                                               atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
+                                                               atom7['chain_id'], atom7['seq_id'], atom7['comp_id'], atom7['atom_id'],
+                                                               atom8['chain_id'], atom8['seq_id'], atom8['comp_id'], atom8['atom_id'],
+                                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                               sf['list_id'], self.__entryId])
 
                 # try to update AMBER atom number dictionary based on Sander comments
                 elif self.__hasPolySeq and self.iresid == 0:
@@ -1825,6 +1983,16 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 4 atoms')
                                     sf['id'] += 1
+                                    if len(sf['loop']['tag']) == 0:
+                                        sf['loop']['tags'] = ['index_id', 'id',
+                                                              'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                                              'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                                              'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'target_value', 'target_value_uncertainty',
+                                                              'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                              'weight_1', 'weight_2',
+                                                              'list_id', 'entry_id']
 
                                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                                     self.atomSelectionSet[1],
@@ -1836,6 +2004,20 @@ class AmberMRParserListener(ParseTreeListener):
                                               f"|atom1={atom1} atom2={atom2}| "
                                               f"|atom3={atom3} atom4={atom4}| "
                                               f"{dstFunc}")
+                                    if self.__createSfDict and sf is not None:
+                                        sf['index_id'] += 1
+                                        sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                                   atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                                   atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                                   atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                                   atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                                   self.inGenDist_weight[0], self.inGenDist_weight[1],
+                                                                   sf['list_id'], self.__entryId])
 
                             # generalized distance 3
                             elif lenWeight == 3:
@@ -1843,6 +2025,18 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 6 atoms')
                                     sf['id'] += 1
+                                    if len(sf['loop']['tag']) == 0:
+                                        sf['loop']['tags'] = ['index_id', 'id',
+                                                              'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                                              'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                                              'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
+                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6'
+                                                              'target_value', 'target_value_uncertainty',
+                                                              'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                              'weight_1', 'weight_2', 'weight_3',
+                                                              'list_id', 'entry_id']
 
                                 for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
                                                                                                   self.atomSelectionSet[1],
@@ -1857,6 +2051,22 @@ class AmberMRParserListener(ParseTreeListener):
                                               f"|atom3={atom3} atom4={atom4}| "
                                               f"|atom5={atom5} atom6={atom6}| "
                                               f"{dstFunc}")
+                                    if self.__createSfDict and sf is not None:
+                                        sf['index_id'] += 1
+                                        sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                                   atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                                   atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                                   atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                                   atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                                   atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
+                                                                   atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
+                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                                   self.inGenDist_weight[0], self.inGenDist_weight[1], self.inGenDist_weight[2],
+                                                                   sf['list_id'], self.__entryId])
 
                             # generalized distance 4
                             else:
@@ -1864,6 +2074,20 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 8 atoms')
                                     sf['id'] += 1
+                                    if len(sf['loop']['tag']) == 0:
+                                        sf['loop']['tags'] = ['index_id', 'id',
+                                                              'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                                              'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                                              'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
+                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6'
+                                                              'auth_asym_id_7', 'auth_seq_id_7', 'auth_comp_id_7', 'auth_atom_id_7',
+                                                              'auth_asym_id_8', 'auth_seq_id_8', 'auth_comp_id_8', 'auth_atom_id_8'
+                                                              'target_value', 'target_value_uncertainty',
+                                                              'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                              'weight_1', 'weight_2', 'weight_3', 'weight_4',
+                                                              'list_id', 'entry_id']
 
                                 for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                                 self.atomSelectionSet[1],
@@ -1881,6 +2105,24 @@ class AmberMRParserListener(ParseTreeListener):
                                               f"|atom5={atom5} atom6={atom6}| "
                                               f"|atom7={atom7} atom8={atom8}| "
                                               f"{dstFunc}")
+                                    if self.__createSfDict and sf is not None:
+                                        sf['index_id'] += 1
+                                        sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                                   atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                                   atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                                   atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                                   atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                                   atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
+                                                                   atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
+                                                                   atom7['chain_id'], atom7['seq_id'], atom7['comp_id'], atom7['atom_id'],
+                                                                   atom8['chain_id'], atom8['seq_id'], atom8['comp_id'], atom8['atom_id'],
+                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                                   self.inGenDist_weight[0], self.inGenDist_weight[1], self.inGenDist_weight[2], self.inGenDist_weight[3],
+                                                                   sf['list_id'], self.__entryId])
 
                             self.rstwt = [0.0, 0.0, 0.0, 0.0]
 
@@ -1909,6 +2151,14 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__createSfDict:
                             sf = self.__getSf('angle restraint')
                             sf['id'] += 1
+                            if len(sf['loop']['tag']) == 0:
+                                sf['loop']['tags'] = ['index_id', 'id',
+                                                      'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                                      'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                                      'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                                      'target_value', 'target_value_uncertainty',
+                                                      'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                      'list_id', 'entry_id']
 
                         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                      self.atomSelectionSet[1],
@@ -1918,6 +2168,18 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
                                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+                            if self.__createSfDict and sf is not None:
+                                sf['index_id'] += 1
+                                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                           atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                           atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                           dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                           dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                           dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                           dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                           dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                           sf['list_id'], self.__entryId])
 
                     # torsional angle
                     elif self.__cur_subtype == 'dihed':
@@ -1994,6 +2256,16 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__createSfDict:
                                 sf = self.__getSf('AMBER plane-point angle restraint')
                                 sf['id'] += 1
+                                if len(sf['loop']['tag']) == 0:
+                                    sf['loop']['tags'] = ['index_id', 'id',
+                                                          'plane_auth_asym_id_1', 'plane_auth_seq_id_1', 'plane_auth_comp_id_1', 'plane_auth_atom_id_1',
+                                                          'plane_auth_asym_id_2', 'plane_auth_seq_id_2', 'plane_auth_comp_id_2', 'plane_auth_atom_id_2',
+                                                          'plane_auth_asym_id_3', 'plane_auth_seq_id_3', 'plane_auth_comp_id_3', 'plane_auth_atom_id_3',
+                                                          'plane_auth_asym_id_4', 'plane_auth_seq_id_4', 'plane_auth_comp_id_4', 'plane_auth_atom_id_4'
+                                                          'point_auth_asym_id', 'point_auth_seq_id', 'ponit_auth_comp_id', 'point_auth_atom_id',
+                                                          'target_value', 'target_value_uncertainty',
+                                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                          'list_id', 'entry_id']
 
                             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                                        self.atomSelectionSet[1],
@@ -2005,6 +2277,20 @@ class AmberMRParserListener(ParseTreeListener):
                                           f"plane: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
                                           f"point: atom={atom5}"
                                           f"{dstFunc}")
+                                if self.__createSfDict and sf is not None:
+                                    sf['index_id'] += 1
+                                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                               atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                               atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                               atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
+                                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                               sf['list_id'], self.__entryId])
 
                         # plane-plane angle
                         else:
@@ -2042,6 +2328,19 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__createSfDict:
                                 sf = self.__getSf('AMBER plane-plane angle restraint')
                                 sf['id'] += 1
+                                if len(sf['loop']['tag']) == 0:
+                                    sf['loop']['tags'] = ['index_id', 'id',
+                                                          'plane_1_auth_asym_id_1', 'plane_1_auth_seq_id_1', 'plane_1_auth_comp_id_1', 'plane_1_auth_atom_id_1',
+                                                          'plane_1_auth_asym_id_2', 'plane_1_auth_seq_id_2', 'plane_1_auth_comp_id_2', 'plane_1_auth_atom_id_2',
+                                                          'plane_1_auth_asym_id_3', 'plane_1_auth_seq_id_3', 'plane_1_auth_comp_id_3', 'plane_1_auth_atom_id_3',
+                                                          'plane_1_auth_asym_id_4', 'plane_1_auth_seq_id_4', 'plane_1_auth_comp_id_4', 'plane_1_auth_atom_id_4'
+                                                          'plane_2_auth_asym_id_5', 'plane_2_auth_seq_id_5', 'plane_2_auth_comp_id_5', 'plane_2_auth_atom_id_5',
+                                                          'plane_2_auth_asym_id_6', 'plane_2_auth_seq_id_6', 'plane_2_auth_comp_id_6', 'plane_2_auth_atom_id_6'
+                                                          'plane_2_auth_asym_id_7', 'plane_2_auth_seq_id_7', 'plane_2_auth_comp_id_7', 'plane_2_auth_atom_id_7',
+                                                          'plane_2_auth_asym_id_8', 'plane_2_auth_seq_id_8', 'plane_2_auth_comp_id_8', 'plane_2_auth_atom_id_8'
+                                                          'target_value', 'target_value_uncertainty',
+                                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                                          'list_id', 'entry_id']
 
                             for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                             self.atomSelectionSet[1],
@@ -2056,6 +2355,23 @@ class AmberMRParserListener(ParseTreeListener):
                                           f"plane1: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
                                           f"plane2: |atom1={atom5} atom2={atom6} atom3={atom7} atom4={atom8}| "
                                           f"{dstFunc}")
+                                if self.__createSfDict and sf is not None:
+                                    sf['index_id'] += 1
+                                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                                               atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                                               atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                                               atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
+                                                               atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
+                                                               atom7['chain_id'], atom7['seq_id'], atom7['comp_id'], atom7['atom_id'],
+                                                               atom8['chain_id'], atom8['seq_id'], atom8['comp_id'], atom8['atom_id'],
+                                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                               sf['list_id'], self.__entryId])
 
                 # try to update AMBER atom number dictionary based on Sander comments
                 elif self.__hasPolySeq:

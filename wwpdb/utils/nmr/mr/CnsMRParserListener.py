@@ -3510,6 +3510,8 @@ class CnsMRParserListener(ParseTreeListener):
                 sf['tags'].append(['weight', self.ncsWeight])
 
         for atom1 in self.atomSelectionSet[0]:
+            if atom1['atom_id'] == 'H':
+                continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (NCS/GROUP) id={self.geoRestraints} "
                       f"atom={atom1} sigb={self.ncsSigb} weight={self.ncsWeight}")

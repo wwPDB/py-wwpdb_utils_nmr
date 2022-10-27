@@ -2606,7 +2606,7 @@ def getValidSubType(subtype):
     if subtype == 'pccr':
         return 'ccr_dd_restraint'
 
-    if subtype in ('plane', 'adist', 'rama', 'radi', 'diff', 'nbase', 'pang', 'geo'):
+    if subtype in ('plane', 'adist', 'rama', 'radi', 'diff', 'nbase', 'ang', 'pang', 'geo'):
         return 'other_restraint'
 
     raise KeyError(f'Internal subtype {subtype!r} is not defined.')

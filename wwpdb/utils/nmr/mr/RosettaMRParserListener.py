@@ -1372,6 +1372,14 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('angle restraint')
             sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                      'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                      'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                      'target_value', 'target_value_uncertainty',
+                                      'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                      'list_id', 'entry_id']
 
         if self.__cur_nest is not None:
             if self.__debug:
@@ -1385,6 +1393,18 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                           atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                           dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                           dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                           dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                           dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                           dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                           sf['list_id'], self.__entryId])
 
     def validateAngleRange(self, weight):
         """ Validate angle value range.
@@ -1862,6 +1882,12 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('harmonic coordinate restraint, ROSETTA CoordinateConstraint')
                 sf['id'] += 1
+                if len(sf['loop']['tag']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                          'ref_auth_asym_id', 'ref_auth_seq_id', 'ref_auth_comp_id', 'ref_auth_atom_id',
+                                          'cart_x', 'cart_y', 'cart_z',
+                                          'list_id', 'entry_id']
 
             if self.__cur_nest is not None:
                 if self.__debug:
@@ -1876,6 +1902,13 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (Coordinate) id={self.geoRestraints} "
                           f"atom={atom1} refAtom={atom2} coord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                               cartX, cartY, cartZ,
+                                               sf['list_id'], self.__entryId])
 
         except ValueError:
             self.geoRestraints -= 1
@@ -1946,6 +1979,14 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('local harmonic coordinate restraint, ROSETTA LocalCoordinateConstraint')
                 sf['id'] += 1
+                if len(sf['loop']['tag']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                          'origin_auth_asym_id_1', 'origin_auth_seq_id_1', 'origin_auth_comp_id_1', 'origin_auth_atom_id_1',
+                                          'origin_auth_asym_id_2', 'origin_auth_seq_id_2', 'origin_auth_comp_id_2', 'origin_auth_atom_id_2',
+                                          'origin_auth_asym_id_3', 'origin_auth_seq_id_3', 'origin_auth_comp_id_3', 'origin_auth_atom_id_3',
+                                          'local_cart_x', 'local_cart_y', 'local_cart_z',
+                                          'list_id', 'entry_id']
 
             if self.__cur_nest is not None:
                 if self.__debug:
@@ -1959,6 +2000,15 @@ class RosettaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} (LocalCoordinate) id={self.geoRestraints} "
                           f"atom={atom1} originAtom1={atom2} originAtom2={atom3} originAtom3={atom4} "
                           f"localCoord=({cartX}, {cartY}, {cartZ}) {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                               atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                               atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
+                                               cartX, cartY, cartZ,
+                                               sf['list_id'], self.__entryId])
 
         except ValueError:
             self.geoRestraints -= 1
@@ -2027,6 +2077,13 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('ambiguous site restraint (atom to other chain), ROSETTA SiteConstraint')
             sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                      'opposing_auth_asym_id',
+                                      'target_value', 'target_value_uncertainty',
+                                      'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                      'list_id', 'entry_id']
 
         if self.__cur_nest is not None:
             if self.__debug:
@@ -2036,6 +2093,17 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (Site) id={self.geoRestraints} "
                       f"atom={atom1} opposingChainId={opposingChainId} {dstFunc}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           opposingChainId,
+                                           dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                           dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                           dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                           dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                           dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                           sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by RosettaMRParser#site_residues_restraints.
     def enterSite_residues_restraints(self, ctx: RosettaMRParser.Site_residues_restraintsContext):  # pylint: disable=unused-argument
@@ -2094,6 +2162,14 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('ambiguous site restraint (atom to other residue), ROSETTA SiteConstraintResidues')
             sf['id'] += 1
+            if len(sf['loop']['tag']) == 0:
+                sf['loop']['tags'] = ['index_id', 'id',
+                                      'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                      'interacting_auth_asym_id_1', 'interacting_auth_seq_id_1', 'interacting_auth_comp_id_1',
+                                      'interacting_auth_asym_id_2', 'interacting_auth_seq_id_2', 'interacting_auth_comp_id_2',
+                                      'target_value', 'target_value_uncertainty',
+                                      'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                      'list_id', 'entry_id']
 
         if self.__cur_nest is not None:
             if self.__debug:
@@ -2105,6 +2181,18 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (Site-Residue) id={self.geoRestraints} "
                       f"atom1={atom1} residue2={res2} residue3={res3} {dstFunc}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                           res2['chain_id'], res2['seq_id'], res2['comp_id'],
+                                           res3['chain_id'], res3['seq_id'], res3['comp_id'],
+                                           dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                           dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                           dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                           dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                           dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                           sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
     def enterMin_residue_atomic_distance_restraints(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -2173,6 +2261,13 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('ambiguous site restraint (residue to other residue), ROSETTA MinResidueAtomicDistance')
                 sf['id'] += 1
+                if len(sf['loop']['tag']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'interacting_auth_asym_id_1', 'interacting_auth_seq_id_1', 'interacting_auth_comp_id_1',
+                                          'interacting_auth_asym_id_2', 'interacting_auth_seq_id_2', 'interacting_auth_comp_id_2',
+                                          'target_value', 'target_value_uncertainty',
+                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                          'list_id', 'entry_id']
 
             if self.__cur_nest is not None:
                 if self.__debug:
@@ -2183,6 +2278,17 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (MinResidueAtomicDistance) id={self.geoRestraints} "
                           f"resudue1={res1} residue2={res2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               res1['chain_id'], res1['seq_id'], res1['comp_id'],
+                                               res2['chain_id'], res2['seq_id'], res2['comp_id'],
+                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
+                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
+                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
+                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
+                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                               sf['list_id'], self.__entryId])
 
         except ValueError:
             self.geoRestraints -= 1
@@ -2260,6 +2366,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf = self.__getSf("dihedral angle restraint, ROSETTA BigBin "
                                   "('O' for cis-like OMEGA, 'G' for PHI,PSI in 100,100, 'E' for 100,-90, 'A' for -50,30, 'B' for 100,175)")
                 sf['id'] += 1
+                if len(sf['loop']['tag']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1',
+                                          'bin_identifier', 'standard_deviation',
+                                          'list_id', 'entry_id']
 
             if self.__cur_nest is not None:
                 if self.__debug:
@@ -2269,6 +2380,12 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (BigBin) id={self.geoRestraints} "
                           f"residue={res} binChar={binChar} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               res['chain_id'], res['seq_id'], res['comp_id'],
+                                               binChar, sDev,
+                                               sf['list_id'], self.__entryId])
 
         except ValueError:
             self.geoRestraints -= 1

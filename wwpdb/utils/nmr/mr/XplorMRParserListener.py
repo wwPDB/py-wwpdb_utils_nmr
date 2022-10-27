@@ -400,8 +400,7 @@ class XplorMRParserListener(ParseTreeListener):
     nbaseNewGauss = None
     nbaseQuartic = None
     nbaseResidues = None
-    nbaseSizeMin = None
-    nbaseSizeMax = None
+    nbaseCubicSize = None
 
     # paramagnetic orientation
     pangForceConst = 1.0
@@ -814,7 +813,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.scale = 1.0
 
         if self.__createSfDict:
-            if ctx.VeAngle():
+            if ctx.VeAngle() or ctx.Anisotropy():
                 self.__cur_subtype = 'dihed'
                 self.__addSf('intervector projection angle')
                 self.__cur_subtype = 'rdc'
@@ -2714,8 +2713,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                target_value_2, lower_limit_2, upper_limit_2)
 
             if self.__createSfDict:
-                dstFunc1 = self.validateAngleRange(self.scale, {'potential': self.potential},
-                                                   target_value_1, lower_limit_1, upper_limit_2)
+                dstFunc = self.validateAngleRange(self.scale, {'potential': self.potential},
+                                                  target_value_1, lower_limit_1, upper_limit_1)
                 dstFunc2 = self.validateAngleRange(self.scale, {'potential': self.potential},
                                                    target_value_2, lower_limit_2, upper_limit_2)
 
@@ -2818,12 +2817,12 @@ class XplorMRParserListener(ParseTreeListener):
                     self.__cur_subtype = 'dihed'
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 1, 'VEAN',
-                                 sf['list_id'], self.__entryId, dstFunc1, atom1, atom2, atom3, atom4)
+                                 1, 'VEANgle',
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 2, 'VEAN',
+                                 2, 'VEANgle',
                                  sf['list_id'], self.__entryId, dstFunc2, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     self.__cur_subtype = 'rdc'
@@ -3228,6 +3227,12 @@ class XplorMRParserListener(ParseTreeListener):
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                             return
 
+            if self.__createSfDict:
+                self.__cur_subtype = 'dihed'
+                sf = self.__getSf('intervector projection angle')
+                self.__cur_subtype = 'rdc'
+                sf['id'] += 1
+
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
@@ -3237,6 +3242,14 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (ANIS) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    self.__cur_subtype = 'dihed'
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', 'ANISotropy',
+                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
+                    self.__cur_subtype = 'rdc'
 
         finally:
             self.numberSelection.clear()
@@ -4989,15 +5002,15 @@ class XplorMRParserListener(ParseTreeListener):
             self.nbaseNewGauss = None
             self.nbaseQuartic = None
             self.nbaseResidues = None
-            self.nbaseSizeMin = None
-            self.nbaseSizeMax = None
+            self.nbaseCubicSize = None
 
         elif ctx.Residue():
             self.nbaseResidues = int(str(ctx.Integer()))
 
         elif ctx.Size():
-            self.nbaseSizeMin = self.getNumber_s(ctx.number_s(0))
-            self.nbaseSizeMax = self.getNumber_s(ctx.number_s(1))
+            self.nbaseCubicSize = {'min': self.getNumber_s(ctx.number_s(0)),
+                                   'max': self.getNumber_s(ctx.number_s(1))
+                                   }
 
         elif ctx.Zero():
             self.nbaseGaussian = None
@@ -5012,7 +5025,7 @@ class XplorMRParserListener(ParseTreeListener):
                   f"cutoff={self.nbaseCutoff} height={self.nbaseHeight} force_constant={self.nbaseForceConst} "
                   f"gaussian={self.nbaseGaussian} max_gaussians={self.nbaseMaxGauss} new_gaussian={self.nbaseNewGauss} "
                   f"quartic={self.nbaseQuartic} residues={self.nbaseResidues} "
-                  f"min_size={self.nbaseSizeMin} max_size={self.nbaseSizeMax}")
+                  f"cubic_size={self.nbaseCubicSize}")
 
     # Enter a parse tree produced by XplorMRParser#orie_assign.
     def enterOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
@@ -5120,8 +5133,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.nbaseQuartic is not None:
                     sf['tags'].append(['quartic', self.nbaseQuartic])
                 sf['tags'].append(['residues', self.nbaseResidues])
-                sf['tags'].append(['min_size', self.nbaseSizeMin])
-                sf['tags'].append(['max_size', self.nbaseSizeMax])
+                sf['tags'].append(['cubic_size', self.nbaseCubicSize])
 
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                             self.atomSelectionSet[1],

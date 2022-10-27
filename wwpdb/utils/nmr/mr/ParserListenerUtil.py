@@ -1235,6 +1235,24 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               ],
                           }
 
+NMR_STAR_AUX_LP_CATEGORIES = {'dist_restraint': ['_Gen_dist_constraint_software_param']
+                              }
+
+NMR_STAR_AUX_LP_KEY_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_param': [
+                                                {'name': 'Software_ID', 'type': 'int', 'mandatory': True},
+                                                {'name': 'Type', 'type': 'str', 'mandatory': True}]
+                                                }
+                             }
+
+NMR_STAR_AUX_LP_DATA_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_param': [
+                                                 {'name': 'Value', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Range', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                  'default': '1', 'default-from': 'parent'},
+                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}]
+                                                 }
+                              }
+
 
 def toNpArray(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
@@ -2748,6 +2766,38 @@ def getLoop(subtype):
     return lp
 
 
+def getAuxLoops(subtype):
+    """ Return pynmrstart auxiliary loops for a given content subtype.
+        @return: pynmrstar loop
+    """
+
+    _subtype = getValidSubType(subtype)
+
+    if _subtype is None:
+        return None
+
+    if _subtype not in NMR_STAR_AUX_LP_CATEGORIES:
+        return None
+
+    aux_lps = []
+
+    for catName in NMR_STAR_AUX_LP_CATEGORIES[_subtype]:
+
+        prefix = catName + '.'
+
+        aux_lp = pynmrstar.Loop.from_scratch()
+
+        tags = [prefix + item['name'] for item in NMR_STAR_AUX_LP_KEY_ITEMS[_subtype][catName]]
+        tags.extend([prefix + item['name'] for item in NMR_STAR_AUX_LP_DATA_ITEMS[_subtype][catName]])
+
+        for tag in tags:
+            aux_lp.add_tag(tag)
+
+        aux_lps.append(aux_lp)
+
+    return aux_lps
+
+
 def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, atom1, atom2=None, atom3=None, atom4=None, atom5=None):
     """ Return row data for a given restraint.
         @return: data array
@@ -3049,6 +3099,39 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         row[key_size + 22], row[key_size + 23], row[key_size + 24], row[key_size + 25] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    return row
+
+
+def getAuxRow(subtype, catName, listId, entryId, inDict):
+    """ Return aux row data for a given category.
+        @return: data array
+    """
+
+    _subtype = getValidSubType(subtype)
+
+    if _subtype is None:
+        return None
+
+    if _subtype not in NMR_STAR_AUX_LP_CATEGORIES:
+        return None
+
+    if catName not in NMR_STAR_AUX_LP_CATEGORIES[_subtype]:
+        return None
+
+    key_names = [key['name'] for key in NMR_STAR_AUX_LP_KEY_ITEMS[_subtype][catName]]
+    data_names = [data['name'] for data in NMR_STAR_AUX_LP_DATA_ITEMS[_subtype][catName]]
+
+    names = key_names.extend(data_names)
+
+    row = [None] * len(names)
+
+    row[-2] = listId
+    row[-1] = entryId
+
+    for k, v in inDict:
+        if k in names:
+            row[names.index(k)] = v
 
     return row
 

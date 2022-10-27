@@ -34,7 +34,9 @@ try:
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
+                                                       getAuxLoops,
                                                        getRow,
+                                                       getAuxRow,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -103,7 +105,9 @@ except ImportError:
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
+                                           getAuxLoops,
                                            getRow,
+                                           getAuxRow,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -331,9 +335,17 @@ class XplorMRParserListener(ParseTreeListener):
     noePotential = 'biharmonic'
     noeAverage = 'r-6'
     squareExponent = 2.0
+    softExponent = 2.0
+    squareConstant = 20.0
     squareOffset = 0.0
     rSwitch = 10.0
     scale = 1.0
+    asymptote = 0.0
+    B_high = 0.01
+    ceiling = 30.0
+    temperature = 300.0
+    monomers = 1
+    ncount = 2
     scale_a = None
     adistExpectGrid = None
     adistExpectValue = 0.0
@@ -774,9 +786,17 @@ class XplorMRParserListener(ParseTreeListener):
         self.noePotential = 'biharmonic'  # default potential
         self.noeAverage = 'r-6'  # default averaging method
         self.squareExponent = 2.0
+        self.softExponent = 2.0
+        self.squareConstant = 20.0
         self.squareOffset = 0.0
         self.rSwitch = 10.0
         self.scale = 1.0
+        self.asymptote = 0.0
+        self.B_high = 0.01
+        self.ceiling = 30.0
+        self.temperature = 300.0
+        self.monomers = 1
+        self.ncount = 2
         self.symmTarget = None
         self.symmDminus = None
         self.symmDplus = None
@@ -786,7 +806,61 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
-        pass
+        if self.__createSfDict and self.__cur_subtype == 'dist':
+            sf = self.__getSf()
+
+            if 'aux_loops' in sf:
+                return
+
+            sf['aux_loops'] = getAuxLoops(self.__cur_subtype)
+
+            aux_lp = next((aux_lp for aux_lp in sf['aux_loops'] if aux_lp.category == '_Gen_dist_constraint_software_param'), None)
+
+            if aux_lp is None:
+                return
+
+            aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                      {'Type': 'class name', 'Value': self.classification}))
+            aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                      {'Type': 'potential function', 'Value': self.noePotential}))
+            aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                      {'Type': 'averaging method', 'Value': self.noeAverage}))
+            aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                      {'Type': 'scaling constant', 'Value': self.scale}))
+            aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                      {'Type': 'ceiling', 'Value': self.ceiling}))
+            if self.noePotential in ('square', 'softsquare'):
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'exponent', 'Value': self.squareExponent}))
+            if self.noePotential == 'softsquare':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'soft exponent', 'Value': self.softExponent}))
+            if self.noePotential in ('square', 'softsquare'):
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'auxiliary scaling constant', 'Value': self.squareConstant}))
+            if self.noePotential in ('square', 'softsquare'):
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'negative offset', 'Value': self.squareOffset}))
+            if self.noePotential == 'softsquare':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'switch distance', 'Value': self.rSwitch}))
+            if self.noePotential == 'softsquare':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'asymptote slope', 'Value': self.asymptote}))
+            if self.noePotential == 'high':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'B_high', 'Value': self.B_high}))
+            if self.noePotential == 'biharmonic':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'temperature', 'Value': self.temperature}))
+            if self.noeAverage == 'sum':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'number monomers', 'Value': self.monomers}))
+            if self.noePotential == 'high':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'number assign statements', 'Value': self.ncount}))
+
+            sf['saveframe'].add_loop(aux_lp)
 
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
@@ -1167,6 +1241,34 @@ class XplorMRParserListener(ParseTreeListener):
                     "The exponent value of square-well or soft-square function "\
                     f"'NOE {str(ctx.SqExponent())} {self.getClass_name(ctx.class_name(0))} {self.squareExponent} END' must be a positive value.\n"
 
+        elif ctx.SoExponent():
+            self.softExponent = self.getNumber_s(ctx.number_s())
+            if isinstance(self.softExponent, str):
+                if self.softExponent in self.evaluate:
+                    self.softExponent = self.evaluate[self.softExponent]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.softExponent!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.softExponent = 2.0
+            if self.softExponent is None or self.softExponent <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    "The exponent value for soft-square function only "\
+                    f"'NOE {str(ctx.SoExponent())} {self.getClass_name(ctx.class_name(0))} {self.softExponent} END' must be a positive value.\n"
+
+        elif ctx.SqConstant():
+            self.squareConstant = self.getNumber_s(ctx.number_s())
+            if isinstance(self.squareConstant, str):
+                if self.squareConstant in self.evaluate:
+                    self.squareConstant = self.evaluate[self.squareConstant]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.squareConstant!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.squareConstant = 20.0
+            if self.squareConstant is None or self.squareConstant <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    "The auxiliary scaling constant of square-well or soft-square function "\
+                    f"'NOE {str(ctx.SqConstant())} {self.getClass_name(ctx.class_name(0))} {self.squareConstant} END' must be a positive value.\n"
+
         elif ctx.SqOffset():
             self.squareOffset = self.getNumber_s(ctx.number_s())
             if isinstance(self.squareOffset, str):
@@ -1178,7 +1280,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.squareOffset = 0.0
             if self.squareOffset is None or self.squareOffset < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    "The offset value of square-well or soft-square function "\
+                    "The negative offset value to all upper bounds of square-well or soft-square function "\
                     f"'NOE {str(ctx.SqOffset())} {self.getClass_name(ctx.class_name(0))} {self.squareOffset} END' must not be a negative value.\n"
 
         elif ctx.Rswitch():
@@ -1211,12 +1313,102 @@ class XplorMRParserListener(ParseTreeListener):
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' must not be a negative value.\n"
 
+        elif ctx.Asymptote():
+            self.asymptote = self.getNumber_s(ctx.number_s())
+            if isinstance(self.asymptote, str):
+                if self.asymptote in self.evaluate:
+                    self.asymptote = self.evaluate[self.asymptote]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.asymptote!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.asymptote = 0.0
+            if self.asymptote is None:
+                self.warningMessage += "[Range value warning] "\
+                    f"The asymptote slope value 'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' should be a non-negative value.\n"
+            elif self.asymptote < 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The asymptote slope value 'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' must not be a negative value.\n"
+
+        elif ctx.Bhig():
+            self.B_high = self.getNumber_s(ctx.number_s())
+            if isinstance(self.B_high, str):
+                if self.B_high in self.evaluate:
+                    self.B_high = self.evaluate[self.B_high]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.B_high!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.B_high = 0.01
+            if self.B_high is None:
+                self.warningMessage += "[Range value warning] "\
+                    f"The potential barrier value 'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' should be a non-negative value.\n"
+            elif self.B_high < 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The potential barrier value 'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' must not be a negative value.\n"
+
+        elif ctx.Ceiling():
+            self.ceiling = self.getNumber_s(ctx.number_s())
+            if isinstance(self.ceiling, str):
+                if self.ceiling in self.evaluate:
+                    self.ceiling = self.evaluate[self.ceiling]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.ceiling!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.ceiling = 30.0
+            if self.ceiling is None:
+                self.warningMessage += "[Range value warning] "\
+                    f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' should be a non-negative value.\n"
+            elif self.ceiling < 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' must not be a negative value.\n"
+
+        elif ctx.Temperature():
+            self.temperature = self.getNumber_s(ctx.number_s())
+            if isinstance(self.temperature, str):
+                if self.temperature in self.evaluate:
+                    self.temperature = self.evaluate[self.temperature]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.temperature!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.temperature = 300.0
+            if self.temperature is None:
+                self.warningMessage += "[Range value warning] "\
+                    f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' should be a non-negative value.\n"
+            elif self.temperature < 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' must not be a negative value.\n"
+
+        elif ctx.Monomers():
+            self.monomers = int(str(ctx.Integer()))
+            if self.monomers is None or self.monomers == 0:
+                self.warningMessage += "[Range value warning] "\
+                    f"The number of monomers 'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' should be a positive value.\n"
+            elif self.monomers < 0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The number of monomers 'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' must not be a negative value.\n"
+
+        elif ctx.Ncount():
+            self.ncount = int(str(ctx.Integer()))
+            if self.ncount is None or self.ncount == 0:
+                self.warningMessage += "[Range value warning] "\
+                    f"The number of assign statements 'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' should be a positive value.\n"
+            elif self.ncount < 0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The number of assign statements 'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' must not be a negative value.\n"
+
         elif ctx.Reset():
             self.noePotential = 'biharmonic'  # default potential
             self.squareExponent = 2.0
+            self.softExponent = 2.0
+            self.squareConstant = 20.0
             self.squareOffset = 0.0
             self.rSwitch = 10.0
             self.scale = 1.0
+            self.asymptote = 0.0
+            self.B_high = 0.01
+            self.ceiling = 30.0
+            self.temperature = 300.0
+            self.monomers = 1
+            self.ncount = 2
             self.symmTarget = None
             self.symmDminus = None
             self.symmDplus = None

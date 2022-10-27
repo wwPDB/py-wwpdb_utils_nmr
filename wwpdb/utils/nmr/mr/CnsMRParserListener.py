@@ -934,7 +934,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"Instead, set the default method {self.noeAverage!r}.\n"
 
         elif ctx.SqExponent():
-            self.squareExponent = self.getNumber_s(ctx.number_s())
+            self.squareExponent = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.squareExponent, str):
                 if self.squareExponent in self.evaluate:
                     self.squareExponent = self.evaluate[self.squareExponent]
@@ -948,7 +948,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"'NOE {str(ctx.SqExponent())} {self.getClass_name(ctx.class_name(0))} {self.squareExponent} END' must be a positive value.\n"
 
         elif ctx.SoExponent():
-            self.softExponent = self.getNumber_s(ctx.number_s())
+            self.softExponent = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.softExponent, str):
                 if self.softExponent in self.evaluate:
                     self.softExponent = self.evaluate[self.softExponent]
@@ -962,7 +962,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"'NOE {str(ctx.SoExponent())} {self.getClass_name(ctx.class_name(0))} {self.softExponent} END' must be a positive value.\n"
 
         elif ctx.SqConstant():
-            self.squareConstant = self.getNumber_s(ctx.number_s())
+            self.squareConstant = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.squareConstant, str):
                 if self.squareConstant in self.evaluate:
                     self.squareConstant = self.evaluate[self.squareConstant]
@@ -976,7 +976,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"'NOE {str(ctx.SqConstant())} {self.getClass_name(ctx.class_name(0))} {self.squareConstant} END' must be a positive value.\n"
 
         elif ctx.SqOffset():
-            self.squareOffset = self.getNumber_s(ctx.number_s())
+            self.squareOffset = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.squareOffset, str):
                 if self.squareOffset in self.evaluate:
                     self.squareOffset = self.evaluate[self.squareOffset]
@@ -990,7 +990,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"'NOE {str(ctx.SqOffset())} {self.getClass_name(ctx.class_name(0))} {self.squareOffset} END' must not be a negative value.\n"
 
         elif ctx.Rswitch():
-            self.rSwitch = self.getNumber_s(ctx.number_s())
+            self.rSwitch = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.rSwitch, str):
                 if self.rSwitch in self.evaluate:
                     self.rSwitch = self.evaluate[self.rSwitch]
@@ -1004,7 +1004,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"'NOE {str(ctx.Rswitch())} {self.getClass_name(ctx.class_name(0))} {self.rSwitch} END' must not be a negative value.\n"
 
         elif ctx.Scale():
-            self.scale = self.getNumber_s(ctx.number_s())
+            self.scale = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.scale, str):
                 if self.scale in self.evaluate:
                     self.scale = self.evaluate[self.scale]
@@ -1020,7 +1020,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' must not be a negative value.\n"
 
         elif ctx.Asymptote():
-            self.asymptote = self.getNumber_s(ctx.number_s())
+            self.asymptote = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.asymptote, str):
                 if self.asymptote in self.evaluate:
                     self.asymptote = self.evaluate[self.asymptote]
@@ -1036,7 +1036,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"The asymptote slope value 'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' must not be a negative value.\n"
 
         elif ctx.Bhig():
-            self.B_high = self.getNumber_s(ctx.number_s())
+            self.B_high = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.B_high, str):
                 if self.B_high in self.evaluate:
                     self.B_high = self.evaluate[self.B_high]
@@ -1052,7 +1052,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"The potential barrier value 'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' must not be a negative value.\n"
 
         elif ctx.Ceiling():
-            self.ceiling = self.getNumber_s(ctx.number_s())
+            self.ceiling = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.ceiling, str):
                 if self.ceiling in self.evaluate:
                     self.ceiling = self.evaluate[self.ceiling]
@@ -1068,7 +1068,7 @@ class CnsMRParserListener(ParseTreeListener):
                     f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' must not be a negative value.\n"
 
         elif ctx.Temperature():
-            self.temperature = self.getNumber_s(ctx.number_s())
+            self.temperature = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.temperature, str):
                 if self.temperature in self.evaluate:
                     self.temperature = self.evaluate[self.temperature]

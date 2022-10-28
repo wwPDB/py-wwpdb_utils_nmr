@@ -51,6 +51,8 @@ except ImportError:
 # This class defines a complete listener for a parse tree produced by GromacsPTParser.
 class GromacsPTParserListener(ParseTreeListener):
 
+    __file_type = 'nm-aux-gro'
+
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
 
@@ -342,8 +344,6 @@ class GromacsPTParserListener(ParseTreeListener):
                         if 'atom_type' in atomNum:
                             del atomNum['atom_type']
 
-        file_type = 'nm-aux-gro'
-
         polySeqModel = copy.copy(self.__polySeqModel)
         if self.__hasBranchModel:
             polySeqModel.extend(self.__branchModel)
@@ -374,7 +374,7 @@ class GromacsPTParserListener(ParseTreeListener):
                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "\
                             f"(the original residue label is {atomNum['auth_comp_id']!r}).\n"
 
-        self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
+        self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
 
         if len(message) > 0:
             self.warningMessage += message
@@ -403,7 +403,7 @@ class GromacsPTParserListener(ParseTreeListener):
                             atomNum['chain_id'] = chain_mapping[atomNum['chain_id']]
 
                     self.__seqAlign, _ = alignPolymerSequence(self.__pA, polySeqModel, self.__polySeqPrmTop)
-                    self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
+                    self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
 
             trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 

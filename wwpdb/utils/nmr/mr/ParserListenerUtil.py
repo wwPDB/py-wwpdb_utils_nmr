@@ -2545,90 +2545,90 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
     return None
 
 
-def getRestraintName(subtype):
-    """ Return human-readable restraint name for a given internal content subtype.
+def getRestraintName(mrSubtype):
+    """ Return human-readable restraint name for a given restraint subtype.
     """
 
-    if subtype.startswith('dist'):
+    if mrSubtype.startswith('dist'):
         return "Distance restraints"
-    if subtype.startswith('dihed'):
+    if mrSubtype.startswith('dihed'):
         return "Dihedral angle restraints"
-    if subtype.startswith('rdc'):
+    if mrSubtype.startswith('rdc'):
         return "RDC restraints"
-    if subtype.startswith('plane'):
+    if mrSubtype.startswith('plane'):
         return "Planarity constraints"
-    if subtype.startswith('hbond'):
+    if mrSubtype.startswith('hbond'):
         return "Hydrogen bond restraints"
-    if subtype.startswith('ssbond'):
+    if mrSubtype.startswith('ssbond'):
         return "Disulfide bond constraints"
-    if subtype.startswith('fchiral'):
+    if mrSubtype.startswith('fchiral'):
         return "Floating chiral stereo assignments"
-    if subtype.startswith('adist'):
+    if mrSubtype.startswith('adist'):
         return "Anti-distance restraints"
-    if subtype.startswith('jcoup'):
+    if mrSubtype.startswith('jcoup'):
         return "Scalar J-coupling restraints"
-    if subtype.startswith('hvycs'):
+    if mrSubtype.startswith('hvycs'):
         return "Carbon chemical shift restraints"
-    if subtype.startswith('procs'):
+    if mrSubtype.startswith('procs'):
         return "Proton chemical shift restraints"
-    if subtype.startswith('rama'):
+    if mrSubtype.startswith('rama'):
         return "Dihedral angle database restraints"
-    if subtype.startswith('radi'):
+    if mrSubtype.startswith('radi'):
         return "Radius of gyration restraints"
-    if subtype.startswith('diff'):
+    if mrSubtype.startswith('diff'):
         return "Diffusion anisotropy restraints"
-    if subtype.startswith('nbase'):
+    if mrSubtype.startswith('nbase'):
         return "Nucleic acid base orientation database restraints"
-    if subtype.startswith('csa'):
+    if mrSubtype.startswith('csa'):
         return "CSA restraints"
-    if subtype.startswith('ang'):
+    if mrSubtype.startswith('ang'):
         return "Angle database restraints"
-    if subtype.startswith('pre'):
+    if mrSubtype.startswith('pre'):
         return "PRE restraints"
-    if subtype.startswith('pcs'):
+    if mrSubtype.startswith('pcs'):
         return "PCS restraints, "
-    if subtype.startswith('prdc'):
+    if mrSubtype.startswith('prdc'):
         return "Paramagnetic RDC restraints"
-    if subtype.startswith('pang'):
+    if mrSubtype.startswith('pang'):
         return "Paramagnetic orientation restraints"
-    if subtype.startswith('pccr'):
+    if mrSubtype.startswith('pccr'):
         return "Paramagnetic CCR restraints"
-    if subtype.startswith('geo'):
+    if mrSubtype.startswith('geo'):
         return "Coordinate geometry restraints"
-    if subtype.startswith('noepk'):
+    if mrSubtype.startswith('noepk'):
         return "NOESY peak volume restraints"
-    raise KeyError(f'Internal subtype {subtype!r} is not defined.')
+    raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
-def getValidSubType(subtype):
-    """ Return legitimate content subtype of NmrDpUtility.py for a given internal content subtype.
+def getContentSubtype(mrSubtype):
+    """ Return legitimate content subtype of NmrDpUtility.py for a given internal restraint subtype.
     """
 
-    if subtype in ('dist', 'dihed', 'rdc', 'jcoup', 'hvycs', 'procs', 'csa', 'fchical'):
-        return subtype + '_restraint'
+    if mrSubtype in ('dist', 'dihed', 'rdc', 'jcoup', 'hvycs', 'procs', 'csa', 'fchical'):
+        return mrSubtype + '_restraint'
 
-    if subtype == 'hbond':
+    if mrSubtype == 'hbond':
         return 'dist_restraint'
 
-    if subtype == 'ssbond':
+    if mrSubtype == 'ssbond':
         return 'dist_restraint'
 
-    if subtype == 'prdc':
+    if mrSubtype == 'prdc':
         return 'rdc_restraints'
 
-    if subtype == 'pcs':
+    if mrSubtype == 'pcs':
         return 'csp_restraints'
 
-    if subtype == 'pre':
+    if mrSubtype == 'pre':
         return 'auto_realx_restraint'
 
-    if subtype == 'pccr':
+    if mrSubtype == 'pccr':
         return 'ccr_dd_restraint'
 
-    if subtype in ('plane', 'adist', 'rama', 'radi', 'diff', 'nbase', 'ang', 'pang', 'geo'):
+    if mrSubtype in ('plane', 'adist', 'rama', 'radi', 'diff', 'nbase', 'ang', 'pang', 'geo'):
         return 'other_restraint'
 
-    raise KeyError(f'Internal subtype {subtype!r} is not defined.')
+    raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
 def initListIdCounter():
@@ -2653,45 +2653,45 @@ def initListIdCounter():
             }
 
 
-def incListIdCounter(subtype, listIdCounter):
-    """ Increment list id counter for a given internal content subtype.
+def incListIdCounter(mrSubtype, listIdCounter):
+    """ Increment list id counter for a given internal restraint subtype.
     """
 
     if len(listIdCounter) == 0:
         listIdCounter = initListIdCounter()
 
-    _subtype = getValidSubType(subtype)
+    contentSubtype = getContentSubtype(mrSubtype)
 
-    if _subtype is None or _subtype not in listIdCounter:
+    if contentSubtype is None or contentSubtype not in listIdCounter:
         return listIdCounter
 
-    listIdCounter[_subtype] = listIdCounter[_subtype] + 1
+    listIdCounter[contentSubtype] = listIdCounter[contentSubtype] + 1
 
     return listIdCounter
 
 
-def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None,
+def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=None,
                  constraintType=None, alignCenter=None, cyanaParameter=None):
-    """ Return pynmrstar saveframe for a given internal content subtype.
+    """ Return pynmrstar saveframe for a given internal restraint subtype.
         @return: pynmrstar saveframe
     """
 
-    _subtype = getValidSubType(subtype)
+    contentSubtype = getContentSubtype(mrSubtype)
 
-    if _subtype is None:
+    if contentSubtype is None:
         return None
 
-    if _subtype not in NMR_STAR_SF_CATEGORIES:
+    if contentSubtype not in NMR_STAR_SF_CATEGORIES:
         return None
 
     sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
-    sf.set_tag_prefix(NMR_STAR_SF_TAG_PREFIXES[_subtype])
+    sf.set_tag_prefix(NMR_STAR_SF_TAG_PREFIXES[contentSubtype])
 
-    for sf_tag_item in NMR_STAR_SF_TAG_ITEMS[_subtype]:
+    for sf_tag_item in NMR_STAR_SF_TAG_ITEMS[contentSubtype]:
         tag_item_name = sf_tag_item['name']
 
         if tag_item_name == 'Sf_category':
-            sf.add_tag(tag_item_name, NMR_STAR_SF_CATEGORIES[_subtype])
+            sf.add_tag(tag_item_name, NMR_STAR_SF_CATEGORIES[contentSubtype])
         elif tag_item_name == 'Sf_framecode':
             sf.add_tag(tag_item_name, sf_framecode)
         elif tag_item_name == 'ID' and listId is not None:
@@ -2700,43 +2700,43 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
             sf.add_tag(tag_item_name, entryId)
         elif tag_item_name == 'Data_file_name' and fileName is not None:
             sf.add_tag(tag_item_name, fileName)
-        elif tag_item_name == 'Constraint_type' and subtype == 'dist':
+        elif tag_item_name == 'Constraint_type' and mrSubtype == 'dist':
             sf.add_tag(tag_item_name, 'NOE')
-        elif tag_item_name == 'Constraint_type' and subtype == 'hbond':
+        elif tag_item_name == 'Constraint_type' and mrSubtype == 'hbond':
             sf.add_tag(tag_item_name, 'hydrogen bond')
-        elif tag_item_name == 'Constraint_type' and subtype == 'ssbond':
+        elif tag_item_name == 'Constraint_type' and mrSubtype == 'ssbond':
             sf.add_tag(tag_item_name, 'disulfide bond')
         elif tag_item_name == 'Constraint_type' and constraintType is not None:
             sf.add_tag(tag_item_name, constraintType)
-        elif tag_item_name == 'Constraint_type' and subtype == 'rdc':
+        elif tag_item_name == 'Constraint_type' and mrSubtype == 'rdc':
             sf.add_tag(tag_item_name, 'RDC')
-        elif tag_item_name == 'Homonuclear_NOE_val_type' and subtype == 'noepk':
+        elif tag_item_name == 'Homonuclear_NOE_val_type' and mrSubtype == 'noepk':
             sf.add_tag(tag_item_name, 'peak volume')
-        elif tag_item_name == 'Val_units' and subtype in ('csa', 'pccr'):
+        elif tag_item_name == 'Val_units' and mrSubtype in ('csa', 'pccr'):
             sf.add_tag(tag_item_name, 'ppm')
-        elif tag_item_name == 'Units' and subtype in ('hvycs', 'procs'):
+        elif tag_item_name == 'Units' and mrSubtype in ('hvycs', 'procs'):
             sf.add_tag(tag_item_name, 'ppm')
-        elif tag_item_name == 'Type' and subtype == 'pcs':
+        elif tag_item_name == 'Type' and mrSubtype == 'pcs':
             sf.add_tag(tag_item_name, 'paramagnetic ligand binding')
-        elif tag_item_name == 'Common_relaxation_type_name' and subtype == 'pre':
+        elif tag_item_name == 'Common_relaxation_type_name' and mrSubtype == 'pre':
             sf.add_tag(tag_item_name, 'paramagnetic relaxation enhancement')
-        elif tag_item_name == 'Relaxation_coherence_type' and subtype == 'pre':
+        elif tag_item_name == 'Relaxation_coherence_type' and mrSubtype == 'pre':
             sf.add_tag(tag_item_name, "S+")
-        elif tag_item_name == 'Relaxation_val_units' and subtype == 'pre':
+        elif tag_item_name == 'Relaxation_val_units' and mrSubtype == 'pre':
             sf.add_tag(tag_item_name, 's-1')
-        elif tag_item_name == 'Definition' and _subtype == 'other_restraint' and constraintType is not None:
+        elif tag_item_name == 'Definition' and contentSubtype == 'other_restraint' and constraintType is not None:
             sf.add_tag(tag_item_name, constraintType)
-        elif tag_item_name == 'Tensor_auth_asym_ID' and subtype == 'prdc' and alignCenter is not None:
+        elif tag_item_name == 'Tensor_auth_asym_ID' and mrSubtype == 'prdc' and alignCenter is not None:
             sf.add_tag(tag_item_name, alignCenter['chain_id'])
-        elif tag_item_name == 'Tensor_auth_seq_ID' and subtype == 'prdc' and alignCenter is not None:
+        elif tag_item_name == 'Tensor_auth_seq_ID' and mrSubtype == 'prdc' and alignCenter is not None:
             sf.add_tag(tag_item_name, alignCenter['seq_id'])
-        elif tag_item_name == 'Tensor_auth_comp_ID' and subtype == 'prdc' and alignCenter is not None:
+        elif tag_item_name == 'Tensor_auth_comp_ID' and mrSubtype == 'prdc' and alignCenter is not None:
             sf.add_tag(tag_item_name, alignCenter['comp_id'])
-        elif tag_item_name == 'Tensor_magnitude' and subtype == 'rdc' and cyanaParameter is not None:
+        elif tag_item_name == 'Tensor_magnitude' and mrSubtype == 'rdc' and cyanaParameter is not None:
             sf.add_tag(tag_item_name, cyanaParameter['magnitude'])
-        elif tag_item_name == 'Tensor_rhombicity' and subtype == 'rdc' and cyanaParameter is not None:
+        elif tag_item_name == 'Tensor_rhombicity' and mrSubtype == 'rdc' and cyanaParameter is not None:
             sf.add_tag(tag_item_name, cyanaParameter['rhombicity'])
-        elif tag_item_name == 'Details' and subtype == 'pcs' and cyanaParameter is not None:
+        elif tag_item_name == 'Details' and mrSubtype == 'pcs' and cyanaParameter is not None:
             sf.add_tag(tag_item_name, f"Tensor_magnitude {cyanaParameter['magnitude']}, "
                        f"Tensor_rhombicity {cyanaParameter['rhombicity']}, "
                        f"Paramagnetic_center_seq_ID {cyanaParameter['orientation_center_seq_id']}")
@@ -2746,28 +2746,28 @@ def getSaveframe(subtype, sf_framecode, listId=None, entryId=None, fileName=None
     return sf
 
 
-def getLoop(subtype):
-    """ Return pynmrstart loop for a given content subtype.
+def getLoop(mrSubtype):
+    """ Return pynmrstart loop for a given internal restraint subtype.
         @return: pynmrstar loop
     """
 
-    _subtype = getValidSubType(subtype)
+    contentSubtype = getContentSubtype(mrSubtype)
 
-    if _subtype is None:
+    if contentSubtype is None:
         return None
 
-    if _subtype not in NMR_STAR_LP_CATEGORIES:
+    if contentSubtype not in NMR_STAR_LP_CATEGORIES:
         return None
 
-    if _subtype == 'other_restraint':
+    if contentSubtype == 'other_restraint':
         return {'tag': [], 'data': []}  # dictionary for _Other_data_type_list.Text_data
 
-    prefix = NMR_STAR_LP_CATEGORIES[_subtype] + '.'
+    prefix = NMR_STAR_LP_CATEGORIES[contentSubtype] + '.'
 
     lp = pynmrstar.Loop.from_scratch()
 
-    tags = [prefix + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[_subtype]]
-    tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[_subtype]])
+    tags = [prefix + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[contentSubtype]]
+    tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[contentSubtype]])
 
     for tag in tags:
         lp.add_tag(tag)
@@ -2775,29 +2775,29 @@ def getLoop(subtype):
     return lp
 
 
-def getAuxLoops(subtype):
-    """ Return pynmrstart auxiliary loops for a given content subtype.
+def getAuxLoops(mrSubtype):
+    """ Return pynmrstart auxiliary loops for a given internal restraint subtype.
         @return: pynmrstar loop
     """
 
-    _subtype = getValidSubType(subtype)
+    contentSubtype = getContentSubtype(mrSubtype)
 
-    if _subtype is None:
+    if contentSubtype is None:
         return None
 
-    if _subtype not in NMR_STAR_AUX_LP_CATEGORIES:
+    if contentSubtype not in NMR_STAR_AUX_LP_CATEGORIES:
         return None
 
     aux_lps = []
 
-    for catName in NMR_STAR_AUX_LP_CATEGORIES[_subtype]:
+    for catName in NMR_STAR_AUX_LP_CATEGORIES[contentSubtype]:
 
         prefix = catName + '.'
 
         aux_lp = pynmrstar.Loop.from_scratch()
 
-        tags = [prefix + item['name'] for item in NMR_STAR_AUX_LP_KEY_ITEMS[_subtype][catName]]
-        tags.extend([prefix + item['name'] for item in NMR_STAR_AUX_LP_DATA_ITEMS[_subtype][catName]])
+        tags = [prefix + item['name'] for item in NMR_STAR_AUX_LP_KEY_ITEMS[contentSubtype][catName]]
+        tags.extend([prefix + item['name'] for item in NMR_STAR_AUX_LP_DATA_ITEMS[contentSubtype][catName]])
 
         for tag in tags:
             aux_lp.add_tag(tag)
@@ -2807,17 +2807,17 @@ def getAuxLoops(subtype):
     return aux_lps
 
 
-def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, atom1, atom2=None, atom3=None, atom4=None, atom5=None):
-    """ Return row data for a given restraint.
+def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc, atom1, atom2=None, atom3=None, atom4=None, atom5=None):
+    """ Return row data for a given internal restraint subtype.
         @return: data array
     """
 
-    _subtype = getValidSubType(subtype)
+    contentSubtype = getContentSubtype(mrSubtype)
 
-    if _subtype is None:
+    if contentSubtype is None:
         return None
 
-    if _subtype == 'other_restraint':
+    if contentSubtype == 'other_restraint':
         return None
 
     key_size = len(NMR_STAR_LP_KEY_ITEMS)
@@ -2834,13 +2834,13 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
     elif atom2 is not None:
         row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
-    if subtype in ('dist', 'dihed', 'rdc', 'hbond', 'ssbond'):
+    if mrSubtype in ('dist', 'dihed', 'rdc', 'hbond', 'ssbond'):
         row[key_size] = indexId
 
     row[-2] = listId
     row[-1] = entryId
 
-    if subtype in ('dist', 'hbond', 'ssbond'):
+    if mrSubtype in ('dist', 'hbond', 'ssbond'):
         row[key_size + 1] = combinationId
         if isinstance(combinationId, int):
             row[key_size + 2] = code
@@ -2869,7 +2869,7 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 20] = atom2['auth_atom_id']
 
-    elif subtype == 'dihed':
+    elif mrSubtype == 'dihed':
         if atom1 is not None:
             row[9], row[10], row[11], row[12] = atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
         elif atom5 is not None:  # PPA, phase angle of pseudorotation
@@ -2929,7 +2929,7 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             row[key_size + 25], row[key_size + 26], row[key_size + 27] =\
                 atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
 
-    elif subtype == 'rdc':
+    elif mrSubtype == 'rdc':
         # row[key_size + 1] = combinationId
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
@@ -2959,7 +2959,7 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 22] = atom2['auth_atom_id']
 
-    elif subtype == 'noepk':
+    elif mrSubtype == 'noepk':
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size] = dstFunc['target_value']
         if hasKeyValue(dstFunc, 'target_value_uncertainty'):
@@ -2979,7 +2979,7 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[8] = row[key_size + 12] = atom1['auth_atom_id']
 
-    elif subtype == 'jcoup':
+    elif mrSubtype == 'jcoup':
         row[key_size] = code
         row[key_size + 1] = atomType = atom1['atom_id'][0]
         row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
@@ -3001,7 +3001,7 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
         row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
-    elif subtype == 'csa':
+    elif mrSubtype == 'csa':
         row[key_size] = atomType = atom1['atom_id'][0]
         row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         if hasKeyValue(dstFunc, 'target_value'):
@@ -3019,7 +3019,7 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
         row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
-    elif subtype == 'hvycs':
+    elif mrSubtype == 'hvycs':
         row[key_size] = dstFunc['ca_shift']
         # CA_chem_shift_val_err
         row[key_size + 2] = dstFunc['cb_shift']
@@ -3035,7 +3035,7 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
         row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
             atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id']
 
-    elif subtype == 'procs':
+    elif mrSubtype == 'procs':
         row[key_size] = atomType = atom1['atom_id'][0]
         row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         row[key_size + 2] = dstFunc['obs_value'] if atom2 is None else dstFunc['obs_value_2']
@@ -3048,7 +3048,7 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
             row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
-    elif subtype == 'pcs':
+    elif mrSubtype == 'pcs':
         row[key_size] = atomType = atom1['atom_id'][0]
         row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         # Chem_shift_val
@@ -3061,7 +3061,7 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
         row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
-    elif subtype == 'pre':
+    elif mrSubtype == 'pre':
         row[key_size] = atomType = atom1['atom_id'][0]
         row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         if hasKeyValue(dstFunc, 'target_value'):
@@ -3074,14 +3074,14 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
         row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
-    elif subtype == 'fchiral':
+    elif mrSubtype == 'fchiral':
         row[key_size] = code
         row[key_size + 1], row[key_size + 2], row[key_size + 3], row[key_size + 4] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
-    elif subtype == 'pccr':
+    elif mrSubtype == 'pccr':
         row[9], row[10], row[11], row[12] = atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
         row[13], row[14], row[15], row[16] = atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
 
@@ -3112,24 +3112,24 @@ def getRow(subtype, id, indexId, combinationId, code, listId, entryId, dstFunc, 
     return row
 
 
-def getAuxRow(subtype, catName, listId, entryId, inDict):
+def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
     """ Return aux row data for a given category.
         @return: data array
     """
 
-    _subtype = getValidSubType(subtype)
+    contentSubtype = getContentSubtype(mrSubtype)
 
-    if _subtype is None:
+    if contentSubtype is None:
         return None
 
-    if _subtype not in NMR_STAR_AUX_LP_CATEGORIES:
+    if contentSubtype not in NMR_STAR_AUX_LP_CATEGORIES:
         return None
 
-    if catName not in NMR_STAR_AUX_LP_CATEGORIES[_subtype]:
+    if catName not in NMR_STAR_AUX_LP_CATEGORIES[contentSubtype]:
         return None
 
-    key_names = [key['name'] for key in NMR_STAR_AUX_LP_KEY_ITEMS[_subtype][catName]]
-    data_names = [data['name'] for data in NMR_STAR_AUX_LP_DATA_ITEMS[_subtype][catName]]
+    key_names = [key['name'] for key in NMR_STAR_AUX_LP_KEY_ITEMS[contentSubtype][catName]]
+    data_names = [data['name'] for data in NMR_STAR_AUX_LP_DATA_ITEMS[contentSubtype][catName]]
 
     names = key_names.extend(data_names)
 

@@ -25,7 +25,7 @@ try:
                                                        translateToStdAtomName,
                                                        isCyclicPolymer,
                                                        getRestraintName,
-                                                       getValidSubType,
+                                                       getContentSubtype,
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
@@ -74,7 +74,7 @@ except ImportError:
                                            translateToStdAtomName,
                                            isCyclicPolymer,
                                            getRestraintName,
-                                           getValidSubType,
+                                           getContentSubtype,
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
@@ -140,6 +140,8 @@ TALOS_PREDICTION_MIN_CLASSES = ('Strong', 'Good')
 
 # This class defines a complete listener for a parse tree produced by DynamoMRParser.
 class DynamoMRParserListener(ParseTreeListener):
+
+    __file_type = 'nm-res-dyn'
 
     # __verbose = None
     # __lfh = None
@@ -348,11 +350,9 @@ class DynamoMRParserListener(ParseTreeListener):
             sortPolySeqRst(self.__polySeqRst,
                            None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
 
-            file_type = 'nm-res-dyn'
-
             self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
                                                       resolvedMultimer=(self.__reasons is not None))
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
                 self.warningMessage += message
@@ -378,7 +378,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
                         self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
                                                                   resolvedMultimer=(self.__reasons is not None))
-                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
@@ -3626,9 +3626,9 @@ class DynamoMRParserListener(ParseTreeListener):
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
     def __addSf(self, constraintType=None):
-        _subtype = getValidSubType(self.__cur_subtype)
+        content_subtype = getContentSubtype(self.__cur_subtype)
 
-        if _subtype is None:
+        if content_subtype is None:
             return
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
@@ -3652,7 +3652,7 @@ class DynamoMRParserListener(ParseTreeListener):
             sf.add_loop(lp)
             not_valid = False
 
-        item = {'saveframe': sf, 'loop': lp, 'list_id': list_id,
+        item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                 'id': 0, 'index_id': 0}
 
         if not_valid:
@@ -3703,7 +3703,7 @@ class DynamoMRParserListener(ParseTreeListener):
     def getListIdCounter(self):
         """ Return updated list id counter.
         """
-        return None if len(self.__listIdCounter) == 0 else self.__listIdCounter
+        return self.__listIdCounter
 
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.

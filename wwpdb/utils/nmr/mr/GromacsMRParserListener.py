@@ -20,7 +20,7 @@ try:
                                                        isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        getRestraintName,
-                                                       getValidSubType,
+                                                       getContentSubtype,
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
@@ -49,7 +49,7 @@ except ImportError:
                                            isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            getRestraintName,
-                                           getValidSubType,
+                                           getContentSubtype,
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
@@ -95,6 +95,8 @@ RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
 
 # This class defines a complete listener for a parse tree produced by GromacsMRParser.
 class GromacsMRParserListener(ParseTreeListener):
+
+    __file_type = 'nm-res-gro'
 
     # __verbose = None
     # __lfh = None
@@ -253,10 +255,8 @@ class GromacsMRParserListener(ParseTreeListener):
         if self.__hasPolySeq and self.__polySeqRst is not None:
             sortPolySeqRst(self.__polySeqRst)
 
-            file_type = 'nm-res-gro'
-
             self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
                 self.warningMessage += message
@@ -281,7 +281,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                 ps['chain_id'] = chain_mapping[ps['chain_id']]
 
                         self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
@@ -1387,9 +1387,9 @@ class GromacsMRParserListener(ParseTreeListener):
         return ''
 
     def __addSf(self, constraintType=None):
-        _subtype = getValidSubType(self.__cur_subtype)
+        content_subtype = getContentSubtype(self.__cur_subtype)
 
-        if _subtype is None:
+        if content_subtype is None:
             return
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
@@ -1413,7 +1413,7 @@ class GromacsMRParserListener(ParseTreeListener):
             sf.add_loop(lp)
             not_valid = False
 
-        item = {'saveframe': sf, 'loop': lp, 'list_id': list_id,
+        item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                 'id': 0, 'index_id': 0}
 
         if not_valid:
@@ -1460,7 +1460,7 @@ class GromacsMRParserListener(ParseTreeListener):
     def getListIdCounter(self):
         """ Return updated list id counter.
         """
-        return None if len(self.__listIdCounter) == 0 else self.__listIdCounter
+        return self.__listIdCounter
 
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.

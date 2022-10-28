@@ -23897,6 +23897,10 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
+        create_sf_dict = self.__remediation_mode
+        list_id_counter = {}
+        sf_dict_holder = {}
+
         for ar in self.__inputParamDict[ar_file_path_list]:
 
             file_path = ar['file_name']
@@ -23963,7 +23967,11 @@ class NmrDpUtility:
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                _list_id_counter = copy.copy(list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -23976,7 +23984,9 @@ class NmrDpUtility:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
@@ -24091,6 +24101,17 @@ class NmrDpUtility:
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
 
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
+
             elif file_type == 'nm-res-cns':
                 reader = CnsMRReader(self.__verbose, self.__lfh,
                                      self.__representative_model_id,
@@ -24098,7 +24119,11 @@ class NmrDpUtility:
                                      self.__cR, cC,
                                      self.__ccU, self.__csStat, self.__nefT)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                _list_id_counter = copy.copy(list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -24111,7 +24136,9 @@ class NmrDpUtility:
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
@@ -24223,6 +24250,17 @@ class NmrDpUtility:
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
+
             elif file_type == 'nm-res-amb':
                 reader = AmberMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
@@ -24231,7 +24269,9 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT,
                                        amberAtomNumberDict, _amberAtomNumberDict)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
 
@@ -24338,6 +24378,17 @@ class NmrDpUtility:
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
+
             elif file_type == 'nm-res-cya':
                 has_dist_restraint = 'dist_restraint' in content_subtype
 
@@ -24365,7 +24416,11 @@ class NmrDpUtility:
                                        None, upl_or_lol, cya_file_ext)
                 reader.setRemediateMode(self.__remediation_mode)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                _list_id_counter = copy.copy(list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -24379,7 +24434,9 @@ class NmrDpUtility:
                                                reasons, upl_or_lol, cya_file_ext)
                         reader.setRemediateMode(self.__remediation_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
@@ -24494,6 +24551,17 @@ class NmrDpUtility:
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
 
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
+
             elif file_type == 'nm-res-ros':
                 reader = RosettaMRReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
@@ -24502,7 +24570,11 @@ class NmrDpUtility:
                                          self.__ccU, self.__csStat, self.__nefT)
                 reader.setRemediateMode(self.__remediation_mode)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                _list_id_counter = copy.copy(list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -24516,7 +24588,9 @@ class NmrDpUtility:
                                                  reasons)
                         reader.setRemediateMode(self.__remediation_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
@@ -24620,6 +24694,17 @@ class NmrDpUtility:
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
+
             elif file_type == 'nm-res-bio':
                 reader = BiosymMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
@@ -24627,7 +24712,11 @@ class NmrDpUtility:
                                         self.__cR, cC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                _list_id_counter = copy.copy(list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -24640,7 +24729,9 @@ class NmrDpUtility:
                                                 self.__ccU, self.__csStat, self.__nefT,
                                                 reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
@@ -24744,6 +24835,17 @@ class NmrDpUtility:
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
+
             elif file_type == 'nm-res-gro':
                 reader = GromacsMRReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
@@ -24752,7 +24854,9 @@ class NmrDpUtility:
                                          self.__ccU, self.__csStat, self.__nefT,
                                          gromacsAtomNumberDict)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
 
@@ -24842,6 +24946,17 @@ class NmrDpUtility:
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
+
             elif file_type == 'nm-res-dyn':
                 reader = DynamoMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
@@ -24849,7 +24964,11 @@ class NmrDpUtility:
                                         self.__cR, cC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                _list_id_counter = copy.copy(list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -24862,7 +24981,9 @@ class NmrDpUtility:
                                                 self.__ccU, self.__csStat, self.__nefT,
                                                 reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
@@ -24974,6 +25095,17 @@ class NmrDpUtility:
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
+
             elif file_type == 'nm-res-syb':
                 reader = SybylMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
@@ -24981,7 +25113,11 @@ class NmrDpUtility:
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                _list_id_counter = copy.copy(list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -24994,7 +25130,9 @@ class NmrDpUtility:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
@@ -25098,6 +25236,17 @@ class NmrDpUtility:
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
+
             elif file_type == 'nm-res-isd':
                 reader = IsdMRReader(self.__verbose, self.__lfh,
                                      self.__representative_model_id,
@@ -25105,7 +25254,11 @@ class NmrDpUtility:
                                      self.__cR, cC,
                                      self.__ccU, self.__csStat, self.__nefT)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                _list_id_counter = copy.copy(list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -25118,7 +25271,9 @@ class NmrDpUtility:
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
@@ -25222,6 +25377,17 @@ class NmrDpUtility:
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
+
             elif file_type == 'nm-res-cha':
                 reader = CharmmMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
@@ -25229,7 +25395,11 @@ class NmrDpUtility:
                                         self.__cR, cC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                _list_id_counter = copy.copy(list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -25242,7 +25412,9 @@ class NmrDpUtility:
                                                 self.__ccU, self.__csStat, self.__nefT,
                                                 reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__cifPath)
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
                         messages = listener.warningMessage.split('\n')
@@ -25353,6 +25525,17 @@ class NmrDpUtility:
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    if create_sf_dict:
+                        list_id_counter = listener.getListIdCounter()
+
+                        sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict:
+                                if k in sf_dict_holder:
+                                    sf_dict_holder[k].extend(v)
+                                else:
+                                    sf_dict_holder[k] = v
 
         if len(poly_seq_set) > 1:
 

@@ -6604,7 +6604,7 @@ class CyanaMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None, orientationId=None, cyanaParameter=None):
+    def __addSf(self, constraintType=None, potentialType=None, orientationId=None, cyanaParameter=None):
         content_subtype = getContentSubtype(self.__cur_subtype)
 
         if content_subtype is None:
@@ -6612,7 +6612,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, constraintType, orientationId)
+        key = (self.__cur_subtype, constraintType, potentialType, orientationId)
 
         if key not in self.sfDict:
             self.sfDict[key] = []
@@ -6622,7 +6622,7 @@ class CyanaMRParserListener(ParseTreeListener):
         sf_framecode = 'CYANA_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
-                          constraintType, cyanaParameter=cyanaParameter)
+                          constraintType=constraintType, potentialType=potentialType, cyanaParameter=cyanaParameter)
 
         not_valid = True
 
@@ -6639,11 +6639,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, orientationId=None, cyanaParameter=None):
-        key = (self.__cur_subtype, constraintType, orientationId)
+    def __getSf(self, constraintType=None, potentialType=None, orientationId=None, cyanaParameter=None):
+        key = (self.__cur_subtype, constraintType, potentialType, orientationId)
 
         if key not in self.sfDict:
-            self.__addSf(constraintType, orientationId, cyanaParameter)
+            self.__addSf(constraintType=constraintType, potentialType=potentialType, orientationId=orientationId, cyanaParameter=cyanaParameter)
 
         return self.sfDict[key][-1]
 

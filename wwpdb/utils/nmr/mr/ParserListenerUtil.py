@@ -2671,7 +2671,7 @@ def incListIdCounter(mrSubtype, listIdCounter):
 
 
 def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=None,
-                 constraintType=None, alignCenter=None, cyanaParameter=None):
+                 constraintType=None, potentialType=None, alignCenter=None, cyanaParameter=None):
     """ Return pynmrstar saveframe for a given internal restraint subtype.
         @return: pynmrstar saveframe
     """
@@ -2706,10 +2706,12 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
             sf.add_tag(tag_item_name, 'hydrogen bond')
         elif tag_item_name == 'Constraint_type' and mrSubtype == 'ssbond':
             sf.add_tag(tag_item_name, 'disulfide bond')
-        elif tag_item_name == 'Constraint_type' and constraintType is not None:
-            sf.add_tag(tag_item_name, constraintType)
         elif tag_item_name == 'Constraint_type' and mrSubtype == 'rdc':
             sf.add_tag(tag_item_name, 'RDC')
+        elif tag_item_name == 'Constraint_type' and constraintType is not None:
+            sf.add_tag(tag_item_name, constraintType)
+        elif tag_item_name == 'Potential_type' and potentialType is not None:
+            sf.add_tag(tag_item_name, potentialType)
         elif tag_item_name == 'Homonuclear_NOE_val_type' and mrSubtype == 'noepk':
             sf.add_tag(tag_item_name, 'peak volume')
         elif tag_item_name == 'Val_units' and mrSubtype in ('csa', 'pccr'):

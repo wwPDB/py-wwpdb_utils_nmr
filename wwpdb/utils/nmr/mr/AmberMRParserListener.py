@@ -7795,7 +7795,7 @@ class AmberMRParserListener(ParseTreeListener):
             return f"[Check the {self.geoRestraints}th row of generalized distance restraints] "
         return f"[Check the {self.nmrRestraints}th row of NMR restraints] "
 
-    def __addSf(self, constraintType=None):
+    def __addSf(self, constraintType=None, potentialType=None):
         content_subtype = getContentSubtype(self.__cur_subtype)
 
         if content_subtype is None:
@@ -7803,7 +7803,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, constraintType, None)
+        key = (self.__cur_subtype, constraintType, potentialType, None)
 
         if key not in self.sfDict:
             self.sfDict[key] = []
@@ -7813,7 +7813,7 @@ class AmberMRParserListener(ParseTreeListener):
         sf_framecode = 'AMBER_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
-                          constraintType)
+                          constraintType=constraintType, potentialType=potentialType)
 
         not_valid = True
 
@@ -7830,11 +7830,11 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None):
-        key = (self.__cur_subtype, constraintType, None)
+    def __getSf(self, constraintType=None, potentialType=None):
+        key = (self.__cur_subtype, constraintType, potentialType, None)
 
         if key not in self.sfDict:
-            self.__addSf(constraintType)
+            self.__addSf(constraintType=constraintType, potentialType=potentialType)
 
         return self.sfDict[key][-1]
 

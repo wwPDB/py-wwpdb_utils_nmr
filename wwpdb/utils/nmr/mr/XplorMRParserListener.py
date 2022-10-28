@@ -11649,7 +11649,7 @@ class XplorMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None, alignCenter=None):
+    def __addSf(self, constraintType=None, potentialType=None, alignCenter=None):
         content_subtype = getContentSubtype(self.__cur_subtype)
 
         if content_subtype is None:
@@ -11657,7 +11657,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, constraintType, None if alignCenter is None else str(alignCenter))
+        key = (self.__cur_subtype, constraintType, potentialType, None if alignCenter is None else str(alignCenter))
 
         if self.__cur_subtype not in self.sfDict:
             self.sfDict[key] = []
@@ -11670,7 +11670,7 @@ class XplorMRParserListener(ParseTreeListener):
             + '_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
-                          constraintType, alignCenter)
+                          constraintType=constraintType, potentialType=potentialType, alignCenter=alignCenter)
 
         not_valid = True
 
@@ -11687,11 +11687,11 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, alignCenter=None):
-        key = (self.__cur_subtype, constraintType, None if alignCenter is None else str(alignCenter))
+    def __getSf(self, constraintType=None, potentialType=None, alignCenter=None):
+        key = (self.__cur_subtype, constraintType, potentialType, None if alignCenter is None else str(alignCenter))
 
         if key not in self.sfDict:
-            self.__addSf(constraintType, alignCenter)
+            self.__addSf(constraintType=constraintType, potentialType=potentialType, alignCenter=alignCenter)
 
         return self.sfDict[key][-1]
 

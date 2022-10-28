@@ -517,7 +517,7 @@ class SybylMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(potentialType='square-well-parabolic')
                 sf['id'] += 1
 
             has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
@@ -1143,7 +1143,7 @@ class SybylMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self):
+    def __addSf(self, constraintType=None, potentialType=None):
         content_subtype = getContentSubtype(self.__cur_subtype)
 
         if content_subtype is None:
@@ -1151,7 +1151,7 @@ class SybylMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, None, None)
+        key = (self.__cur_subtype, constraintType, potentialType, None)
 
         if key not in self.sfDict:
             self.sfDict[key] = []
@@ -1160,7 +1160,8 @@ class SybylMRParserListener(ParseTreeListener):
 
         sf_framecode = 'SYBYL_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
 
-        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
+        sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
+                          constraintType=constraintType, potentialType=potentialType)
 
         lp = getLoop(self.__cur_subtype)
         if not isinstance(lp, dict):
@@ -1169,11 +1170,11 @@ class SybylMRParserListener(ParseTreeListener):
         self.sfDict[key].append({'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                                  'id': 0, 'index_id': 0})
 
-    def __getSf(self):
-        key = (self.__cur_subtype, None, None)
+    def __getSf(self, constraintType=None, potentialType=None):
+        key = (self.__cur_subtype, constraintType, potentialType, None)
 
         if key not in self.sfDict:
-            self.__addSf()
+            self.__addSf(constraintType=constraintType, potentialType=potentialType)
 
         return self.sfDict[key][-1]
 

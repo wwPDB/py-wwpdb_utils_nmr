@@ -37,6 +37,7 @@ try:
                                                        getAuxLoops,
                                                        getRow,
                                                        getAuxRow,
+                                                       getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -96,6 +97,7 @@ except ImportError:
                                            getAuxLoops,
                                            getRow,
                                            getAuxRow,
+                                           getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -1256,7 +1258,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             combinationId = '.'
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
                 if len(self.atomSelectionSet) > 2:
                     combinationId = 0
@@ -1572,7 +1574,7 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -2111,7 +2113,7 @@ class CnsMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
@@ -7666,7 +7668,23 @@ class CnsMRParserListener(ParseTreeListener):
         key = (self.__cur_subtype, constraintType, potentialType, None)
 
         if key not in self.sfDict:
-            self.__addSf(constraintType=constraintType, potentialType=potentialType)
+            replaced = False
+            if potentialType is not None:
+                old_key = (self.__cur_subtype, constraintType, None, None)
+                if old_key in self.sfDict:
+                    replaced = True
+                    self.sfDict[key] = [self.sfDict[old_key][-1]]
+                    del self.sfDict[old_key][-1]
+                    if len(self.sfDict[old_key]) == 0:
+                        del self.sfDict[old_key]
+                    sf = self.sfDict[key][-1]['saveframe']
+                    idx = next((idx for idx, t in enumerate(sf.tags) if t[0] == 'Potential_type'), -1)
+                    if idx != -1:
+                        sf.tags[idx][1] = potentialType
+                    else:
+                        sf.add_tag('Potential_type', potentialType)
+            if not replaced:
+                self.__addSf(constraintType=constraintType, potentialType=potentialType)
 
         return self.sfDict[key][-1]
 

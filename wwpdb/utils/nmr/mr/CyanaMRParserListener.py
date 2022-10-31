@@ -31,6 +31,7 @@ try:
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -86,6 +87,7 @@ except ImportError:
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -876,7 +878,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 return
 
                             if self.__createSfDict:
-                                sf = self.__getSf(constraintType='RDC')
+                                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                                  orientationId=self.__cur_rdc_orientation)
                                 sf['id'] += 1
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -922,7 +925,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf()
+                    sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
 
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
@@ -1296,7 +1299,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 return
 
                             if self.__createSfDict:
-                                sf = self.__getSf(constraintType='RDC')
+                                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                                  orientationId=self.__cur_rdc_orientation)
                                 sf['id'] += 1
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -1323,7 +1327,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf()
+                    sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
 
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
@@ -2940,7 +2944,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         return
 
                     if self.__createSfDict:
-                        sf = self.__getSf()
+                        sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                         sf['id'] += 1
 
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -3038,7 +3042,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         return
 
                     if self.__createSfDict:
-                        sf = self.__getSf()
+                        sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                         sf['id'] += 1
 
                     for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
@@ -3326,7 +3330,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  orientationId=orientation)
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -3547,7 +3552,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(orientationId=orientation)
                 sf['id'] += 1
 
             for atom in self.atomSelectionSet[0]:
@@ -3770,7 +3775,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf()
+                    sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
 
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
@@ -3988,7 +3993,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf()
+                    sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
 
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
@@ -4147,7 +4152,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf()
+                    sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
 
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
@@ -4316,7 +4321,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf()
+                    sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
 
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
@@ -4534,7 +4539,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf()
+                    sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
 
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
@@ -4693,7 +4698,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf()
+                    sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
 
                 has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
@@ -4804,7 +4809,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
 
             has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
@@ -5122,7 +5127,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             return
 
                         if self.__createSfDict:
-                            sf = self.__getSf(constraintType='RDC')
+                            sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                              orientationId=self.__cur_rdc_orientation)
                             sf['id'] += 1
 
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -5163,7 +5169,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -5457,7 +5463,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         return
 
                     if self.__createSfDict:
-                        sf = self.__getSf()
+                        sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                         sf['id'] += 1
 
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -5555,7 +5561,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         return
 
                     if self.__createSfDict:
-                        sf = self.__getSf()
+                        sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                         sf['id'] += 1
 
                     for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
@@ -6643,7 +6649,23 @@ class CyanaMRParserListener(ParseTreeListener):
         key = (self.__cur_subtype, constraintType, potentialType, orientationId)
 
         if key not in self.sfDict:
-            self.__addSf(constraintType=constraintType, potentialType=potentialType, orientationId=orientationId, cyanaParameter=cyanaParameter)
+            replaced = False
+            if potentialType is not None:
+                old_key = (self.__cur_subtype, constraintType, None, orientationId)
+                if old_key in self.sfDict:
+                    replaced = True
+                    self.sfDict[key] = [self.sfDict[old_key][-1]]
+                    del self.sfDict[old_key][-1]
+                    if len(self.sfDict[old_key]) == 0:
+                        del self.sfDict[old_key]
+                    sf = self.sfDict[key][-1]['saveframe']
+                    idx = next((idx for idx, t in enumerate(sf.tags) if t[0] == 'Potential_type'), -1)
+                    if idx != -1:
+                        sf.tags[idx][1] = potentialType
+                    else:
+                        sf.add_tag('Potential_type', potentialType)
+            if not replaced:
+                self.__addSf(constraintType=constraintType, potentialType=potentialType, orientationId=orientationId, cyanaParameter=cyanaParameter)
 
         return self.sfDict[key][-1]
 

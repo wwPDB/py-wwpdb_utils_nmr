@@ -2708,9 +2708,9 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
             sf.add_tag(tag_item_name, 'disulfide bond')
         elif tag_item_name == 'Constraint_type' and mrSubtype == 'rdc':
             sf.add_tag(tag_item_name, 'RDC')
-        elif tag_item_name == 'Constraint_type' and constraintType is not None:
+        elif tag_item_name == 'Constraint_type':
             sf.add_tag(tag_item_name, constraintType)
-        elif tag_item_name == 'Potential_type' and potentialType is not None:
+        elif tag_item_name == 'Potential_type':
             sf.add_tag(tag_item_name, potentialType)
         elif tag_item_name == 'Homonuclear_NOE_val_type' and mrSubtype == 'noepk':
             sf.add_tag(tag_item_name, 'peak volume')
@@ -3145,6 +3145,38 @@ def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
             row[names.index(k)] = v
 
     return row
+
+
+def getPotentialType(fileType, mrSubtype, dstFunc):
+    """ Return NMR-STAR potential type for a given function.
+        @return potential type, None for unmatched case
+    """
+
+    if 'lower_linear_limit' in dstFunc and 'upper_linear_limit' in dstFunc:
+        return 'square-well-parabolic-linear'
+
+    if 'lower_linear_limit' in dstFunc:
+        return 'lower-bound-parabolic-linear'
+
+    if 'upper_linear_limit' in dstFunc:
+        return 'upper-bound-parabolic-linear'
+
+    if 'lower_limit' in dstFunc and 'upper_limit' in dstFunc:
+        return 'square-well-parabolic'
+
+    if 'lower_limit' in dstFunc:
+        return 'lower-bound-parabolic'
+
+    if 'upper_limit' in dstFunc:
+        return 'upper-bound-parabolic'
+
+    if 'target_value' in dstFunc and fileType in ('nm-res-xlp', 'nm-res-cns') and mrSubtype == 'dist':
+        return 'log-harmonic'
+
+    if 'target_value' in dstFunc and mrSubtype in ('dist', 'dihed', 'rdc'):
+        return 'parabolic'
+
+    return None
 
 
 def hasKeyValue(d=None, key=None):

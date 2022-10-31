@@ -32,6 +32,7 @@ try:
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getDistConstraintType,
                                                        getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -80,6 +81,7 @@ except ImportError:
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getDistConstraintType,
                                            getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
@@ -626,7 +628,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
 
             if self.__cur_nest is not None:

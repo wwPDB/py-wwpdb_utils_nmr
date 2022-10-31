@@ -37,6 +37,7 @@ try:
                                                        getAuxLoops,
                                                        getRow,
                                                        getAuxRow,
+                                                       getDistConstraintType,
                                                        getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -97,6 +98,7 @@ except ImportError:
                                            getAuxLoops,
                                            getRow,
                                            getAuxRow,
+                                           getDistConstraintType,
                                            getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
@@ -1258,7 +1260,8 @@ class CnsMRParserListener(ParseTreeListener):
 
             combinationId = '.'
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
                 if len(self.atomSelectionSet) > 2:
                     combinationId = 0

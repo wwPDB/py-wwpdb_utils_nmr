@@ -1138,7 +1138,7 @@ class NmrDpUtility:
         __str2nefTasks.append(self.__dumpDpReport)
         __str2nefTasks.extend(__depositTasks)
 
-        __csMrMergeTasks = copy.copy(__checkTasks)
+        __csMrMergeTasks = __checkTasks
         __csMrMergeTasks.append(self.__mergeLegacyCSAndMr)
 
         # dictionary of processing tasks of each workflow operation

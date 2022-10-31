@@ -28,6 +28,7 @@ try:
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getDistConstraintType,
                                                        getPotentialType,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -68,6 +69,7 @@ except ImportError:
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getDistConstraintType,
                                            getPotentialType,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -516,7 +518,8 @@ class IsdMRParserListener(ParseTreeListener):
             return
 
         if self.__createSfDict:
-            sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+            sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                              potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
             sf['id'] += 1
 
         has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)

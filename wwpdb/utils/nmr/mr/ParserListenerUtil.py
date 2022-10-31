@@ -2700,14 +2700,18 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
             sf.add_tag(tag_item_name, entryId)
         elif tag_item_name == 'Data_file_name' and fileName is not None:
             sf.add_tag(tag_item_name, fileName)
-        elif tag_item_name == 'Constraint_type' and mrSubtype == 'dist':
-            sf.add_tag(tag_item_name, 'NOE')
-        elif tag_item_name == 'Constraint_type' and mrSubtype == 'hbond':
+        elif tag_item_name == 'Constraint_type' and (mrSubtype == 'hbond'
+                                                     or (constraintType is not None
+                                                         and constraintType == 'hydrogen bond')):
             sf.add_tag(tag_item_name, 'hydrogen bond')
-        elif tag_item_name == 'Constraint_type' and mrSubtype == 'ssbond':
+        elif tag_item_name == 'Constraint_type' and (mrSubtype == 'ssbond'
+                                                     or (constraintType is not None
+                                                         and constraintType == 'disulfide bond')):
             sf.add_tag(tag_item_name, 'disulfide bond')
         elif tag_item_name == 'Constraint_type' and mrSubtype == 'rdc':
             sf.add_tag(tag_item_name, 'RDC')
+        elif tag_item_name == 'Constraint_type' and mrSubtype == 'dist':
+            sf.add_tag(tag_item_name, 'NOE')
         elif tag_item_name == 'Constraint_type':
             sf.add_tag(tag_item_name, constraintType)
         elif tag_item_name == 'Potential_type':
@@ -3151,6 +3155,38 @@ def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
             row[names.index(k)] = v
 
     return row
+
+
+def getDistConstraintType(atomSelectionSet):
+    """ Return distance constraint type.
+        @return 'hydrogen bond', 'disulfide bond', None for others
+    """
+
+    if len(atomSelectionSet) != 2:
+        return None
+
+    atom1 = atomSelectionSet[0][0]
+    atom2 = atomSelectionSet[1][0]
+
+    if atom1 is None or atom2 is None:
+        return None
+
+    if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']:
+        return None
+
+    _atom_id_1 = atom1['atom_id']
+    _atom_id_2 = atom2['atom_id']
+
+    has_hbond = 'O' in (_atom_id_1, _atom_id_2)
+    has_ssbond = _atom_id_1 == 'S' and _atom_id_2 == 'S'
+
+    if has_hbond:
+        return 'hydrogen bond'
+
+    if has_ssbond:
+        return 'disulfide bond'
+
+    return None
 
 
 def getPotentialType(fileType, mrSubtype, dstFunc):

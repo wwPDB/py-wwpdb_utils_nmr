@@ -20,7 +20,7 @@ try:
                                                        isLongRangeRestraint,
                                                        getTypeOfDihedralRestraint,
                                                        getRestraintName,
-                                                       getContentSubtype,
+                                                       contentSubtypeOf,
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
@@ -50,7 +50,7 @@ except ImportError:
                                            isLongRangeRestraint,
                                            getTypeOfDihedralRestraint,
                                            getRestraintName,
-                                           getContentSubtype,
+                                           contentSubtypeOf,
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
@@ -1054,7 +1054,7 @@ class GromacsMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('angle restraint' if len_atom_sorts == 3 else 'angle restraint (intervector projection angle)')
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     if len_atom_sorts == 3:
                         sf['loop']['tags'] = ['index_id', 'id',
                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
@@ -1232,7 +1232,7 @@ class GromacsMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('angle restraint (intervector projection angle with z-axis)')
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -1326,7 +1326,7 @@ class GromacsMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('harmonic coordinate restraint, GROMACS position restraint')
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     if funct == 1:
                         sf['loop']['tags'] = ['index_id', 'id',
                                               'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
@@ -1389,7 +1389,7 @@ class GromacsMRParserListener(ParseTreeListener):
         return ''
 
     def __addSf(self, constraintType=None, potentialType=None):
-        content_subtype = getContentSubtype(self.__cur_subtype)
+        content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
             return
@@ -1401,9 +1401,9 @@ class GromacsMRParserListener(ParseTreeListener):
         if key not in self.sfDict:
             self.sfDict[key] = []
 
-        list_id = self.__listIdCounter[self.__cur_subtype]
+        list_id = self.__listIdCounter[content_subtype]
 
-        sf_framecode = 'GROMACS_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
+        sf_framecode = 'GROMACS_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType)

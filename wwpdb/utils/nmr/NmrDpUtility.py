@@ -182,6 +182,7 @@ import hashlib
 import pynmrstar
 import gzip
 import chardet
+import json
 
 from packaging import version
 from munkres import Munkres
@@ -228,6 +229,7 @@ try:
                                                        getTypeOfDihedralRestraint,
                                                        startsWithPdbRecord,
                                                        getRestraintName,
+                                                       contentSubtypeOf,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        HALF_SPIN_NUCLEUS,
                                                        ALLOWED_AMBIGUITY_CODES,
@@ -303,6 +305,7 @@ except ImportError:
                                            getTypeOfDihedralRestraint,
                                            startsWithPdbRecord,
                                            getRestraintName,
+                                           contentSubtypeOf,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            HALF_SPIN_NUCLEUS,
                                            ALLOWED_AMBIGUITY_CODES,
@@ -1135,6 +1138,9 @@ class NmrDpUtility:
         __str2nefTasks.append(self.__dumpDpReport)
         __str2nefTasks.extend(__depositTasks)
 
+        __csMrMergeTasks = copy.copy(__checkTasks)
+        __csMrMergeTasks.append(self.__mergeLegacyCSAndMr)
+
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'consistency-check': __checkTasks,
                                 'deposit': __depositTasks,
@@ -1142,7 +1148,7 @@ class NmrDpUtility:
                                 'nmr-str2nef-release': __str2nefTasks,
                                 'nmr-cs-nef-consistency-check': [self.__depositLegacyNmrData],
                                 'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData],
-                                'nmr-cs-mr-merge': __checkTasks
+                                'nmr-cs-mr-merge': __csMrMergeTasks
                                 }
 
         # data processing report
@@ -1180,6 +1186,8 @@ class NmrDpUtility:
         self.__cur_original_ar_file_name = None
 
         self.__remediation_loop_count = 0
+
+        self.__mr_sf_dict_holder = None
 
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
@@ -23899,7 +23907,7 @@ class NmrDpUtility:
 
         create_sf_dict = self.__remediation_mode
         list_id_counter = {}
-        sf_dict_holder = {}
+        self.__mr_sf_dict_holder = {}
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -24106,11 +24114,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
             elif file_type == 'nm-res-cns':
                 reader = CnsMRReader(self.__verbose, self.__lfh,
@@ -24255,11 +24264,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
             elif file_type == 'nm-res-amb':
                 reader = AmberMRReader(self.__verbose, self.__lfh,
@@ -24383,11 +24393,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
             elif file_type == 'nm-res-cya':
                 has_dist_restraint = 'dist_restraint' in content_subtype
@@ -24556,11 +24567,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
             elif file_type == 'nm-res-ros':
                 reader = RosettaMRReader(self.__verbose, self.__lfh,
@@ -24699,11 +24711,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
             elif file_type == 'nm-res-bio':
                 reader = BiosymMRReader(self.__verbose, self.__lfh,
@@ -24840,11 +24853,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
             elif file_type == 'nm-res-gro':
                 reader = GromacsMRReader(self.__verbose, self.__lfh,
@@ -24951,11 +24965,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
             elif file_type == 'nm-res-dyn':
                 reader = DynamoMRReader(self.__verbose, self.__lfh,
@@ -25100,11 +25115,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
             elif file_type == 'nm-res-syb':
                 reader = SybylMRReader(self.__verbose, self.__lfh,
@@ -25241,11 +25257,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
             elif file_type == 'nm-res-isd':
                 reader = IsdMRReader(self.__verbose, self.__lfh,
@@ -25382,11 +25399,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
             elif file_type == 'nm-res-cha':
                 reader = CharmmMRReader(self.__verbose, self.__lfh,
@@ -25531,11 +25549,12 @@ class NmrDpUtility:
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
-                            for k, v in sf_dict:
-                                if k in sf_dict_holder:
-                                    sf_dict_holder[k].extend(v)
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
                                 else:
-                                    sf_dict_holder[k] = v
+                                    self.__mr_sf_dict_holder[content_subtype] = v
 
         if len(poly_seq_set) > 1:
 
@@ -40835,6 +40854,69 @@ class NmrDpUtility:
                     fileListId += 1
 
         return not self.report.isError()
+
+    def __mergeLegacyCSAndMr(self):
+        """ Merge CS+MR into next NMR unifed data files.
+        """
+
+        if self.__combined_mode or not self.__remediation_mode or self.__dstPath is None:
+            return False
+
+        if len(self.__mr_sf_dict_holder) == 0:
+            return False
+
+        master_entry = self.__star_data[0]
+
+        content_subtype_order = ['dist_restraint',
+                                 'dihed_restraint',
+                                 'rdc_restraint',
+                                 'noepk_restraint',
+                                 'jcoup_restraint',
+                                 'csa_restraint',
+                                 'ddc_restraint',
+                                 'hvycs_restraint',
+                                 'procs_restraint',
+                                 'csp_restraint',
+                                 'auto_relax_restraint',
+                                 'ccr_d_csa_restraint',
+                                 'ccr_dd_restraint',
+                                 'fchiral_restraint',
+                                 'other_restraint']
+
+        for content_subtype in content_subtype_order:
+            if content_subtype in self.__mr_sf_dict_holder:
+                if content_subtype != 'other_restraint':
+                    for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                        master_entry.add_saveframe(sf_item['saveframe'])
+                else:
+                    for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                        sf = sf_item['saveframe']
+                        sf_framecode = sf.get_tag('Sf_framecode')[0]
+
+                        other_data = {f'{self.__entry_id}':
+                                      {f'{sf_framecode}':
+                                       {'sf_category': 'unknown',
+                                        'sf_framecode': f'{sf_framecode}',
+                                        'defintion': sf.get_tag('Definition')[0],
+                                        'data_file_name': sf.get_tag('Data_file_name')[0],
+                                        'id': sf.get_tag('ID')[0],
+                                        'entry_id': self.__entry_id,
+                                        'data': sf_item['loop']['data'],
+                                        'tags': sf_item['loop']['tags']
+                                        }
+                                       }
+                                      }
+
+                        sf.add_tag('Text_data_format', 'json')
+                        sf.add_tag('Text_date', json.dumps(other_data, indent=2))
+                        master_entry.add_saveframe(sf)
+
+        if __pynmrstar_v3__:
+            master_entry.write_to_file(self.__dstPath, skip_empty_loops=True)
+        else:
+            master_entry.wirte_to_file(self.__dstPath)
+
+        return True
 
     def __initializeDpReportForNext(self):
         """ Initialize NMR data processing report using the next version of NMR unified data.

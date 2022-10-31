@@ -23,7 +23,7 @@ try:
                                                        translateToStdAtomName,
                                                        isCyclicPolymer,
                                                        getRestraintName,
-                                                       getContentSubtype,
+                                                       contentSubtypeOf,
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
@@ -66,7 +66,7 @@ except ImportError:
                                            translateToStdAtomName,
                                            isCyclicPolymer,
                                            getRestraintName,
-                                           getContentSubtype,
+                                           contentSubtypeOf,
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
@@ -1630,7 +1630,7 @@ class BiosymMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('BIOSYM chirality constraint')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                       'chirality',
@@ -1697,7 +1697,7 @@ class BiosymMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('BIOSYM prochirality constraint')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -1811,7 +1811,7 @@ class BiosymMRParserListener(ParseTreeListener):
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
     def __addSf(self, constraintType=None, potentialType=None):
-        content_subtype = getContentSubtype(self.__cur_subtype)
+        content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
             return
@@ -1823,9 +1823,9 @@ class BiosymMRParserListener(ParseTreeListener):
         if key not in self.sfDict:
             self.sfDict[key] = []
 
-        list_id = self.__listIdCounter[self.__cur_subtype]
+        list_id = self.__listIdCounter[content_subtype]
 
-        sf_framecode = 'BIOSYM_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
+        sf_framecode = 'BIOSYM_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType)

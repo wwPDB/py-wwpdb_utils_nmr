@@ -23,7 +23,7 @@ try:
                                                        hasIntraChainResraint,
                                                        isCyclicPolymer,
                                                        getRestraintName,
-                                                       getContentSubtype,
+                                                       contentSubtypeOf,
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
@@ -63,7 +63,7 @@ except ImportError:
                                            hasIntraChainResraint,
                                            isCyclicPolymer,
                                            getRestraintName,
-                                           getContentSubtype,
+                                           contentSubtypeOf,
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
@@ -1146,7 +1146,7 @@ class SybylMRParserListener(ParseTreeListener):
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
     def __addSf(self, constraintType=None, potentialType=None):
-        content_subtype = getContentSubtype(self.__cur_subtype)
+        content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
             return
@@ -1158,9 +1158,9 @@ class SybylMRParserListener(ParseTreeListener):
         if key not in self.sfDict:
             self.sfDict[key] = []
 
-        list_id = self.__listIdCounter[self.__cur_subtype]
+        list_id = self.__listIdCounter[content_subtype]
 
-        sf_framecode = 'SYBYL_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
+        sf_framecode = 'SYBYL_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType)

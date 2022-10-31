@@ -30,7 +30,7 @@ try:
                                                        getTypeOfDihedralRestraint,
                                                        isCyclicPolymer,
                                                        getRestraintName,
-                                                       getContentSubtype,
+                                                       contentSubtypeOf,
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
@@ -102,7 +102,7 @@ except ImportError:
                                            getTypeOfDihedralRestraint,
                                            isCyclicPolymer,
                                            getRestraintName,
-                                           getContentSubtype,
+                                           contentSubtypeOf,
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
@@ -3506,7 +3506,7 @@ class XplorMRParserListener(ParseTreeListener):
             software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
             sf = self.__getSf(f'planality restraint, {software_name} PLANAR/GROUP statement')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                       'list_id', 'entry_id']
@@ -3673,7 +3673,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('anti-distance restraint, XPLOR-NIH XADC statement')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -4677,7 +4677,7 @@ class XplorMRParserListener(ParseTreeListener):
             statement_name = 'RAMAchandran/CONFormation' if self.__remediate else 'RAMAchandran'
             sf = self.__getSf(f'dihedral angle database restraint, {software_name} {statement_name} statement')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id', 'combination_id',
                                       'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -4784,7 +4784,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('radius of gyration restraint, XPLOR-NIH COLLapse statement')
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                           'target_Rgry', 'force_constant'
@@ -4961,7 +4961,7 @@ class XplorMRParserListener(ParseTreeListener):
                 software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
                 sf = self.__getSf(f'diffusion anisotropy restraint, {software_name} DANIsotropy statement')
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -5309,7 +5309,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('orientation database restraint, XPLOR-NIH ORIEnt statement')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -6719,7 +6719,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('paramagnetic orientation restraint, XPLOR-NIH XANGle statement')
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -7437,7 +7437,7 @@ class XplorMRParserListener(ParseTreeListener):
             software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
             sf = self.__getSf(f'NCS restraint, {software_name} NCS/GROUP statement')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                       'list_id', 'entry_id']
@@ -11654,7 +11654,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
     def __addSf(self, constraintType=None, potentialType=None, alignCenter=None):
-        content_subtype = getContentSubtype(self.__cur_subtype)
+        content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
             return
@@ -11666,12 +11666,12 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__cur_subtype not in self.sfDict:
             self.sfDict[key] = []
 
-        list_id = self.__listIdCounter[self.__cur_subtype]
+        list_id = self.__listIdCounter[content_subtype]
 
         cns_compatible_types = ['dist', 'dihed', 'rdc', 'plane', 'jcoup', 'hvycs', 'procs', 'rama', 'diff', 'nbase', 'geo']
 
         sf_framecode = ('XPLOR-NIH/CNS' if self.__remediate and self.__cur_subtype in cns_compatible_types else 'XPLOR-NIH')\
-            + '_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
+            + '_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType, alignCenter=alignCenter)

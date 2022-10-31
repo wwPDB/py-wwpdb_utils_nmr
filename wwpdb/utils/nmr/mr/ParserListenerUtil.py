@@ -442,7 +442,7 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'auto_relax_restraint': '_Auto_relaxation',
                           'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                           'ccr_dd_restraint': '_Cross_correlation_DD',
-                          'fchical_restraint': 'Floating_chirality',
+                          'fchiral_restraint': 'Floating_chirality',
                           'other_restraint': '_Other_data'
                           }
 
@@ -2600,11 +2600,11 @@ def getRestraintName(mrSubtype):
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
-def getContentSubtype(mrSubtype):
+def contentSubtypeOf(mrSubtype):
     """ Return legitimate content subtype of NmrDpUtility.py for a given internal restraint subtype.
     """
 
-    if mrSubtype in ('dist', 'dihed', 'rdc', 'jcoup', 'hvycs', 'procs', 'csa', 'fchical'):
+    if mrSubtype in ('dist', 'dihed', 'rdc', 'jcoup', 'hvycs', 'procs', 'csa', 'fchiral'):
         return mrSubtype + '_restraint'
 
     if mrSubtype == 'hbond':
@@ -2660,7 +2660,7 @@ def incListIdCounter(mrSubtype, listIdCounter):
     if len(listIdCounter) == 0:
         listIdCounter = initListIdCounter()
 
-    contentSubtype = getContentSubtype(mrSubtype)
+    contentSubtype = contentSubtypeOf(mrSubtype)
 
     if contentSubtype is None or contentSubtype not in listIdCounter:
         return listIdCounter
@@ -2676,7 +2676,7 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
         @return: pynmrstar saveframe
     """
 
-    contentSubtype = getContentSubtype(mrSubtype)
+    contentSubtype = contentSubtypeOf(mrSubtype)
 
     if contentSubtype is None:
         return None
@@ -2753,7 +2753,7 @@ def getLoop(mrSubtype):
         @return: pynmrstar loop
     """
 
-    contentSubtype = getContentSubtype(mrSubtype)
+    contentSubtype = contentSubtypeOf(mrSubtype)
 
     if contentSubtype is None:
         return None
@@ -2762,7 +2762,7 @@ def getLoop(mrSubtype):
         return None
 
     if contentSubtype == 'other_restraint':
-        return {'tag': [], 'data': []}  # dictionary for _Other_data_type_list.Text_data
+        return {'tags': [], 'data': []}  # dictionary for _Other_data_type_list.Text_data
 
     prefix = NMR_STAR_LP_CATEGORIES[contentSubtype] + '.'
 
@@ -2782,7 +2782,7 @@ def getAuxLoops(mrSubtype):
         @return: pynmrstar loop
     """
 
-    contentSubtype = getContentSubtype(mrSubtype)
+    contentSubtype = contentSubtypeOf(mrSubtype)
 
     if contentSubtype is None:
         return None
@@ -2814,7 +2814,7 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
         @return: data array
     """
 
-    contentSubtype = getContentSubtype(mrSubtype)
+    contentSubtype = contentSubtypeOf(mrSubtype)
 
     if contentSubtype is None:
         return None
@@ -2822,19 +2822,25 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
     if contentSubtype == 'other_restraint':
         return None
 
-    key_size = len(NMR_STAR_LP_KEY_ITEMS)
-    data_size = len(NMR_STAR_LP_DATA_ITEMS)
+    key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
+    data_size = len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
 
     row = [None] * (key_size + data_size)
 
     row[0] = id
 
-    if atom1 is not None:
-        row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-    elif atom2 is not None:  # procs
+    if atom1 is None and atom2 is not None:  # procs
         row[1], row[2], row[3], row[4] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-    elif atom2 is not None:
-        row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+    elif mrSubtype != 'fchiral':
+        if atom1 is not None:
+            row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom2 is not None:
+            row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+    else:
+        if atom1 is not None:
+            row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['auth_atom_id']
+        if atom2 is not None:
+            row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
 
     if mrSubtype in ('dist', 'dihed', 'rdc', 'hbond', 'ssbond'):
         row[key_size] = indexId
@@ -3079,9 +3085,9 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
     elif mrSubtype == 'fchiral':
         row[key_size] = code
         row[key_size + 1], row[key_size + 2], row[key_size + 3], row[key_size + 4] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['auth_atom_id']
         row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
 
     elif mrSubtype == 'pccr':
         row[9], row[10], row[11], row[12] = atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
@@ -3119,7 +3125,7 @@ def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
         @return: data array
     """
 
-    contentSubtype = getContentSubtype(mrSubtype)
+    contentSubtype = contentSubtypeOf(mrSubtype)
 
     if contentSubtype is None:
         return None

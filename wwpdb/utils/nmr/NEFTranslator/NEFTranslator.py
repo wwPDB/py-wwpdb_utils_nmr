@@ -8948,7 +8948,7 @@ class NEFTranslator:
         # star_data.normalize() # do not invoke normalize() to preserve author provided Peak_row_format.ID using pynmrstar v3 library
 
         if __pynmrstar_v3__:
-            star_data.write_to_file(star_file, skip_empty_loops=True, skip_empty_tags=False)
+            star_data.write_to_file(star_file, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
             star_data.write_to_file(star_file)
 
@@ -9372,7 +9372,7 @@ class NEFTranslator:
             nef_data.add_saveframe(sf)
 
         if __pynmrstar_v3__:
-            nef_data.write_to_file(nef_file, skip_empty_loops=True, skip_empty_tags=False)
+            nef_data.write_to_file(nef_file, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
             nef_data.write_to_file(nef_file)
 
@@ -9877,7 +9877,7 @@ class NEFTranslator:
             out_data.add_saveframe(sf)
 
         if __pynmrstar_v3__:
-            out_data.write_to_file(output_file_path, skip_empty_loops=True, skip_empty_tags=False)
+            out_data.write_to_file(output_file_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
             out_data.write_to_file(output_file_path)
 

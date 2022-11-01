@@ -6199,6 +6199,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                      '.', None,
                                      sf['list_id'], self.__entryId, None, atom1, atom2)
                         sf['loop'].add_data(row)
+                        break
 
                 for l in range(seq_id_offset + 1, len_split):
                     self.atomSelectionSet.clear()
@@ -6228,6 +6229,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                          '.', None,
                                          sf['list_id'], self.__entryId, None, atom1, atom2)
                             sf['loop'].add_data(row)
+                            break
 
             else:
 
@@ -6639,7 +6641,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         list_id = self.__listIdCounter[content_subtype]
 
-        sf_framecode = 'CYANA_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + f'_{list_id}'
+        sf_framecode = 'CYANA_' + getRestraintName(self.__cur_subtype, False).replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType, cyanaParameter=cyanaParameter)

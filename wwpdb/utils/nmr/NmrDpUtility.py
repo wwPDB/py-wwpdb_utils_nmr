@@ -230,6 +230,8 @@ try:
                                                        startsWithPdbRecord,
                                                        getRestraintName,
                                                        contentSubtypeOf,
+                                                       incListIdCounter,
+                                                       getSaveframe,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        HALF_SPIN_NUCLEUS,
                                                        ALLOWED_AMBIGUITY_CODES,
@@ -306,6 +308,8 @@ except ImportError:
                                            startsWithPdbRecord,
                                            getRestraintName,
                                            contentSubtypeOf,
+                                           incListIdCounter,
+                                           getSaveframe,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            HALF_SPIN_NUCLEUS,
                                            ALLOWED_AMBIGUITY_CODES,
@@ -1187,6 +1191,7 @@ class NmrDpUtility:
 
         self.__remediation_loop_count = 0
 
+        self.__list_id_counter = None
         self.__mr_sf_dict_holder = None
 
         # NMR content types
@@ -7117,7 +7122,7 @@ class NmrDpUtility:
                             g = onedep_file_pattern.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
                     if __pynmrstar_v3__:
-                        self.__star_data[file_list_id].write_to_file(srcPath, skip_empty_loops=True, skip_empty_tags=False)
+                        self.__star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
                     else:
                         self.__star_data[file_list_id].write_to_file(srcPath)
 
@@ -23906,7 +23911,8 @@ class NmrDpUtility:
         fileListId = self.__file_path_list_len
 
         create_sf_dict = self.__remediation_mode
-        list_id_counter = {}
+
+        self.__list_id_counter = {}
         self.__mr_sf_dict_holder = {}
 
         for ar in self.__inputParamDict[ar_file_path_list]:
@@ -23974,8 +23980,9 @@ class NmrDpUtility:
                                        self.__mr_atom_name_mapping,
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT)
+                reader.setRemediateMode(self.__remediation_mode)
 
-                _list_id_counter = copy.copy(list_id_counter)
+                _list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -23991,6 +23998,7 @@ class NmrDpUtility:
                                                self.__cR, cC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
+                        reader.setRemediateMode(self.__remediation_mode)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -24110,7 +24118,7 @@ class NmrDpUtility:
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -24128,7 +24136,7 @@ class NmrDpUtility:
                                      self.__cR, cC,
                                      self.__ccU, self.__csStat, self.__nefT)
 
-                _list_id_counter = copy.copy(list_id_counter)
+                _list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -24260,7 +24268,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -24281,7 +24289,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
 
@@ -24389,7 +24397,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -24427,7 +24435,7 @@ class NmrDpUtility:
                                        None, upl_or_lol, cya_file_ext)
                 reader.setRemediateMode(self.__remediation_mode)
 
-                _list_id_counter = copy.copy(list_id_counter)
+                _list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -24563,7 +24571,7 @@ class NmrDpUtility:
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -24582,7 +24590,7 @@ class NmrDpUtility:
                                          self.__ccU, self.__csStat, self.__nefT)
                 reader.setRemediateMode(self.__remediation_mode)
 
-                _list_id_counter = copy.copy(list_id_counter)
+                _list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -24707,7 +24715,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -24725,7 +24733,7 @@ class NmrDpUtility:
                                         self.__cR, cC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
-                _list_id_counter = copy.copy(list_id_counter)
+                _list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -24849,7 +24857,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -24870,7 +24878,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
 
@@ -24961,7 +24969,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -24979,7 +24987,7 @@ class NmrDpUtility:
                                         self.__cR, cC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
-                _list_id_counter = copy.copy(list_id_counter)
+                _list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -25111,7 +25119,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -25129,7 +25137,7 @@ class NmrDpUtility:
                                        self.__cR, cC,
                                        self.__ccU, self.__csStat, self.__nefT)
 
-                _list_id_counter = copy.copy(list_id_counter)
+                _list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -25253,7 +25261,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -25271,7 +25279,7 @@ class NmrDpUtility:
                                      self.__cR, cC,
                                      self.__ccU, self.__csStat, self.__nefT)
 
-                _list_id_counter = copy.copy(list_id_counter)
+                _list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -25395,7 +25403,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -25413,7 +25421,7 @@ class NmrDpUtility:
                                         self.__cR, cC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
-                _list_id_counter = copy.copy(list_id_counter)
+                _list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -25545,7 +25553,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
-                        list_id_counter = listener.getListIdCounter()
+                        self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -40746,7 +40754,7 @@ class NmrDpUtility:
             return True
 
         if __pynmrstar_v3__:
-            self.__star_data[0].write_to_file(self.__dstPath, skip_empty_loops=True, skip_empty_tags=False)
+            self.__star_data[0].write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
             self.__star_data[0].write_to_file(self.__dstPath)
 
@@ -40796,7 +40804,7 @@ class NmrDpUtility:
                     return False
                 # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
                 # if __pynmrstar_v3__:
-                #     self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
+                #     self.__star_data[fileListId].write_to_file(dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
                 # else:
                 #     self.__star_data[fileListId].write_to_file(dstPath)
                 # """
@@ -40845,7 +40853,7 @@ class NmrDpUtility:
                         return False
                     # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
                     # if __pynmrstar_v3__:
-                    #     self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
+                    #     self.__star_data[fileListId].write_to_file(dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
                     # else:
                     #     self.__star_data[fileListId].write_to_file(dstPath)
                     # """
@@ -40908,11 +40916,69 @@ class NmrDpUtility:
                                       }
 
                         sf.add_tag('Text_data_format', 'json')
-                        sf.add_tag('Text_date', json.dumps(other_data, indent=2))
+                        sf.add_tag('Text_data', json.dumps(other_data, indent=2))
                         master_entry.add_saveframe(sf)
 
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        fileListId = self.__file_path_list_len
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            file_path = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+
+            fileListId += 1
+
+            if file_type != 'nm-res-oth':
+                continue
+
+            file_name = input_source_dic['file_name']
+
+            original_file_name = None
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                if file_name != original_file_name and original_file_name is not None:
+                    file_name = f"{original_file_name} ({file_name})"
+
+            self.__list_id_counter = incListIdCounter(None, self.__list_id_counter)
+
+            list_id = self.__list_id_counter['other_restraint']
+
+            sf_framecode = f'NMR_restraints_not_interpreted_{list_id}'
+
+            dir_path = os.path.dirname(file_path)
+
+            details = None
+            data_format = None
+
+            unknown_mr_desc = os.path.join(dir_path, '.entry_with_unknown_mr')
+            if os.path.exists(unknown_mr_desc):
+                with open(unknown_mr_desc, 'r') as ifp:
+                    details = ifp.read().splitlines()
+                    data_format = details.split(' ')[0]
+                    if not data_format.isupper():
+                        data_format = None
+                    break
+
+            sf = getSaveframe(None, sf_framecode, list_id, self.__entry_id, original_file_name,
+                              constraintType=details)
+
+            sf.add_tag('Text_data_format', data_format)
+
+            with open(file_path, 'r') as ifp:
+                content = ifp.read().decode('utf-8').encode('ascii')
+                sf.add_tag('Text_data', content)
+
+            master_entry.add_saveframe(sf)
+
         if __pynmrstar_v3__:
-            master_entry.write_to_file(self.__dstPath, skip_empty_loops=True)
+            master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
             master_entry.wirte_to_file(self.__dstPath)
 

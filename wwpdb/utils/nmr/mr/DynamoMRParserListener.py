@@ -3655,7 +3655,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         list_id = self.__listIdCounter[content_subtype]
 
-        sf_framecode = 'DYNAMO/PALES/TALOS_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + f'_{list_id}'
+        sf_framecode = 'DYNAMO/PALES/TALOS_' + getRestraintName(self.__cur_subtype, False).replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType)

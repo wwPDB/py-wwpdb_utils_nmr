@@ -11674,7 +11674,7 @@ class XplorMRParserListener(ParseTreeListener):
         cns_compatible_types = ['dist', 'dihed', 'rdc', 'plane', 'jcoup', 'hvycs', 'procs', 'rama', 'diff', 'nbase', 'geo']
 
         sf_framecode = ('XPLOR-NIH/CNS' if self.__remediate and self.__cur_subtype in cns_compatible_types else 'XPLOR-NIH')\
-            + '_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + f'_{list_id}'
+            + '_' + getRestraintName(self.__cur_subtype, False).replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType, alignCenter=alignCenter)

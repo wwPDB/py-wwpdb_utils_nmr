@@ -2545,58 +2545,59 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
     return None
 
 
-def getRestraintName(mrSubtype):
+def getRestraintName(mrSubtype, title=False):
     """ Return human-readable restraint name for a given restraint subtype.
     """
 
     if mrSubtype.startswith('dist'):
-        return "Distance restraints"
+        return "Distance restraints" if title else "distance restraints"
     if mrSubtype.startswith('dihed'):
-        return "Dihedral angle restraints"
+        return "Dihedral angle restraints" if title else "dihedral angle restraints"
     if mrSubtype.startswith('rdc'):
         return "RDC restraints"
     if mrSubtype.startswith('plane'):
-        return "Planarity constraints"
+        return "Planarity constraints" if title else "planarity constraints"
     if mrSubtype.startswith('hbond'):
-        return "Hydrogen bond restraints"
+        return "Hydrogen bond restraints" if title else "hydrogen bond restraints"
     if mrSubtype.startswith('ssbond'):
-        return "Disulfide bond constraints"
+        return "Disulfide bond constraints" if title else "disulfide bond constraints"
     if mrSubtype.startswith('fchiral'):
-        return "Floating chiral stereo assignments"
+        return "Floating chiral stereo assignments" if title else "floating chiral stereo assignments"
     if mrSubtype.startswith('adist'):
-        return "Anti-distance restraints"
+        return "Anti-distance restraints" if title else "anti-distance restraints"
     if mrSubtype.startswith('jcoup'):
-        return "Scalar J-coupling restraints"
+        return "Scalar J-coupling restraints" if title else "scalar J-coupling restraints"
     if mrSubtype.startswith('hvycs'):
-        return "Carbon chemical shift restraints"
+        return "Carbon chemical shift restraints" if title else "carbon chemical shift restraints"
     if mrSubtype.startswith('procs'):
-        return "Proton chemical shift restraints"
+        return "Proton chemical shift restraints" if title else "proton chemical shift restraints"
     if mrSubtype.startswith('rama'):
-        return "Dihedral angle database restraints"
+        return "Dihedral angle database restraints" if title else "dihedral angle database restraints"
     if mrSubtype.startswith('radi'):
-        return "Radius of gyration restraints"
+        return "Radius of gyration restraints" if title else "radius of gyration restraints"
     if mrSubtype.startswith('diff'):
-        return "Diffusion anisotropy restraints"
+        return "Diffusion anisotropy restraints" if title else "diffusion anisotropy restraints"
     if mrSubtype.startswith('nbase'):
-        return "Nucleic acid base orientation database restraints"
+        return "Nucleic acid base orientation database restraints" if title else "nucleic acid base orientation database restraints"
     if mrSubtype.startswith('csa'):
         return "CSA restraints"
     if mrSubtype.startswith('ang'):
-        return "Angle database restraints"
+        return "Angle database restraints" if title else "angle database restraints"
     if mrSubtype.startswith('pre'):
         return "PRE restraints"
     if mrSubtype.startswith('pcs'):
         return "PCS restraints, "
     if mrSubtype.startswith('prdc'):
-        return "Paramagnetic RDC restraints"
+        return "Paramagnetic RDC restraints" if title else "paramagnetic RDC restraints"
     if mrSubtype.startswith('pang'):
-        return "Paramagnetic orientation restraints"
+        return "Paramagnetic orientation restraints" if title else "paramagnetic orientation restraints"
     if mrSubtype.startswith('pccr'):
-        return "Paramagnetic CCR restraints"
+        return "Paramagnetic CCR restraints" if title else "paramagnetic CCR restraints"
     if mrSubtype.startswith('geo'):
-        return "Coordinate geometry restraints"
+        return "Coordinate geometry restraints" if title else "coordinate geometry restraints"
     if mrSubtype.startswith('noepk'):
         return "NOESY peak volume restraints"
+
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
@@ -2660,7 +2661,7 @@ def incListIdCounter(mrSubtype, listIdCounter):
     if len(listIdCounter) == 0:
         listIdCounter = initListIdCounter()
 
-    contentSubtype = contentSubtypeOf(mrSubtype)
+    contentSubtype = contentSubtypeOf(mrSubtype) if mrSubtype is not None else 'other_restraint'
 
     if contentSubtype is None or contentSubtype not in listIdCounter:
         return listIdCounter
@@ -2676,7 +2677,7 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
         @return: pynmrstar saveframe
     """
 
-    contentSubtype = contentSubtypeOf(mrSubtype)
+    contentSubtype = contentSubtypeOf(mrSubtype) if mrSubtype is not None else 'other_restraint'
 
     if contentSubtype is None:
         return None

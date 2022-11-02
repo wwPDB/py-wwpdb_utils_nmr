@@ -1272,6 +1272,8 @@ class CnsMRParserListener(ParseTreeListener):
             for i in range(0, len(self.atomSelectionSet), 2):
                 if isinstance(combinationId, int):
                     combinationId += 1
+                if self.__createSfDict:
+                    memberLogicCode = '.' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else 'OR'
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     if self.__debug:
@@ -1279,7 +1281,6 @@ class CnsMRParserListener(ParseTreeListener):
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
-                        memberLogicCode = '.' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      combinationId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)

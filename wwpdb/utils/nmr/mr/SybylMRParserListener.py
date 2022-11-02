@@ -527,6 +527,7 @@ class SybylMRParserListener(ParseTreeListener):
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
+                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
             has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
 
@@ -539,7 +540,6 @@ class SybylMRParserListener(ParseTreeListener):
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
-                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)

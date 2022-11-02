@@ -58,7 +58,7 @@ class CharmmMRReader:
         self.__mrAtomNameMapping = mrAtomNameMapping
 
         if cR is not None and cC is None:
-            cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
+            cC = checkCoordinates(verbose, log, representativeModelId, cR, None, fullCheck=False)
 
         self.__cR = cR
         self.__cC = cC

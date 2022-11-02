@@ -1560,7 +1560,7 @@ def translateToStdResName(compId):
 def checkCoordinates(verbose=True, log=sys.stdout,
                      representativeModelId=REPRESENTATIVE_MODEL_ID,
                      cR=None, prevCoordCheck=None,
-                     testTag=True):
+                     fullCheck=True):
     """ Examine the coordinates for MR/PT parser listener.
     """
 
@@ -1693,8 +1693,8 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                             altAuthSeqIds.append(labelSeqId)
 
                             if 'ambig_auth_seq_id' not in ps:
-                                ps['ambug_auth_seq_id'] = []
-                            ps['ambug_auth_seq_id'].append(authSeqId)
+                                ps['ambig_auth_seq_id'] = []
+                            ps['ambig_auth_seq_id'].append(authSeqId)
 
                             conflict = True
 
@@ -1737,8 +1737,8 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                             altAuthSeqIds.append(labelSeqId)
 
                             if 'ambig_auth_seq_id' not in ps:
-                                ps['ambug_auth_seq_id'] = []
-                            ps['ambug_auth_seq_id'].append(authSeqId)
+                                ps['ambig_auth_seq_id'] = []
+                            ps['ambig_auth_seq_id'].append(authSeqId)
 
                             conflict = True
 
@@ -1751,7 +1751,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             except KeyError:
                 branch = None
 
-    if not testTag:
+    if not fullCheck:
         if not changed:
             return prevCoordCheck
 
@@ -1772,6 +1772,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
     authToStarSeq = None if prevCoordCheck is None or 'auth_to_star_seq' not in prevCoordCheck else prevCoordCheck['auth_to_star_seq']
     labelToAuthChain = None if prevCoordCheck is None or 'label_to_auth_chain' not in prevCoordCheck else prevCoordCheck['label_to_auth_chain']
     authToLabelChain = None if prevCoordCheck is None or 'auth_to_label_chain' not in prevCoordCheck else prevCoordCheck['auth_to_label_chain']
+    entityAssembly = None if prevCoordCheck is None or 'entity_assembly' not in prevCoordCheck else prevCoordCheck['entity_assembly']
 
     try:
 
@@ -1931,6 +1932,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
         if authToStarSeq is None:
             authToStarSeq = {}
+            entityAssembly = []
 
             entityAssemblyId = 1
 
@@ -1947,8 +1949,13 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'seq_id', 'type': 'int'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+
+                        authAsymIds = set()
                         for item in mappings:
                             authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
+                            authAsymIds.add(item['auth_asym_id'])
+                        entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
+                                               'entity_type': entityType, 'auth_asym_id': ','.join(list(authAsymIds))})
                         entityAssemblyId += 1
                 elif entityType == 'branch':
                     if cR.hasCategory('pdbx_branch_scheme'):
@@ -1957,8 +1964,13 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+
+                        authAsymIds = set()
                         for item in mappings:
                             authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
+                            authAsymIds.add(item['auth_asym_id'])
+                        entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
+                                               'entity_type': entityType, 'auth_asym_id': ','.join(list(authAsymIds))})
                         entityAssemblyId += 1
                 elif entityType == 'non-polymer':
                     if cR.hasCategory('pdbx_nonpoly_scheme'):
@@ -1967,8 +1979,13 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+
+                        authAsymIds = set()
                         for item in mappings:
                             authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
+                            authAsymIds.add(item['auth_asym_id'])
+                        entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
+                                               'entity_type': entityType, 'auth_asym_id': ','.join(list(authAsymIds))})
                         entityAssemblyId += 1
 
     except Exception as e:
@@ -1993,7 +2010,8 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'auth_to_label_seq': authToLabelSeq,
             'label_to_auth_chain': labelToAuthChain,
             'auth_to_label_chain': authToLabelChain,
-            'auth_to_star_seq': authToStarSeq}
+            'auth_to_star_seq': authToStarSeq,
+            'entity_assembly': entityAssembly}
 
 
 def extendCoordinatesForExactNoes(modelChainIdExt,

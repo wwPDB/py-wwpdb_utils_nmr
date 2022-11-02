@@ -2917,6 +2917,35 @@ def getAuxLoops(mrSubtype):
     return aux_lps
 
 
+def getStarAtom(authToStarSeq, atom):
+    """ Return NMR-STAR sequence IDs for a give atom.
+    """
+
+    starAtom = copy.copy(atom)
+
+    chainId = atom['chain_id']
+    seqId = atom['seq_id']
+    seqKey = (chainId, seqId)
+
+    if seqKey in authToStarSeq:
+        starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'] = authToStarSeq[seqKey]
+        return starAtom
+
+    for offset in range(1, 1000):
+        seqKey = (chainId, seqId + offset)
+        if seqKey in authToStarSeq:
+            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'] = authToStarSeq[seqKey]
+            starAtom['seq_id'] -= offset
+            return starAtom
+        seqKey = (chainId, seqId - offset)
+        if seqKey in authToStarSeq:
+            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'] = authToStarSeq[seqKey]
+            starAtom['seq_id'] += offset
+            return starAtom
+
+    return None
+
+
 def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc, authToStarSeq,
            atom1, atom2=None, atom3=None, atom4=None, atom5=None):
     """ Return row data for a given internal restraint subtype.
@@ -2939,20 +2968,15 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
     row[0] = id
 
     if atom1 is not None:
-        star_atom1 = copy.copy(atom1)
-        star_atom1['chain_id'], star_atom1['seq_id'], star_atom1['entity_id'] = authToStarSeq[(atom1['chain_id'], atom1['seq_id'])]
+        star_atom1 = getStarAtom(atom1)
     if atom2 is not None:
-        star_atom2 = copy.copy(atom2)
-        star_atom2['chain_id'], star_atom2['seq_id'], star_atom2['entity_id'] = authToStarSeq[(atom2['chain_id'], atom2['seq_id'])]
+        star_atom2 = getStarAtom(atom2)
     if atom3 is not None:
-        star_atom3 = copy.copy(atom3)
-        star_atom3['chain_id'], star_atom3['seq_id'], star_atom3['entity_id'] = authToStarSeq[(atom3['chain_id'], atom3['seq_id'])]
+        star_atom3 = getStarAtom(atom3)
     if atom4 is not None:
-        star_atom4 = copy.copy(atom1)
-        star_atom4['chain_id'], star_atom4['seq_id'], star_atom4['entity_id'] = authToStarSeq[(atom4['chain_id'], atom4['seq_id'])]
+        star_atom4 = getStarAtom(atom4)
     if atom5 is not None:
-        star_atom5 = copy.copy(atom5)
-        star_atom5['chain_id'], star_atom5['seq_id'], star_atom5['entity_id'] = authToStarSeq[(atom5['chain_id'], atom5['seq_id'])]
+        star_atom5 = getStarAtom(atom5)
 
     if star_atom1 is None and star_atom2 is not None:  # procs
         row[1], row[2], row[3], row[4], row[5] =\
@@ -2980,8 +3004,7 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
 
     if mrSubtype in ('dist', 'hbond', 'ssbond'):
         row[key_size + 1] = combinationId
-        if isinstance(combinationId, int):
-            row[key_size + 2] = code
+        row[key_size + 2] = code
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 3] = dstFunc['target_value']
         if hasKeyValue(dstFunc, 'target_value_uncertainty'):

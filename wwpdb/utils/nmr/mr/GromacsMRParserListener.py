@@ -148,6 +148,7 @@ class GromacsMRParserListener(ParseTreeListener):
     # __coordUnobsRes = None
     # __labelToAuthSeq = None
     # __authToLabelSeq = None
+    __authToStarSeq = None
 
     __hasPolySeq = False
     __preferAuthSeq = True
@@ -208,6 +209,7 @@ class GromacsMRParserListener(ParseTreeListener):
             # self.__coordUnobsRes = ret['coord_unobs_res']
             # self.__labelToAuthSeq = ret['label_to_auth_seq']
             # self.__authToLabelSeq = ret['auth_to_label_seq']
+            self.__authToStarSeq = ret['auth_to_star_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         if self.__hasPolySeq:

@@ -1142,8 +1142,8 @@ class NmrDpUtility:
         __str2nefTasks.append(self.__dumpDpReport)
         __str2nefTasks.extend(__depositTasks)
 
-        __csMrMergeTasks = __checkTasks
-        __csMrMergeTasks.append(self.__mergeLegacyCSAndMr)
+        __mergeCsAndMrTasks = __checkTasks
+        __mergeCsAndMrTasks.append(self.__mergeLegacyCSAndMr)
 
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'consistency-check': __checkTasks,
@@ -1152,7 +1152,7 @@ class NmrDpUtility:
                                 'nmr-str2nef-release': __str2nefTasks,
                                 'nmr-cs-nef-consistency-check': [self.__depositLegacyNmrData],
                                 'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData],
-                                'nmr-cs-mr-merge': __csMrMergeTasks
+                                'nmr-cs-mr-merge': __mergeCsAndMrTasks
                                 }
 
         # data processing report
@@ -40875,6 +40875,66 @@ class NmrDpUtility:
 
         master_entry = self.__star_data[0]
 
+        file_type = 'nmr-star'
+        content_subtype = 'poly_seq'
+
+        asm_sfs = self.__star_data[0].get_saveframes_by_category(self.lp_categories[file_type][content_subtype])
+
+        if len(asm_sfs) == 0:
+            sf_framecode = 'assembly'
+            asm_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
+            asm_sf.set_tag_prefix(self.sf_tag_prefixes[file_type][content_subtype])
+            asm_sf.add_tag('Sf_category', self.sf_categories[file_type][content_subtype])
+            asm_sf.add_tag('Sf_framecode', sf_framecode)
+            asm_sf.add_tag('Entry_ID', self.__entry_id)
+            asm_sf.add_tag('ID', 1)
+            assembly_name = '?'
+            if self.__cR.hasItem('struct', 'pdbx_descriptor'):
+                struct = self.__cR.getDictList('struct')
+                assembly_name = struct[0]['pdbx_descriptor']
+            asm_sf.add_tag('Name', assembly_name)
+
+        else:
+            asm_sf = asm_sfs[0]
+            tagNames = [t[0] for t in asm_sf.tags]
+            if 'Sf_category' in tagNames:
+                asm_sf.tags[tagNames.index('Sf_category')][1] = self.sf_categories[file_type][content_subtype]
+            else:
+                asm_sf.add_tag('Sf_category', self.sf_categories[file_type][content_subtype])
+            if 'Sf_framecode' in tagNames:
+                asm_sf.tags[tagNames.index('Sf_framecode')][1] = asm_sf.name
+            else:
+                asm_sf.add_tag('Sf_framecode', asm_sf.name)
+            if 'Entry_ID' in tagNames:
+                asm_sf.tags[tagNames.index('Entry_ID')][1] = self.__entry_id
+            else:
+                asm_sf.add_tag('Entry_ID', self.__entry_id)
+            if 'ID' in tagNames:
+                asm_sf.tags[tagNames.index('ID')] = 1
+            else:
+                asm_sf.add_tag('ID', 1)
+            assembly_name = get_first_sf_tag(asm_sf, 'Name')
+            if len(assembly_name) == 0 or assembly_name in emptyValue:
+                assembly_name = '?'
+                if self.__cR.hasItem('struct', 'pdbx_descriptor'):
+                    struct = self.__cR.getDictList('struct')
+                    assembly_name = struct[0]['pdbx_descriptor']
+                if 'Name' in tagNames:
+                    asm_sf.tags[tagNames.index('Name')][1] = assembly_name
+                else:
+                    asm_sf.add_tag('Name', assembly_name)
+
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        if __pynmrstar_v3_2__:
+            loops = [asm_sf.get_loop(lp_category)]
+        else:
+            loops = [asm_sf.get_loop_by_category(lp_category)]
+
+        if len(loops) > 0:
+            loop = next(loop for loop in asm_sf.loops if loop.category == lp_category)
+            del asm_sf[loop]
+
         content_subtype_order = ['dist_restraint',
                                  'dihed_restraint',
                                  'rdc_restraint',
@@ -40901,18 +40961,22 @@ class NmrDpUtility:
                         sf = sf_item['saveframe']
                         sf_framecode = sf.get_tag('Sf_framecode')[0]
 
-                        other_data = {f'{self.__entry_id}':
-                                      {f'{sf_framecode}':
-                                       {'sf_category': 'unknown',
-                                        'sf_framecode': f'{sf_framecode}',
-                                        'defintion': sf.get_tag('Definition')[0],
-                                        'data_file_name': sf.get_tag('Data_file_name')[0],
-                                        'id': sf.get_tag('ID')[0],
-                                        'entry_id': self.__entry_id,
-                                        'data': sf_item['loop']['data'],
-                                        'tags': sf_item['loop']['tags']
-                                        }
-                                       }
+                        other_data = {'entry_id': self.__entry_id,
+                                      'saveframes': [{'name': sf_framecode,
+                                                      'category': 'undefined',
+                                                      'tag_prefix': '?',
+                                                      'tags': [['Sf_category', 'undefined'],
+                                                               ['Sf_framecode', sf_framecode],
+                                                               ['Definition', sf.get_tag('Definition')[0]],
+                                                               ['Data_file_name', sf.get_tag('Data_file_name')[0]],
+                                                               ['ID', sf.get_tag('ID')[0]],
+                                                               ['Entry_ID', self.__entry_id]
+                                                               ],
+                                                      'loops': [{'category': 'unknown',
+                                                                 'tags': sf_item['loop']['tags'],
+                                                                 'data': sf_item['loop']['data']
+                                                                 }]
+                                                      }]
                                       }
 
                         sf.add_tag('Text_data_format', 'json')

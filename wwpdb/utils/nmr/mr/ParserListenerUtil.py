@@ -1733,6 +1733,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
     coordUnobsRes = None if prevCoordCheck is None or 'coord_unobs_res' not in prevCoordCheck else prevCoordCheck['coord_unobs_res']
     labelToAuthSeq = None if prevCoordCheck is None or 'label_to_auth_seq' not in prevCoordCheck else prevCoordCheck['label_to_auth_seq']
     authToLabelSeq = None if prevCoordCheck is None or 'auth_to_label_seq' not in prevCoordCheck else prevCoordCheck['auth_to_label_seq']
+    authToStarSeq = None if prevCoordCheck is None or 'auth_to_star_seq' not in prevCoordCheck else prevCoordCheck['auth_to_star_seq']
     labelToAuthChain = None if prevCoordCheck is None or 'label_to_auth_chain' not in prevCoordCheck else prevCoordCheck['label_to_auth_chain']
     authToLabelChain = None if prevCoordCheck is None or 'auth_to_label_chain' not in prevCoordCheck else prevCoordCheck['auth_to_label_chain']
 
@@ -1892,6 +1893,48 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                                         if labelSeqKey not in labelToAuthSeq:
                                             labelToAuthSeq[labelSeqKey] = authSeqKey
 
+        if authToStarSeq is None:
+            authToStarSeq = {}
+
+            entityAssemblyId = 1
+
+            entities = cR.getDictList('entity')
+
+            for entity in entities:
+                entityId = int(entity['id'])
+                entityType = entity['type']
+
+                if entityType == 'polymer':
+                    if cR.hasCategory('pdbx_poly_seq_scheme'):
+                        mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
+                                                            [{'name': 'pdbx_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                             {'name': 'seq_id', 'type': 'int'}],
+                                                            [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        for item in mappings:
+                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
+                        entityAssemblyId += 1
+                elif entityType == 'branch':
+                    if cR.hasCategory('pdbx_branch_scheme'):
+                        mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
+                                                            [{'name': 'auth_asym_id', 'type': 'str'},
+                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                             {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'}],
+                                                            [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        for item in mappings:
+                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
+                        entityAssemblyId += 1
+                elif entityType == 'non-polymer':
+                    if cR.hasCategory('pdbx_nonpoly_scheme'):
+                        mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
+                                                            [{'name': 'pdbx_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                             {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'}],
+                                                            [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        for item in mappings:
+                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
+                        entityAssemblyId += 1
+
     except Exception as e:
         if verbose:
             log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error  - {str(e)}\n")
@@ -1913,11 +1956,13 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'label_to_auth_seq': labelToAuthSeq,
             'auth_to_label_seq': authToLabelSeq,
             'label_to_auth_chain': labelToAuthChain,
-            'auth_to_label_chain': authToLabelChain}
+            'auth_to_label_chain': authToLabelChain,
+            'auth_to_star_seq': authToStarSeq}
 
 
 def extendCoordinatesForExactNoes(modelChainIdExt,
-                                  polySeq, altPolySeq, coordAtomSite, coordUnobsRes, labelToAuthSeq, authToLabelSeq):
+                                  polySeq, altPolySeq, coordAtomSite, coordUnobsRes,
+                                  labelToAuthSeq, authToLabelSeq, authToStarSeq):
     """ Extend coordinate chains for eNOEs-guided multiple conformers.
     """
 
@@ -1992,13 +2037,42 @@ def extendCoordinatesForExactNoes(modelChainIdExt,
                     for seqId in ps['auth_seq_id']:
                         seqKey = (srcChainId, seqId)
                         if seqKey in authToLabelSeq:
+                            seqVal = authToLabelSeq[seqKey]
                             _seqKey = (dstChainId, seqId)
                             if _seqKey not in _authToLabelSeq:
-                                _authToLabelSeq[_seqKey] = (dstChainId, labelToAuthSeq[seqKey][1])
+                                _authToLabelSeq[_seqKey] = (dstChainId, seqVal[1])
 
         _labelToAuthSeq = {v: k for k, v in _authToLabelSeq.items()}
 
-    return _polySeq, _altPolySeq, _coordAtomSite, _coordUnobsRes, _labelToAuthSeq, _authToLabelSeq
+    if authToStarSeq is not None:
+        _authToStarSeq = copy.copy(authToStarSeq)
+
+        maxAsmEntityId = max(item[0] for item in authToStarSeq.values()) + 1
+        asmEntityIdExt = {}
+
+        for ps in polySeq:
+            srcChainId = ps['auth_chain_id']
+            if srcChainId in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    if dstChainId in asmEntityIdExt:
+                        continue
+                    asmEntityIdExt[dstChainId] = maxAsmEntityId
+                    maxAsmEntityId += 1
+
+        for ps in polySeq:
+            srcChainId = ps['auth_chain_id']
+            if srcChainId in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    dstAsmEntityId = asmEntityIdExt[dstChainId]
+                    for seqId in ps['auth_seq_id']:
+                        seqKey = (srcChainId, seqId)
+                        if seqKey in authToStarSeq:
+                            seqVal = authToStarSeq[seqKey]
+                            _seqKey = (dstChainId, seqId)
+                            if _seqKey not in _authToStarSeq:
+                                _authToStarSeq[_seqKey] = (dstAsmEntityId, seqVal[1], seqVal[2])
+
+    return _polySeq, _altPolySeq, _coordAtomSite, _coordUnobsRes, _labelToAuthSeq, _authToLabelSeq, _authToStarSeq
 
 
 def isLongRangeRestraint(atoms, polySeq=None):
@@ -2632,34 +2706,27 @@ def contentSubtypeOf(mrSubtype):
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
-def initListIdCounter():
-    """ Initialize list id counter.
-    """
-
-    return {'dist_restraint': 0,
-            'dihed_restraint': 0,
-            'rdc_restraint': 0,
-            'noepk_restraint': 0,
-            'jcoup_restraint': 0,
-            'csa_restraint': 0,
-            'ddc_restraint': 0,
-            'hvycs_restraint': 0,
-            'procs_restraint': 0,
-            'csp_restraint': 0,
-            'auto_relax_restraint': 0,
-            'ccr_d_csa_restraint': 0,
-            'ccr_dd_restraint': 0,
-            'fchiral_restraint': 0,
-            'other_restraint': 0
-            }
-
-
 def incListIdCounter(mrSubtype, listIdCounter):
     """ Increment list id counter for a given internal restraint subtype.
     """
 
     if len(listIdCounter) == 0:
-        listIdCounter = initListIdCounter()
+        listIdCounter = {'dist_restraint': 0,
+                         'dihed_restraint': 0,
+                         'rdc_restraint': 0,
+                         'noepk_restraint': 0,
+                         'jcoup_restraint': 0,
+                         'csa_restraint': 0,
+                         'ddc_restraint': 0,
+                         'hvycs_restraint': 0,
+                         'procs_restraint': 0,
+                         'csp_restraint': 0,
+                         'auto_relax_restraint': 0,
+                         'ccr_d_csa_restraint': 0,
+                         'ccr_dd_restraint': 0,
+                         'fchiral_restraint': 0,
+                         'other_restraint': 0
+                         }
 
     contentSubtype = contentSubtypeOf(mrSubtype) if mrSubtype is not None else 'other_restraint'
 

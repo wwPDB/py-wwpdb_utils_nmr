@@ -2968,15 +2968,15 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
     row[0] = id
 
     if atom1 is not None:
-        star_atom1 = getStarAtom(atom1)
+        star_atom1 = getStarAtom(authToStarSeq, atom1)
     if atom2 is not None:
-        star_atom2 = getStarAtom(atom2)
+        star_atom2 = getStarAtom(authToStarSeq, atom2)
     if atom3 is not None:
-        star_atom3 = getStarAtom(atom3)
+        star_atom3 = getStarAtom(authToStarSeq, atom3)
     if atom4 is not None:
-        star_atom4 = getStarAtom(atom4)
+        star_atom4 = getStarAtom(authToStarSeq, atom4)
     if atom5 is not None:
-        star_atom5 = getStarAtom(atom5)
+        star_atom5 = getStarAtom(authToStarSeq, atom5)
 
     if star_atom1 is None and star_atom2 is not None:  # procs
         row[1], row[2], row[3], row[4], row[5] =\

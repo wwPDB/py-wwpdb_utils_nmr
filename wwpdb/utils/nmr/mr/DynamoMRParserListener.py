@@ -318,7 +318,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 extendCoordinatesForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -659,7 +659,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -782,7 +782,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -906,7 +906,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -1675,7 +1675,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', angleName,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -1784,7 +1784,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', angleName,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -1893,7 +1893,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', angleName,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -2137,7 +2137,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -2308,7 +2308,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -2479,7 +2479,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -2657,7 +2657,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -2871,7 +2871,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             couplingCode = '3JHNHA'
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', couplingCode,
-                                         sf['list_id'], self.__entryId, dstFunc, self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0])
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0])
                             sf['loop'].add_data(row)
                     else:
                         sf['index_id'] += 1
@@ -2879,7 +2879,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
         except ValueError:
@@ -3005,7 +3005,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             couplingCode = '3JHNHA'
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', couplingCode,
-                                         sf['list_id'], self.__entryId, dstFunc, self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0])
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0])
                             sf['loop'].add_data(row)
                     else:
                         sf['index_id'] += 1
@@ -3013,7 +3013,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
         except ValueError:
@@ -3139,7 +3139,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             couplingCode = '3JHNHA'
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', couplingCode,
-                                         sf['list_id'], self.__entryId, dstFunc, self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0])
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0])
                             sf['loop'].add_data(row)
                     else:
                         sf['index_id'] += 1
@@ -3147,7 +3147,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
         except ValueError:
@@ -3395,7 +3395,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', angleName,
-                                         sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
 
         except ValueError:
@@ -3570,7 +3570,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', angleName,
-                                         sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
 
         except ValueError:

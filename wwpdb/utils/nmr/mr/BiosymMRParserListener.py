@@ -279,7 +279,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 extendCoordinatesForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -557,7 +557,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:
@@ -648,7 +648,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:
@@ -1395,25 +1395,25 @@ class BiosymMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.' if dstFunc2 is None else 1, angleName,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     if dstFunc2 is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      2, angleName,
-                                     sf['list_id'], self.__entryId, dstFunc2, atom1, atom2, atom3, atom4)
+                                     sf['list_id'], self.__entryId, dstFunc2, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
                     if dstFunc3 is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      3, angleName,
-                                     sf['list_id'], self.__entryId, dstFunc3, atom1, atom2, atom3, atom4)
+                                     sf['list_id'], self.__entryId, dstFunc3, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
                     if dstFunc4 is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      4, angleName,
-                                     sf['list_id'], self.__entryId, dstFunc4, atom1, atom2, atom3, atom4)
+                                     sf['list_id'], self.__entryId, dstFunc4, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
         finally:
@@ -1513,7 +1513,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', angleName,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
         finally:

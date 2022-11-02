@@ -448,176 +448,212 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
 
 NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                             {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                            {'name': 'Entity_ID_1', 'type': 'positive-int'},
                                             {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                             {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                             {'name': 'Atom_ID_1', 'type': 'str'},
                                             {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                            {'name': 'Entity_ID_2', 'type': 'positive-int'},
                                             {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                             {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                             {'name': 'Atom_ID_2', 'type': 'str'}
                                             ],
                          'dihed_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                              {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                             {'name': 'Entity_ID_1', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                              {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_1', 'type': 'str'},
                                              {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                             {'name': 'Entity_ID_2', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                              {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_2', 'type': 'str'},
                                              {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_3'},
+                                             {'name': 'Entity_ID_3', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_3', 'type': 'int', 'default-from': 'Seq_ID_3'},
                                              {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_3', 'type': 'str'},
                                              {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_4'},
+                                             {'name': 'Entity_ID_4', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_4', 'type': 'int', 'default-from': 'Seq_ID_4'},
                                              {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_4', 'type': 'str'}
                                              ],
                          'rdc_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                           {'name': 'Entity_ID_1', 'type': 'positive-int'},
                                            {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                            {'name': 'Atom_ID_1', 'type': 'str'},
                                            {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                           {'name': 'Entity_ID_2', 'type': 'positive-int'},
                                            {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                            {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                            {'name': 'Atom_ID_2', 'type': 'str'}
                                            ],
                          'noepk_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                              {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                             {'name': 'Entity_ID_1', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                              {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_1', 'type': 'str'},
                                              {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                             {'name': 'Entity_ID_2', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                              {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_2', 'type': 'str'}
                                              ],
                          'jcoup_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                              {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                             {'name': 'Entity_ID_1', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                              {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_1', 'type': 'str'},
                                              {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                             {'name': 'Entity_ID_2', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                              {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_2', 'type': 'str'}
                                              ],
                          'rdc_raw_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                          {'name': 'Entity_ID_1', 'type': 'positive-int'},
                                           {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                           {'name': 'Atom_ID_1', 'type': 'str'},
                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                          {'name': 'Entity_ID_2', 'type': 'positive-int'},
                                           {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                           ],
                          'csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                            {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                           {'name': 'Entity_ID', 'type': 'positive-int'},
                                            {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                            {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                            {'name': 'Atom_ID', 'type': 'str'}
                                            ],
                          'ddc_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                           {'name': 'Entity_ID_1', 'type': 'positive-int'},
                                            {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                            {'name': 'Atom_ID_1', 'type': 'str'},
                                            {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                           {'name': 'Entity_ID_2', 'type': 'positive-int'},
                                            {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                            {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                            {'name': 'Atom_ID_2', 'type': 'str'}
                                            ],
                          'hvycs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                              {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                             {'name': 'Entity_ID_1', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                              {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_1', 'type': 'str'},
                                              {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                             {'name': 'Entity_ID_2', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                              {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_2', 'type': 'str'},
                                              {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_3'},
+                                             {'name': 'Entity_ID_3', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_3', 'type': 'int', 'default-from': 'Seq_ID_3'},
                                              {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_3', 'type': 'str'},
                                              {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_4'},
+                                             {'name': 'Entity_ID_4', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_4', 'type': 'int', 'default-from': 'Seq_ID_4'},
                                              {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_4', 'type': 'str'},
                                              {'name': 'Entity_assembly_ID_5', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_5'},
+                                             {'name': 'Entity_ID_5', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_5', 'type': 'int', 'default-from': 'Seq_ID_5'},
                                              {'name': 'Comp_ID_5', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID_5', 'type': 'str'}
                                              ],
                          'procs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                              {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID'},
+                                             {'name': 'Entity_ID', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                              {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID', 'type': 'str'}
                                              ],
                          'csp_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                            {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                           {'name': 'Entity_ID', 'type': 'positive-int'},
                                            {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                            {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                            {'name': 'Atom_ID', 'type': 'str'}
                                            ],
                          'auto_relax_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                   {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                  {'name': 'Entity_ID', 'type': 'positive-int'},
                                                   {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                                   {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                   {'name': 'Atom_ID', 'type': 'str'}
                                                   ],
                          'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                  {'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'Dipole_entity_ID_1', 'type': 'positive-int'},
                                                  {'name': 'Dipole_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_seq_ID_1'},
                                                  {'name': 'Dipole_comp_ID_1', 'type': 'str', 'uppercase': True},
                                                  {'name': 'Dipole_atom_ID_1', 'type': 'str'},
                                                  {'name': 'Dipole_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'Dipole_entity_ID_2', 'type': 'positive-int'},
                                                  {'name': 'Dipole_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_seq_ID_2'},
                                                  {'name': 'Dipole_comp_ID_2', 'type': 'str', 'uppercase': True},
                                                  {'name': 'Dipole_atom_ID_2', 'type': 'str'},
                                                  {'name': 'CSA_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'CSA_entity_ID_1', 'type': 'positive-int'},
                                                  {'name': 'CSA_comp_index_ID_1', 'type': 'int', 'default-from': 'CSA_seq_ID_1'},
                                                  {'name': 'CSA_comp_ID_1', 'type': 'str', 'uppercase': True},
                                                  {'name': 'CSA_atom_ID_1', 'type': 'str'},
                                                  {'name': 'CSA_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'CSA_entity_ID_2', 'type': 'positive-int'},
                                                  {'name': 'CSA_comp_index_ID_2', 'type': 'int', 'default-from': 'CSA_seq_ID_2'},
                                                  {'name': 'CSA_comp_ID_2', 'type': 'str', 'uppercase': True},
                                                  {'name': 'CSA_atom_ID_2', 'type': 'str'}
                                                  ],
                          'ccr_dd_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                               {'name': 'Dipole_1_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                              {'name': 'Dipole_1 entity_ID_1', 'type': 'positive-int'},
                                               {'name': 'Dipole_1_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_1_seq_ID_1'},
                                               {'name': 'Dipole_1_comp_ID_1', 'type': 'str', 'uppercase': True},
                                               {'name': 'Dipole_1_atom_ID_1', 'type': 'str'},
                                               {'name': 'Dipole_1_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                              {'name': 'Dipole_1_entity_ID_2', 'type': 'positive-int'},
                                               {'name': 'Dipole_1_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_1_seq_ID_2'},
                                               {'name': 'Dipole_1_comp_ID_2', 'type': 'str', 'uppercase': True},
                                               {'name': 'Dipole_1_atom_ID_2', 'type': 'str'},
                                               {'name': 'Dipole_2_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                              {'name': 'Dipole_2_entity_ID_1', 'type': 'positive-int'},
                                               {'name': 'Dipole_2_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_2_seq_ID_1'},
                                               {'name': 'Dipole_2_comp_ID_1', 'type': 'str', 'uppercase': True},
                                               {'name': 'Dipole_2_atom_ID_1', 'type': 'str'},
                                               {'name': 'Dipole_2_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                              {'name': 'Dipole_2_entity_ID_2', 'type': 'positive-int'},
                                               {'name': 'Dipole_2_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_2_seq_ID_2'},
                                               {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
                                               {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}
                                               ],
                          'fchiral_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                               {'name': 'Entity_ID_1', 'type': 'positive-int'},
                                                {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                {'name': 'Atom_ID_1', 'type': 'str'},
                                                {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                               {'name': 'Entity_ID_2', 'type': 'positive-int'},
                                                {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                                {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                {'name': 'Atom_ID_2', 'type': 'str'}
                                                ],
                          'other_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                              {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                             {'name': 'Entity_ID', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                              {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID', 'type': 'str'}
@@ -1907,7 +1943,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                 if entityType == 'polymer':
                     if cR.hasCategory('pdbx_poly_seq_scheme'):
                         mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
-                                                            [{'name': 'pdbx_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                            [{'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'seq_id', 'type': 'int'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
@@ -1927,7 +1963,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                 elif entityType == 'non-polymer':
                     if cR.hasCategory('pdbx_nonpoly_scheme'):
                         mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
-                                                            [{'name': 'pdbx_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                            [{'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
@@ -1962,7 +1998,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
 def extendCoordinatesForExactNoes(modelChainIdExt,
                                   polySeq, altPolySeq, coordAtomSite, coordUnobsRes,
-                                  labelToAuthSeq, authToLabelSeq, authToStarSeq):
+                                  authToLabelSeq, authToStarSeq):
     """ Extend coordinate chains for eNOEs-guided multiple conformers.
     """
 
@@ -2881,7 +2917,8 @@ def getAuxLoops(mrSubtype):
     return aux_lps
 
 
-def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc, atom1, atom2=None, atom3=None, atom4=None, atom5=None):
+def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc, authToStarSeq,
+           atom1, atom2=None, atom3=None, atom4=None, atom5=None):
     """ Return row data for a given internal restraint subtype.
         @return: data array
     """
@@ -2901,18 +2938,39 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
 
     row[0] = id
 
-    if atom1 is None and atom2 is not None:  # procs
-        row[1], row[2], row[3], row[4] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+    if atom1 is not None:
+        star_atom1 = copy.copy(atom1)
+        star_atom1['chain_id'], star_atom1['seq_id'], star_atom1['entity_id'] = authToStarSeq[(atom1['chain_id'], atom1['seq_id'])]
+    if atom2 is not None:
+        star_atom2 = copy.copy(atom2)
+        star_atom2['chain_id'], star_atom2['seq_id'], star_atom2['entity_id'] = authToStarSeq[(atom2['chain_id'], atom2['seq_id'])]
+    if atom3 is not None:
+        star_atom3 = copy.copy(atom3)
+        star_atom3['chain_id'], star_atom3['seq_id'], star_atom3['entity_id'] = authToStarSeq[(atom3['chain_id'], atom3['seq_id'])]
+    if atom4 is not None:
+        star_atom4 = copy.copy(atom1)
+        star_atom4['chain_id'], star_atom4['seq_id'], star_atom4['entity_id'] = authToStarSeq[(atom4['chain_id'], atom4['seq_id'])]
+    if atom5 is not None:
+        star_atom5 = copy.copy(atom5)
+        star_atom5['chain_id'], star_atom5['seq_id'], star_atom5['entity_id'] = authToStarSeq[(atom5['chain_id'], atom5['seq_id'])]
+
+    if star_atom1 is None and star_atom2 is not None:  # procs
+        row[1], row[2], row[3], row[4], row[5] =\
+            star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
     elif mrSubtype != 'fchiral':
         if atom1 is not None:
-            row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+            row[1], row[2], row[3], row[4], row[5] =\
+                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['atom_id']
         if atom2 is not None:
-            row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+            row[6], row[7], row[8], row[9], row[10] =\
+                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
     else:
         if atom1 is not None:
-            row[1], row[2], row[3], row[4] = atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['auth_atom_id']
+            row[1], row[2], row[3], row[4], row[5] =\
+                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['auth_atom_id']
         if atom2 is not None:
-            row[5], row[6], row[7], row[8] = atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
+            row[6], row[7], row[8], row[9], row[10] =\
+                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['auth_atom_id']
 
     if mrSubtype in ('dist', 'dihed', 'rdc', 'hbond', 'ssbond'):
         row[key_size] = indexId
@@ -2951,13 +3009,17 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
 
     elif mrSubtype == 'dihed':
         if atom1 is not None:
-            row[9], row[10], row[11], row[12] = atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+            row[11], row[12], row[13], row[14], row[15] =\
+                star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
         elif atom5 is not None:  # PPA, phase angle of pseudorotation
-            row[9], row[10], row[11] = atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
+            row[11], row[12], row[13], row[14] =\
+                star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id']
         if atom2 is not None:
-            row[13], row[14], row[15], row[16] = atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+            row[16], row[17], row[18], row[19], row[20] =\
+                star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
         elif atom5 is not None:  # PPA, phase angle of pseudorotation
-            row[13], row[14], row[15] = atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
+            row[16], row[17], row[18], row[19] =\
+                star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id']
 
         # row[key_size + 1] = combinationId
         row[key_size + 2] = code
@@ -3055,9 +3117,9 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
         if hasKeyValue(atom1, 'auth_atom_id'):
-            row[4] = row[key_size + 8] = atom1['auth_atom_id']
+            row[5] = row[key_size + 8] = atom1['auth_atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
-            row[8] = row[key_size + 12] = atom1['auth_atom_id']
+            row[10] = row[key_size + 12] = atom1['auth_atom_id']
 
     elif mrSubtype == 'jcoup':
         row[key_size] = code
@@ -3162,8 +3224,10 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
 
     elif mrSubtype == 'pccr':
-        row[9], row[10], row[11], row[12] = atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
-        row[13], row[14], row[15], row[16] = atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+        row[11], row[12], row[13], row[14], row[15] =\
+            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        row[16], row[17], row[18], row[19], row[20] =\
+            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
         row[key_size] = atom1['atom_id']
         # Dipole_1_atom_isotope_number_1

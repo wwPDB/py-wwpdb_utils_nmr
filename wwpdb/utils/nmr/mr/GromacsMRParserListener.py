@@ -394,7 +394,7 @@ class GromacsMRParserListener(ParseTreeListener):
                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -608,7 +608,7 @@ class GromacsMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', angleName,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -868,7 +868,7 @@ class GromacsMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:

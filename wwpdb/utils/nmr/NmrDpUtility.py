@@ -40926,13 +40926,13 @@ class NmrDpUtility:
 
         lp_category = self.lp_categories[file_type][content_subtype]
 
-        if __pynmrstar_v3_2__:
-            loops = [asm_sf.get_loop(lp_category)]
-        else:
-            loops = [asm_sf.get_loop_by_category(lp_category)]
+        if lp_category in self.__lp_category_list:
 
-        if len(loops) > 0:
-            loop = next(loop for loop in asm_sf.loops if loop.category == lp_category)
+            if __pynmrstar_v3_2__:
+                loop = asm_sf.get_loop(lp_category)
+            else:
+                loop = asm_sf.get_loop_by_category(lp_category)
+
             del asm_sf[loop]
 
         content_subtype_order = ['dist_restraint',

@@ -262,7 +262,7 @@ class IsdMRParserListener(ParseTreeListener):
                 extendCoordinatesForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -539,7 +539,7 @@ class IsdMRParserListener(ParseTreeListener):
                 memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              '.', memberLogicCode,
-                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                 sf['loop'].add_data(row)
 
     def splitAtomSelectionExpr(self, atomSelection):  # pylint: disable=no-self-use

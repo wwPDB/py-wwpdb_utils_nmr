@@ -313,7 +313,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 extendCoordinatesForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -653,7 +653,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                            '.', memberLogicCode,
-                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                           sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
 
         finally:
             self.atomSelectionInComment.clear()
@@ -1671,7 +1671,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              '.', angleName,
-                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
     # Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
@@ -1775,7 +1775,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              1, angleName,
-                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
         compId = self.atomSelectionSet[4][0]['comp_id']
@@ -1796,7 +1796,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              2, angleName,
-                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
     # Enter a parse tree produced by RosettaMRParser#coordinate_restraints.
@@ -3415,7 +3415,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -3570,7 +3570,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
-                                 sf['list_id'], self.__entryId, None, atom1, atom2)
+                                 sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:

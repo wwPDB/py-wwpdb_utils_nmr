@@ -456,7 +456,7 @@ class CnsMRParserListener(ParseTreeListener):
                 extendCoordinatesForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -1282,7 +1282,7 @@ class CnsMRParserListener(ParseTreeListener):
                         memberLogicCode = '.' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      combinationId, memberLogicCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
         finally:
@@ -1601,7 +1601,7 @@ class CnsMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', angleName,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
         finally:
@@ -2144,7 +2144,7 @@ class CnsMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:
@@ -2489,7 +2489,7 @@ class CnsMRParserListener(ParseTreeListener):
                             + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
             else:
@@ -2508,7 +2508,7 @@ class CnsMRParserListener(ParseTreeListener):
                             + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
@@ -2530,7 +2530,7 @@ class CnsMRParserListener(ParseTreeListener):
                             + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc if dstFunc2 is None else dstFunc2, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc if dstFunc2 is None else dstFunc2, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
         finally:
@@ -2659,7 +2659,7 @@ class CnsMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4, atom5)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4, atom5)
                     sf['loop'].add_data(row)
 
         finally:
@@ -2809,7 +2809,7 @@ class CnsMRParserListener(ParseTreeListener):
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1)
                         sf['loop'].add_data(row)
 
             else:
@@ -2822,13 +2822,13 @@ class CnsMRParserListener(ParseTreeListener):
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      1, '.',
-                                     sf['list_id'], self.__entryId, dstFunc, atom1)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1)
                         sf['loop'].add_data(row)
                         #
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      2, '.',
-                                     sf['list_id'], self.__entryId, dstFunc, None, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, None, atom2)
                         sf['loop'].add_data(row)
 
         finally:

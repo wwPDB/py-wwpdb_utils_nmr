@@ -359,7 +359,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 extendCoordinatesForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -898,7 +898,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                     sf['index_id'] += 1
                                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                                  '.', None,
-                                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                                     sf['loop'].add_data(row)
 
                             self.__cur_subtype = 'dist'
@@ -948,7 +948,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberLogicCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
             else:  # cco
@@ -1071,7 +1071,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
         except ValueError:
@@ -1320,7 +1320,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                     sf['index_id'] += 1
                                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                                  '.', None,
-                                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                                     sf['loop'].add_data(row)
 
                             self.__cur_subtype = 'dist'
@@ -1351,7 +1351,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberLogicCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
             else:  # cco
@@ -1474,7 +1474,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
         except ValueError:
@@ -2967,7 +2967,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', angleName,
-                                         sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
 
             # phase angle of pseudorotation
@@ -3066,7 +3066,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', angleName,
-                                         sf['list_id'], self.__entryId, dstFunc, None, None, None, None, atom5)
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, None, None, None, None, atom5)
                             sf['loop'].add_data(row)
 
         except ValueError:
@@ -3352,7 +3352,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -3570,7 +3570,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -3800,7 +3800,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberLogicCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
                         if self.__cur_subtype == 'noepk':
                             break
@@ -4019,7 +4019,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberLogicCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
                         if self.__cur_subtype == 'noepk':
                             break
@@ -4179,7 +4179,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberLogicCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
                         if self.__cur_subtype == 'noepk':
                             break
@@ -4349,7 +4349,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberLogicCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
                         if self.__cur_subtype == 'noepk':
                             break
@@ -4568,7 +4568,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberLogicCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
                         if self.__cur_subtype == 'noepk':
                             break
@@ -4728,7 +4728,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberLogicCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
                         if self.__cur_subtype == 'noepk':
                             break
@@ -4840,7 +4840,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -5156,7 +5156,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                 sf['index_id'] += 1
                                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                              '.', None,
-                                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                                 sf['loop'].add_data(row)
 
                         self.__cur_subtype = 'dist'
@@ -5197,7 +5197,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -5494,7 +5494,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', angleName,
-                                         sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
 
             # phase angle of pseudorotation
@@ -5593,7 +5593,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', angleName,
-                                         sf['list_id'], self.__entryId, dstFunc, None, None, None, None, atom5)
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, None, None, None, None, atom5)
                             sf['loop'].add_data(row)
 
         except ValueError:
@@ -5757,7 +5757,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', couplingCode,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -5887,7 +5887,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, None, atom1, atom2)
+                                 sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:
@@ -5999,7 +5999,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, None, atom1, atom2)
+                                 sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:
@@ -6200,7 +6200,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None,
-                                     sf['list_id'], self.__entryId, None, atom1, atom2)
+                                     sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
                         break
 
@@ -6230,7 +6230,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', None,
-                                         sf['list_id'], self.__entryId, None, atom1, atom2)
+                                         sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
                             sf['loop'].add_data(row)
                             break
 
@@ -6275,7 +6275,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None,
-                                     sf['list_id'], self.__entryId, None, atom1, atom2)
+                                     sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
                         break
 
@@ -6321,7 +6321,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', None,
-                                         sf['list_id'], self.__entryId, None, atom1, atom2)
+                                         sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
                             sf['loop'].add_data(row)
                             break
 

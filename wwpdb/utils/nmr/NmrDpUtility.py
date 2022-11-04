@@ -9603,7 +9603,7 @@ class NmrDpUtility:
                     else:
 
                         err = "NMR restraint file is not recognized properly "\
-                            "so that there is no manadtory distance restraints int the set of uploaded restraint files. "\
+                            "so that there is no mandatory distance restraints int the set of uploaded restraint files. "\
                             "Please re-upload the NMR restraint file."
 
                         self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
@@ -41047,6 +41047,7 @@ class NmrDpUtility:
             row[0] = item['entity_assembly_id']
             row[1] = (f'entity_{entity_id}' + ('' if entity_total[entity_id] == 1 else f'_{entity_count[entity_id]}'))\
                 if entity_type != 'non-polymer' else f"entity_{item['comp_id']}"
+            item['entity_assembly_name'] = row[1]
             row[2] = item['entity_id']
             row[3] = f'$entity_{entity_id}' if entity_type != 'non-polymer' else f"$entity_{item['comp_id']}"
             row[4] = item['label_asym_id']
@@ -41138,20 +41139,20 @@ class NmrDpUtility:
                     comp_id = ps['comp_id'][idx]
                 except IndexError:
                     comp_id = None
+                except ValueError:
+                    comp_id = None
 
             elif entity_type == 'branch':
                 br = next(br for br in self.__caC['branch'] if br['auth_chain_id'] == auth_asym_id)
                 try:
-                    idx = br['auth_seq_id'].index(auth_seq_id)
-                    comp_id = br['comp_id'][idx]
+                    comp_id = br['comp_id'][seq_id - 1]
                 except IndexError:
                     comp_id = None
 
             elif entity_type == 'non-polymer':
                 np = next(np for np in self.__caC['non_polymer'] if np['auth_chain_id'] == auth_asym_id)
                 try:
-                    idx = np['auth_seq_id'].index(auth_seq_id)
-                    comp_id = np['comp_id'][idx]
+                    comp_id = np['comp_id'][seq_id - 1]
                 except IndexError:
                     comp_id = None
 
@@ -41163,6 +41164,141 @@ class NmrDpUtility:
             nef_index += 1
 
         asm_sf.add_loop(cca_loop)
+
+        # Refresh _Bond loop
+
+        if self.__cR.hasCategory('struct_conn'):
+
+            lp_category = '_Bond'
+
+            if lp_category in self.__lp_category_list:
+
+                if __pynmrstar_v3_2__:
+                    loop = asm_sf.get_loop(lp_category)
+                else:
+                    loop = asm_sf.get_loop_by_category(lp_category)
+
+                del asm_sf[loop]
+
+            b_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+            b_key_items = [{'name': 'ID', 'type': 'positive-int-as-str', 'default': '1'},
+                           {'name': 'Type', 'type': 'enum',
+                            'enum': ('amide', 'covalent', 'directed', 'disulfide', 'ester', 'ether',
+                                     'hydrogen', 'metal coordination', 'peptide', 'thioether', 'oxime',
+                                     'thioester', 'phosphoester', 'phosphodiester', 'diselenide', 'na')},
+                           {'name': 'Value_order', 'type': 'enum',
+                            'enum': ('sing', 'doub', 'trip', 'quad', 'arom', 'poly', 'delo', 'pi', 'directed')},
+                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str'},
+                           {'name': 'Entity_assembly_name_1', 'type': 'str'},
+                           {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                           {'name': 'Comp_ID_1', 'type': 'str'},
+                           {'name': 'Comp_index_ID_1', 'type': 'int'},
+                           {'name': 'Seq_ID_1', 'type': 'int'},
+                           {'name': 'Atom_ID_1', 'type': 'str'},
+                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str'},
+                           {'name': 'Entity_assembly_name_2', 'type': 'str'},
+                           {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                           {'name': 'Comp_ID_2', 'type': 'str'},
+                           {'name': 'Comp_index_ID_2', 'type': 'int'},
+                           {'name': 'Seq_ID_2', 'type': 'int'},
+                           {'name': 'Atom_ID_2', 'type': 'str'},
+                           ]
+            b_data_items = [{'name': 'Auth_asym_ID_1', 'type': 'str', 'mandaory': False},
+                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                            {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                            {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandaory': False},
+                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                            {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False, 'default': '1', 'default-from': 'parent'},
+                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                            ]
+
+            tags = [lp_category + '.' + item['name'] for item in b_key_items]
+            tags.extend([lp_category + '.' + item['name'] for item in b_data_items])
+
+            for tag in tags:
+                b_loop.add_tag(tag)
+
+            bonds = self.__cR.getDictList('struct_conn')
+
+            index = 1
+
+            for bond in bonds:
+                bond_type = bond['conn_type_id']
+                auth_asym_id_1 = bond['ptnr1_auth_asym_id']
+                auth_seq_id_1 = bond['ptnr1_auth_seq_id']
+                auth_comp_id_1 = bond['ptnr1_auth_comp_id']
+                atom_id_1 = bond['ptnr1_label_atom_id']
+                auth_asym_id_2 = bond['ptnr2_auth_asym_id']
+                auth_seq_id_2 = bond['ptnr2_auth_seq_id']
+                auth_comp_id_2 = bond['ptnr2_auth_comp_id']
+                atom_id_2 = bond['ptnr2_label_atom_id']
+
+                row = [None] * len(tags)
+
+                row[0] = index
+
+                if bond_type == 'covale':
+                    row[1], row[2] = 'covalent', 'sing'
+                elif bond_type.startswith('covale_'):  # 'covale_base', 'covale_phosphate', 'covale_sugar'
+                    row[1] = 'covalent'
+                elif bond_type == 'disulf':
+                    row[1], row[2] = 'disulfide', 'sing'
+                elif bond_type == 'hydrog':
+                    row[1], row[2] = 'hydrogen', 'sing'
+                elif bond_type == 'metalc':
+                    row[1], row[2] = 'metal coordination', 'sing'
+                elif bond_type == 'mismat':
+                    row[1] = 'na'
+                elif bond_type == 'modres':
+                    row[1] = 'na'
+                elif bond_type == 'saltbr':
+                    row[1] = 'na'
+
+                seq_key_1 = (auth_asym_id_1, int(auth_seq_id_1))
+
+                entity_id_1 = entity_id_2 = None
+
+                if seq_key_1 in self.__caC['auth_to_star_seq']:
+                    entity_assembly_id_1, seq_id_1, entity_id_1 = self.__caC['auth_to_star_seq'][seq_key_1]
+                    entity_assembly_name_1 = next((item['entity_assembly_name'] for item in self.__caC['entity_assembly']
+                                                   if item['entity_id'] == entity_id_1), None)
+                    row[3], row[4], row[5], row[6], row[7], row[8], row[9] =\
+                        entity_assembly_id_1, entity_assembly_name_1, entity_id_1, auth_comp_id_1, seq_id_1, seq_id_1, atom_id_1
+
+                    row[17], row[18], row[19], row[20] =\
+                        auth_asym_id_1, auth_seq_id_1, auth_comp_id_1, atom_id_1
+
+                seq_key_2 = (auth_asym_id_2, int(auth_seq_id_2))
+
+                if seq_key_2 in self.__caC['auth_to_star_seq']:
+                    entity_assembly_id_2, seq_id_2, entity_id_2 = self.__caC['auth_to_star_seq'][seq_key_2]
+                    entity_assembly_name_2 = next((item['entity_assembly_name'] for item in self.__caC['entity_assembly']
+                                                   if item['entity_id'] == entity_id_2), None)
+                    row[10], row[11], row[12], row[13], row[14], row[15], row[16] =\
+                        entity_assembly_id_2, entity_assembly_name_2, entity_id_2, auth_comp_id_2, seq_id_2, seq_id_2, atom_id_2
+
+                    row[21], row[22], row[23], row[24] =\
+                        auth_asym_id_2, auth_seq_id_2, auth_comp_id_2, atom_id_2
+
+                if entity_id_1 is not None and entity_id_2 is not None and entity_id_1 == entity_id_2:
+                    entity_poly_type = next((item['entity_poly_type'] for item in self.__caC['entity_assembly']
+                                             if item['entity_id'] == entity_id_1 and item['entity_type'] == 'polymer'), None)
+                    if entity_poly_type is not None and entity_poly_type.startswith('polypeptide')\
+                       and set(atom_id_1, atom_id_2) == set('C', 'N') and abs(auth_seq_id_1 - auth_seq_id_2) > 1:
+                        row[1], row[2] = 'peptide', "sing"
+
+                row[25] = 1
+                row[26] = self.__entry_id
+
+                b_loop.add_data(row)
+
+                index += 1
+
+            asm_sf.add_loop(b_loop)
 
         master_entry.add_saveframe(asm_sf)
 

@@ -1943,8 +1943,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 entityType = entity['type']
                 entityDesc = entity['pdbx_description'] if 'pdbx_descrption' in entity else '.'
                 entityDetails = entity['details'] if 'details' in entity else '.'
-                entityRole = '.'
 
+                entityRole = '.'
                 if cR.hasCategory('entity_name_com'):
                     roles = cR.getDictListWithFilter('entity_name_com',
                                                      [{'name': 'name', 'type': 'str'}],
@@ -1953,6 +1953,14 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         entityRole = ','.join([role['name'] for role in roles])
 
                 if entityType == 'polymer':
+                    entityPolyType = '.'
+                    if cR.hasCategory('entity_poly'):
+                        polyTypes = cR.getDictListWithFilter('entity_poly',
+                                                             [{'name': 'type', 'type': 'str'}],
+                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        if len(polyTypes) > 0:
+                            entityPolyType = polyTypes[0]['type']
+
                     if cR.hasCategory('pdbx_poly_seq_scheme'):
                         mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
                                                             [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
@@ -1972,6 +1980,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                'entity_type': entityType, 'entity_desc': entityDesc,
                                                'entity_role': entityRole,
                                                'entity_details': entityDetails,
+                                               'entity_poly_type': entityPolyType,
                                                'auth_asym_id': ','.join(list(authAsymIds)),
                                                'label_asym_id': ','.join(list(labelAsymIds))})
                         entityAssemblyId += 1
@@ -1980,8 +1989,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
                                                             [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
                                                              {'name': 'auth_asym_id', 'type': 'str'},
-                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                             {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'}],
+                                                             {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         authAsymIds = set()

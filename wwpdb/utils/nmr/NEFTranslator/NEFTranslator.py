@@ -8945,7 +8945,7 @@ class NEFTranslator:
 
             star_data.add_saveframe(sf)
 
-        # star_data.normalize() # do not invoke normalize() to preserve author provided Peak_row_format.ID using pynmrstar v3 library
+        # star_data.normalize()  # do not invoke normalize() to preserve author provided Peak_row_format.ID using pynmrstar v3 library
 
         if __pynmrstar_v3__:
             star_data.write_to_file(star_file, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
@@ -9875,6 +9875,8 @@ class NEFTranslator:
                 sf.add_tag('ID', peak_list_id)
 
             out_data.add_saveframe(sf)
+
+        out_data.normalize()
 
         if __pynmrstar_v3__:
             out_data.write_to_file(output_file_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)

@@ -16,7 +16,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberPTLexer import AmberPTLexer
     from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
     from wwpdb.utils.nmr.mr.AmberPTParserListener import AmberPTParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
@@ -29,7 +29,7 @@ except ImportError:
     from nmr.mr.AmberPTLexer import AmberPTLexer
     from nmr.mr.AmberPTParser import AmberPTParser
     from nmr.mr.AmberPTParserListener import AmberPTParserListener
-    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
@@ -45,7 +45,7 @@ class AmberPTReader:
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
-                 cR=None, cC=None, ccU=None, csStat=None, nefT=None):
+                 cR=None, caC=None, ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -55,11 +55,11 @@ class AmberPTReader:
         self.__representativeModelId = representativeModelId
         self.__mrAtomNameMapping = mrAtomNameMapping
 
-        if cR is not None and cC is None:
-            cC = checkCoordinates(verbose, log, representativeModelId, cR, None, fullCheck=False)
+        if cR is not None and caC is None:
+            caC = coordAssemblyChecker(verbose, log, representativeModelId, cR, None, fullCheck=False)
 
         self.__cR = cR
-        self.__cC = cC
+        self.__caC = caC
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -145,7 +145,7 @@ class AmberPTReader:
             listener = AmberPTParserListener(self.__verbose, self.__lfh,
                                              self.__representativeModelId,
                                              self.__mrAtomNameMapping,
-                                             self.__cR, self.__cC,
+                                             self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT)
             walker.walk(listener, tree)
 

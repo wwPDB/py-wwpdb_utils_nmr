@@ -17,7 +17,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
     from wwpdb.utils.nmr.mr.AmberMRParserListener import AmberMRParserListener
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
@@ -31,7 +31,7 @@ except ImportError:
     from nmr.mr.AmberMRParser import AmberMRParser
     from nmr.mr.AmberMRParserListener import AmberMRParserListener
     from nmr.mr.AmberPTReader import AmberPTReader
-    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
@@ -47,7 +47,7 @@ class AmberMRReader:
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
-                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  atomNumberDict=None, auxAtomNumberDict=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -59,11 +59,11 @@ class AmberMRReader:
         self.__representativeModelId = representativeModelId
         self.__mrAtomNameMapping = mrAtomNameMapping
 
-        if cR is not None and cC is None:
-            cC = checkCoordinates(verbose, log, representativeModelId, cR, None, fullCheck=False)
+        if cR is not None and caC is None:
+            caC = coordAssemblyChecker(verbose, log, representativeModelId, cR, None, fullCheck=False)
 
         self.__cR = cR
-        self.__cC = cC
+        self.__caC = caC
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -128,7 +128,7 @@ class AmberMRReader:
                 ptR = AmberPTReader(self.__verbose, self.__lfh,
                                     self.__representativeModelId,
                                     self.__mrAtomNameMapping,
-                                    self.__cR, self.__cC,
+                                    self.__cR, self.__caC,
                                     self.__ccU, self.__csStat, self.__nefT)
                 ptPL, _, _ = ptR.parse(ptFilePath, cifFilePath)
                 if ptPL is not None:
@@ -170,7 +170,7 @@ class AmberMRReader:
                 listener = AmberMRParserListener(self.__verbose, self.__lfh,
                                                  self.__representativeModelId,
                                                  self.__mrAtomNameMapping,
-                                                 self.__cR, self.__cC,
+                                                 self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  self.__atomNumberDict, None)
                 listener.setDebugMode(self.__debug)
@@ -244,7 +244,7 @@ class AmberMRReader:
                     listener = AmberMRParserListener(self.__verbose, self.__lfh,
                                                      self.__representativeModelId,
                                                      self.__mrAtomNameMapping,
-                                                     self.__cR, self.__cC,
+                                                     self.__cR, self.__caC,
                                                      self.__ccU, self.__csStat, self.__nefT,
                                                      self.__atomNumberDict, reasons)
                     listener.setDebugMode(self.__debug)

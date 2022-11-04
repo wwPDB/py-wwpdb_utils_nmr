@@ -225,7 +225,7 @@ try:
     from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
-                                                       checkCoordinates,
+                                                       coordAssemblyChecker,
                                                        getTypeOfDihedralRestraint,
                                                        startsWithPdbRecord,
                                                        getRestraintName,
@@ -303,7 +303,7 @@ except ImportError:
     from nmr.NmrStarToCif import NmrStarToCif
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
-                                           checkCoordinates,
+                                           coordAssemblyChecker,
                                            getTypeOfDihedralRestraint,
                                            startsWithPdbRecord,
                                            getRestraintName,
@@ -5195,8 +5195,14 @@ class NmrDpUtility:
         # CIF reader
         self.__cR = CifReader(self.__verbose, self.__lfh)
 
-        # ParserListerUtil.checkCoordinates()
-        self.__cC = None
+        # ParserListerUtil.coordAssemblyChecker()
+        self.__caC = None
+        # set of label_aysm_id having experimental data
+        self.__label_asym_id_with_exptl_data = set()
+        # set of auth_aysm_id having experimental data
+        self.__auth_asym_id_with_exptl_data = set()
+        # set of auth_asym_id indicating chemical exchange occurs
+        self.__auth_asym_ids_with_chem_exch = set()
 
         # extracted conformational annotation of coordinate file
         self.__nmr_struct_conf = {}
@@ -23711,9 +23717,9 @@ class NmrDpUtility:
         if not has_poly_seq:
             return True
 
-        self.__cC = checkCoordinates(self.__verbose, self.__lfh,
-                                     self.__representative_model_id,
-                                     self.__cR, None)
+        self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+                                          self.__representative_model_id,
+                                          self.__cR, None)
 
         amberAtomNumberDict = None
         gromacsAtomNumberDict = None
@@ -23759,7 +23765,7 @@ class NmrDpUtility:
                     reader = AmberPTReader(self.__verbose, self.__lfh,
                                            self.__representative_model_id,
                                            self.__mr_atom_name_mapping,
-                                           self.__cR, self.__cC,
+                                           self.__cR, self.__caC,
                                            self.__ccU, self.__csStat, self.__nefT)
 
                     listener, _, _ = reader.parse(file_path, self.__cifPath)
@@ -23840,7 +23846,7 @@ class NmrDpUtility:
                     reader = GromacsPTReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
                                              self.__mr_atom_name_mapping,
-                                             self.__cR, self.__cC,
+                                             self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT)
 
                     listener, _, _ = reader.parse(file_path, self.__cifPath)
@@ -23981,7 +23987,7 @@ class NmrDpUtility:
                 reader = XplorMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
                                        self.__mr_atom_name_mapping,
-                                       self.__cR, self.__cC,
+                                       self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT)
                 reader.setRemediateMode(self.__remediation_mode)
 
@@ -23995,10 +24001,15 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'model_chain_id_ext' in reasons:
+                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
+                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+
                         reader = XplorMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
                                                self.__mr_atom_name_mapping,
-                                               self.__cR, self.__cC,
+                                               self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
                         reader.setRemediateMode(self.__remediation_mode)
@@ -24136,7 +24147,7 @@ class NmrDpUtility:
                 reader = CnsMRReader(self.__verbose, self.__lfh,
                                      self.__representative_model_id,
                                      self.__mr_atom_name_mapping,
-                                     self.__cR, self.__cC,
+                                     self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -24149,10 +24160,15 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'model_chain_id_ext' in reasons:
+                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
+                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+
                         reader = CnsMRReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
                                              self.__mr_atom_name_mapping,
-                                             self.__cR, self.__cC,
+                                             self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
 
@@ -24286,7 +24302,7 @@ class NmrDpUtility:
                 reader = AmberMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
                                        self.__mr_atom_name_mapping,
-                                       self.__cR, self.__cC,
+                                       self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT,
                                        amberAtomNumberDict, _amberAtomNumberDict)
 
@@ -24433,7 +24449,7 @@ class NmrDpUtility:
                 reader = CyanaMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
                                        self.__mr_atom_name_mapping,
-                                       self.__cR, self.__cC,
+                                       self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT,
                                        None, upl_or_lol, cya_file_ext)
                 reader.setRemediateMode(self.__remediation_mode)
@@ -24448,10 +24464,15 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'model_chain_id_ext' in reasons:
+                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
+                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+
                         reader = CyanaMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
                                                self.__mr_atom_name_mapping,
-                                               self.__cR, self.__cC,
+                                               self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons, upl_or_lol, cya_file_ext)
                         reader.setRemediateMode(self.__remediation_mode)
@@ -24589,7 +24610,7 @@ class NmrDpUtility:
                 reader = RosettaMRReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
                                          self.__mr_atom_name_mapping,
-                                         self.__cR, self.__cC,
+                                         self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
                 reader.setRemediateMode(self.__remediation_mode)
 
@@ -24603,10 +24624,15 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'model_chain_id_ext' in reasons:
+                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
+                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+
                         reader = RosettaMRReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
                                                  self.__mr_atom_name_mapping,
-                                                 self.__cR, self.__cC,
+                                                 self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
                         reader.setRemediateMode(self.__remediation_mode)
@@ -24733,7 +24759,7 @@ class NmrDpUtility:
                 reader = BiosymMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
                                         self.__mr_atom_name_mapping,
-                                        self.__cR, self.__cC,
+                                        self.__cR, self.__caC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -24746,10 +24772,15 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'model_chain_id_ext' in reasons:
+                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
+                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+
                         reader = BiosymMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
                                                 self.__mr_atom_name_mapping,
-                                                self.__cR, self.__cC,
+                                                self.__cR, self.__caC,
                                                 self.__ccU, self.__csStat, self.__nefT,
                                                 reasons)
 
@@ -24875,7 +24906,7 @@ class NmrDpUtility:
                 reader = GromacsMRReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
                                          self.__mr_atom_name_mapping,
-                                         self.__cR, self.__cC,
+                                         self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT,
                                          gromacsAtomNumberDict)
 
@@ -24987,7 +25018,7 @@ class NmrDpUtility:
                 reader = DynamoMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
                                         self.__mr_atom_name_mapping,
-                                        self.__cR, self.__cC,
+                                        self.__cR, self.__caC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -25000,10 +25031,15 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'model_chain_id_ext' in reasons:
+                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
+                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+
                         reader = DynamoMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
                                                 self.__mr_atom_name_mapping,
-                                                self.__cR, self.__cC,
+                                                self.__cR, self.__caC,
                                                 self.__ccU, self.__csStat, self.__nefT,
                                                 reasons)
 
@@ -25137,7 +25173,7 @@ class NmrDpUtility:
                 reader = SybylMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
                                        self.__mr_atom_name_mapping,
-                                       self.__cR, self.__cC,
+                                       self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -25150,10 +25186,15 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'model_chain_id_ext' in reasons:
+                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
+                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+
                         reader = SybylMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
                                                self.__mr_atom_name_mapping,
-                                               self.__cR, self.__cC,
+                                               self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
 
@@ -25279,7 +25320,7 @@ class NmrDpUtility:
                 reader = IsdMRReader(self.__verbose, self.__lfh,
                                      self.__representative_model_id,
                                      self.__mr_atom_name_mapping,
-                                     self.__cR, self.__cC,
+                                     self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -25292,10 +25333,15 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'model_chain_id_ext' in reasons:
+                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
+                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+
                         reader = IsdMRReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
                                              self.__mr_atom_name_mapping,
-                                             self.__cR, self.__cC,
+                                             self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
 
@@ -25421,7 +25467,7 @@ class NmrDpUtility:
                 reader = CharmmMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
                                         self.__mr_atom_name_mapping,
-                                        self.__cR, self.__cC,
+                                        self.__cR, self.__caC,
                                         self.__ccU, self.__csStat, self.__nefT)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -25434,10 +25480,15 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'model_chain_id_ext' in reasons:
+                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
+                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+
                         reader = CharmmMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
                                                 self.__mr_atom_name_mapping,
-                                                self.__cR, self.__cC,
+                                                self.__cR, self.__caC,
                                                 self.__ccU, self.__csStat, self.__nefT,
                                                 reasons)
 
@@ -25579,7 +25630,7 @@ class NmrDpUtility:
                     for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
                         updatePolySeqRst(poly_seq_rst, chain_id, seq_id, comp_id)
 
-            poly_seq_model = self.__cC['polymer_sequence']
+            poly_seq_model = self.__caC['polymer_sequence']
 
             sortPolySeqRst(poly_seq_rst)
 
@@ -33931,6 +33982,13 @@ class NmrDpUtility:
 
                     self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', chain_assign)
 
+                chain_assign_dic = self.report.chain_assignment.get()
+
+                if has_key_value(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+                    for ca in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+                        self.__label_asym_id_with_exptl_data.add(ca['test_chain_id'])
+                        self.__auth_asym_id_with_exptl_data.add(ca['test_auth_chain_id'])
+
             else:
 
                 err = "No sequence alignment found."
@@ -40756,6 +40814,9 @@ class NmrDpUtility:
         if self.__dstPath == self.__srcPath and self.__release_mode:
             return True
 
+        self.__star_data[0].entry_id = self.__entry_id
+        self.__star_data[0].normalize()
+
         if __pynmrstar_v3__:
             self.__star_data[0].write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
@@ -40927,7 +40988,98 @@ class NmrDpUtility:
                 else:
                     asm_sf.add_tag('Name', assembly_name)
 
-        entity_type_of = {item['entity_id']: item['entity_type'] for item in self.__cC['entity_assembly']}
+        entity_type_of = {item['entity_id']: item['entity_type'] for item in self.__caC['entity_assembly']}
+        entity_total = {entity_id: len([item for item in self.__caC['entity_assembly'] if item['entity_id'] == entity_id])
+                        for entity_id in entity_type_of.keys()}
+        entity_count = {entity_id: 0 for entity_id in entity_type_of.keys()}
+
+        # Refresh _Entity_assembly
+
+        lp_category = '_Entity_assembly'
+
+        if lp_category in self.__lp_category_list:
+
+            if __pynmrstar_v3_2__:
+                loop = asm_sf.get_loop(lp_category)
+            else:
+                loop = asm_sf.get_loop_by_category(lp_category)
+
+            del asm_sf[loop]
+
+        ea_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+        ea_key_items = [{'name': 'ID', 'type': 'positive-int-as-str', 'default': '1'},
+                        {'name': 'Entity_assembly_name', 'type': 'str'},
+                        {'name': 'Entity_ID', 'type': 'positive-int', 'default': '1'},
+                        {'name': 'Entity_label', 'type': 'str'},
+                        ]
+        ea_data_items = [{'name': 'Asym_ID', 'type': 'str', 'mandatory': False},
+                         {'name': 'PDB_chain_ID', 'type': 'str', 'mandatory': False},
+                         {'name': 'Experimental_data_reported', 'type': 'enum', 'mandatory': False,
+                          'enum': ('no', 'yes')},
+                         {'name': 'Physical_state', 'type': 'enum', 'mandatory': False,
+                          'enum': ('native', 'denatured', 'molten globule', 'unfolded'
+                                   'intrinsically disordered', 'partially disordered', 'na')},
+                         {'name': 'Conformational_isomer', 'type': 'enum', 'mandatory': False,
+                          'enum': ('no', 'yes')},
+                         {'name': 'Chemical_exchange_state', 'type': 'enum', 'mandatory': False,
+                          'enum': ('no', 'yes')},
+                         {'name': 'Magnetic_equivalence_group_code', 'type': 'str', 'mandatory': False},
+                         {'name': 'Role', 'type': 'str', 'mandatory': False},
+                         {'name': 'Details', 'type': 'str', 'default': '.', 'mandatory': False},
+                         {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False, 'default': '1', 'default-from': 'parent'},
+                         {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                         ]
+
+        tags = [lp_category + '.' + item['name'] for item in ea_key_items]
+        tags.extend([lp_category + '.' + item['name'] for item in ea_data_items])
+
+        for tag in tags:
+            ea_loop.add_tag(tag)
+
+        for item in self.__caC['entity_assembly']:
+            entity_id = item['entity_id']
+            entity_type = item['entity_type']
+            entity_count[entity_id] += 1
+
+            row = [None] * len(tags)
+
+            row[0] = item['entity_assembly_id']
+            row[1] = (f'entity_{entity_id}' + ('' if entity_total[entity_id] == 1 else f'_{entity_count[entity_id]}'))\
+                if entity_type != 'non-polymer' else f"entity_{item['comp_id']}"
+            row[2] = item['entity_id']
+            row[3] = f'$entity_{entity_id}' if entity_type != 'non-polymer' else f"$entity_{item['comp_id']}"
+            row[4] = item['label_asym_id']
+            row[5] = item['auth_asym_id']
+            if len(self.__label_asym_id_with_exptl_data) > 0:
+                if any(label_asym_id for label_asym_id in item['label_asym_id'].split(',')
+                       if label_asym_id in self.__label_asym_id_with_exptl_data):
+                    row[6] = 'yes'
+            # Physical_state
+            # Conformational_isomer
+            if len(self.__auth_asym_ids_with_chem_exch) > 0:
+                if any(auth_asym_id for auth_asym_id in item['auth_asym_id'].split(',')
+                       if auth_asym_id in self.__auth_asym_ids_with_chem_exch):
+                    row[9] = 'yes'
+            if entity_total[entity_id] > 0 and entity_type[entity_id] == 'polymer' and len(self.__label_asym_id_with_exptl_data) > 0:
+                equiv_entity_assemblies = [_item for _item in self.__caC['entity_assembly'] if _item['entity'] == entity_id]
+                _item = next((_item for _item in equiv_entity_assemblies if any(label_asym_id for label_asym_id in _item['label_asym_id'].split(',')
+                                                                                if label_asym_id in self.__label_asym_id_with_exptl_data)), None)
+                group_id = _item['label_asym_id'].split(',')[0]
+                if any(__item for __item in equiv_entity_assemblies if not any(label_asym_id for label_asym_id in __item['label_asym_id'].split(',')
+                                                                               if label_asym_id in self.__label_asym_id_with_exptl_data)):
+                    if _item == item or row[6] is None or row[6] == 'no':
+                        row[10] = group_id
+            row[11] = item['entity_role']
+            row[12] = item['entity_details']
+            row[13] = 1
+            row[14] = self.__entry_id
+
+            ea_loop.add_data(row)
+
+        asm_sf.add_loop(ea_loop)
+
+        # Refresh _Chem_comp_assembly
 
         lp_category = self.lp_categories[file_type][content_subtype]
 
@@ -40969,7 +41121,7 @@ class NmrDpUtility:
 
         nef_index = 1
 
-        for k, v in self.__cC['auth_to_star_seq'].items():
+        for k, v in self.__caC['auth_to_star_seq'].items():
             auth_asym_id, auth_seq_id = k
             entity_assembly_id, seq_id, entity_id = v
 
@@ -40980,7 +41132,7 @@ class NmrDpUtility:
             entity_type = entity_type_of[entity_id]
 
             if entity_type == 'polymer':
-                ps = next(ps for ps in self.__cC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
                 try:
                     idx = ps['auth_seq_id'].index(auth_seq_id)
                     comp_id = ps['comp_id'][idx]
@@ -40988,7 +41140,7 @@ class NmrDpUtility:
                     comp_id = None
 
             elif entity_type == 'branch':
-                br = next(br for br in self.__cC['branch'] if br['auth_chain_id'] == auth_asym_id)
+                br = next(br for br in self.__caC['branch'] if br['auth_chain_id'] == auth_asym_id)
                 try:
                     idx = br['auth_seq_id'].index(auth_seq_id)
                     comp_id = br['comp_id'][idx]
@@ -40996,7 +41148,7 @@ class NmrDpUtility:
                     comp_id = None
 
             elif entity_type == 'non-polymer':
-                np = next(np for np in self.__cC['non_polymer'] if np['auth_chain_id'] == auth_asym_id)
+                np = next(np for np in self.__caC['non_polymer'] if np['auth_chain_id'] == auth_asym_id)
                 try:
                     idx = np['auth_seq_id'].index(auth_seq_id)
                     comp_id = np['comp_id'][idx]
@@ -41119,6 +41271,9 @@ class NmrDpUtility:
                 sf.add_tag('Text_data', content)
 
             master_entry.add_saveframe(sf)
+
+        master_entry.entry_id = self.__entry_id
+        master_entry.normalize()
 
         if __pynmrstar_v3__:
             master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)

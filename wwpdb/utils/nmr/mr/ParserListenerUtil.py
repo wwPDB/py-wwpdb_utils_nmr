@@ -1557,19 +1557,19 @@ def translateToStdResName(compId):
     return compId
 
 
-def checkCoordinates(verbose=True, log=sys.stdout,
-                     representativeModelId=REPRESENTATIVE_MODEL_ID,
-                     cR=None, prevCoordCheck=None,
-                     fullCheck=True):
-    """ Examine the coordinates for MR/PT parser listener.
+def coordAssemblyChecker(verbose=True, log=sys.stdout,
+                         representativeModelId=REPRESENTATIVE_MODEL_ID,
+                         cR=None, prevResult=None,
+                         fullCheck=True):
+    """ Check assembly of the coordinates for MR/PT parser listener.
     """
 
     changed = False
 
-    polySeq = None if prevCoordCheck is None or 'polymer_sequence' not in prevCoordCheck else prevCoordCheck['polymer_sequence']
-    altPolySeq = None if prevCoordCheck is None or 'alt_polymer_sequence' not in prevCoordCheck else prevCoordCheck['alt_polymer_sequence']
-    nonPoly = None if prevCoordCheck is None or 'non_polymer' not in prevCoordCheck else prevCoordCheck['non_polymer']
-    branch = None if prevCoordCheck is None or 'branch' not in prevCoordCheck else prevCoordCheck['branch']
+    polySeq = None if prevResult is None or 'polymer_sequence' not in prevResult else prevResult['polymer_sequence']
+    altPolySeq = None if prevResult is None or 'alt_polymer_sequence' not in prevResult else prevResult['alt_polymer_sequence']
+    nonPoly = None if prevResult is None or 'non_polymer' not in prevResult else prevResult['non_polymer']
+    branch = None if prevResult is None or 'branch' not in prevResult else prevResult['branch']
 
     if polySeq is None:
         changed = True
@@ -1661,7 +1661,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
         except Exception as e:
             if verbose:
-                log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error  - {str(e)}\n")
+                log.write(f"+ParserListenerUtil.coordAssemblyChecker() ++ Error  - {str(e)}\n")
 
         contentSubtype = 'non_poly'
 
@@ -1753,26 +1753,26 @@ def checkCoordinates(verbose=True, log=sys.stdout,
 
     if not fullCheck:
         if not changed:
-            return prevCoordCheck
+            return prevResult
 
         return {'polymer_sequence': polySeq,
                 'alt_polymer_sequence': altPolySeq,
                 'non_polymer': nonPoly,
                 'branch': branch}
 
-    modelNumName = None if prevCoordCheck is None or 'model_num_name' not in prevCoordCheck else prevCoordCheck['model_num_name']
-    authAsymId = None if prevCoordCheck is None or 'auth_asym_id' not in prevCoordCheck else prevCoordCheck['auth_asym_id']
-    authSeqId = None if prevCoordCheck is None or 'auth_seq_id' not in prevCoordCheck else prevCoordCheck['auth_seq_id']
-    authAtomId = None if prevCoordCheck is None or 'auth_atom_id' not in prevCoordCheck else prevCoordCheck['auth_atom_id']
+    modelNumName = None if prevResult is None or 'model_num_name' not in prevResult else prevResult['model_num_name']
+    authAsymId = None if prevResult is None or 'auth_asym_id' not in prevResult else prevResult['auth_asym_id']
+    authSeqId = None if prevResult is None or 'auth_seq_id' not in prevResult else prevResult['auth_seq_id']
+    authAtomId = None if prevResult is None or 'auth_atom_id' not in prevResult else prevResult['auth_atom_id']
 
-    coordAtomSite = None if prevCoordCheck is None or 'coord_atom_site' not in prevCoordCheck else prevCoordCheck['coord_atom_site']
-    coordUnobsRes = None if prevCoordCheck is None or 'coord_unobs_res' not in prevCoordCheck else prevCoordCheck['coord_unobs_res']
-    labelToAuthSeq = None if prevCoordCheck is None or 'label_to_auth_seq' not in prevCoordCheck else prevCoordCheck['label_to_auth_seq']
-    authToLabelSeq = None if prevCoordCheck is None or 'auth_to_label_seq' not in prevCoordCheck else prevCoordCheck['auth_to_label_seq']
-    authToStarSeq = None if prevCoordCheck is None or 'auth_to_star_seq' not in prevCoordCheck else prevCoordCheck['auth_to_star_seq']
-    labelToAuthChain = None if prevCoordCheck is None or 'label_to_auth_chain' not in prevCoordCheck else prevCoordCheck['label_to_auth_chain']
-    authToLabelChain = None if prevCoordCheck is None or 'auth_to_label_chain' not in prevCoordCheck else prevCoordCheck['auth_to_label_chain']
-    entityAssembly = None if prevCoordCheck is None or 'entity_assembly' not in prevCoordCheck else prevCoordCheck['entity_assembly']
+    coordAtomSite = None if prevResult is None or 'coord_atom_site' not in prevResult else prevResult['coord_atom_site']
+    coordUnobsRes = None if prevResult is None or 'coord_unobs_res' not in prevResult else prevResult['coord_unobs_res']
+    labelToAuthSeq = None if prevResult is None or 'label_to_auth_seq' not in prevResult else prevResult['label_to_auth_seq']
+    authToLabelSeq = None if prevResult is None or 'auth_to_label_seq' not in prevResult else prevResult['auth_to_label_seq']
+    authToStarSeq = None if prevResult is None or 'auth_to_star_seq' not in prevResult else prevResult['auth_to_star_seq']
+    labelToAuthChain = None if prevResult is None or 'label_to_auth_chain' not in prevResult else prevResult['label_to_auth_chain']
+    authToLabelChain = None if prevResult is None or 'auth_to_label_chain' not in prevResult else prevResult['auth_to_label_chain']
+    entityAssembly = None if prevResult is None or 'entity_assembly' not in prevResult else prevResult['entity_assembly']
 
     try:
 
@@ -1941,11 +1941,22 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             for entity in entities:
                 entityId = int(entity['id'])
                 entityType = entity['type']
+                entityDesc = entity['pdbx_description'] if 'pdbx_descrption' in entity else '.'
+                entityDetails = entity['details'] if 'details' in entity else '.'
+                entityRole = '.'
+
+                if cR.hasCategory('entity_name_com'):
+                    roles = cR.getDictListWithFilter('entity_name_com',
+                                                     [{'name': 'name', 'type': 'str'}],
+                                                     [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                    if len(roles) > 0:
+                        entityRole = ','.join([role['name'] for role in roles])
 
                 if entityType == 'polymer':
                     if cR.hasCategory('pdbx_poly_seq_scheme'):
                         mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
-                                                            [{'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                            [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                                             {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'seq_id', 'type': 'int'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
@@ -1954,13 +1965,21 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                         for item in mappings:
                             authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
                             authAsymIds.add(item['auth_asym_id'])
+                        labelAsymIds = set()
+                        for item in mappings:
+                            labelAsymIds.add(item['label_asym_id'])
                         entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                               'entity_type': entityType, 'auth_asym_id': ','.join(list(authAsymIds))})
+                                               'entity_type': entityType, 'entity_desc': entityDesc,
+                                               'entity_role': entityRole,
+                                               'entity_details': entityDetails,
+                                               'auth_asym_id': ','.join(list(authAsymIds)),
+                                               'label_asym_id': ','.join(list(labelAsymIds))})
                         entityAssemblyId += 1
                 elif entityType == 'branch':
                     if cR.hasCategory('pdbx_branch_scheme'):
-                        mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
-                                                            [{'name': 'auth_asym_id', 'type': 'str'},
+                        mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
+                                                            [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                                             {'name': 'auth_asym_id', 'type': 'str'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
@@ -1969,31 +1988,50 @@ def checkCoordinates(verbose=True, log=sys.stdout,
                         for item in mappings:
                             authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
                             authAsymIds.add(item['auth_asym_id'])
+                        labelAsymIds = set()
+                        for item in mappings:
+                            labelAsymIds.add(item['label_asym_id'])
                         entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                               'entity_type': entityType, 'auth_asym_id': ','.join(list(authAsymIds))})
+                                               'entity_type': entityType, 'entity_desc': entityDesc,
+                                               'entity_role': entityRole, 'entity_details': entityDetails,
+                                               'auth_asym_id': ','.join(list(authAsymIds)),
+                                               'label_asym_id': ','.join(list(labelAsymIds))})
                         entityAssemblyId += 1
                 elif entityType == 'non-polymer':
                     if cR.hasCategory('pdbx_nonpoly_scheme'):
+
                         mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
-                                                            [{'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                            [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                                             {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                             {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'}],
+                                                             {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
+                        compId = None
                         authAsymIds = set()
                         for item in mappings:
                             authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
                             authAsymIds.add(item['auth_asym_id'])
+                            if compId is None:
+                                compId = item['comp_id']
+                        labelAsymIds = set()
+                        for item in mappings:
+                            labelAsymIds.add(item['label_asym_id'])
                         entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                               'entity_type': entityType, 'auth_asym_id': ','.join(list(authAsymIds))})
+                                               'entity_type': entityType, 'entity_desc': entityDesc,
+                                               'entity_role': entityRole, 'entity_details': entityDetails,
+                                               'auth_asym_id': ','.join(list(authAsymIds)),
+                                               'label_asym_id': ','.join(list(labelAsymIds)),
+                                               'comp_id': compId})
                         entityAssemblyId += 1
 
     except Exception as e:
         if verbose:
-            log.write(f"+ParserListenerUtil.checkCoordinates() ++ Error  - {str(e)}\n")
+            log.write(f"+ParserListenerUtil.coordAssemblyChecker() ++ Error  - {str(e)}\n")
 
     if not changed:
-        return prevCoordCheck
+        return prevResult
 
     return {'model_num_name': modelNumName,
             'auth_asym_id': authAsymId,
@@ -2014,7 +2052,7 @@ def checkCoordinates(verbose=True, log=sys.stdout,
             'entity_assembly': entityAssembly}
 
 
-def extendCoordinatesForExactNoes(modelChainIdExt,
+def extendCoordChainsForExactNoes(modelChainIdExt,
                                   polySeq, altPolySeq, coordAtomSite, coordUnobsRes,
                                   authToLabelSeq, authToStarSeq):
     """ Extend coordinate chains for eNOEs-guided multiple conformers.

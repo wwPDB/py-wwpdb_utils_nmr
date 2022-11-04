@@ -24139,7 +24139,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 
@@ -24294,7 +24296,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 
@@ -24423,7 +24427,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 
@@ -24602,7 +24608,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 
@@ -24751,7 +24759,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 
@@ -24898,7 +24908,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 
@@ -25010,7 +25022,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 
@@ -25165,7 +25179,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 
@@ -25312,7 +25328,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 
@@ -25459,7 +25477,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 
@@ -25614,7 +25634,9 @@ class NmrDpUtility:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
                                 if content_subtype in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype].extend(v)
+                                    for sf in v:
+                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
                                 else:
                                     self.__mr_sf_dict_holder[content_subtype] = v
 

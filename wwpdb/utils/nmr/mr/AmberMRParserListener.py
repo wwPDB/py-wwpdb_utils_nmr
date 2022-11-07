@@ -246,7 +246,7 @@ class AmberMRParserListener(ParseTreeListener):
     __polySeq = None
     __altPolySeq = None
     __nonPoly = None
-    __branch = None
+    __branched = None
     __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
@@ -257,7 +257,7 @@ class AmberMRParserListener(ParseTreeListener):
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __hasPolySeq = False
     __hasNonPoly = False
-    __hasBranch = False
+    __hasBranched = False
     __hasNonPolySeq = False
     __preferAuthSeq = True
     __gapInAuthSeq = False
@@ -458,7 +458,7 @@ class AmberMRParserListener(ParseTreeListener):
             self.__polySeq = ret['polymer_sequence']
             self.__altPolySeq = ret['alt_polymer_sequence']
             self.__nonPoly = ret['non_polymer']
-            self.__branch = ret['branch']
+            self.__branched = ret['branched']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
@@ -467,16 +467,16 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
-        self.__hasBranch = self.__branch is not None and len(self.__branch) > 0
-        if self.__hasNonPoly or self.__hasBranch:
+        self.__hasBranched = self.__branched is not None and len(self.__branched) > 0
+        if self.__hasNonPoly or self.__hasBranched:
             self.__hasNonPolySeq = True
-            if self.__hasNonPoly and self.__hasBranch:
+            if self.__hasNonPoly and self.__hasBranched:
                 self.__nonPolySeq = self.__nonPoly
-                self.__nonPolySeq.extend(self.__branch)
+                self.__nonPolySeq.extend(self.__branched)
             elif self.__hasNonPoly:
                 self.__nonPolySeq = self.__nonPoly
             else:
-                self.__nonPolySeq = self.__branch
+                self.__nonPolySeq = self.__branched
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])

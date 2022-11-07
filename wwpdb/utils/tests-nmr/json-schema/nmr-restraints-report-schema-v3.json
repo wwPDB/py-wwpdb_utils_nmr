@@ -71,7 +71,7 @@
               "type": "integer",
               "minimum": 1
             },
-            "branch": {
+            "branched": {
               "description": "The number of saveframes associated with polymer sequence of branched entity.",
               "type": "integer",
               "minimum": 1

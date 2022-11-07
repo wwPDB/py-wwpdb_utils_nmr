@@ -1569,19 +1569,19 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     polySeq = None if prevResult is None or 'polymer_sequence' not in prevResult else prevResult['polymer_sequence']
     altPolySeq = None if prevResult is None or 'alt_polymer_sequence' not in prevResult else prevResult['alt_polymer_sequence']
     nonPoly = None if prevResult is None or 'non_polymer' not in prevResult else prevResult['non_polymer']
-    branch = None if prevResult is None or 'branch' not in prevResult else prevResult['branch']
+    branched = None if prevResult is None or 'branched' not in prevResult else prevResult['branched']
 
     if polySeq is None:
         changed = True
 
         polySeqAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'auth_mon_id') else 'mon_id'
         nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
-        branchAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
+        branchedAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
 
         # loop categories
         _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
                          'non_poly': 'pdbx_nonpoly_scheme',
-                         'branch': 'pdbx_branch_scheme',
+                         'branched': 'pdbx_branch_scheme',
                          'coordinate': 'atom_site'
                          }
 
@@ -1600,13 +1600,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
                                   ],
-                     'branch': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                {'name': branchAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
-                                ],
+                     'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                  {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                  {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                  {'name': branchedAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
+                                  ],
                      'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
@@ -1707,21 +1707,21 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             except KeyError:
                 nonPoly = None
 
-        contentSubtype = 'branch'
+        contentSubtype = 'branched'
 
         lpCategory = _lpCategories[contentSubtype]
         keyItems = _keyItems[contentSubtype]
 
-        branch = None
+        branched = None
 
         if cR.hasCategory(lpCategory):
 
             try:
-                branch = cR.getPolymerSequence(lpCategory, keyItems,
-                                               withStructConf=False,
-                                               withRmsd=False)
+                branched = cR.getPolymerSequence(lpCategory, keyItems,
+                                                 withStructConf=False,
+                                                 withRmsd=False)
 
-                for bp in branch:
+                for bp in branched:
                     conflict = False
 
                     altAuthSeqIds = []
@@ -1749,7 +1749,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         bp['alt_auth_seq_id'] = altAuthSeqIds
 
             except KeyError:
-                branch = None
+                branched = None
 
     if not fullCheck:
         if not changed:
@@ -1758,7 +1758,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         return {'polymer_sequence': polySeq,
                 'alt_polymer_sequence': altPolySeq,
                 'non_polymer': nonPoly,
-                'branch': branch}
+                'branched': branched}
 
     modelNumName = None if prevResult is None or 'model_num_name' not in prevResult else prevResult['model_num_name']
     authAsymId = None if prevResult is None or 'auth_asym_id' not in prevResult else prevResult['auth_asym_id']
@@ -1984,13 +1984,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                'auth_asym_id': ','.join(list(authAsymIds)),
                                                'label_asym_id': ','.join(list(labelAsymIds))})
                         entityAssemblyId += 1
-                elif entityType == 'branch':
+                elif entityType == 'branched':
                     if cR.hasCategory('pdbx_branch_scheme'):
                         mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
                                                             [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
                                                              {'name': 'auth_asym_id', 'type': 'str'},
-                                                             {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'}],
+                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                             {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         authAsymIds = set()
@@ -2050,7 +2050,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'polymer_sequence': polySeq,
             'alt_polymer_sequence': altPolySeq,
             'non_polymer': nonPoly,
-            'branch': branch,
+            'branched': branched,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq,

@@ -1205,7 +1205,7 @@ class NmrDpUtility:
                                      'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                      'fchiral_restraint', 'other_restraint')
 
-        self.cif_content_subtypes = ('poly_seq', 'non_poly', 'branch', 'coordinate')
+        self.cif_content_subtypes = ('poly_seq', 'non_poly', 'branched', 'coordinate')
 
         # readable file type
         self.readable_file_type = {'nef': 'NEF (NMR Exchange Format)',
@@ -1328,7 +1328,7 @@ class NmrDpUtility:
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
                                        'non_poly': 'pdbx_nonpoly_scheme',
-                                       'branch': 'pdbx_branch_scheme',
+                                       'branched': 'pdbx_branch_scheme',
                                        'coordinate': 'atom_site',
                                        'poly_seq_alias': 'ndb_poly_seq_scheme',
                                        'non_poly_alias': 'ndb_nonpoly_scheme'
@@ -1428,7 +1428,7 @@ class NmrDpUtility:
                                         },
                            'pdbx': {'poly_seq': None,
                                     'non_poly': None,
-                                    'branch': None,
+                                    'branched': None,
                                     'coordinate': 'id'
                                     }
                            }
@@ -1484,7 +1484,7 @@ class NmrDpUtility:
                                          },
                             'pdbx': {'poly_seq': None,
                                      'non_poly': None,
-                                     'branch': None,
+                                     'branched': None,
                                      'coordinate': None
                                      }
                             }
@@ -1828,11 +1828,11 @@ class NmrDpUtility:
                                                       {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                       {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
                                                       ],
-                                   'branch': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                              {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                              {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
-                                              ],
+                                   'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                                                ],
                                    'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                   {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
@@ -31572,7 +31572,7 @@ class NmrDpUtility:
             if self.__cR.hasCategory(lp_category):
                 lp_counts[content_subtype] = 1
 
-            elif content_subtype != 'branch':
+            elif content_subtype != 'branched':
 
                 if content_subtype != 'non_poly':
 
@@ -31649,7 +31649,7 @@ class NmrDpUtility:
             if len(poly_seq) == 0:
                 return False
 
-            content_subtype = 'branch'
+            content_subtype = 'branched'
 
             lp_category = self.lp_categories[file_type][content_subtype]
 
@@ -31658,10 +31658,10 @@ class NmrDpUtility:
                 key_items = self.key_items[file_type][content_subtype]
 
                 try:
-                    branch_seq = self.__cR.getPolymerSequence(lp_category, key_items,
-                                                              withStructConf=False, withRmsd=False, alias=False, total_models=self.__total_models)
-                    if len(branch_seq) > 0:
-                        poly_seq.extend(branch_seq)
+                    branched_seq = self.__cR.getPolymerSequence(lp_category, key_items,
+                                                                withStructConf=False, withRmsd=False, alias=False, total_models=self.__total_models)
+                    if len(branched_seq) > 0:
+                        poly_seq.extend(branched_seq)
                 except Exception:
                     pass
 
@@ -32202,7 +32202,7 @@ class NmrDpUtility:
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ('entry_info', 'poly_seq', 'branch') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
+            if content_subtype in ('entry_info', 'poly_seq', 'branched') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -32470,7 +32470,7 @@ class NmrDpUtility:
 
             for content_subtype in polymer_sequence_in_loop.keys():
 
-                if content_subtype in ('non_poly', 'branch'):
+                if content_subtype in ('non_poly', 'branched'):
                     continue
 
                 seq_align_set = []
@@ -35844,7 +35844,7 @@ class NmrDpUtility:
 
             return 1.2 < close_contact[0]['dist'] < 1.4
 
-        return struct_conn[0]['conn_type_id'] == 'covale'
+        return struct_conn[0]['conn_type_id'].startswith('covale')
 
     def __isProtCis(self, nmr_chain_id, nmr_seq_id):
         """ Return whether type of peptide conformer of a given sequence is cis based on coordinate annotation.
@@ -36811,7 +36811,7 @@ class NmrDpUtility:
 
             for sc in struct_conn:
 
-                if sc['conn_type_id'] == 'disulf' or sc['conn_type_id'] == 'covale' or sc['conn_type_id'] == 'hydrog':
+                if sc['conn_type_id'] == 'disulf' or sc['conn_type_id'].startswith('covale') or sc['conn_type_id'] == 'hydrog':
                     continue
 
                 other = {}
@@ -41164,15 +41164,15 @@ class NmrDpUtility:
                 except ValueError:
                     comp_id = None
 
-            elif entity_type == 'branch':
-                br = next(br for br in self.__caC['branch'] if br['auth_chain_id'] == auth_asym_id)
+            elif entity_type == 'branched':
+                br = next(br for br in self.__caC['branched'] if br['auth_chain_id'] == auth_asym_id)
                 try:
                     comp_id = br['comp_id'][seq_id - 1]
                 except IndexError:
                     comp_id = None
 
             elif entity_type == 'non-polymer':
-                np = next(np for np in self.__caC['non_polymer'] if np['auth_chain_id'] == auth_asym_id)
+                np = next(np for np in self.__caC['non_polymer'] if np['auth_chain_id'] == auth_asym_id and np['seq_id'][0] == auth_seq_id)
                 try:
                     comp_id = np['comp_id'][seq_id - 1]
                 except IndexError:

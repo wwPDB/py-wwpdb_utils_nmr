@@ -41093,10 +41093,8 @@ class NmrDpUtility:
                                                                                if label_asym_id in self.__label_asym_id_with_exptl_data)):
                     if _item == item or row[6] is None or row[6] == 'no':
                         row[10] = group_id
-            row[11] = item['entity_role']
-            row[12] = item['entity_details']
-            row[13] = 1
-            row[14] = self.__entry_id
+            row[11], row[12] = item['entity_role'], item['entity_details']
+            row[13], row[14] = 1, self.__entry_id
 
             ea_loop.add_data(row)
 
@@ -41313,14 +41311,132 @@ class NmrDpUtility:
                        and set(atom_id_1, atom_id_2) == set('C', 'N') and abs(auth_seq_id_1 - auth_seq_id_2) > 1:
                         row[1], row[2] = 'peptide', "sing"
 
-                row[25] = 1
-                row[26] = self.__entry_id
+                row[25], row[26] = 1, self.__entry_id
 
                 b_loop.add_data(row)
 
                 index += 1
 
             asm_sf.add_loop(b_loop)
+
+            bonds_w_leaving = [bond for bond in bonds if bond['pdbx_leaving_atom_flag'] in ('both', 'one')]
+
+            if len(bonds_w_leaving) > 0:
+
+                # _Entity_deleted_atom loop
+
+                lp_category = '_Entity_deleted_atom'
+
+                eda_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+                eda_key_items = [{'name': 'ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                 {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str'},
+                                 {'name': 'Comp_index_ID', 'type': 'int'},
+                                 {'name': 'Seq_ID', 'type': 'int'},
+                                 {'name': 'Comp_ID', 'type': 'str'},
+                                 {'name': 'Atom_ID', 'type': 'str'}
+                                 ]
+                eda_data_items = [{'name': 'Auth_entity_assembly_ID', 'type': 'positive-int-as-str'},
+                                  {'name': 'Auth_seq_ID', 'type': 'int'},
+                                  {'name': 'Auth_comp_ID', 'type': 'str'},
+                                  {'name': 'Auth_atom_ID', 'type': 'str'},
+                                  {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False, 'default': '1', 'default-from': 'parent'},
+                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                                  ]
+
+                tags = [lp_category + '.' + item['name'] for item in eda_key_items]
+                tags.extend([lp_category + '.' + item['name'] for item in eda_data_items])
+
+                for tag in tags:
+                    eda_loop.add_tag(tag)
+
+                index = 1
+
+                for bond in bonds_w_leaving:
+
+                    leaving_flag = bond['pdbx_leaving_atom_flag']
+
+                    if leaving_flag in ('one', 'both'):
+                        leaving_atom_id = None
+
+                        comp_id = bond['ptnr1_label_comp_id']
+                        atom_id = bond['ptnr1_label_atom_id']
+                        auth_asym_id = bond['ptnr1_auth_asym_id']
+                        auth_seq_id = bond['ptnr1_auth_seq_id']
+
+                        if self.__ccU.updateChemCompDict(comp_id):
+                            for b in self.__ccU.lastBonds:
+                                if atom_id in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]):
+                                    _atom_id = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id else b[self.__ccU.ccbAtomId2]
+                                    if any(a for a in self.__ccU.lastAtomList
+                                           if _atom_id == a[self.__ccU.ccaAtomId] and a[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
+                                        leaving_atom_id = _atom_id
+                                        break
+
+                            if leaving_atom_id is not None:
+
+                                seq_key = (auth_asym_id, int(auth_seq_id))
+
+                                if seq_key in self.__caC['auth_to_star_seq']:
+                                    row = [None] * len(tags)
+
+                                    row[0] = index
+
+                                    entity_assembly_id, seq_id, _ = self.__caC['auth_to_star_seq'][seq_key]
+
+                                    row[1], row[2], row[3], row[4], row[5] =\
+                                        entity_assembly_id, seq_id, seq_id, comp_id, leaving_atom_id
+
+                                    row[6], row[7], row[8], row[9] =\
+                                        auth_asym_id, auth_seq_id, comp_id, leaving_atom_id
+
+                                    row[10], row[11] = 1, self.__entry_id
+
+                                    eda_loop.add_data(row)
+
+                                    index += 1
+
+                        if leaving_flag == 'both' or leaving_atom_id is None:
+                            leaving_atom_id = None
+
+                            comp_id = bond['ptnr2_label_comp_id']
+                            atom_id = bond['ptnr2_label_atom_id']
+                            auth_asym_id = bond['ptnr2_auth_asym_id']
+                            auth_seq_id = bond['ptnr2_auth_seq_id']
+
+                            if self.__ccU.updateChemCompDict(comp_id):
+                                for b in self.__ccU.lastBonds:
+                                    if atom_id in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]):
+                                        _atom_id = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id else b[self.__ccU.ccbAtomId2]
+                                        if any(a for a in self.__ccU.lastAtomList
+                                               if _atom_id == a[self.__ccU.ccaAtomId] and a[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
+                                            leaving_atom_id = _atom_id
+                                            break
+
+                                if leaving_atom_id is not None:
+
+                                    seq_key = (auth_asym_id, int(auth_seq_id))
+
+                                    if seq_key in self.__caC['auth_to_star_seq']:
+                                        row = [None] * len(tags)
+
+                                        row[0] = index
+
+                                        entity_assembly_id, seq_id, _ = self.__caC['auth_to_star_seq'][seq_key]
+
+                                        row[1], row[2], row[3], row[4], row[5] =\
+                                            entity_assembly_id, seq_id, seq_id, comp_id, leaving_atom_id
+
+                                        row[6], row[7], row[8], row[9] =\
+                                            auth_asym_id, auth_seq_id, comp_id, leaving_atom_id
+
+                                        row[10], row[11] = 1, self.__entry_id
+
+                                        eda_loop.add_data(row)
+
+                                        index += 1
+
+                asm_sf.add_loop(eda_loop)
 
         master_entry.add_saveframe(asm_sf)
 

@@ -1941,7 +1941,14 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             for entity in entities:
                 entityId = int(entity['id'])
                 entityType = entity['type']
-                entityDesc = entity['pdbx_description'] if 'pdbx_descrption' in entity else '.'
+                entitySrcMethod = entity['src_method']
+                entityDesc = entity['pdbx_description'] if 'pdbx_description' in entity else '.'
+                entityFW = float(entity['formula_weight']) if 'formula_weight' in entity else '.'
+                entityCopies = int(entity['pdbx_number_of_molecules']) if 'pdbx_number_of_molecules' in entity else '.'
+                entityEC = entity['pdbx_ec'] if 'pdbx_ec' in entity else '.'
+                entityParent = int(entity['pdbx_parent_entity_id']) if 'pdbx_parent_entity_id' in entity else '.'
+                entityMutation = entity['pdbx_mutation'] if 'pdbx_mutation' in entity else '.'
+                entityFragment = entity['pdbx_fragment'] if 'pdbx_fragment' in entity else '.'
                 entityDetails = entity['details'] if 'details' in entity else '.'
 
                 entityRole = '.'
@@ -1953,38 +1960,91 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         entityRole = ','.join([role['name'] for role in roles])
 
                 if entityType == 'polymer':
-                    entityPolyType = '.'
+                    entityPolyType = oneLetterCodeCan = oneLetterCode = targetIdentifier = '.'
+                    nstdMonomer = nstdLinkage = '.'
+                    nstdChirality = None
                     if cR.hasCategory('entity_poly'):
-                        polyTypes = cR.getDictListWithFilter('entity_poly',
-                                                             [{'name': 'type', 'type': 'str'}],
-                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+
+                        if cR.hasItem('entity_poly', 'nstd_chirality'):
+                            polyTypes = cR.getDictListWithFilter('entity_poly',
+                                                                 [{'name': 'type', 'type': 'str'},
+                                                                  {'name': 'pdbx_seq_one_letter_code_can', 'type': 'str'},
+                                                                  {'name': 'pdbx_seq_one_letter_code', 'type': 'str'},
+                                                                  {'name': 'pdbx_target_identifier', 'type': 'str'},
+                                                                  {'name': 'nstd_monomer', 'type': 'str'},
+                                                                  {'name': 'nstd_linkage', 'type': 'str'},
+                                                                  {'name': 'nstd_chirality', 'type': 'str'}],
+                                                                 [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        else:
+                            polyTypes = cR.getDictListWithFilter('entity_poly',
+                                                                 [{'name': 'type', 'type': 'str'},
+                                                                  {'name': 'pdbx_seq_one_letter_code_can', 'type': 'str'},
+                                                                  {'name': 'pdbx_seq_one_letter_code', 'type': 'str'},
+                                                                  {'name': 'pdbx_target_identifier', 'type': 'str'},
+                                                                  {'name': 'nstd_monomer', 'type': 'str'},
+                                                                  {'name': 'nstd_linkage', 'type': 'str'}],
+                                                                 [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+
                         if len(polyTypes) > 0:
-                            entityPolyType = polyTypes[0]['type']
+                            polyType = polyTypes[0]
+                            entityPolyType = polyType['type']
+                            oneLetterCodeCan = polyType['pdbx_seq_one_letter_code_can']
+                            oneLetterCode = polyType['pdbx_seq_one_letter_code']
+                            targetIdentifier = polyType['pdbx_target_identifier']
+                            nstdMonomer = polyType['nstd_monomer']
+                            nstdLinkage = polyType['nstd_linkage']
+                            if 'nstd_chirality' in polyType:
+                                nstdChirality = polyType['nstd_chirality']
 
                     if cR.hasCategory('pdbx_poly_seq_scheme'):
                         mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
                                                             [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
                                                              {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                             {'name': 'seq_id', 'type': 'int'}],
+                                                             {'name': 'seq_id', 'type': 'int'},
+                                                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         authAsymIds = set()
+                        compIds = set()
                         for item in mappings:
                             authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
                             authAsymIds.add(item['auth_asym_id'])
+                            compIds.add(item['comp_id'])
+
                         labelAsymIds = set()
                         for item in mappings:
                             labelAsymIds.add(item['label_asym_id'])
                         entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                               'entity_type': entityType, 'entity_desc': entityDesc,
-                                               'entity_role': entityRole,
+                                               'entity_type': entityType, 'entity_src_method': entitySrcMethod,
+                                               'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                               'entity_copies': entityCopies, 'entity_ec': entityEC,
+                                               'entity_parent': entityParent,
+                                               'entity_mutation': entityMutation,
+                                               'entity_fragment': entityFragment,
                                                'entity_details': entityDetails,
+                                               'entity_role': entityRole,
                                                'entity_poly_type': entityPolyType,
+                                               'one_letter_code_can': oneLetterCodeCan,
+                                               'one_letter_code': oneLetterCode,
+                                               'nstd_monomer': nstdMonomer,
+                                               'nstd_linkage': nstdLinkage,
+                                               'nstd_chirality': nstdChirality,
+                                               'target_identifier': targetIdentifier,
+                                               'num_of_monomers': len(mappings),
                                                'auth_asym_id': ','.join(list(authAsymIds)),
-                                               'label_asym_id': ','.join(list(labelAsymIds))})
+                                               'label_asym_id': ','.join(list(labelAsymIds)),
+                                               'comp_id_set': compIds})
                         entityAssemblyId += 1
                 elif entityType == 'branched':
+                    entityPolyType = '.'
+                    if cR.hasCategory('pdbx_entity_branch'):
+                        polyTypes = cR.getDictListWithFilter('pdbx_entity_branch',
+                                                             [{'name': 'type', 'type': 'str'}],
+                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        if len(polyTypes) > 0:
+                            entityPolyType = polyTypes[0]['type']
+
                     if cR.hasCategory('pdbx_branch_scheme'):
                         mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
                                                             [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
@@ -2001,8 +2061,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         for item in mappings:
                             labelAsymIds.add(item['label_asym_id'])
                         entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                               'entity_type': entityType, 'entity_desc': entityDesc,
-                                               'entity_role': entityRole, 'entity_details': entityDetails,
+                                               'entity_type': entityType, 'entity_src_method': entitySrcMethod,
+                                               'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                               'entity_copies': entityCopies,
+                                               'entity_details': entityDetails,
+                                               'entity_role': entityRole,
+                                               'entity_poly_type': entityPolyType,
+                                               'num_of_monomers': len(mappings),
                                                'auth_asym_id': ','.join(list(authAsymIds)),
                                                'label_asym_id': ','.join(list(labelAsymIds))})
                         entityAssemblyId += 1
@@ -2028,8 +2093,11 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         for item in mappings:
                             labelAsymIds.add(item['label_asym_id'])
                         entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                               'entity_type': entityType, 'entity_desc': entityDesc,
-                                               'entity_role': entityRole, 'entity_details': entityDetails,
+                                               'entity_type': entityType, 'entity_src_method': entitySrcMethod,
+                                               'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                               'entity_copies': entityCopies,
+                                               'entity_details': entityDetails,
+                                               'entity_role': entityRole,
                                                'auth_asym_id': ','.join(list(authAsymIds)),
                                                'label_asym_id': ','.join(list(labelAsymIds)),
                                                'comp_id': compId})

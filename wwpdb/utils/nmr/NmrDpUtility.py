@@ -18747,7 +18747,7 @@ class NmrDpUtility:
 
                                             atom_id = j[atom_id_name]
 
-                                            if j[chain_id_name] == chain_id_1 and j[seq_id_name] == seq_id_1 and j[comp_id_name] == 'CYS':
+                                            if j[chain_id_name] == chain_id_1 and j[seq_id_name] == seq_id_1 and j[comp_id_name] in ('CYS', 'DCY'):
                                                 if atom_id == 'CA':
                                                     ca_chem_shift_1 = j[value_name]
                                                 elif atom_id == 'CB':
@@ -18769,7 +18769,7 @@ class NmrDpUtility:
 
                                             atom_id = j[atom_id_name]
 
-                                            if j[chain_id_name] == chain_id_2 and j[seq_id_name] == seq_id_2 and j[comp_id_name] == 'CYS':
+                                            if j[chain_id_name] == chain_id_2 and j[seq_id_name] == seq_id_2 and j[comp_id_name] in ('CYS', 'DCY'):
                                                 if atom_id == 'CA':
                                                     ca_chem_shift_2 = j[value_name]
                                                 elif atom_id == 'CB':
@@ -18905,7 +18905,7 @@ class NmrDpUtility:
 
                                             atom_id = j[atom_id_name]
 
-                                            if j[chain_id_name] == chain_id_1 and j[seq_id_name] == seq_id_1 and j[comp_id_name] == 'CYS':
+                                            if j[chain_id_name] == chain_id_1 and j[seq_id_name] == seq_id_1 and j[comp_id_name] in ('CYS', 'DCY'):
                                                 if atom_id == 'CA':
                                                     ca_chem_shift_1 = j[value_name]
                                                 elif atom_id == 'CB':
@@ -18927,7 +18927,7 @@ class NmrDpUtility:
 
                                             atom_id = j[atom_id_name]
 
-                                            if j[chain_id_name] == chain_id_2 and j[seq_id_name] == seq_id_2 and j[comp_id_name] == 'CYS':
+                                            if j[chain_id_name] == chain_id_2 and j[seq_id_name] == seq_id_2 and j[comp_id_name] in ('CYS', 'DCY'):
                                                 if atom_id == 'CA':
                                                     ca_chem_shift_2 = j[value_name]
                                                 elif atom_id == 'CB':
@@ -26894,7 +26894,7 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            if comp_id != 'CYS':
+                            if comp_id not in ('CYS', 'DCY'):
                                 continue
 
                             cys = {'chain_id': chain_id, 'seq_id': seq_id}
@@ -27552,7 +27552,7 @@ class NmrDpUtility:
 
                             if has_bb_atoms:
 
-                                if comp_id == 'CYS':
+                                if comp_id in ('CYS', 'DCY'):
 
                                     ca_chem_shift = None
                                     cb_chem_shift = None
@@ -40966,6 +40966,99 @@ class NmrDpUtility:
 
         asm_sfs = self.__star_data[0].get_saveframes_by_category(self.lp_categories[file_type][content_subtype])
 
+        components_ex_water = 0
+        for item in self.__caC['entity_assembly']:
+            if isinstance(item['entity_copies'], int):
+                components_ex_water += item['entity_copies']
+
+        ligand_total = len([item for item in self.__caC['entity_assembly']
+                            if item['entity_type'] == 'non-polymer' and 'ION' not in item['entity_desc']])
+        ion_total = len([item for item in self.__caC['entity_assembly']
+                         if item['entity_type'] == 'non-polymer' and 'ION' in item['entity_desc']])
+
+        chem_comp = self.__cR.getDictList('chem_comp')
+
+        paramag = len(chem_comp) > 0 and any(cc for cc in chem_comp if cc['type'] == 'non-poly' and cc['id'] in PARAMAGNETIC_ELEMENTS)
+
+        has_cys = any(cc for cc in chem_comp
+                      if ((cc['type'] == 'L-peptide linking' and cc['id'] == 'CYS')
+                          or (cc['type'] == 'D-peptide linking' and cc['id'] == 'DCY')))
+        if has_cys:
+            cys_total = 0
+            for ps in self.__caC['polymer_sequence']:
+                cys_total += ps['comp_id'].count('CYS') + ps['comp_id'].count('DCY')
+            disul_cys = other_cys = 0
+            if self.__cR.hasCategory('struct_conn'):
+                bonds = self.__cR.getDictList('struct_conn')
+                for bond in bonds:
+                    auth_seq_id_1 = bond['ptnr1_auth_seq_id']
+                    auth_comp_id_1 = bond['ptnr1_auth_comp_id']
+                    atom_id_1 = bond['ptnr1_label_atom_id']
+                    auth_seq_id_2 = bond['ptnr2_auth_seq_id']
+                    auth_comp_id_2 = bond['ptnr2_auth_comp_id']
+                    atom_id_2 = bond['ptnr2_label_atom_id']
+
+                    if auth_comp_id_1 in ('CYS', 'DCY') and atom_id_1 == 'SG':
+                        if auth_comp_id_2 in ('CYS', 'DCY') and atom_id_2 == 'SG':
+                            disul_cys += 1
+                        else:
+                            other_cys += 1
+
+                    if auth_comp_id_2 in ('CYS', 'DCY') and atom_id_2 == 'SG':
+                        if auth_comp_id_1 in ('CYS', 'DCY') and atom_id_1 == 'SG':
+                            disul_cys += 1
+                        else:
+                            other_cys += 1
+
+            free_cys = cys_total - disul_cys - other_cys
+
+            if free_cys > 0:
+                if free_cys == cys_total:
+                    thiol_state = 'all free'
+                elif disul_cys > 0 and other_cys > 0:
+                    thiol_state = 'free disulfide and other bound'
+                elif other_cys == 0:
+                    thiol_state = 'free and disulfide bound'
+                else:
+                    thiol_state = 'free and other bound'
+            else:
+                if disul_cys > 0 and other_cys > 0:
+                    thiol_state = 'disulfide and other bound'
+                elif other_cys == 0:
+                    thiol_state = 'all disulfide bound'
+                else:
+                    thiol_state = 'all other bound'
+        else:
+            thiol_state = 'not present'
+
+        formula_weight = 0.0
+        for item in self.__caC['entity_assembly']:
+            fw = item['entity_fw']
+            num = item['entity_copies']
+            if isinstance(fw, float) and isinstance(num, int):
+                formula_weight += fw * num
+            else:
+                formula_weight = '.'
+                break
+
+        ec_numbers = []
+        for item in self.__caC['entity_assembly']:
+            if 'entity_ec' in item and item['entity_ec'] not in emptyValue:
+                ec_numbers.append(item['entity_ec'])
+        if len(ec_numbers) == 0:
+            ec_number = '.'
+        else:
+            ec_number = ','.join(ec_numbers)
+
+        details = ''
+        for item in self.__caC['entity_assembly']:
+            if 'entity_details' in item and item['entity_details'] not in emptyValue:
+                details += details + '\n'
+        if len(details) == 0:
+            details = '.'
+        else:
+            details = details[:-1]
+
         if len(asm_sfs) == 0:
             sf_framecode = 'assembly'
             asm_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
@@ -40979,6 +41072,21 @@ class NmrDpUtility:
                 struct = self.__cR.getDictList('struct')
                 assembly_name = struct[0]['pdbx_descriptor']
             asm_sf.add_tag('Name', assembly_name)
+            asm_sf.add_tag('BMRB_code', None)
+            asm_sf.add_tag('Number_of_components', components_ex_water)
+            asm_sf.add_tag('Organic_ligands', ligand_total if ligand_total > 0 else None)
+            asm_sf.add_tag('Metal_ions', ion_total if ion_total > 0 else None)
+            asm_sf.add_tag('Non_standard_bonds', None)
+            asm_sf.add_tag('Ambiguous_conformational_states', None)
+            asm_sf.add_tag('Ambiguous_chem_comp_sites', None)
+            asm_sf.add_tag('Molecules_in_chemical_exchange', None)
+            asm_sf.add_tag('Paramagnetic', 'yes' if paramag else 'no')
+            asm_sf.add_tag('Thiol_state', thiol_state)
+            asm_sf.add_tag('Molecular_mass', formula_weight)
+            asm_sf.add_tag('Enzyme_commission_number', ec_number)
+            asm_sf.add_tag('Details', details)
+            asm_sf.add_tag('DB_query_date', None)
+            asm_sf.add_tag('DB_query_revised_last_date', None)
 
         else:
             asm_sf = asm_sfs[0]
@@ -41009,6 +41117,57 @@ class NmrDpUtility:
                     asm_sf.tags[tagNames.index('Name')][1] = assembly_name
                 else:
                     asm_sf.add_tag('Name', assembly_name)
+            if 'BMRB_code' not in tagNames:
+                asm_sf.add_tag('BMRB_code', None)
+            if 'Number_of_components' in tagNames:
+                asm_sf.tags[tagNames.index('Number_of_components')][1] = components_ex_water
+            else:
+                asm_sf.add_tag('Number_of_components', components_ex_water)
+            if 'Organic_ligands' in tagNames:
+                asm_sf.tags[tagNames.index('Organic_ligands')][1] = ligand_total if ligand_total > 0 else None
+            else:
+                asm_sf.add_tag('Organic_ligands', ligand_total if ligand_total > 0 else None)
+            if 'Metal_ions' in tagNames:
+                asm_sf.tags[tagNames.index('Metal_ions')][1] = ion_total if ion_total > 0 else None
+            else:
+                asm_sf.add_tag('Metal_ions', ion_total if ion_total > 0 else None)
+            if 'Non_standard_bonds' not in tagNames:
+                asm_sf.add_tag('Non_standard_bonds', None)
+            if 'Ambiguous_conformational_states' not in tagNames:
+                asm_sf.add_tag('Ambiguous_conformational_states', None)
+            if 'Ambiguous_chem_comp_sites' not in tagNames:
+                asm_sf.add_tag('Ambiguous_chem_comp_sites', None)
+            if 'Molecules_in_chemical_exchange' not in tagNames:
+                asm_sf.add_tag('Molecules_in_chemical_exchange', None)
+            if 'Paramagnetic' in tagNames:
+                asm_sf.tags[tagNames.index('Paramagnetic')][1] = 'yes' if paramag else 'no'
+            else:
+                asm_sf.add_tag('Paramagnetic', 'yes' if paramag else 'no')
+            if 'Thiol_state' in tagNames:
+                asm_sf.tags[tagNames.index('Thiol_state')][1] = thiol_state
+            else:
+                asm_sf.add_tag('Thiol_state', thiol_state)
+            if 'Molecular_mass' in tagNames:
+                asm_sf.tags[tagNames.index('Molecular_mass')][1] = formula_weight
+            else:
+                asm_sf.add_tag('Molecular_mass', formula_weight)
+            if 'Enzyme_commission_number' in tagNames:
+                asm_sf.tags[tagNames.index('Enzyme_commission_number')][1] = ec_number
+            else:
+                asm_sf.add_tag('Enzyme_commission_number', ec_number)
+            if 'Details' in tagNames:
+                if details != '.':
+                    asm_sf.tags[tagNames.index('Details')][0] = details
+            else:
+                asm_sf.add_tag('Details', details)
+            if 'DB_query_date' in tagNames:
+                asm_sf.tags[tagNames.index('DB_query_date')][1] = None
+            else:
+                asm_sf.add_tag('DB_query_date', None)
+            if 'DB_query_revised_last_date' in tagNames:
+                asm_sf.tags[tagNames.index('DB_query_revised_last_date')][1] = None
+            else:
+                asm_sf.add_tag('DB_query_revised_last_date', None)
 
         entity_type_of = {item['entity_id']: item['entity_type'] for item in self.__caC['entity_assembly']}
         entity_total = {entity_id: len([item for item in self.__caC['entity_assembly'] if item['entity_id'] == entity_id])
@@ -41308,7 +41467,7 @@ class NmrDpUtility:
                     entity_poly_type = next((item['entity_poly_type'] for item in self.__caC['entity_assembly']
                                              if item['entity_id'] == entity_id_1 and item['entity_type'] == 'polymer'), None)
                     if entity_poly_type is not None and entity_poly_type.startswith('polypeptide')\
-                       and set(atom_id_1, atom_id_2) == set('C', 'N') and abs(auth_seq_id_1 - auth_seq_id_2) > 1:
+                       and set([atom_id_1, atom_id_2]) == set(['C', 'N']) and abs(auth_seq_id_1 - auth_seq_id_2) > 1:
                         row[1], row[2] = 'peptide', "sing"
 
                 row[25], row[26] = 1, self.__entry_id
@@ -41439,6 +41598,240 @@ class NmrDpUtility:
                 asm_sf.add_loop(eda_loop)
 
         master_entry.add_saveframe(asm_sf)
+
+        # Refresh _Entity
+
+        content_subtype = 'entity'
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        for sf_data in self.__star_data[0].get_saveframes_by_category(lp_category):
+            sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+            self.__star_data[0].remove_saveframe(sf_framecode)
+        # """
+        # sf_key_items = [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+        #                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+        #                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True},
+        #                 {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+        #                 ]
+        # sf_data_items = [{'name': 'BMRB_code', 'type': 'str'},
+        #                  {'name': 'Name', 'type': 'str'},
+        #                  {'name': 'Type', 'type': 'enum',
+        #                   'enum': ('polymer', 'non-polymer', 'water', 'aggregate', 'solvent')},
+        #                  {'name': 'Polymer_common_type', 'type': 'enum',
+        #                   'enum': ('protein', 'DNA', 'RNA', 'DNA/RNA hybrid', 'polysaccharide')},
+        #                  {'name': 'Polymer_type', 'type': 'enum',
+        #                   'enum': ('cyclic-pseudo-peptide', 'polypeptide(L)', 'polydeoxyribonucleotide', 'polyribonucleotide',
+        #                            'polydeoxyribonucleotide/polyribonucleotide hybrid',
+        #                            'polypeptide(D)', 'polysaccharide(D)', 'polysaccharide(L)', 'other')},
+        #                  {'name': 'Polymer_type_details', 'type': 'str'},
+        #                  {'name': 'Polymer_strand_ID', 'type': 'str'},
+        #                  {'name': 'Polymer_seq_one_letter_code_can', 'type': 'str'},
+        #                  {'name': 'Polymer_seq_one_letter_code', 'type': 'str'},
+        #                  {'name': 'Target_identifier', 'type': 'str'},
+        #                  {'name': 'Polymer_author_defined_seq', 'type': 'str'},
+        #                  {'name': 'Polymer_author_seq_details', 'type': 'str'},
+        #                  {'name': 'Ambiguous_conformational_states', 'type': 'enum',
+        #                   'enum': ('yes', 'no')},
+        #                  {'name': 'Ambiguous_chem_comp_sites', 'type': 'enum',
+        #                   'enum': ('yes', 'no')},
+        #                  {'name': 'Nstd_monomer', 'type': 'enum',
+        #                   'enum': ('yes', 'no')},
+        #                  {'name': 'Nstd_chirality', 'type': 'enum',
+        #                   'enum': ('yes', 'no')},
+        #                  {'name': 'Nstd_linkage', 'type': 'enum',
+        #                   'enum': ('yes', 'no')},
+        #                  {'name': 'Nonpolymer_comp_ID', 'type': 'str'},
+        #                  {'name': 'Nonpolymer_comp_label', 'type': 'str'},
+        #                  {'name': 'Number_of_monomers', 'type': 'int'},
+        #                  {'name': 'Number_of_nonpolymer_components', 'type': 'int'},
+        #                  {'name': 'Paramagnetic', 'type': 'enum',
+        #                   'enum': ('yes', 'no')},
+        #                  {'name': 'Thiol_state', 'type': 'enum',
+        #                   'enum': ('all disulfide bound', 'all other bound', 'all free', 'not present', 'not available', 'unknown', 'not reported',
+        #                            'free and disulfide bound', 'free and other bound', 'free disulfide and other bound', 'disulfide and other bound')},
+        #                  {'name': 'Src_method', 'type': 'str'},
+        #                  {'name': 'Parent_entity_ID}, 'type': 'int'},
+        #                  {'name': 'Fragment', 'type': 'str'},
+        #                  {'name': 'Mutation', 'type': 'str'},
+        #                  {'name': 'EC_number', 'type': 'str'},
+        #                  {'name': 'Calc_isoelectric_point', 'type': 'float'},
+        #                  {'name': 'Formula_weight', 'type': 'float'},
+        #                  {'name': 'Formula_weight_exptl', 'type': 'float'},
+        #                  {'name': 'Formula_weight_exptl_meth', 'type': 'str'},
+        #                  {'name': 'Details', 'type': 'str'},
+        #                  {'name': 'DB_query_date', 'type': 'str'},
+        #                  {'name': 'DB_query_revised_last_date', 'type': 'str'}
+        #                  ]
+        # """
+        entity_ids = []
+
+        for item in self.__caC['entity_assembly']:
+            entity_id = item['entity_id']
+
+            if entity_id in entity_ids:
+                continue
+
+            entity_ids.append(entity_id)
+
+            entity_type = item['entity_type']
+
+            sf_framecode = f'entity_{entity_id}' if entity_type != 'non-polymer' else f"entity_{item['comp_id']}"
+
+            ent_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
+            ent_sf.set_tag_prefix(self.sf_tag_prefixes[file_type][content_subtype])
+            ent_sf.add_tag('Sf_category', self.sf_categories[file_type][content_subtype])
+            ent_sf.add_tag('Sf_framecode', sf_framecode)
+            ent_sf.add_tag('Entry_ID', self.__entry_id)
+            ent_sf.add_tag('ID', entity_id)
+            ent_sf.add_tag('BMRB_code', None)
+            ent_sf.add_tag('Name', item['entity_desc'])
+            ent_sf.add_tag('Type', entity_type)
+
+            if entity_type == 'polymer':
+                poly_type = item['entity_poly_type']
+                if poly_type.startswith('polypeptide'):
+                    common_type = 'protein'
+                elif any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
+                        and any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
+                    common_type = 'DNA/RNA hybrid'
+                elif poly_type == 'polydeoxyribonucleotide':
+                    common_type = 'DNA'
+                elif poly_type == 'polyribonucleotide':
+                    common_type = 'RNA'
+                else:
+                    common_type = None
+            elif entity_type == 'branched':
+                common_type = 'polysaccharide'
+            else:
+                common_type = None
+            ent_sf.add_tag('Polymer_common_type', common_type)
+
+            if entity_type == 'polymer':
+                poly_type = item['entity_poly_type']
+                if poly_type.startswith('polypeptide'):
+                    _poly_type = poly_type
+
+                    if self.__cR.hasCategory('struct_conn'):
+                        auth_asym_ids = item['auth_asym_id'].split(',')
+
+                        bonds = self.__cR.getDictList('struct_conn')
+
+                        for bond in bonds:
+                            auth_asym_id_1 = bond['ptnr1_auth_asym_id']
+                            auth_seq_id_1 = bond['ptnr1_auth_seq_id']
+                            atom_id_1 = bond['ptnr1_label_atom_id']
+                            auth_asym_id_2 = bond['ptnr2_auth_asym_id']
+                            auth_seq_id_2 = bond['ptnr2_auth_seq_id']
+                            atom_id_2 = bond['ptnr2_label_atom_id']
+
+                            if auth_asym_id_1 == auth_asym_id_2 and auth_asym_id_1 in auth_asym_ids\
+                               and set([atom_id_1, atom_id_2]) == set(['C', 'N']) and abs(auth_seq_id_1 - auth_seq_id_2) > 1:
+                                _poly_type = 'cyclic-pseudo-peptide'
+
+                elif any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
+                        and any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
+                    _poly_type = 'polydeoxyribonucleotide/polyribonucleotide hybrid'
+                else:
+                    _poly_type = poly_type
+            elif entity_type == 'branched':
+                _poly_type = item['entity_poly_type']
+            else:
+                _poly_type = None
+
+            ent_sf.add_tag('Polymer_type', _poly_type)
+            ent_sf.add_tag('Polymer_type_details', None)
+
+            auth_asym_ids = []
+            for _item in self.__caC['entity_assembly']:
+                if _item['entity_id'] != entity_id:
+                    continue
+                auth_asym_ids.append(_item['auth_asym_id'])
+            ent_sf.add_tag('Polymer_strand_ID', ','.join(auth_asym_ids))
+
+            ent_sf.add_tag('Polymer_seq_one_letter_code_can', None if entity_type != 'polymer' else item['one_letter_code_can'])
+            ent_sf.add_tag('Polymer_seq_one_letter_code', None if entity_type != 'polymer' else item['one_letter_code'])
+            ent_sf.add_tag('Target_identifier', None if entity_type != 'polymer' else item['target_identifier'])
+            ent_sf.add_tag('Polymer_author_defined_seq', None)
+            ent_sf.add_tag('Polymer_author_seq_details', None)
+            ent_sf.add_tag('Ambiguous_conformational_states', None)
+            ent_sf.add_tag('Ambiguous_chem_comp_sites', None)
+            ent_sf.add_tag('Nstd_monomer', None if entity_type != 'polymer' else item['nstd_monomer'])
+            ent_sf.add_tag('Nstd_chirality', None if entity_type != 'polymer' else item['nstd_chirality'])
+            ent_sf.add_tag('Nstd_linkage', None if entity_type != 'polymer' else item['nstd_linkage'])
+            ent_sf.add_tag('Nonpolymer_comp_ID', None if entity_type != 'non-polymer' else item['comp_id'])
+            ent_sf.add_tag('Nonpolymer_comp_label', None if entity_type != 'non-polymer' else f"$chem_comp_{item['comp_id']}")
+            ent_sf.add_tag('Number_of_monomers', None if entity_type == 'non-polymer' else item['num_of_monomers'])
+            ent_sf.add_tag('Number_of_nonpolymer_components', None if entity_type != 'non-polymer' else 1)
+            ent_sf.add_tag('Paramagnetic', 'no' if not paramag or entity_type != 'non-polymer' or item['comp_id'] not in PARAMAGNETIC_ELEMENTS else 'yes')
+
+            cys_total = 0
+            label_asym_ids = item['label_asym_id'].split(',')
+            for chain_id in label_asym_ids:
+                if entity_type == 'polymer':
+                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
+                    cys_total += ps['comp_id'].count('CYS') + ps['comp_id'].count('DCY')
+                
+            if cys_total > 0:
+                disul_cys = other_cys = 0
+                if self.__cR.hasCategory('struct_conn'):
+                    bonds = self.__cR.getDictList('struct_conn')
+                    for bond in bonds:
+                        label_asym_id_1 = bond['ptnr1_label_asym_id']
+                        auth_seq_id_1 = bond['ptnr1_auth_seq_id']
+                        auth_comp_id_1 = bond['ptnr1_auth_comp_id']
+                        label_asym_id_2 = bond['ptnr2_label_asym_id']
+                        atom_id_1 = bond['ptnr1_label_atom_id']
+                        auth_seq_id_2 = bond['ptnr2_auth_seq_id']
+                        auth_comp_id_2 = bond['ptnr2_auth_comp_id']
+                        atom_id_2 = bond['ptnr2_label_atom_id']
+
+                        if label_asym_id_1 in label_asym_ids and auth_comp_id_1 in ('CYS', 'DCY') and atom_id_1 == 'SG':
+                            if auth_comp_id_2 in ('CYS', 'DCY') and atom_id_2 == 'SG':
+                                disul_cys += 1
+                            else:
+                                other_cys += 1
+
+                        if label_asym_id_2 in label_asym_ids and auth_comp_id_2 in ('CYS', 'DCY') and atom_id_2 == 'SG':
+                            if auth_comp_id_1 in ('CYS', 'DCY') and atom_id_1 == 'SG':
+                                disul_cys += 1
+                            else:
+                                other_cys += 1
+
+                free_cys = cys_total - disul_cys - other_cys
+
+                if free_cys > 0:
+                    if free_cys == cys_total:
+                        thiol_state = 'all free'
+                    elif disul_cys > 0 and other_cys > 0:
+                        thiol_state = 'free disulfide and other bound'
+                    elif other_cys == 0:
+                        thiol_state = 'free and disulfide bound'
+                    else:
+                        thiol_state = 'free and other bound'
+                else:
+                    if disul_cys > 0 and other_cys > 0:
+                        thiol_state = 'disulfide and other bound'
+                    elif other_cys == 0:
+                        thiol_state = 'all disulfide bound'
+                    else:
+                        thiol_state = 'all other bound'
+            else:
+                thiol_state = 'not present'
+            ent_sf.add_tag('Thiol_state', thiol_state)
+            ent_sf.add_tag('Src_method', item['entity_src_method'])
+            ent_sf.add_tag('Parent_entity_ID', None if entity_type != 'polymer' else item['entity_parent'])
+            ent_sf.add_tag('Fragment', None if entity_type != 'polymer' else item['entity_fragment'])
+            ent_sf.add_tag('Mutation', None if entity_type != 'polymer' else item['entity_mutation'])
+            ent_sf.add_tag('EC_number', None if entity_type != 'polymer' else item['entity_ec'])
+            ent_sf.add_tag('Calc_isoelectric_point', None)
+            ent_sf.add_tag('Formula_weight', item['entity_fw'])
+            ent_sf.add_tag('Formula_weight_exptl', None)
+            ent_sf.add_tag('Formula_weight_exptl_meth', None)
+            ent_sf.add_tag('Details', item['entity_details'])
+            ent_sf.add_tag('DB_query_date', None)
+            ent_sf.add_tag('DB_query_revised_last_date', None)
+
+            master_entry.add_saveframe(ent_sf)
 
         content_subtype_order = ['dist_restraint',
                                  'dihed_restraint',

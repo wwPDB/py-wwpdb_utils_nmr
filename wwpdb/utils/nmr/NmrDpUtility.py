@@ -41189,7 +41189,7 @@ class NmrDpUtility:
 
         ea_loop = pynmrstar.Loop.from_scratch(lp_category)
 
-        ea_key_items = [{'name': 'ID', 'type': 'positive-int-as-str', 'default': '1'},
+        ea_key_items = [{'name': 'ID', 'type': 'positive-int'},
                         {'name': 'Entity_assembly_name', 'type': 'str'},
                         {'name': 'Entity_ID', 'type': 'positive-int', 'default': '1'},
                         {'name': 'Entity_label', 'type': 'str'},
@@ -41212,8 +41212,8 @@ class NmrDpUtility:
                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                          ]
 
-        tags = [lp_category + '.' + item['name'] for item in ea_key_items]
-        tags.extend([lp_category + '.' + item['name'] for item in ea_data_items])
+        tags = [lp_category + '.' + _item['name'] for _item in ea_key_items]
+        tags.extend([lp_category + '.' + _item['name'] for _item in ea_data_items])
 
         for tag in tags:
             ea_loop.add_tag(tag)
@@ -41293,8 +41293,8 @@ class NmrDpUtility:
                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                           ]
 
-        tags = [lp_category + '.' + item['name'] for item in cca_key_items]
-        tags.extend([lp_category + '.' + item['name'] for item in cca_data_items])
+        tags = [lp_category + '.' + _item['name'] for _item in cca_key_items]
+        tags.extend([lp_category + '.' + _item['name'] for _item in cca_data_items])
 
         for tag in tags:
             cca_loop.add_tag(tag)
@@ -41331,7 +41331,7 @@ class NmrDpUtility:
             elif entity_type == 'non-polymer':
                 np = next(np for np in self.__caC['non_polymer'] if np['auth_chain_id'] == auth_asym_id and np['seq_id'][0] == auth_seq_id)
                 try:
-                    comp_id = np['comp_id'][seq_id - 1]
+                    comp_id = np['comp_id'][0]
                 except IndexError:
                     comp_id = None
 
@@ -41361,7 +41361,7 @@ class NmrDpUtility:
 
             b_loop = pynmrstar.Loop.from_scratch(lp_category)
 
-            b_key_items = [{'name': 'ID', 'type': 'positive-int-as-str', 'default': '1'},
+            b_key_items = [{'name': 'ID', 'type': 'positive-int'},
                            {'name': 'Type', 'type': 'enum',
                             'enum': ('amide', 'covalent', 'directed', 'disulfide', 'ester', 'ether',
                                      'hydrogen', 'metal coordination', 'peptide', 'thioether', 'oxime',
@@ -41395,8 +41395,8 @@ class NmrDpUtility:
                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                             ]
 
-            tags = [lp_category + '.' + item['name'] for item in b_key_items]
-            tags.extend([lp_category + '.' + item['name'] for item in b_data_items])
+            tags = [lp_category + '.' + _item['name'] for _item in b_key_items]
+            tags.extend([lp_category + '.' + _item['name'] for _item in b_data_items])
 
             for tag in tags:
                 b_loop.add_tag(tag)
@@ -41488,7 +41488,7 @@ class NmrDpUtility:
 
                 eda_loop = pynmrstar.Loop.from_scratch(lp_category)
 
-                eda_key_items = [{'name': 'ID', 'type': 'positive-int-as-str', 'default': '1'},
+                eda_key_items = [{'name': 'ID', 'type': 'positive-int'},
                                  {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str'},
                                  {'name': 'Comp_index_ID', 'type': 'int'},
                                  {'name': 'Seq_ID', 'type': 'int'},
@@ -41503,8 +41503,8 @@ class NmrDpUtility:
                                   {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                   ]
 
-                tags = [lp_category + '.' + item['name'] for item in eda_key_items]
-                tags.extend([lp_category + '.' + item['name'] for item in eda_data_items])
+                tags = [lp_category + '.' + _item['name'] for _item in eda_key_items]
+                tags.extend([lp_category + '.' + _item['name'] for _item in eda_data_items])
 
                 for tag in tags:
                     eda_loop.add_tag(tag)
@@ -41683,7 +41683,7 @@ class NmrDpUtility:
             ent_sf.add_tag('Sf_framecode', sf_framecode)
             ent_sf.add_tag('Entry_ID', self.__entry_id)
             ent_sf.add_tag('ID', entity_id)
-            ent_sf.add_tag('BMRB_code', None)
+            ent_sf.add_tag('BMRB_code', None if entity_type != 'non-polymer' else item['comp_id'])
             ent_sf.add_tag('Name', item['entity_desc'])
             ent_sf.add_tag('Type', entity_type)
 
@@ -41839,14 +41839,14 @@ class NmrDpUtility:
 
                 ecn_key_items = [{'name': 'Name', 'type': 'str'},
                                  {'name': 'Type', 'type': 'enum',
-                                  'enum': ('common', 'abbreviation', 'synonym')},
-                                 {'name': 'Entity_ID', 'type': 'positive-int-as-str'}
+                                  'enum': ('common', 'abbreviation', 'synonym')}
                                  ]
-                ecn_data_items = [{'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                ecn_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                   ]
 
-                tags = [lp_category + '.' + item['name'] for item in ecn_key_items]
-                tags.extend([lp_category + '.' + item['name'] for item in ecn_data_items])
+                tags = [lp_category + '.' + _item['name'] for _item in ecn_key_items]
+                tags.extend([lp_category + '.' + _item['name'] for _item in ecn_data_items])
 
                 for tag in tags:
                     ecn_loop.add_tag(tag)
@@ -41873,14 +41873,14 @@ class NmrDpUtility:
                 esn_key_items = [{'name': 'Name', 'type': 'str'},
                                  {'name': 'Naming_system', 'type': 'enum',
                                   'enum': ('IUPAC', 'CAS name', 'CAS registry number', 'BMRB',
-                                           'Three letter code', 'Pfam', 'Swiss-Prot', 'EC', 'NCBI')},
-                                 {'name': 'Entity_ID', 'type': 'positive-int-as-str'}
+                                           'Three letter code', 'Pfam', 'Swiss-Prot', 'EC', 'NCBI')}
                                  ]
-                esn_data_items = [{'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                esn_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                   ]
 
-                tags = [lp_category + '.' + item['name'] for item in esn_key_items]
-                tags.extend([lp_category + '.' + item['name'] for item in esn_data_items])
+                tags = [lp_category + '.' + _item['name'] for _item in esn_key_items]
+                tags.extend([lp_category + '.' + _item['name'] for _item in esn_data_items])
 
                 for tag in tags:
                     esn_loop.add_tag(tag)
@@ -41904,14 +41904,14 @@ class NmrDpUtility:
                 lp_category = '_Entity_keyword'
                 ek_loop = pynmrstar.Loop.from_scratch(lp_category)
 
-                ek_key_items = [{'name': 'Keyword', 'type': 'str'},
-                                {'name': 'Entity_ID', 'type': 'positive-int-as-str'}
+                ek_key_items = [{'name': 'Keyword', 'type': 'str'}
                                 ]
-                ek_data_items = [{'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                ek_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                  ]
 
-                tags = [lp_category + '.' + item['name'] for item in ek_key_items]
-                tags.extend([lp_category + '.' + item['name'] for item in ek_data_items])
+                tags = [lp_category + '.' + _item['name'] for _item in ek_key_items]
+                tags.extend([lp_category + '.' + _item['name'] for _item in ek_data_items])
 
                 for tag in tags:
                     ek_loop.add_tag(tag)
@@ -41928,6 +41928,99 @@ class NmrDpUtility:
 
                 if not ek_loop.empty:
                     ent_sf.add_loop(ek_loop)
+
+            # Refresh _Entity_comp_index
+
+            lp_category = '_Entity_comp_index'
+            eci_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+            eci_key_items = [{'name': 'ID', 'type': 'positive-int'},
+                             {'name': 'Auth_seq_ID', 'type': 'int'},
+                             {'name': 'Comp_ID', 'type': 'str'}
+                             ]
+            eci_data_items = [{'name': 'Comp_label', 'type': 'str'},
+                              {'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                              ]
+
+            tags = [lp_category + '.' + _item['name'] for _item in eci_key_items]
+            tags.extend([lp_category + '.' + _item['name'] for _item in eci_data_items])
+
+            for tag in tags:
+                eci_loop.add_tag(tag)
+
+            index = 1
+
+            label_asym_ids = item['label_asym_id'].split(',')
+            for chain_id in sorted(label_asym_ids):
+                if entity_type == 'polymer':
+                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
+                elif entity_type == 'branched':
+                    ps = next(ps for ps in self.__caC['branched'] if ps['chain_id'] == chain_id)
+                else:
+                    ps = next(ps for ps in self.__caC['non_polymer'] if ps['chain_id'] == chain_id)
+
+                for idx, comp_id in enumerate(ps['comp_id']):
+                    row = [None] * len(tags)
+
+                    auth_seq_id = ps['auth_seq_id'][idx]
+                    if entity_type == 'non-polymer':
+                        auth_seq_id = ps['seq_id'][idx]
+
+                    row[0], row[1], row[2] = index, auth_seq_id, comp_id
+
+                    if comp_id not in monDict3:
+                        row[3] = f"$chem_comp_{comp_id}"
+
+                    row[4], row[5] = entity_id, self.__entry_id
+
+                    index += 1
+
+                    eci_loop.add_data(row)
+
+            ent_sf.add_loop(eci_loop)
+
+            # Refresh _Entity_poly_seq
+
+            if entity_type != 'non-polymer':
+                lp_category = '_Entity_poly_seq'
+                eps_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+                eps_key_items = [{'name': 'Hetero', 'type': 'str'},
+                                 {'name': 'Mon_ID', 'type': 'str'},
+                                 {'name': 'Num', 'type': 'int'},
+                                 {'name': 'Comp_index_ID', 'type': 'int'}
+                                 ]
+                eps_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                                  ]
+
+                tags = [lp_category + '.' + _item['name'] for _item in eps_key_items]
+                tags.extend([lp_category + '.' + _item['name'] for _item in eps_data_items])
+
+                for tag in tags:
+                    eps_loop.add_tag(tag)
+
+                label_asym_ids = item['label_asym_id'].split(',')
+                for chain_id in label_asym_ids:
+                    if entity_type == 'polymer':
+                        ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
+                    elif entity_type == 'branched':
+                        ps = next(ps for ps in self.__caC['branched'] if ps['chain_id'] == chain_id)
+                    else:
+                        ps = next(ps for ps in self.__caC['non_polymer'] if ps['chain_id'] == chain_id)
+
+                    for i, comp_id in enumerate(ps['comp_id']):
+                        row = [None] * len(tags)
+
+                        seq_id = ps['seq_id'][i]
+
+                        row[1], row[2], row[3], row[4], row[5] =\
+                            comp_id, seq_id, seq_id, entity_id, self.__entry_id
+
+                        eps_loop.add_data(row)
+
+                ent_sf.add_loop(eps_loop)
 
             master_entry.add_saveframe(ent_sf)
 

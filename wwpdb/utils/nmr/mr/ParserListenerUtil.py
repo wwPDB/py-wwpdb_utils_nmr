@@ -2084,8 +2084,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                         compId = None
                         authAsymIds = set()
-                        for item in mappings:
-                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
+                        for idx, item in enumerate(mappings):
+                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, idx + 1, entityId)
                             authAsymIds.add(item['auth_asym_id'])
                             if compId is None:
                                 compId = item['comp_id']

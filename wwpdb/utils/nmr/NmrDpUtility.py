@@ -41770,7 +41770,7 @@ class NmrDpUtility:
                 if entity_type == 'polymer':
                     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
                     cys_total += ps['comp_id'].count('CYS') + ps['comp_id'].count('DCY')
-                
+
             if cys_total > 0:
                 disul_cys = other_cys = 0
                 if self.__cR.hasCategory('struct_conn'):
@@ -41830,6 +41830,104 @@ class NmrDpUtility:
             ent_sf.add_tag('Details', item['entity_details'])
             ent_sf.add_tag('DB_query_date', None)
             ent_sf.add_tag('DB_query_revised_last_date', None)
+
+            # Refresh _Entity_common_name
+
+            if self.__cR.hasCategory('entity_name_com'):
+                lp_category = '_Entity_common_name'
+                ecn_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+                ecn_key_items = [{'name': 'Name', 'type': 'str'},
+                                 {'name': 'Type', 'type': 'enum',
+                                  'enum': ('common', 'abbreviation', 'synonym')},
+                                 {'name': 'Entity_ID', 'type': 'positive-int-as-str'}
+                                 ]
+                ecn_data_items = [{'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                                  ]
+
+                tags = [lp_category + '.' + item['name'] for item in ecn_key_items]
+                tags.extend([lp_category + '.' + item['name'] for item in ecn_data_items])
+
+                for tag in tags:
+                    ecn_loop.add_tag(tag)
+
+                ent_name_coms = self.__cR.getDictList('entity_name_com')
+                for ent_name_com in ent_name_coms:
+                    if int(ent_name_com['entity_id']) == entity_id:
+                        row = [None] * len(tags)
+
+                        row[0], row[1], row[2], row[3] =\
+                            ent_name_com['name'], 'common', entity_id, self.__entry_id
+
+                        ecn_loop.add_data(row)
+
+                if not ecn_loop.empty:
+                    ent_sf.add_loop(ecn_loop)
+
+            # Refresh _Entity_systematic_name
+
+            if self.__cR.hasCategory('entity_name_sys'):
+                lp_category = '_Entity_systematic_name'
+                esn_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+                esn_key_items = [{'name': 'Name', 'type': 'str'},
+                                 {'name': 'Naming_system', 'type': 'enum',
+                                  'enum': ('IUPAC', 'CAS name', 'CAS registry number', 'BMRB',
+                                           'Three letter code', 'Pfam', 'Swiss-Prot', 'EC', 'NCBI')},
+                                 {'name': 'Entity_ID', 'type': 'positive-int-as-str'}
+                                 ]
+                esn_data_items = [{'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                                  ]
+
+                tags = [lp_category + '.' + item['name'] for item in esn_key_items]
+                tags.extend([lp_category + '.' + item['name'] for item in esn_data_items])
+
+                for tag in tags:
+                    esn_loop.add_tag(tag)
+
+                ent_name_syss = self.__cR.getDictList('entity_name_sys')
+                for ent_name_sys in ent_name_syss:
+                    if int(ent_name_sys['entity_id']) == entity_id:
+                        row = [None] * len(tags)
+
+                        row[0], row[1], row[2], row[3] =\
+                            ent_name_sys['name'], ent_name_sys['system'], entity_id, self.__entry_id
+
+                        esn_loop.add_data(row)
+
+                if not esn_loop.empty:
+                    ent_sf.add_loop(esn_loop)
+
+            # Refresh _Entity_keyword
+
+            if self.__cR.hasCategory('entity_keywords'):
+                lp_category = '_Entity_keyword'
+                ek_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+                ek_key_items = [{'name': 'Keyword', 'type': 'str'},
+                                {'name': 'Entity_ID', 'type': 'positive-int-as-str'}
+                                ]
+                ek_data_items = [{'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                                 ]
+
+                tags = [lp_category + '.' + item['name'] for item in ek_key_items]
+                tags.extend([lp_category + '.' + item['name'] for item in ek_data_items])
+
+                for tag in tags:
+                    ek_loop.add_tag(tag)
+
+                ent_keys = self.__cR.getDictList('entity_keywords')
+                for ent_key in ent_keys:
+                    if int(ent_key['entity_id']) == entity_id and 'text' in ent_key and ent_key['text'] not in emptyValue:
+                        row = [None] * len(tags)
+
+                        row[0], row[1], row[2] =\
+                            ent_key['text'], entity_id, self.__entry_id
+
+                        ek_loop.add_data(row)
+
+                if not ek_loop.empty:
+                    ent_sf.add_loop(ek_loop)
 
             master_entry.add_saveframe(ent_sf)
 

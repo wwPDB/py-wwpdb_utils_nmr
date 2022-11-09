@@ -42235,7 +42235,7 @@ class NmrDpUtility:
         if __pynmrstar_v3__:
             master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
-            master_entry.wirte_to_file(self.__dstPath)
+            master_entry.write_to_file(self.__dstPath)
 
         return True
 

@@ -17,12 +17,17 @@ import re
 import pynmrstar
 import pickle
 
+from packaging import version
+
 try:
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
     from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue)
 except ImportError:
     from nmr.io.mmCIFUtil import mmCIFUtil
     from nmr.AlignUtil import (emptyValue, trueValue)
+
+
+__pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
 
 def load_schema_from_pickle(file_name):
@@ -363,7 +368,10 @@ class CifToNmrStar:
             if sf is not None:
                 strObj.add_saveframe(sf)
 
-            strObj.write_to_file(strPath, skip_empty_tags=False)
+            if __pynmrstar_v3__:
+                strObj.write_to_file(strPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+            else:
+                strObj.write_to_file(strPath)
 
             return True
 

@@ -2936,7 +2936,7 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
         elif tag_item_name == 'Entry_ID' and entryId is not None:
             sf.add_tag(tag_item_name, entryId)
         elif tag_item_name == 'Data_file_name' and fileName is not None:
-            sf.add_tag(tag_item_name, fileName)
+            sf.add_tag(tag_item_name, re.sub(r'-corrected$', '', fileName) if fileName.endswith('-corrected') else fileName)
         elif tag_item_name == 'Constraint_type' and (mrSubtype == 'hbond'
                                                      or (constraintType is not None
                                                          and constraintType == 'hydrogen bond')):

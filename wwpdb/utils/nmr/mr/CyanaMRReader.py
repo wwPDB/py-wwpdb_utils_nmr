@@ -212,6 +212,16 @@ class CyanaMRReader:
 if __name__ == "__main__":
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5ue2/methyl_NOEs.upl',
+                 '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5ue2/2_dp8_dihre.aco-corrected',
+                 '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2rrn/2rrn-trimmed-div_src.mr',
                  '../../tests-nmr/mock-data-remediation/2rrn/2rrn.cif')
 

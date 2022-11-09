@@ -3337,11 +3337,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
                     ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
 
-                    atomSelection = []
-
                     for atomId, offset in zip(atomNames, seqOffset):
 
-                        atomSelection.clear()
+                        atomSelection = []
 
                         _cifSeqId = cifSeqId + offset
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
@@ -3355,8 +3353,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                 self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
                                     f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
                                     "Please update the sequence in the Macromolecules page.\n"
-                                _cifCompId = '.'
-                            cifAtomId = atomId
+                                return
+                                # _cifCompId = '.'
+                            # cifAtomId = atomId
 
                         else:
                             self.__ccU.updateChemCompDict(_cifCompId)
@@ -3512,11 +3511,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
                     ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
 
-                    atomSelection = []
-
                     for atomId, offset in zip(atomNames, seqOffset):
 
-                        atomSelection.clear()
+                        atomSelection = []
 
                         _cifSeqId = cifSeqId + offset
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
@@ -3530,8 +3527,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                 self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
                                     f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
                                     "Please update the sequence in the Macromolecules page.\n"
-                                _cifCompId = '.'
-                            cifAtomId = atomId
+                                return
+                                # _cifCompId = '.'
+                            # cifAtomId = atomId
 
                         else:
                             self.__ccU.updateChemCompDict(_cifCompId)

@@ -24132,6 +24132,15 @@ class NmrDpUtility:
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (XPLOR-NIH) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
@@ -24289,6 +24298,15 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (CNS) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
@@ -24420,6 +24438,15 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (AMBER) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
@@ -24601,6 +24628,15 @@ class NmrDpUtility:
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (CYANA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
@@ -24752,6 +24788,15 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (ROSETTA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
@@ -24901,6 +24946,15 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (BIOSYM) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
@@ -25015,6 +25069,15 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (GROMACS) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
@@ -25172,6 +25235,15 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (DYNAMO/PALES/TALOS) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
@@ -25321,6 +25393,15 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (SYBYL) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
@@ -25470,6 +25551,15 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (ISD) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()
@@ -25627,6 +25717,15 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (CHARMM) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMR() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMR() ++ Error  - {err}\n")
+
                         self.__list_id_counter = listener.getListIdCounter()
 
                         sf_dict = listener.getSfDict()

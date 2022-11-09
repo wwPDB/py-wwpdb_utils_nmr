@@ -602,6 +602,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.hbondStatements = 0     # XPLOR-NIH: Hydrogen bond geometry/database statements
         self.geoStatements = 0       # XPLOR-NIH: Harmonic coordinate/NCS restraints
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 

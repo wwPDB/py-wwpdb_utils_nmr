@@ -237,6 +237,8 @@ class GromacsMRParserListener(ParseTreeListener):
         self.rdcRestraints = 0       # GROMACS: Residual dipolar coupling restraints
         self.geoRestraints = 0       # GROMACS: Coordinate geometry restraints
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 

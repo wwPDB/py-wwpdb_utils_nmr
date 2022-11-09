@@ -41247,7 +41247,7 @@ class NmrDpUtility:
                 equiv_entity_assemblies = [_item for _item in self.__caC['entity_assembly'] if _item['entity'] == entity_id]
                 _item = next((_item for _item in equiv_entity_assemblies if any(label_asym_id for label_asym_id in _item['label_asym_id'].split(',')
                                                                                 if label_asym_id in self.__label_asym_id_with_exptl_data)), None)
-                group_id = _item['label_asym_id'].split(',')[0]
+                group_id = sorted(sorted(set(_item['label_asym_id'].split(','))), key=len)[0]
                 if any(__item for __item in equiv_entity_assemblies if not any(label_asym_id for label_asym_id in __item['label_asym_id'].split(',')
                                                                                if label_asym_id in self.__label_asym_id_with_exptl_data)):
                     if _item == item or row[6] is None or row[6] == 'no':
@@ -41765,7 +41765,7 @@ class NmrDpUtility:
             ent_sf.add_tag('Paramagnetic', 'no' if not paramag or entity_type != 'non-polymer' or item['comp_id'] not in PARAMAGNETIC_ELEMENTS else 'yes')
 
             cys_total = 0
-            label_asym_ids = item['label_asym_id'].split(',')
+            label_asym_ids = set(item['label_asym_id'].split(','))
             for chain_id in label_asym_ids:
                 if entity_type == 'polymer':
                     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
@@ -41951,8 +41951,8 @@ class NmrDpUtility:
 
             index = 1
 
-            label_asym_ids = item['label_asym_id'].split(',')
-            for chain_id in sorted(label_asym_ids):
+            label_asym_ids = list(set(item['label_asym_id'].split(',')))
+            for chain_id in sorted(sorted(label_asym_ids), key=len):
                 if entity_type == 'polymer':
                     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
                 elif entity_type == 'branched':
@@ -42001,8 +42001,8 @@ class NmrDpUtility:
                 for tag in tags:
                     eps_loop.add_tag(tag)
 
-                label_asym_ids = item['label_asym_id'].split(',')
-                for chain_id in label_asym_ids:
+                label_asym_ids = list(set(item['label_asym_id'].split(',')))
+                for chain_id in sorted(sorted(label_asym_ids), key=len):
                     if entity_type == 'polymer':
                         ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
                     elif entity_type == 'branched':

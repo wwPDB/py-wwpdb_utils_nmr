@@ -291,6 +291,8 @@ class BiosymMRParserListener(ParseTreeListener):
         self.dihedRestraints = 0     # BIOSYM: Dihedral angle restraints
         self.geoRestraints = 0       # BIOSYM: Chirality/prochirality constraints
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 

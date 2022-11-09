@@ -274,6 +274,8 @@ class IsdMRParserListener(ParseTreeListener):
 
         self.atom_sele_pat = re.compile(r'([A-Z]+)(\d+)([A-Z][A-Z0-9]*)')
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 

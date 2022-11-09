@@ -406,6 +406,8 @@ class CyanaMRParserListener(ParseTreeListener):
         self.ssbondRestraints = 0    # CYANA: Disulfide bond geometry restraints
         self.fchiralRestraints = 0   # CYANA: Floating chiral stereo assignments
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 
@@ -1757,7 +1759,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
-                        _, _, atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId):
@@ -2814,8 +2816,8 @@ class CyanaMRParserListener(ParseTreeListener):
             if carbohydrate:
                 chainAssign = self.assignCoordPolymerSequence(seqId, compId, 'CA')
                 if len(chainAssign) > 0:
-                    ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainAssign[0][0])
-                    if 'type' in ps and 'polypeptide' in ps['type']:
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainAssign[0][0]), None)
+                    if ps is not None and 'type' in ps and 'polypeptide' in ps['type']:
                         peptide = True
                         nucleotide = carbohydrate = False
 
@@ -2865,7 +2867,10 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
-                    ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                    if carbohydrate:
+                        ps = next(ps for ps in self.__branched if ps['auth_chain_id'] == chainId)
+                    else:
+                        ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
 
                     peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
 
@@ -5344,8 +5349,8 @@ class CyanaMRParserListener(ParseTreeListener):
             if carbohydrate:
                 chainAssign = self.assignCoordPolymerSequenceWithChainId(chainId, seqId, compId, 'CA')
                 if len(chainAssign) > 0:
-                    ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainAssign[0][0])
-                    if 'type' in ps and 'polypeptide' in ps['type']:
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainAssign[0][0]), None)
+                    if ps is not None and 'type' in ps and 'polypeptide' in ps['type']:
                         peptide = True
                         nucleotide = carbohydrate = False
 

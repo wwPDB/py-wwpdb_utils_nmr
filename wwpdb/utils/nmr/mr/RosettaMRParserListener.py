@@ -335,6 +335,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         self.__atom_sel_comment_pattern = re.compile(r'([A-Za-z]+)(\d+)(\S+)$')
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 

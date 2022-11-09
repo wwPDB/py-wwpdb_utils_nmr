@@ -331,6 +331,8 @@ class DynamoMRParserListener(ParseTreeListener):
         self.rdcRestraints = 0       # DYNAMO/PALES: Residual dipolar coupling restraints
         self.jcoupRestraints = 0     # DYNAMO: Scalar coupling constant restraints
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 

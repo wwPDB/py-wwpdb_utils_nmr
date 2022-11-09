@@ -274,6 +274,8 @@ class SybylMRParserListener(ParseTreeListener):
 
         self.atom_sele_pat = re.compile(r'(\S*[A-Z])(\d+)\.(\S*)')
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 

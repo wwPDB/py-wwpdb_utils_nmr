@@ -675,6 +675,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.dihed_omega_atoms = ['CA', 'N', 'C', 'CA']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), CA(i-1)
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 

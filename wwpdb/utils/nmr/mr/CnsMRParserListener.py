@@ -488,6 +488,8 @@ class CnsMRParserListener(ParseTreeListener):
         # self.angStatements = 0       # CNS: Angle database statements
         self.geoStatements = 0       # CNS: Harmonic coordinate/NCS restraints
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 

@@ -383,6 +383,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                             r'([A-Za-z]+)(\d+):(\S+)-'
                                             r'([A-Za-z]+)(\d+):(\S+).*')
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 

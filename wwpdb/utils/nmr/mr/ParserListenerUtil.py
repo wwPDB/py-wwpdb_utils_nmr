@@ -2945,6 +2945,10 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
                                                      or (constraintType is not None
                                                          and constraintType == 'disulfide bond')):
             sf.add_tag(tag_item_name, 'disulfide bond')
+        elif tag_item_name == 'Constraint_type' and constraintType is not None and constraintType == 'diselenide bond':
+            sf.add_tag(tag_item_name, 'diselenide bond')
+        elif tag_item_name == 'Constraint_type' and constraintType is not None and constraintType == 'metal coordination':
+            sf.add_tag(tag_item_name, 'metal coordination')
         elif tag_item_name == 'Constraint_type' and mrSubtype == 'rdc':
             sf.add_tag(tag_item_name, 'RDC')
         elif tag_item_name == 'Constraint_type' and mrSubtype == 'dist':
@@ -3459,20 +3463,44 @@ def getDistConstraintType(atomSelectionSet):
     if atom1 is None or atom2 is None:
         return None
 
+    atom_id_1 = atom1['atom_id']
+    atom_id_2 = atom2['atom_id']
+
+    if atom1['comp_id'] == atom_id_1 or atom2['comp_id'] == atom_id_2:
+        return 'metal coordination'
+
     if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']:
         return None
 
-    _atom_id_1 = atom1['atom_id']
-    _atom_id_2 = atom2['atom_id']
+    if atom_id_1 == 'SE' and atom_id_2 == 'SE':
+        return 'diselenide bond'
 
-    has_hbond = 'O' in (_atom_id_1, _atom_id_2)
-    has_ssbond = _atom_id_1 == 'S' and _atom_id_2 == 'S'
+    if atom_id_1 == 'SG' and atom_id_2 == 'SG':
+        return 'disulfide bond'
 
-    if has_hbond:
+    atom_id_1_ = atom_id_1[0]
+    atom_id_2_ = atom_id_2[0]
+
+    if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
         return 'hydrogen bond'
 
-    if has_ssbond:
-        return 'disulfide bond'
+    if (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+        return 'hydrogen bond'
+
+    if (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+        return 'hydrogen bond'
+
+    if (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+        return 'hydrogen bond'
+
+    if (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+        return 'hydrogen bond'
+
+    if (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+        return 'hydrogen bond'
+
+    if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+        return 'hydrogen bond'
 
     return None
 

@@ -11,6 +11,7 @@ import sys
 import itertools
 import numpy
 import re
+import copy
 
 from antlr4 import ParseTreeListener
 
@@ -1067,20 +1068,39 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf = self.__getSf()
                     sf['id'] += 1
 
-                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                for atom1, atom4 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
+                    if isLongRangeRestraint([atom1, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
+                    self.__ccU.updateChemCompDict(atom1['comp_id'])
+                    atom2_can = [(ccb[self.__ccU.ccbAtomId1] if atom1['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
+                                 for ccb in self.__ccU.lastBonds if atom1['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
+                    atom3_can = [(ccb[self.__ccU.ccbAtomId1] if atom4['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
+                                 for ccb in self.__ccU.lastBonds if atom4['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
+                    atom_id_2 = atom_id_3 = None
+                    for ccb in self.__ccU.lastBonds:
+                        if ccb[self.__ccU.ccbAtomId1] in atom2_can and ccb[self.__ccU.ccbAtomId2] in atom3_can:
+                            atom_id_2 = ccb[self.__ccU.ccbAtomId1]
+                            atom_id_3 = ccb[self.__ccU.ccbAtomId2]
+                            break
+                        if ccb[self.__ccU.ccbAtomId2] in atom2_can and ccb[self.__ccU.ccbAtomId1] in atom3_can:
+                            atom_id_2 = ccb[self.__ccU.ccbAtomId2]
+                            atom_id_3 = ccb[self.__ccU.ccbAtomId1]
+                            break
+                    if atom_id_2 is None or atom_id_3 is None:
+                        continue
+                    atom2 = copy.copy(atom1)
+                    atom2['atom_id'] = atom_id_2
+                    atom3 = copy.copy(atom4)
+                    atom3['atom_id'] = atom_id_3
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
-                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                                     '.', None,
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
         except ValueError:
@@ -1477,20 +1497,39 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf = self.__getSf()
                     sf['id'] += 1
 
-                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                for atom1, atom4 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
+                    if isLongRangeRestraint([atom1, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
+                    self.__ccU.updateChemCompDict(atom1['comp_id'])
+                    atom2_can = [(ccb[self.__ccU.ccbAtomId1] if atom1['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
+                                 for ccb in self.__ccU.lastBonds if atom1['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
+                    atom3_can = [(ccb[self.__ccU.ccbAtomId1] if atom4['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
+                                 for ccb in self.__ccU.lastBonds if atom4['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
+                    atom_id_2 = atom_id_3 = None
+                    for ccb in self.__ccU.lastBonds:
+                        if ccb[self.__ccU.ccbAtomId1] in atom2_can and ccb[self.__ccU.ccbAtomId2] in atom3_can:
+                            atom_id_2 = ccb[self.__ccU.ccbAtomId1]
+                            atom_id_3 = ccb[self.__ccU.ccbAtomId2]
+                            break
+                        if ccb[self.__ccU.ccbAtomId2] in atom2_can and ccb[self.__ccU.ccbAtomId1] in atom3_can:
+                            atom_id_2 = ccb[self.__ccU.ccbAtomId2]
+                            atom_id_3 = ccb[self.__ccU.ccbAtomId1]
+                            break
+                    if atom_id_2 is None or atom_id_3 is None:
+                        continue
+                    atom2 = copy.copy(atom1)
+                    atom2['atom_id'] = atom_id_2
+                    atom3 = copy.copy(atom4)
+                    atom3['atom_id'] = atom_id_3
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
-                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+                              f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                                     '.', None,
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
         except ValueError:
@@ -5791,20 +5830,39 @@ class CyanaMRParserListener(ParseTreeListener):
                 sf = self.__getSf()
                 sf['id'] += 1
 
-            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+            for atom1, atom4 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isLongRangeRestraint([atom1, atom2], self.__polySeq):
+                if isLongRangeRestraint([atom1, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
+                self.__ccU.updateChemCompDict(atom1['comp_id'])
+                atom2_can = [(ccb[self.__ccU.ccbAtomId1] if atom1['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
+                             for ccb in self.__ccU.lastBonds if atom1['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
+                atom3_can = [(ccb[self.__ccU.ccbAtomId1] if atom4['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
+                             for ccb in self.__ccU.lastBonds if atom4['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
+                atom_id_2 = atom_id_3 = None
+                for ccb in self.__ccU.lastBonds:
+                    if ccb[self.__ccU.ccbAtomId1] in atom2_can and ccb[self.__ccU.ccbAtomId2] in atom3_can:
+                        atom_id_2 = ccb[self.__ccU.ccbAtomId1]
+                        atom_id_3 = ccb[self.__ccU.ccbAtomId2]
+                        break
+                    if ccb[self.__ccU.ccbAtomId2] in atom2_can and ccb[self.__ccU.ccbAtomId1] in atom3_can:
+                        atom_id_2 = ccb[self.__ccU.ccbAtomId2]
+                        atom_id_3 = ccb[self.__ccU.ccbAtomId1]
+                        break
+                if atom_id_2 is None or atom_id_3 is None:
+                    continue
+                atom2 = copy.copy(atom1)
+                atom2['atom_id'] = atom_id_2
+                atom3 = copy.copy(atom4)
+                atom3['atom_id'] = atom_id_3
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} "
-                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
-                    couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                        + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', couplingCode,
-                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                                 '.', None,
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
         except ValueError:

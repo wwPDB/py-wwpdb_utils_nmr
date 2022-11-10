@@ -828,7 +828,7 @@ class NEFTranslator:
                 minimal_lp_category_star_s = ['_Atom_chem_shift']
                 minimal_lp_category_star_r = ['_Gen_dist_constraint']
                 allowed_lp_category_star_o = ['_Gen_dist_constraint', '_Torsion_angle_constraint', '_RDC_constraint',
-                                              '_Homonucl_NOE', '_Coupling_constant', '_RDC',
+                                              '_Homonucl_NOE', '_J_three_bond_constraint', '_RDC',
                                               '_CS_anisotropy', '_Dipolar_coupling',
                                               '_CA_CB_constraint', '_H_chem_shift_constraint',
                                               '_Chem_shift_perturbation', '_Auto_relaxation',
@@ -843,7 +843,7 @@ class NEFTranslator:
                 minimal_sf_category_star_s = ['assigned_chemical_shifts']
                 minimal_sf_category_star_r = ['general_distance_constraints']
                 allowed_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints',
-                                              'homonucl_NOEs', 'coupling_constants', 'RDCs',
+                                              'homonucl_NOEs', 'J_three_bond_constraints', 'RDCs',
                                               'chem_shift_anisotropy', 'dipolar_couplings',
                                               'CA_CB_chem_shift_constraints', 'H_chem_shift_constraints',
                                               'chem_shift_perturbation', 'auto_relaxation',

@@ -232,7 +232,7 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'dihed_restraint': '_Torsion_angle_constraint_list',
                             'rdc_restraint': '_RDC_constraint_list',
                             'noepk_restraint': '_Homonucl_NOE_list',
-                            'jcoup_restraint': '_Coupling_constant_list',
+                            'jcoup_restraint': '_J_three_bond_constraint_list',
                             'csa_restraint': '_Chem_shift_anisotropy',
                             'ddc_restraint': '_Dipolar_coupling_list',
                             'hvycs_restraint': '_CA_CB_constraint_list',
@@ -249,7 +249,7 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'dihed_restraint': 'torsion_angle_constraints',
                           'rdc_restraint': 'RDC_constraints',
                           'noepk_restraint': 'homonucl_NOEs',
-                          'jcoup_restraint': 'coupling_constants',
+                          'jcoup_restraint': 'J_three_bond_constraints',
                           'csa_restraint': 'chem_shift_anisotropy',
                           'ddc_restraint': 'dipolar_couplings',
                           'hvycs_restraint': 'CA_CB_chem_shift_constraints',
@@ -317,8 +317,6 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                              ],
                          'jcoup_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                             {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
-                                              'enforce-non-zero': True},
                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -433,7 +431,7 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'dihed_restraint': '_Torsion_angle_constraint',
                           'rdc_restraint': '_RDC_constraint',
                           'noepk_restraint': '_Homonucl_NOE',
-                          'jcoup_restraint': '_Coupling_constant',
+                          'jcoup_restraint': '_J_three_bond_constraint',
                           'csa_restraint': '_CS_anisotropy',
                           'ddc_restraint': '_Dipolar_coupling',
                           'hvycs_restraint': '_CA_CB_constraint',
@@ -514,7 +512,17 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                              {'name': 'Entity_ID_2', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                              {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
-                                             {'name': 'Atom_ID_2', 'type': 'str'}
+                                             {'name': 'Atom_ID_2', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_3'},
+                                             {'name': 'Entity_ID_3', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_3', 'type': 'int', 'default-from': 'Seq_ID_3'},
+                                             {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_3', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_4'},
+                                             {'name': 'Entity_ID_4', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_4', 'type': 'int', 'default-from': 'Seq_ID_4'},
+                                             {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_4', 'type': 'str'}
                                              ],
                          'rdc_raw_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
@@ -890,44 +898,25 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Homonucl_NOE_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
-                          'jcoup_restraint': [{'name': 'Code', 'type': 'str', 'mandatory': True},
-                                              {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
-                                               # 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
-                                               'enforce-enum': True},
-                                              {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
-                                               # 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
-                                               'enforce-enum': True},
-                                              {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
-                                               'enum': ALLOWED_AMBIGUITY_CODES,
-                                               'enforce-enum': True},
-                                              {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
-                                               'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
-                                               'enforce-enum': True},
-                                              {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
-                                               'enum': set(ALLOWED_ISOTOPE_NUMBERS),
-                                               'enforce-enum': True},
-                                              {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
-                                               'enum': ALLOWED_AMBIGUITY_CODES,
-                                               'enforce-enum': True},
-                                              {'name': 'Val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                          'jcoup_restraint': [{'name': 'Coupling_const_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                'range': RDC_RESTRAINT_RANGE,
-                                               'group': {'member-with': ['Val_min', 'Val_max'],
+                                               'group': {'member-with': ['Coupling_const_lower_bound', 'Coupling_const_upper_bound'],
                                                          'coexist-with': None,
                                                          'smaller-than': None,
                                                          'larger-than': None}},
-                                              {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                              {'name': 'Coupling_const_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                'range': {'min_inclusive': 0.0}},
-                                              {'name': 'Val_min', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                              {'name': 'Coupling_const_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                'range': RDC_RESTRAINT_RANGE,
-                                               'group': {'member-with': ['Val_max'],
+                                               'group': {'member-with': ['Coupling_const_upper_bound'],
                                                          'coexist-with': None,
                                                          'smaller-than': None,
-                                                         'larger-than': ['Val_max']}},
-                                              {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                         'larger-than': ['Coupling_const_upper_bound']}},
+                                              {'name': 'Coupling_const_upper_bound', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                'range': RDC_RESTRAINT_RANGE,
-                                               'group': {'member-with': ['Val_min'],
+                                               'group': {'member-with': ['Coupling_const_lower_bound'],
                                                          'coexist-with': None,
-                                                         'smaller-than': ['Val_min'],
+                                                         'smaller-than': ['Coupling_const_lower_bound'],
                                                          'larger-than': None}},
                                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -937,7 +926,15 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                               {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                              {'name': 'Coupling_constant_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                              {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'J_three_bond_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                'default': '1', 'default-from': 'parent'},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
@@ -3282,26 +3279,28 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
             row[10] = row[key_size + 12] = atom1['auth_atom_id']
 
     elif mrSubtype == 'jcoup':
-        row[key_size] = code
-        row[key_size + 1] = atomType = atom1['atom_id'][0]
-        row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        # Ambiguity_code_1
-        row[key_size + 4] = atomType = atom2['atom_id'][0]
-        row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        # Ambiguity_code_2
-        if hasKeyValue(dstFunc, 'target_value'):
-            row[key_size + 7] = dstFunc['target_value']
-        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
-            row[key_size + 8] = dstFunc['target_value_uncertainty']
-        if hasKeyValue(dstFunc, 'lower_limit'):
-            row[key_size + 9] = dstFunc['lower_limit']
-        if hasKeyValue(dstFunc, 'upper_limit'):
-            row[key_size + 10] = dstFunc['upper_limit']
+        row[11], row[12], row[13], row[14], row[15] =\
+            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        row[16], row[17], row[18], row[19], row[20] =\
+            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
-        row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+            row[key_size + 1] = dstFunc['target_value_uncertainty']
+        if hasKeyValue(dstFunc, 'lower_limit'):
+            row[key_size + 2] = dstFunc['lower_limit']
+        if hasKeyValue(dstFunc, 'upper_limit'):
+            row[key_size + 3] = dstFunc['upper_limit']
+
+        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
+        row[key_size + 8], row[key_size + 9], row[key_size + 10], row[key_size + 11] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
+            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
+            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
 
     elif mrSubtype == 'csa':
         row[key_size] = atomType = atom1['atom_id'][0]

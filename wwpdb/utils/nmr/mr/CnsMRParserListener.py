@@ -2406,16 +2406,16 @@ class CnsMRParserListener(ParseTreeListener):
                     self.warningMessage += self.__warningInAtomSelection
                 return
 
-            for i in range(0, len(self.atomSelectionSet), 2):
+            for i in range(0, len(self.atomSelectionSet), 4):
                 chain_id_1 = self.atomSelectionSet[i][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[i][0]['seq_id']
                 comp_id_1 = self.atomSelectionSet[i][0]['comp_id']
                 atom_id_1 = self.atomSelectionSet[i][0]['atom_id']
 
-                chain_id_2 = self.atomSelectionSet[i + 1][0]['chain_id']
-                seq_id_2 = self.atomSelectionSet[i + 1][0]['seq_id']
-                comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
-                atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[i + 3][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[i + 3][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[i + 3][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[i + 3][0]['atom_id']
 
                 if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2488,11 +2488,9 @@ class CnsMRParserListener(ParseTreeListener):
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                                     '.', None,
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
             else:
@@ -2507,10 +2505,8 @@ class CnsMRParserListener(ParseTreeListener):
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
+                                     '.', None,
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -2529,11 +2525,10 @@ class CnsMRParserListener(ParseTreeListener):
                                   f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc2}")
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc if dstFunc2 is None else dstFunc2, self.__authToStarSeq, atom1, atom2)
+                                     '.', None,
+                                     sf['list_id'], self.__entryId, dstFunc if dstFunc2 is None else dstFunc2, self.__authToStarSeq,
+                                     atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
         finally:

@@ -2855,33 +2855,35 @@ class DynamoMRParserListener(ParseTreeListener):
                 if angleName == 'PHI':
                     self.auxAtomSelectionSet.clear()
                     self.selectAuxCoordAtoms(chainAssign2, seqId2, compId2, 'H', False)
+                    self.selectAuxCoordAtoms(chainAssign2, seqId2, compId2, 'N', False)
+                    self.selectAuxCoordAtoms(chainAssign3, seqId3, compId3, 'CA', False)
                     self.selectAuxCoordAtoms(chainAssign3, seqId3, compId3, 'HA', False)
                 if self.__debug:
                     if angleName == 'PHI':
                         if len(self.auxAtomSelectionSet) == 2:
                             print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} (index={index}) angleName={angleName} "
                                   f"A={A} B={B} C={C} phase={phase} "
-                                  f"atom1={self.auxAtomSelectionSet[0][0]} atom2={self.auxAtomSelectionSet[1][0]} {dstFunc}")
+                                  f"atom1={self.auxAtomSelectionSet[0][0]} atom2={self.auxAtomSelectionSet[1][0]} "
+                                  f"atom1={self.auxAtomSelectionSet[2][0]} atom2={self.auxAtomSelectionSet[3][0]} {dstFunc}")
                     else:
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} (index={index}) angleName={angleName} "
                               f"A={A} B={B} C={C} phase={phase} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     if angleName == 'PHI':
-                        if len(self.auxAtomSelectionSet) == 2:
+                        if len(self.auxAtomSelectionSet) == 4:
                             sf['index_id'] += 1
-                            couplingCode = '3JHNHA'
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', couplingCode,
-                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0])
+                                         '.', None,
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq,
+                                         self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0],
+                                         self.auxAtomSelectionSet[2][0], self.auxAtomSelectionSet[3][0])
                             sf['loop'].add_data(row)
                     else:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                                     '.', None,
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
         except ValueError:
@@ -2989,33 +2991,35 @@ class DynamoMRParserListener(ParseTreeListener):
                 if angleName == 'PHI':
                     self.auxAtomSelectionSet.clear()
                     self.selectAuxCoordAtoms(chainAssign2, seqId2, compId2, 'H', False)
+                    self.selectAuxCoordAtoms(chainAssign2, seqId2, compId2, 'N', False)
+                    self.selectAuxCoordAtoms(chainAssign3, seqId3, compId3, 'CA', False)
                     self.selectAuxCoordAtoms(chainAssign3, seqId3, compId3, 'HA', False)
                 if self.__debug:
                     if angleName == 'PHI':
                         if len(self.auxAtomSelectionSet) == 2:
                             print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} (index={index}) angleName={angleName} "
                                   f"A={A} B={B} C={C} phase={phase} "
-                                  f"atom1={self.auxAtomSelectionSet[0][0]} atom2={self.auxAtomSelectionSet[1][0]} {dstFunc}")
+                                  f"atom1={self.auxAtomSelectionSet[0][0]} atom2={self.auxAtomSelectionSet[1][0]} "
+                                  f"atom1={self.auxAtomSelectionSet[2][0]} atom2={self.auxAtomSelectionSet[3][0]} {dstFunc}")
                     else:
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} (index={index}) angleName={angleName} "
                               f"A={A} B={B} C={C} phase={phase} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     if angleName == 'PHI':
-                        if len(self.auxAtomSelectionSet) == 2:
+                        if len(self.auxAtomSelectionSet) == 4:
                             sf['index_id'] += 1
-                            couplingCode = '3JHNHA'
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', couplingCode,
-                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0])
+                                         '.', None,
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq,
+                                         self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0],
+                                         self.auxAtomSelectionSet[2][0], self.auxAtomSelectionSet[3][0])
                             sf['loop'].add_data(row)
                     else:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                                     '.', None,
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
         except ValueError:
@@ -3123,33 +3127,35 @@ class DynamoMRParserListener(ParseTreeListener):
                 if angleName == 'PHI':
                     self.auxAtomSelectionSet.clear()
                     self.selectAuxCoordAtoms(chainAssign2, seqId2, compId2, 'H', False)
+                    self.selectAuxCoordAtoms(chainAssign2, seqId2, compId2, 'N', False)
+                    self.selectAuxCoordAtoms(chainAssign3, seqId3, compId3, 'CA', False)
                     self.selectAuxCoordAtoms(chainAssign3, seqId3, compId3, 'HA', False)
                 if self.__debug:
                     if angleName == 'PHI':
                         if len(self.auxAtomSelectionSet) == 2:
                             print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} (index={index}) angleName={angleName} "
                                   f"A={A} B={B} C={C} phase={phase} "
-                                  f"atom1={self.auxAtomSelectionSet[0][0]} atom2={self.auxAtomSelectionSet[1][0]} {dstFunc}")
+                                  f"atom1={self.auxAtomSelectionSet[0][0]} atom2={self.auxAtomSelectionSet[1][0]} "
+                                  f"atom1={self.auxAtomSelectionSet[2][0]} atom2={self.auxAtomSelectionSet[3][0]} {dstFunc}")
                     else:
                         print(f"subtype={self.__cur_subtype} id={self.jcoupRestraints} (index={index}) angleName={angleName} "
                               f"A={A} B={B} C={C} phase={phase} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     if angleName == 'PHI':
-                        if len(self.auxAtomSelectionSet) == 2:
+                        if len(self.auxAtomSelectionSet) == 4:
                             sf['index_id'] += 1
-                            couplingCode = '3JHNHA'
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', couplingCode,
-                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0])
+                                         '.', None,
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq,
+                                         self.auxAtomSelectionSet[0][0], self.auxAtomSelectionSet[1][0],
+                                         self.auxAtomSelectionSet[2][0], self.auxAtomSelectionSet[3][0])
                             sf['loop'].add_data(row)
                     else:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                                     '.', None,
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
         except ValueError:

@@ -1262,7 +1262,7 @@ class NmrDpUtility:
                                            'spectral_peak': 'spectral_peak_list',
                                            'spectral_peak_alt': 'spectral_peak_list',
                                            'noepk_restraint': 'homonucl_NOEs',
-                                           'jcoup_restraint': 'coupling_constants',
+                                           'jcoup_restraint': 'J_three_bond_constraints',
                                            'rdc_raw_data': 'RDCs',
                                            'csa_restraint': 'chem_shift_anisotropy',
                                            'ddc_restraint': 'dipolar_couplings',
@@ -1313,7 +1313,7 @@ class NmrDpUtility:
                                            'spectral_peak': '_Peak_row_format',
                                            'spectral_peak_alt': '_Peak',
                                            'noepk_restraint': '_Homonucl_NOE',
-                                           'jcoup_restraint': '_Coupling_constant',
+                                           'jcoup_restraint': '_J_three_bond_constraint',
                                            'rdc_raw_data': '_RDC',
                                            'csa_restraint': '_CS_anisotropy',
                                            'ddc_restraint': '_Dipolar_coupling',
@@ -1685,7 +1685,15 @@ class NmrDpUtility:
                                                            {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
                                                            {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
                                                            {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
-                                                           {'name': 'Atom_ID_2', 'type': 'str'}
+                                                           {'name': 'Atom_ID_2', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_3'},
+                                                           {'name': 'Comp_index_ID_3', 'type': 'int', 'default-from': 'Seq_ID_3'},
+                                                           {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_3', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_4'},
+                                                           {'name': 'Comp_index_ID_4', 'type': 'int', 'default-from': 'Seq_ID_4'},
+                                                           {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
+                                                           {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
                                        'rdc_raw_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
@@ -1981,7 +1989,19 @@ class NmrDpUtility:
                                                                    {'name': 'Comp_index_ID_2', 'type': 'int',
                                                                     'default-from': 'Seq_ID_2'},
                                                                    {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
-                                                                   {'name': 'Atom_ID_2', 'type': 'str'}
+                                                                   {'name': 'Atom_ID_2', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str',
+                                                                    'default': '1', 'default-from': 'Auth_asym_ID_3'},
+                                                                   {'name': 'Comp_index_ID_3', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_3'},
+                                                                   {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_3', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str',
+                                                                    'default': '1', 'default-from': 'Auth_asym_ID_4'},
+                                                                   {'name': 'Comp_index_ID_4', 'type': 'int',
+                                                                    'default-from': 'Seq_ID_4'},
+                                                                   {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
+                                                                   {'name': 'Atom_ID_4', 'type': 'str'}
                                                                    ],
                                                'rdc_raw_data': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
                                                                  'default': '1'},
@@ -2624,44 +2644,25 @@ class NmrDpUtility:
                                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Homonucl_NOE_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                             ],
-                                        'jcoup_restraint': [{'name': 'Code', 'type': 'str', 'mandatory': True},
-                                                            {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
-                                                             'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
-                                                             'enforce-enum': True},
-                                                            {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
-                                                             'enum': set(ALLOWED_ISOTOPE_NUMBERS),
-                                                             'enforce-enum': True},
-                                                            {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
-                                                             'enum': ALLOWED_AMBIGUITY_CODES,
-                                                             'enforce-enum': True},
-                                                            {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
-                                                             'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
-                                                             'enforce-enum': True},
-                                                            {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
-                                                             'enum': set(ALLOWED_ISOTOPE_NUMBERS),
-                                                             'enforce-enum': True},
-                                                            {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
-                                                             'enum': ALLOWED_AMBIGUITY_CODES,
-                                                             'enforce-enum': True},
-                                                            {'name': 'Val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                        'jcoup_restraint': [{'name': 'Coupling_const_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': RDC_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Val_min', 'Val_max'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': None,
                                                                        'larger-than': None}},
-                                                            {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                            {'name': 'Coupling_const_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                              'range': {'min_inclusive': 0.0}},
-                                                            {'name': 'Val_min', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                            {'name': 'Coupling_const_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': RDC_RESTRAINT_RANGE,
-                                                             'group': {'member-with': ['Val_max'],
+                                                             'group': {'member-with': ['Coupling_const_upper_bound'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': None,
-                                                                       'larger-than': ['Val_max']}},
-                                                            {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                                       'larger-than': ['Coupling_const_upper_bound']}},
+                                                            {'name': 'Coupling_const_upper_bound', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': RDC_RESTRAINT_RANGE,
-                                                             'group': {'member-with': ['Val_min'],
+                                                             'group': {'member-with': ['Coupling_const_lower_bound'],
                                                                        'coexist-with': None,
-                                                                       'smaller-than': ['Val_min'],
+                                                                       'smaller-than': ['Coupling_const_lower_bound'],
                                                                        'larger-than': None}},
                                                             {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -2671,7 +2672,15 @@ class NmrDpUtility:
                                                             {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                                            {'name': 'Coupling_constant_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                            {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'J_three_bond_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                              'default': '1', 'default-from': 'parent'}
                                                             ],
                                         'rdc_raw_data': [{'name': 'RDC_code', 'type': 'str', 'mandatory': True},
@@ -3641,14 +3650,21 @@ class NmrDpUtility:
                                                               'Auth_entity_assembly_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
                                                               'Auth_entity_assembly_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
                                                               'Sf_ID', 'Entry_ID', 'Homonucl_NOE_list_ID'],
-                                          'jcoup_restraint': ['ID', 'Code', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1',
-                                                              'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Ambiguity_code_1',
-                                                              'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2',
-                                                              'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Ambiguity_code_2',
-                                                              'Val', 'Val_min', 'Val_max', 'Val_err', 'Resonance_ID_1', 'Resonance_ID_2',
-                                                              'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
-                                                              'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
-                                                              'Details', 'Sf_ID', 'Entry_ID', 'Coupling_constant_list_ID'],
+                                          'jcoup_restraint': ['ID', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1',
+                                                              'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Resonance_ID_1',
+                                                              'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2',
+                                                              'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Resonance_ID_2',
+                                                              'Assembly_atom_ID_3', 'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3',
+                                                              'Seq_ID_3', 'Comp_ID_3', 'Atom_ID_3', 'Atom_type_3', 'Resonance_ID_3',
+                                                              'Assembly_atom_ID_4', 'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4',
+                                                              'Seq_ID_4', 'Comp_ID_4', 'Atom_ID_4', 'Atom_type_4', 'Resonance_ID_4',
+                                                              'Coupling_constant_val', 'Coupling_constant_lower_bound', 'Coupling_constant_upper_bound',
+                                                              'Coupling_constant_err', 'Source_experiment_ID',
+                                                              'Auth_asym_ID_1', 'Auth_entity_assembly_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
+                                                              'Auth_asym_ID_2', 'Auth_entity_assembly_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
+                                                              'Auth_asym_ID_3', 'Auth_entity_assembly_ID_3', 'Auth_seq_ID_3', 'Auth_comp_ID_3', 'Auth_atom_ID_3',
+                                                              'Auth_asym_ID_4', 'Auth_entity_assembly_ID_4', 'Auth_seq_ID_4', 'Auth_comp_ID_4', 'Auth_atom_ID_4',
+                                                              'Sf_ID', 'Entry_ID', 'J_three_bond_constraint_list_ID'],
                                           'rdc_raw_data': ['ID', 'RDC_code', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1',
                                                            'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Ambiguity_code_1',
                                                            'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2',
@@ -3808,7 +3824,7 @@ class NmrDpUtility:
                                              'spectral_peak': '_Spectral_peak_list',
                                              'spectral_peak_alt': '_Spectral_peak_list',
                                              'noepk_restraint': '_Homonucl_NOE_list',
-                                             'jcoup_restraint': '_Coupling_constant_list',
+                                             'jcoup_restraint': '_J_three_bond_constraint_list',
                                              'rdc_raw_data': '_RDC_list',
                                              'csa_restraint': '_Chem_shift_anisotropy',
                                              'ddc_restraint': '_Dipolar_coupling_list',
@@ -4008,9 +4024,7 @@ class NmrDpUtility:
                                                                'enum': ('peak volume', 'peak height', 'contour count', 'na')}
                                                               ],
                                           'jcoup_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
-                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                              {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
-                                                               'enforce-non-zero': True}
+                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True}
                                                               ],
                                           'rdc_raw_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
@@ -4247,8 +4261,7 @@ class NmrDpUtility:
                                                                  'Sample_condition_list_ID', 'Sample_condition_list_label', 'Homonuclear_NOE_val_type',
                                                                  'NOE_ref_val', 'NOE_ref_description', 'Details', 'Text_data_format', 'Text_data'],
                                              'jcoup_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
-                                                                 'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H',
-                                                                 'Details', 'Text_data_format', 'Text_data'],
+                                                                 'Data_file_format', 'Constraint_file_ID', 'Block_ID', 'Text_data_format', 'Text_data', 'Details'],
                                              'rdc_raw_data': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
                                                               'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H',
                                                               'Bond_length_usage_flag', 'Dipolar_constraint_calib_method',
@@ -4504,7 +4517,7 @@ class NmrDpUtility:
                                                                         '_Spectral_transition_char', '_Assigned_spectral_transition',
                                                                         '_Gen_dist_constraint', '_Dist_constraint_value'],
                                                   'noepk_restraint': ['Homonucl_NOE_experiment', 'Homonucl_NOE_software', 'Homonucl_NOE'],
-                                                  'jcoup_restraint': ['Coupling_constant_experiment', 'Coupling_constant_software', 'Coupling_constant'],
+                                                  'jcoup_restraint': ['J_three_bond_constraint_expt', 'J_three_bond_constraint_software', 'J_three_bond_constraint'],
                                                   'rdc_raw_data': ['RDC_experiment', 'RDC_software', 'RDC'],
                                                   'csa_restraint': ['CS_anisotroty_experiment', 'CS_anisotroty_software', 'CS_anisotroty'],
                                                   'ddc_restraint': ['Dipolar_coupling_experiment', 'Dipolar_coupling_software', 'Dipolar_coupling'],
@@ -42121,6 +42134,52 @@ class NmrDpUtility:
                 ent_sf.add_loop(eps_loop)
 
             master_entry.add_saveframe(ent_sf)
+
+        # Refresh _Constraint_stat_list
+
+        sf_framecode = 'constraint_statistics'
+
+        cst_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
+        cst_sf.set_tag_prefix('_Constraint_stat_list')
+        cst_sf.add_tag('Sf_category', sf_framecode)
+        cst_sf.add_tag('Sf_framecode', sf_framecode)
+        cst_sf.add_tag('Entry_ID', self.__entry_id)
+        cst_sf.add_tag('ID', 1)
+
+        lp_category = '_Constraint_file'
+        cf_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+        cf_key_items = [{'name': 'ID', 'type': 'int'},
+                        {'name': 'Constraint_file_name', 'type': 'str'},
+                        {'name': 'Software_name', 'type': 'str'},
+                        {'name': 'Block_ID', 'type': 'int'}
+                        ]
+        cf_data_items = [{'name': 'Constraint_type', 'type': 'enum',
+                          'enum': ('distance', 'dipolar coupling', 'protein dihedral angle', 'nucleic acid dihedral angle',
+                                   'coupling constant', 'chemical shift', 'other angle', 'chemical shift anisotropy',
+                                   'hydrogen exchange', 'line broadening', 'pseudocontact shift', 'intervector projection angle',
+                                   'protein peptide planarity', 'protein other kinds of constraints',
+                                   'nucleic acid base planarity', 'nucleic acid other kinds of constraints')},
+                         {'name': 'Constraint_subtype', 'type': 'enum',
+                          'enum': ('Not applicable', 'NOE', 'NOE buildup', 'NOE not seen', 'general distance',
+                                   'alignment tensor', 'chirality', 'prochirality', 'disulfide bond', 'hydrogen bond',
+                                   'symmetry', 'ROE', 'peptide', 'ring', 'PRE')},
+                         {'name': 'Constraint_subsubtype', 'type': 'enum',
+                          'enum': ('ambi', 'simple')},
+                         {'name': 'Constraint_number', 'type': 'int'},
+                         {'name': 'Constraint_stat_list_ID', 'type': 'int', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                         {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                         ]
+
+        tags = [lp_category + '.' + _item['name'] for _item in cf_key_items]
+        tags.extend([lp_category + '.' + _item['name'] for _item in cf_data_items])
+
+        for tag in tags:
+            cf_loop.add_tag(tag)
+
+        cst_sf.add_loop(cf_loop)
+
+        # master_entry.add_saveframe(cst_sf)
 
         content_subtype_order = ['dist_restraint',
                                  'dihed_restraint',

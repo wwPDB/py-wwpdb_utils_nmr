@@ -16,6 +16,7 @@ import os
 import re
 import pynmrstar
 import pickle
+import logging
 
 from packaging import version
 
@@ -27,7 +28,16 @@ except ImportError:
     from nmr.AlignUtil import (emptyValue, trueValue)
 
 
+__pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
+__pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
+__pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
+
+if __pynmrstar_v3_3_1__:
+    logger = logging.getLogger('pynmrstar')
+    logger.setLevel(logging.ERROR)
+else:
+    logging.getLogger().setLevel(logging.ERROR)  # set level for pynmrstar
 
 
 def load_schema_from_pickle(file_name):

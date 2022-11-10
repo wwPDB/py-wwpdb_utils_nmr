@@ -5199,8 +5199,6 @@ class NmrDpUtility:
         self.__caC = None
         # set of label_aysm_id having experimental data
         self.__label_asym_id_with_exptl_data = set()
-        # set of auth_aysm_id having experimental data
-        self.__auth_asym_id_with_exptl_data = set()
         # set of auth_asym_id indicating chemical exchange occurs
         self.__auth_asym_ids_with_chem_exch = set()
 
@@ -5681,7 +5679,7 @@ class NmrDpUtility:
 
                     if not os.path.exists(_csPath):
 
-                        cif_to_star = CifToNmrStar()
+                        cif_to_star = CifToNmrStar(self.__lfh)
                         if not cif_to_star.convert(csPath, _csPath):
                             _csPath = csPath
 
@@ -5919,7 +5917,7 @@ class NmrDpUtility:
 
                     if not os.path.exists(_csPath):
 
-                        cif_to_star = CifToNmrStar()
+                        cif_to_star = CifToNmrStar(self.__lfh)
                         if not cif_to_star.convert(csPath, _csPath):
                             _csPath = csPath
 
@@ -6517,7 +6515,7 @@ class NmrDpUtility:
 
                         else:
 
-                            cif_to_star = CifToNmrStar()
+                            cif_to_star = CifToNmrStar(self.__lfh)
                             if cif_to_star.convert(_srcPath, _srcPath + '~'):
                                 _srcPath += '~'
                                 tmpPaths.append(_srcPath)
@@ -12693,7 +12691,7 @@ class NmrDpUtility:
 
                         _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
 
-                        cif_to_star = CifToNmrStar()
+                        cif_to_star = CifToNmrStar(self.__lft)
                         if not cif_to_star.convert(mrPath, _mrPath):
                             _mrPath = mrPath
 
@@ -13396,7 +13394,7 @@ class NmrDpUtility:
 
                             _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
 
-                            cif_to_star = CifToNmrStar()
+                            cif_to_star = CifToNmrStar(self.__lft)
                             if not cif_to_star.convert(mrPath, _mrPath):
                                 _mrPath = mrPath
 
@@ -34108,7 +34106,6 @@ class NmrDpUtility:
                 if has_key_value(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq'):
                     for ca in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
                         self.__label_asym_id_with_exptl_data.add(ca['test_chain_id'])
-                        self.__auth_asym_id_with_exptl_data.add(ca['test_auth_chain_id'])
 
             else:
 
@@ -40936,7 +40933,9 @@ class NmrDpUtility:
             return True
 
         self.__star_data[0].entry_id = self.__entry_id
-        self.__star_data[0].normalize()
+
+        if not self.__op.startswith('nmr-nef'):
+            self.__star_data[0].normalize()
 
         if __pynmrstar_v3__:
             self.__star_data[0].write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)

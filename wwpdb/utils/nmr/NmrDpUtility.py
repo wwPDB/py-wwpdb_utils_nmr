@@ -40947,8 +40947,8 @@ class NmrDpUtility:
 
         self.__star_data[0].entry_id = self.__entry_id
 
-        if not self.__op.startswith('nmr-nef'):
-            self.__star_data[0].normalize()
+        # if not self.__op.startswith('nmr-nef'):
+        #     self.__star_data[0].normalize()  # do not invoke normalize() to preserve ID
 
         if __pynmrstar_v3__:
             self.__star_data[0].write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
@@ -41715,8 +41715,8 @@ class NmrDpUtility:
         content_subtype = 'entity'
         lp_category = self.lp_categories[file_type][content_subtype]
 
-        for sf_data in self.__star_data[0].get_saveframes_by_category(lp_category):
-            sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+        for sf in self.__star_data[0].get_saveframes_by_category(lp_category):
+            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
             self.__star_data[0].remove_saveframe(sf_framecode)
         # """
         # sf_key_items = [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -42137,50 +42137,6 @@ class NmrDpUtility:
 
         # Refresh _Constraint_stat_list
 
-        sf_framecode = 'constraint_statistics'
-
-        cst_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
-        cst_sf.set_tag_prefix('_Constraint_stat_list')
-        cst_sf.add_tag('Sf_category', sf_framecode)
-        cst_sf.add_tag('Sf_framecode', sf_framecode)
-        cst_sf.add_tag('Entry_ID', self.__entry_id)
-        cst_sf.add_tag('ID', 1)
-
-        lp_category = '_Constraint_file'
-        cf_loop = pynmrstar.Loop.from_scratch(lp_category)
-
-        cf_key_items = [{'name': 'ID', 'type': 'int'},
-                        {'name': 'Constraint_file_name', 'type': 'str'},
-                        {'name': 'Software_name', 'type': 'str'},
-                        {'name': 'Block_ID', 'type': 'int'}
-                        ]
-        cf_data_items = [{'name': 'Constraint_type', 'type': 'enum',
-                          'enum': ('distance', 'dipolar coupling', 'protein dihedral angle', 'nucleic acid dihedral angle',
-                                   'coupling constant', 'chemical shift', 'other angle', 'chemical shift anisotropy',
-                                   'hydrogen exchange', 'line broadening', 'pseudocontact shift', 'intervector projection angle',
-                                   'protein peptide planarity', 'protein other kinds of constraints',
-                                   'nucleic acid base planarity', 'nucleic acid other kinds of constraints')},
-                         {'name': 'Constraint_subtype', 'type': 'enum',
-                          'enum': ('Not applicable', 'NOE', 'NOE buildup', 'NOE not seen', 'general distance',
-                                   'alignment tensor', 'chirality', 'prochirality', 'disulfide bond', 'hydrogen bond',
-                                   'symmetry', 'ROE', 'peptide', 'ring', 'PRE')},
-                         {'name': 'Constraint_subsubtype', 'type': 'enum',
-                          'enum': ('ambi', 'simple')},
-                         {'name': 'Constraint_number', 'type': 'int'},
-                         {'name': 'Constraint_stat_list_ID', 'type': 'int', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
-                         {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
-                         ]
-
-        tags = [lp_category + '.' + _item['name'] for _item in cf_key_items]
-        tags.extend([lp_category + '.' + _item['name'] for _item in cf_data_items])
-
-        for tag in tags:
-            cf_loop.add_tag(tag)
-
-        cst_sf.add_loop(cf_loop)
-
-        # master_entry.add_saveframe(cst_sf)
-
         content_subtype_order = ['dist_restraint',
                                  'dihed_restraint',
                                  'rdc_restraint',
@@ -42197,10 +42153,118 @@ class NmrDpUtility:
                                  'fchiral_restraint',
                                  'other_restraint']
 
+        sf_framecode = 'constraint_statistics'
+
+        cst_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
+        cst_sf.set_tag_prefix('_Constraint_stat_list')
+        cst_sf.add_tag('Sf_category', sf_framecode)
+        cst_sf.add_tag('Sf_framecode', sf_framecode)
+        cst_sf.add_tag('Entry_ID', self.__entry_id)
+        cst_sf.add_tag('ID', 1)
+
+        lp_category = '_Constraint_file'
+        cf_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+        cf_key_items = [{'name': 'ID', 'type': 'int'},
+                        {'name': 'Constraint_file_name', 'type': 'str'},
+                        {'name': 'Software_ID', 'type': 'int'},
+                        {'name': 'Software_label', 'type': 'str'},
+                        {'name': 'Software_name', 'type': 'str'},
+                        {'name': 'Block_ID', 'type': 'int'},
+                        {'name': 'Constraint_type', 'type': 'enum',
+                         'enum': ('distance', 'dipolar coupling', 'protein dihedral angle', 'nucleic acid dihedral angle',
+                                  'coupling constant', 'chemical shift', 'other angle', 'chemical shift anisotropy',
+                                  'hydrogen exchange', 'line broadening', 'pseudocontact shift', 'intervector projection angle',
+                                  'protein peptide planarity', 'protein other kinds of constraints',
+                                  'nucleic acid base planarity', 'nucleic acid other kinds of constraints')},
+                        {'name': 'Constraint_subtype', 'type': 'enum',
+                         'enum': ('Not applicable', 'NOE', 'NOE buildup', 'NOE not seen', 'general distance',
+                                  'alignment tensor', 'chirality', 'prochirality', 'disulfide bond', 'hydrogen bond',
+                                  'symmetry', 'ROE', 'peptide', 'ring', 'PRE')},
+                        {'name': 'Constraint_subsubtype', 'type': 'enum',
+                         'enum': ('ambi', 'simple')}
+                        ]
+        cf_data_items = [{'name': 'Constraint_number', 'type': 'int'},
+                         {'name': 'Constraint_stat_list_ID', 'type': 'int', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                         {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                         ]
+
+        tags = [lp_category + '.' + _item['name'] for _item in cf_key_items]
+        tags.extend([lp_category + '.' + _item['name'] for _item in cf_data_items])
+
+        for tag in tags:
+            cf_loop.add_tag(tag)
+
+        # inspect _Software saveframes to extend Software_ID in _Constraint_file loop
+
+        software_dict = {}
+        software_id = 0
+
+        if 'software' in self.__sf_category_list:
+            for sf in self.__star_data[0].get_saveframes_by_category('software'):
+                _id = get_first_sf_tag('ID')
+                _name = get_first_sf_tag(sf, 'Name')
+                _code = get_first_sf_tag(sf, 'Sf_framecode')
+                if _id not in emptyValue and _name not in emptyValue\
+                   and _id.isdigit() and _name not in software_dict:
+                    _id_ = int(_id)
+                    software_dict[_name] = (_id_, _code)
+                    software_id = max(software_id, _id_)
+
+        file_name_dict = {}
+        file_id = 0
+        block_id = 0
+
+        for content_subtype in content_subtype_order:
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    row = [None] * len(tags)
+
+                    sf = sf_item['saveframe']
+                    file_name = get_first_sf_tag(sf, 'Data_file_name')
+                    if file_name not in file_name_dict:
+                        file_id += 1
+                        file_name_dict[file_name] = file_id
+                    row[0], row[1] = file_name_dict[file_name], file_name
+                    sf_allowed_tags = self.sf_allowed_tags[file_type][content_subtype]
+                    if 'Constraint_file_ID' in sf_allowed_tags:
+                        sf.add_tag('Constraint_file_ID', file_name_dict[file_name])
+                    _name = get_first_sf_tag(sf, 'Sf_framecode').split('_')[0]
+                    if _name in software_dict:
+                        row[2], row[3], row[4] = software_dict[_name][0], f'${software_dict[_name][1]}', _name
+                    else:
+                        software_id += 1
+                        _code = f'software_{software_id}'
+                        row[2], row[3], row[4] = software_id, f'${_code}', _name
+                        software_dict[_name] = (software_id, _code)
+                    if 'Block_ID' in sf_allowed_tags:
+                        block_id += 1
+                        sf.add_tag('Block_ID', block_id)
+                        row[5] = block_id
+                    row[6], row[7], row[8], row[9] =\
+                        sf_item['content_type'] if 'content_type' in sf_item else None,\
+                        sf_item['content_subtype'] if 'content_subtype' in sf_item else None,\
+                        sf_item['content_sussubtype'] if 'content_subsubtype' in sf_item else None,\
+                        sf_item['id']
+                    row[10], row[11] = 1, self.__entry_id
+
+                    cf_loop.add_data(row)
+
+        cst_sf.add_loop(cf_loop)
+
+        master_entry.add_saveframe(cst_sf)
+
         for content_subtype in content_subtype_order:
             if content_subtype in self.__mr_sf_dict_holder:
                 if content_subtype != 'other_restraint':
+                    lp_category = self.lp_categories[file_type][content_subtype]
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                        sf = sf_item['saveframe']
+                        if __pynmrstar_v3_2__:
+                            lp = sf.get_loop(lp_category)
+                        else:
+                            lp = sf.get_loop_by_category(lp_category)
+                        lp.sort_tags()
                         master_entry.add_saveframe(sf_item['saveframe'])
                 else:
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:
@@ -42288,7 +42352,7 @@ class NmrDpUtility:
             master_entry.add_saveframe(sf)
 
         master_entry.entry_id = self.__entry_id
-        master_entry.normalize()
+        # master_entry.normalize()  # do not invoke normalize() to preserve ID
 
         if __pynmrstar_v3__:
             master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)

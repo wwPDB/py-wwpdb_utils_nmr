@@ -42284,6 +42284,84 @@ class NmrDpUtility:
 
                     cf_loop.add_data(row)
 
+        ext_mr_sf_holder = []
+
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        fileListId = self.__file_path_list_len
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            file_path = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            mr_file_type = input_source_dic['file_type']
+
+            fileListId += 1
+
+            if mr_file_type != 'nm-res-oth':
+                continue
+
+            original_file_name = None
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+
+            self.__list_id_counter = incListIdCounter(None, self.__list_id_counter)
+
+            list_id = self.__list_id_counter['other_restraint']
+
+            sf_framecode = f'NMR_restraints_not_interpreted_{list_id}'
+
+            dir_path = os.path.dirname(file_path)
+
+            details = None
+            data_format = None
+
+            unknown_mr_desc = os.path.join(dir_path, '.entry_with_unknown_mr')
+            if os.path.exists(unknown_mr_desc):
+                with open(unknown_mr_desc, 'r') as ifp:
+                    details = ifp.read().splitlines()
+                    data_format = details.split(' ')[0]
+                    if not data_format.isupper():
+                        data_format = None
+                    break
+
+            sf = getSaveframe(None, sf_framecode, list_id, self.__entry_id, original_file_name,
+                              constraintType=details)
+
+            file_id += 1
+            sf.add_tag('Constraint_file_ID', file_id)
+
+            block_id += 1
+            sf.add_tag('Block_ID', block_id)
+
+            row = [None] * len(tags)
+            row[0], row[1], row[5] = file_id, original_file_name, block_id
+
+            if data_format is not None and data_format != 'UNKNOWN':
+                if data_format in software_dict:
+                    row[2], row[3], row[4] = software_dict[data_format][0], f'${software_dict[data_format][1]}', data_format
+                else:
+                    software_id += 1
+                    _code = f'software_{software_id}'
+                    row[2], row[3], row[4] = software_id, f'${_code}', data_format
+                    software_dict[data_format] = (software_id, _code)
+
+            sf.add_tag('Text_data_format', data_format)
+
+            with open(file_path, 'r') as ifp:
+                content = ifp.read().decode('utf-8').encode('ascii')
+                sf.add_tag('Text_data', content)
+
+            row[10], row[11] = 1, self.__entry_id
+
+            cf_loop.add_data(row)
+
+            ext_mr_sf_holder.append(sf)
+
         cf_loop.sort_tags()
         cst_sf.add_loop(cf_loop)
 
@@ -42331,62 +42409,7 @@ class NmrDpUtility:
                         sf.sort_tags()
                         master_entry.add_saveframe(sf)
 
-        ar_file_path_list = 'atypical_restraint_file_path_list'
-
-        fileListId = self.__file_path_list_len
-
-        for ar in self.__inputParamDict[ar_file_path_list]:
-
-            file_path = ar['file_name']
-
-            input_source = self.report.input_sources[fileListId]
-            input_source_dic = input_source.get()
-
-            file_type = input_source_dic['file_type']
-
-            fileListId += 1
-
-            if file_type != 'nm-res-oth':
-                continue
-
-            file_name = input_source_dic['file_name']
-
-            original_file_name = None
-            if 'original_file_name' in input_source_dic:
-                if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
-                if file_name != original_file_name and original_file_name is not None:
-                    file_name = f"{original_file_name} ({file_name})"
-
-            self.__list_id_counter = incListIdCounter(None, self.__list_id_counter)
-
-            list_id = self.__list_id_counter['other_restraint']
-
-            sf_framecode = f'NMR_restraints_not_interpreted_{list_id}'
-
-            dir_path = os.path.dirname(file_path)
-
-            details = None
-            data_format = None
-
-            unknown_mr_desc = os.path.join(dir_path, '.entry_with_unknown_mr')
-            if os.path.exists(unknown_mr_desc):
-                with open(unknown_mr_desc, 'r') as ifp:
-                    details = ifp.read().splitlines()
-                    data_format = details.split(' ')[0]
-                    if not data_format.isupper():
-                        data_format = None
-                    break
-
-            sf = getSaveframe(None, sf_framecode, list_id, self.__entry_id, original_file_name,
-                              constraintType=details)
-
-            sf.add_tag('Text_data_format', data_format)
-
-            with open(file_path, 'r') as ifp:
-                content = ifp.read().decode('utf-8').encode('ascii')
-                sf.add_tag('Text_data', content)
-
+        for sf in ext_mr_sf_holder:
             sf.sort_tags()
             master_entry.add_saveframe(sf)
 

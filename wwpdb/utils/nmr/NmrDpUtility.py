@@ -21766,6 +21766,8 @@ class NmrDpUtility:
 
                     del sf_data[loop]
 
+                    if file_type == 'nmr-star':
+                        new_loop.sort_tags()
                     sf_data.add_loop(new_loop)
 
                     parent_pointer = 1
@@ -34871,6 +34873,8 @@ class NmrDpUtility:
 
                     del sf_data[loop]
 
+                    if file_type == 'nmr-star':
+                        new_loop.sort_tags()
                     sf_data.add_loop(new_loop)
 
     def __deleteSkippedSf(self):
@@ -35208,6 +35212,8 @@ class NmrDpUtility:
                 if file_type == 'nef' or file_type == 'nmr-star' and loop.category != '_Entity_assembly':
                     continue
 
+                if file_type == 'nmr-star':
+                    loop.sort_tags()
                 poly_seq_sf_data.add_loop(loop)
 
         tag_names = ['sf_category'] if file_type == 'nef' else ['Sf_category']
@@ -35632,6 +35638,8 @@ class NmrDpUtility:
 
                                     row_id += 1
 
+            if file_type == 'nmr-star':
+                loop.sort_tags()
             poly_seq_sf_data.add_loop(loop)
 
             # add the other loops except for _Entity_assembly
@@ -35642,6 +35650,8 @@ class NmrDpUtility:
                     continue
 
                 if file_type == 'nef' or file_type == 'nmr-star' and loop.category != '_Entity_assembly':
+                    if file_type == 'nmr-star':
+                        loop.sort_tags()
                     poly_seq_sf_data.add_loop(loop)
 
             # replace polymer sequence
@@ -35662,6 +35672,8 @@ class NmrDpUtility:
             if content_subtype == 'poly_seq':
 
                 if polymer_sequence is not None:
+                    if file_type == 'nmr-star':
+                        poly_seq_sf_data.sort_tags()
                     norm_star_data.add_saveframe(poly_seq_sf_data)
 
             elif has_key_value(input_source_dic['content_subtype'], content_subtype):
@@ -35674,6 +35686,8 @@ class NmrDpUtility:
                         del norm_star_data[old_sf_data]
 
                     for sf_data in sf_list:
+                        if file_type == 'nmr-star':
+                            sf_data.sort_tags()
                         norm_star_data.add_saveframe(sf_data)
 
         self.__star_data[0] = norm_star_data
@@ -40694,6 +40708,8 @@ class NmrDpUtility:
 
                     del sf_data[loop]
 
+                    if file_type == 'nmr-star':
+                        new_loop.sort_tags()
                     sf_data.add_loop(new_loop)
 
         return True
@@ -40812,6 +40828,7 @@ class NmrDpUtility:
 
                 del sf_data[loop]
 
+                new_loop.sort_tags()
                 sf_data.add_loop(new_loop)
 
         return True
@@ -40914,6 +40931,7 @@ class NmrDpUtility:
 
                             _loop.add_data(row)
 
+                    _loop.sort_tags()
                     sf_data.add_loop(_loop)
 
         return True
@@ -41368,6 +41386,7 @@ class NmrDpUtility:
 
             ea_loop.add_data(row)
 
+        ea_loop.sort_tags()
         asm_sf.add_loop(ea_loop)
 
         # Refresh _Chem_comp_assembly
@@ -41453,6 +41472,7 @@ class NmrDpUtility:
 
             nef_index += 1
 
+        cca_loop.sort_tags()
         asm_sf.add_loop(cca_loop)
 
         # Refresh _Bond loop
@@ -41587,6 +41607,7 @@ class NmrDpUtility:
 
                 index += 1
 
+            b_loop.sort_tags()
             asm_sf.add_loop(b_loop)
 
             bonds_w_leaving = [bond for bond in bonds if bond['pdbx_leaving_atom_flag'] in ('both', 'one')]
@@ -41706,8 +41727,10 @@ class NmrDpUtility:
 
                                         index += 1
 
+                eda_loop.sort_tags()
                 asm_sf.add_loop(eda_loop)
 
+        asm_sf.sort_tags()
         master_entry.add_saveframe(asm_sf)
 
         # Refresh _Entity
@@ -41973,6 +41996,7 @@ class NmrDpUtility:
                         ecn_loop.add_data(row)
 
                 if not ecn_loop.empty:
+                    ecn_loop.sort_tags()
                     ent_sf.add_loop(ecn_loop)
 
             # Refresh _Entity_systematic_name
@@ -42007,6 +42031,7 @@ class NmrDpUtility:
                         esn_loop.add_data(row)
 
                 if not esn_loop.empty:
+                    esn_loop.sort_tags()
                     ent_sf.add_loop(esn_loop)
 
             # Refresh _Entity_keyword
@@ -42038,6 +42063,7 @@ class NmrDpUtility:
                         ek_loop.add_data(row)
 
                 if not ek_loop.empty:
+                    ek_loop.sort_tags()
                     ent_sf.add_loop(ek_loop)
 
             # Refresh _Entity_comp_index
@@ -42089,6 +42115,7 @@ class NmrDpUtility:
 
                     eci_loop.add_data(row)
 
+            eci_loop.sort_tags()
             ent_sf.add_loop(eci_loop)
 
             # Refresh _Entity_poly_seq
@@ -42131,8 +42158,10 @@ class NmrDpUtility:
 
                         eps_loop.add_data(row)
 
+                eps_loop.sort_tags()
                 ent_sf.add_loop(eps_loop)
 
+            ent_sf.sort_tags()
             master_entry.add_saveframe(ent_sf)
 
         # Refresh _Constraint_stat_list
@@ -42241,17 +42270,21 @@ class NmrDpUtility:
                         block_id += 1
                         sf.add_tag('Block_ID', block_id)
                         row[5] = block_id
+                    constraint_type = sf_item['constraint_type']
+                    constraint_subtype = get_first_sf_tag(sf, 'Constraint_type')
+                    if constraint_subtype is not None and len(constraint_subtype) == 0:
+                        constraint_subtype = None
+                    constraint_subsubtype = sf_item['constraint_subsubtype'] if 'constraint_subsubtype' in sf_item else None
                     row[6], row[7], row[8], row[9] =\
-                        sf_item['content_type'] if 'content_type' in sf_item else None,\
-                        sf_item['content_subtype'] if 'content_subtype' in sf_item else None,\
-                        sf_item['content_sussubtype'] if 'content_subsubtype' in sf_item else None,\
-                        sf_item['id']
+                        constraint_type, constraint_subtype, constraint_subsubtype, sf_item['id']
                     row[10], row[11] = 1, self.__entry_id
 
                     cf_loop.add_data(row)
 
+        cf_loop.sort_tags()
         cst_sf.add_loop(cf_loop)
 
+        cst_sf.sort_tags()
         master_entry.add_saveframe(cst_sf)
 
         for content_subtype in content_subtype_order:
@@ -42265,7 +42298,8 @@ class NmrDpUtility:
                         else:
                             lp = sf.get_loop_by_category(lp_category)
                         lp.sort_tags()
-                        master_entry.add_saveframe(sf_item['saveframe'])
+                        sf.sort_tags()
+                        master_entry.add_saveframe(sf)
                 else:
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                         sf = sf_item['saveframe']
@@ -42291,6 +42325,7 @@ class NmrDpUtility:
 
                         sf.add_tag('Text_data_format', 'json')
                         sf.add_tag('Text_data', json.dumps(other_data, indent=2))
+                        sf.sort_tags()
                         master_entry.add_saveframe(sf)
 
         ar_file_path_list = 'atypical_restraint_file_path_list'
@@ -42349,6 +42384,7 @@ class NmrDpUtility:
                 content = ifp.read().decode('utf-8').encode('ascii')
                 sf.add_tag('Text_data', content)
 
+            sf.sort_tags()
             master_entry.add_saveframe(sf)
 
         master_entry.entry_id = self.__entry_id

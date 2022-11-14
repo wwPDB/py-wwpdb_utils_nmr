@@ -305,6 +305,7 @@ class CifToNmrStar:
                         continue
 
                     if sf is not None:
+                        sf.sort_tags()
                         strObj.add_saveframe(sf)
 
                     sf = pynmrstar.Saveframe.from_scratch(new_block_name)
@@ -324,6 +325,7 @@ class CifToNmrStar:
                         continue
 
                     if sf is not None:
+                        sf.sort_tags()
                         strObj.add_saveframe(sf)
 
                     sf = pynmrstar.Saveframe.from_scratch(new_block_name)
@@ -373,9 +375,11 @@ class CifToNmrStar:
                             _value[entry_id_idx] = _entry_id
                         lp.add_data(_value)
 
+                    lp.sort_tags()
                     sf.add_loop(lp)
 
             if sf is not None:
+                sf.sort_tags()
                 strObj.add_saveframe(sf)
 
             if __pynmrstar_v3__:

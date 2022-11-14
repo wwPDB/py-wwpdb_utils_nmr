@@ -24,6 +24,7 @@ try:
                                                        translateToStdAtomName,
                                                        translateToStdResName,
                                                        isLongRangeRestraint,
+                                                       isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
                                                        getRestraintName,
                                                        contentSubtypeOf,
@@ -68,6 +69,7 @@ except ImportError:
                                            translateToStdAtomName,
                                            translateToStdResName,
                                            isLongRangeRestraint,
+                                           isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
                                            getRestraintName,
                                            contentSubtypeOf,
@@ -1129,6 +1131,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                                     sf['loop'].add_data(row)
 
+                                    if memberLogicCode == 'OR'\
+                                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                                        sf['constraint_subsubtype'] = 'ambi'
+
                         # generalized distance
                         else:
 
@@ -1372,6 +1379,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                              '.', angleName,
                                              sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
+                                sf['loop'].add_data(row)
 
                     # plane-(point/plane) angle
                     else:
@@ -1950,6 +1958,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                                     sf['loop'].add_data(row)
 
+                                    if memberLogicCode == 'OR'\
+                                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                                        sf['constraint_subsubtype'] = 'ambi'
+
                         # generalized distance
                         else:
 
@@ -2239,6 +2252,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                              '.', angleName,
                                              sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
+                                sf['loop'].add_data(row)
 
                     # plane-(point/plane) angle
                     else:
@@ -7820,7 +7834,9 @@ class AmberMRParserListener(ParseTreeListener):
 
         list_id = self.__listIdCounter[content_subtype]
 
-        sf_framecode = 'AMBER_' + getRestraintName(self.__cur_subtype, False).replace(' ', '_') + f'_{list_id}'
+        restraint_name = getRestraintName(self.__cur_subtype)
+
+        sf_framecode = 'AMBER_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType)
@@ -7832,11 +7848,17 @@ class AmberMRParserListener(ParseTreeListener):
             sf.add_loop(lp)
             not_valid = False
 
+        _restraint_name = restraint_name.split()
+
         item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                'id': 0, 'index_id': 0}
+                'id': 0, 'index_id': 0,
+                'constraint_type': ' '.join(_restraint_name[:-1])}
 
         if not_valid:
             item['tags'] = []
+
+        if self.__cur_subtype == 'dist':
+            item['constraint_subsubtype'] = 'simple'
 
         self.sfDict[key].append(item)
 

@@ -4,6 +4,7 @@
 #
 # Updates:
 # 27-Apr-2022  M. Yokochi - enable to use cached data for standard residues
+# 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
 ##
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
@@ -212,6 +213,32 @@ class ChemCompUtil:
         repList = self.getRepresentativeMethylProtons(compId)
 
         return [a for a in self.getMethylAtoms(compId) if a.startswith('H') and a not in repList]
+
+    def getProtonsInSameGroup(self, compId, atomId, exclSelf=False):
+        """ Return protons in the same group of a given comp_id and atom_id.
+        """
+
+        if not self.updateChemCompDict(compId):
+            return None
+
+        try:
+
+            allProtons = [a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'H']
+
+            if atomId not in allProtons:
+                return None
+
+            next(a for a in self.lastAtomList if a[self.ccaAtomId] == atomId and a[self.ccaTypeSymbol] == 'H')
+
+            bondedTo = next((b[self.ccbAtomId1] if b[self.ccbAtomId1] != atomId else b[self.ccbAtomId2])
+                            for b in self.lastBonds if atomId in (b[self.ccbAtomId1], b[self.ccbAtomId2]))
+
+            return [p for p in [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != bondedTo else b[self.ccbAtomId2])
+                                for b in self.lastBonds if bondedTo in (b[self.ccbAtomId1], b[self.ccbAtomId2])]
+                    if p in allProtons and ((exclSelf and p != atomId) or not exclSelf)]
+
+        except StopIteration:
+            return None
 
     def write_std_dict_as_pickle(self):
         """ Write dictionary for standard residues as pickle file.

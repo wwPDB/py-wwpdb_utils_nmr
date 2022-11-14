@@ -25,6 +25,7 @@ try:
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
                                                        isCyclicPolymer,
                                                        getRestraintName,
@@ -72,6 +73,7 @@ except ImportError:
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
                                            getRestraintName,
                                            isCyclicPolymer,
@@ -659,6 +661,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                  '.', memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
+
+                    if memberLogicCode == 'OR'\
+                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        sf['constraint_subsubtype'] = 'ambi'
 
         finally:
             self.numberSelection.clear()
@@ -4408,7 +4415,9 @@ class CharmmMRParserListener(ParseTreeListener):
 
         list_id = self.__listIdCounter[content_subtype]
 
-        sf_framecode = 'CHARMM_' + getRestraintName(self.__cur_subtype, False).replace(' ', '_') + f'_{list_id}'
+        restraint_name = getRestraintName(self.__cur_subtype)
+
+        sf_framecode = 'CHARMM_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType)
@@ -4417,8 +4426,16 @@ class CharmmMRParserListener(ParseTreeListener):
         if not isinstance(lp, dict):
             sf.add_loop(lp)
 
-        self.sfDict[key].append({'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                                 'id': 0, 'index_id': 0})
+        _restraint_name = restraint_name.split()
+
+        item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                'id': 0, 'index_id': 0,
+                'constraint_type': ' '.join(_restraint_name[:-1])}
+
+        if self.__cur_subtype == 'dist':
+            item['constraint_subsubtype'] = 'simple'
+
+        self.sfDict[key].append(item)
 
     def __getSf(self, constraintType=None, potentialType=None):
         key = (self.__cur_subtype, constraintType, potentialType, None)

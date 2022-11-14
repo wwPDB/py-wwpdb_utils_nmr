@@ -2332,6 +2332,63 @@ def hasIntraChainResraint(atomSelectionSet):
     return False
 
 
+def isAmbigAtomSelection(atoms, csStat):
+    """ Return whether an atom selection involves heterogeneous atom groups.
+    """
+
+    if len(atoms) < 2:
+        return False
+
+    chainIds = [a['chain_id'] for a in atoms]
+
+    if len(collections.Counter(chainIds).most_common()) > 1:
+        return True
+
+    seqIds = [a['seq_id'] for a in atoms]
+
+    commonSeqId = collections.Counter(seqIds).most_common()
+
+    if len(commonSeqId) > 1:
+        return True
+
+    atomIds = list(set(a['atom_id'] for a in atoms))
+
+    commonAtomId = collections.Counter(atomIds).most_common()
+
+    if len(commonAtomId) == 1:
+        return False
+
+    atomId0 = atomIds[0]
+    compId = atoms[0]['comp_id']
+
+    protonsInGroup = csStat.getProtonsInSameGroup(compId, atomId0, True)
+    geminalAtom = csStat.getGeminalAtom(compId, atomId0)
+
+    if geminalAtom is not None:
+
+        if atomId0[0] not in ('H', '1', '2', '3'):
+            if set(atomIds) == set([atomId0, geminalAtom]):
+                return False
+
+        if protonsInGroup is not None:
+            protonsInGroup.append(geminalAtom)
+        else:
+            protonsInGroup = [geminalAtom]
+
+        geminalProtonsInGroup = csStat.getProtonsInSameGroup(compId, geminalAtom, True)
+        if geminalProtonsInGroup is not None and len(geminalProtonsInGroup) > 0:
+            protonsInGroup.extend(geminalProtonsInGroup)
+
+    if protonsInGroup is None or len(protonsInGroup) == 0:
+        return True
+
+    for atomId in atomIds[1:]:
+        if atomId not in protonsInGroup:
+            return True
+
+    return False
+
+
 def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms):
     """ Return type of dihedral angle restraint.
     """
@@ -2794,7 +2851,7 @@ def getRestraintName(mrSubtype, title=False):
     if mrSubtype.startswith('dihed'):
         return "Dihedral angle restraints" if title else "dihedral angle restraints"
     if mrSubtype.startswith('rdc'):
-        return "RDC restraints"
+        return "Residual dipolar coupling restraints" if title else "residual dipolar coupling restraints"
     if mrSubtype.startswith('plane'):
         return "Planarity constraints" if title else "planarity constraints"
     if mrSubtype.startswith('hbond'):
@@ -2818,19 +2875,19 @@ def getRestraintName(mrSubtype, title=False):
     if mrSubtype.startswith('diff'):
         return "Diffusion anisotropy restraints" if title else "diffusion anisotropy restraints"
     if mrSubtype.startswith('nbase'):
-        return "Nucleic acid base orientation database restraints" if title else "nucleic acid base orientation database restraints"
+        return "Nucleic acid base orientation restraints" if title else "nucleic acid base orientation restraints"
     if mrSubtype.startswith('csa'):
-        return "CSA restraints"
+        return "Chemical shift anisotropy restraints" if title else "chemical shift anisotropy restraints"
     if mrSubtype.startswith('ang'):
-        return "Angle database restraints" if title else "angle database restraints"
+        return "Angle databse restraints" if title else "angle database restraints"
     if mrSubtype.startswith('pre'):
-        return "PRE restraints"
+        return "Paramagnetic relaxation enhancement restraints" if title else "paramagnetic relaxation enhancement restraints"
     if mrSubtype.startswith('pcs'):
-        return "PCS restraints, "
+        return "Pseudocontact shift restraints" if title else "pseudocontact shift restraints"
     if mrSubtype.startswith('prdc'):
         return "Paramagnetic RDC restraints" if title else "paramagnetic RDC restraints"
     if mrSubtype.startswith('pang'):
-        return "Paramagnetic orientation restraints" if title else "paramagnetic orientation restraints"
+        return "Paramagnetic angle restraints" if title else "paramagnetic angle restraints"
     if mrSubtype.startswith('pccr'):
         return "Paramagnetic CCR restraints" if title else "paramagnetic CCR restraints"
     if mrSubtype.startswith('geo'):

@@ -113,7 +113,6 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('A'), ['C2', 'C4', 'C5', 'C6', 'C8', 'H2', 'H61', 'H62', 'H8', 'N1', 'N3', 'N6', 'N7', 'N9'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('5MC', polynucleotide_like=True), ['H6', 'HM51', 'HM52', 'HM53', 'HN41',
                                                                                                 'HN42', 'N1', 'C2', 'N3', 'C4', 'N4', 'C5', 'C6', 'CM5', 'HOP2', 'HOP3', "HO2'"])
-
     def test_geminal_atom(self):
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('ARG', 'HB2'), 'HB3')
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('ARG', 'HB3'), 'HB2')
@@ -123,6 +122,8 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('VAL', 'HG21'), 'HG11')
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('VAL', 'CG1'), 'CG2')
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('VAL', 'CG2'), 'CG1')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('LEU', 'HD12'), 'HD22')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('TYR', 'HD2'), 'HD1')
 
     def test_maxambigcode(self):
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('ARG', 'HB2'), 2)
@@ -130,6 +131,11 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('TYR', 'HE2'), 3)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('GLU', 'HB2'), 2)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('LYS', 'HZ1'), 1)
+
+    def test_prot_in_same_group(self):
+        self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('ARG', 'HB2'), ['HB2', 'HB3'])
+        self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('VAL', 'HG11'), ['HG11', 'HG12', 'HG13'])
+        self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('TYR', 'HD2'), ['HD2'])
 
 
 if __name__ == '__main__':

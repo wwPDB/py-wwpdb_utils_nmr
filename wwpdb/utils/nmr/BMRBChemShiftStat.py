@@ -13,6 +13,7 @@
 # 04-Feb-2022  M. Yokochi - add getPseudoAtoms() (NMR restraint remediation)
 # 14-Feb-2022  M. Yokochi - add getSimilarCompIdFromAtomIds() (NMR restraint remediation)
 # 25-Feb-2022  M. Yokochi - add peptideLike() (NMR restraint remediation)
+# 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -665,6 +666,12 @@ class BMRBChemShiftStat:
         rep_list = self.getRepresentativeMethylProtons(comp_id, excl_minor_atom, primary)
 
         return [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and a not in rep_list]
+
+    def getProtonsInSameGroup(self, comp_id, atom_id, excl_self=False):
+        """ Return protons in the same group of a given comp_id and atom_id.
+        """
+
+        return self.__ccU.getProtonsInSameGroup(comp_id, atom_id, excl_self)
 
     def getSideChainAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return sidechain atoms of a given comp_id.

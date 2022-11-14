@@ -17,6 +17,7 @@ import re
 import pynmrstar
 import pickle
 import logging
+import hashlib
 
 from packaging import version
 
@@ -134,7 +135,7 @@ class CifToNmrStar:
 
             entry_id = None
 
-            strObj = pynmrstar.Entry.from_scratch(os.path.basename(cifPath))
+            strData = pynmrstar.Entry.from_scratch(os.path.basename(cifPath))
 
             # check category order in CIF
             category_order = []
@@ -306,7 +307,7 @@ class CifToNmrStar:
 
                     if sf is not None:
                         sf.sort_tags()
-                        strObj.add_saveframe(sf)
+                        strData.add_saveframe(sf)
 
                     sf = pynmrstar.Saveframe.from_scratch(new_block_name)
                     reserved_block_names.append(new_block_name)
@@ -326,7 +327,7 @@ class CifToNmrStar:
 
                     if sf is not None:
                         sf.sort_tags()
-                        strObj.add_saveframe(sf)
+                        strData.add_saveframe(sf)
 
                     sf = pynmrstar.Saveframe.from_scratch(new_block_name)
                     reserved_block_names.append(new_block_name)
@@ -380,12 +381,12 @@ class CifToNmrStar:
 
             if sf is not None:
                 sf.sort_tags()
-                strObj.add_saveframe(sf)
+                strData.add_saveframe(sf)
 
             if __pynmrstar_v3__:
-                strObj.write_to_file(strPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+                strData.write_to_file(strPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
             else:
-                strObj.write_to_file(strPath)
+                strData.write_to_file(strPath)
 
             return True
 
@@ -420,3 +421,40 @@ class CifToNmrStar:
             self.__lfh.write(f"+ERROR- CifToNmrStar.convert() {str(e)}\n")
 
             return False
+
+    def sortSf(self, strData):
+        """ Sort saveframes based on NMR-STAR schema.
+            @see: pynmrstar.entry.normalize
+        """
+
+        def sf_key(sf):
+            """ Helper function to sort the saveframes.
+            Returns (category order, saveframe order) """
+
+            # If not a real category, generate an artificial but stable order > the real saveframes
+            try:
+                category_order = self.category_order.index(sf.tag_prefix)
+            except (ValueError, KeyError):
+                if sf.category is None:
+                    category_order = float('infinity')
+                else:
+                    category_order = len(self.category_order) + abs(int(hashlib.sha1(str(sf.category).encode()).hexdigest(), 16))
+
+            # See if there is an ID tag, and it is a number
+            saveframe_id = float('infinity')
+            try:
+                saveframe_id = int(sf.get_tag("ID")[0])
+            except (ValueError, KeyError, IndexError, TypeError):
+                # Either there is no ID, or it is not a number. By default it will sort at the end of saveframes of its
+                # category. Note that the entry_information ID tag has a different meaning, but since there should
+                # only ever be one saveframe of that category, the sort order for it can be any value.
+                pass
+
+            return category_order, saveframe_id
+
+        try:
+            strData.frame_list.sort(key=sf_key)
+        except Exception as e:
+            self.__lfh.write(f"+ERROR- CifToNmrStar.sortSf() {str(e)}\n")
+
+        return strData

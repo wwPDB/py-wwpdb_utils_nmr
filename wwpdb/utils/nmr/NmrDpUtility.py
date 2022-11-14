@@ -1169,6 +1169,9 @@ class NmrDpUtility:
         self.__nefT = NEFTranslator(self.__verbose, self.__lfh, self.__ccU, self.__csStat)
         self.__nefT.allow_missing_dist_restraint(self.__allow_missing_legacy_dist_restraint)
 
+        # CifToNmrStar
+        self.__c2S = CifToNmrStar(self.__verbose)
+
         # PyNMRSTAR data
         self.__file_path_list_len = 1
         self.__cs_file_path_list_len = 1
@@ -5692,8 +5695,7 @@ class NmrDpUtility:
 
                     if not os.path.exists(_csPath):
 
-                        cif_to_star = CifToNmrStar(self.__lfh)
-                        if not cif_to_star.convert(csPath, _csPath):
+                        if not self.__c2S.convert(csPath, _csPath):
                             _csPath = csPath
 
                     csPath = _csPath
@@ -5930,8 +5932,7 @@ class NmrDpUtility:
 
                     if not os.path.exists(_csPath):
 
-                        cif_to_star = CifToNmrStar(self.__lfh)
-                        if not cif_to_star.convert(csPath, _csPath):
+                        if not self.__c2S.convert(csPath, _csPath):
                             _csPath = csPath
 
                     csPath = _csPath
@@ -6528,8 +6529,7 @@ class NmrDpUtility:
 
                         else:
 
-                            cif_to_star = CifToNmrStar(self.__lfh)
-                            if cif_to_star.convert(_srcPath, _srcPath + '~'):
+                            if self.__c2S.convert(_srcPath, _srcPath + '~'):
                                 _srcPath += '~'
                                 tmpPaths.append(_srcPath)
 
@@ -12704,8 +12704,7 @@ class NmrDpUtility:
 
                         _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
 
-                        cif_to_star = CifToNmrStar(self.__lft)
-                        if not cif_to_star.convert(mrPath, _mrPath):
+                        if not self.__c2S.convert(mrPath, _mrPath):
                             _mrPath = mrPath
 
                         mrPath = _mrPath
@@ -13407,8 +13406,7 @@ class NmrDpUtility:
 
                             _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
 
-                            cif_to_star = CifToNmrStar(self.__lft)
-                            if not cif_to_star.convert(mrPath, _mrPath):
+                            if not self.__c2S.convert(mrPath, _mrPath):
                                 _mrPath = mrPath
 
                             mrPath = _mrPath
@@ -40965,8 +40963,8 @@ class NmrDpUtility:
 
         self.__star_data[0].entry_id = self.__entry_id
 
-        # if not self.__op.startswith('nmr-nef'):
-        #     self.__star_data[0].normalize()  # do not invoke normalize() to preserve ID
+        if not self.__op.startswith('nmr-nef'):
+            self.__star_data[0] = self.__c2S.sortSf(self.__star_data[0])
 
         if __pynmrstar_v3__:
             self.__star_data[0].write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
@@ -42182,6 +42180,11 @@ class NmrDpUtility:
                                  'fchiral_restraint',
                                  'other_restraint']
 
+        def sf_key(content_subtype):
+            return self.__c2S.category_order.index(self.sf_tag_prefixes[file_type][content_subtype])
+
+        content_subtype_order.sort(key=sf_key)
+
         sf_framecode = 'constraint_statistics'
 
         cst_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
@@ -42388,7 +42391,7 @@ class NmrDpUtility:
             master_entry.add_saveframe(sf)
 
         master_entry.entry_id = self.__entry_id
-        # master_entry.normalize()  # do not invoke normalize() to preserve ID
+        master_entry = self.__c2S.sortSf(master_entry)
 
         if __pynmrstar_v3__:
             master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)

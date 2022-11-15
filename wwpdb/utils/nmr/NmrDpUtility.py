@@ -536,10 +536,13 @@ def get_first_sf_tag(sf_data=None, tag=None):
     return array[0]
 
 
-def is_non_metal_element(atom_id):
+def is_non_metal_element(comp_id, atom_id):
     """ Return whether a given atom_id is non metal element.
         @return: True for non metal element, False otherwise
     """
+
+    if comp_id == atom_id:
+        return False
 
     return any(elem for elem in NON_METAL_ELEMENTS if atom_id.startswith(elem))
 
@@ -28784,8 +28787,12 @@ class NmrDpUtility:
 
             if upper_limit_value is not None:
                 target_value -= 0.4
+
             elif lower_limit_value is not None:
                 target_value += 0.4
+
+            balanced = (upper_limit_value is None and lower_limit_value is None)\
+                or (upper_limit_value is not None and lower_limit_value is not None)
 
             if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
@@ -28895,13 +28902,13 @@ class NmrDpUtility:
                     diselenide_bond_type = 'Se...Se (too far!)'
                     diselenide_bond = True
 
-            elif (atom_id_1_ == 'N' and not is_non_metal_element(atom_id_2))\
-                    or (atom_id_2_ == 'N' and not is_non_metal_element(atom_id_1)):
+            elif (atom_id_1_ == 'N' and not is_non_metal_element(comp_id_2, atom_id_2))\
+                    or (atom_id_2_ == 'N' and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
 
-                if 1.9 <= target_value <= 2.1:
+                if 1.9 <= target_value <= 2.1 or not balanced:
                     other_bond_type = 'N...' + metal
                     other_bond = True
                 elif target_value < 1.9:
@@ -28911,13 +28918,13 @@ class NmrDpUtility:
                     other_bond_type = 'N...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'O' and not is_non_metal_element(atom_id_2))\
-                    or (atom_id_2_ == 'O' and not is_non_metal_element(atom_id_1)):
+            elif (atom_id_1_ == 'O' and not is_non_metal_element(comp_id_2, atom_id_2))\
+                    or (atom_id_2_ == 'O' and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
 
-                if 2.0 <= target_value <= 2.2:
+                if 2.0 <= target_value <= 2.2 or not balanced:
                     other_bond_type = 'O...' + metal
                     other_bond = True
                 elif target_value < 2.0:
@@ -28927,13 +28934,13 @@ class NmrDpUtility:
                     other_bond_type = 'O...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'P' and not is_non_metal_element(atom_id_2))\
-                    or (atom_id_2_ == 'P' and not is_non_metal_element(atom_id_1)):
+            elif (atom_id_1_ == 'P' and not is_non_metal_element(comp_id_2, atom_id_2))\
+                    or (atom_id_2_ == 'P' and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
 
-                if 2.1 <= target_value <= 2.5:
+                if 2.1 <= target_value <= 2.5 or not balanced:
                     other_bond_type = 'P...' + metal
                     other_bond = True
                 elif target_value < 2.1:
@@ -28943,13 +28950,13 @@ class NmrDpUtility:
                     other_bond_type = 'P...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(atom_id_2)) or\
-                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(atom_id_1)):
+            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
+                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
 
-                if 2.2 <= target_value <= 2.6:
+                if 2.2 <= target_value <= 2.6 or not balanced:
                     other_bond_type = 'S...' + metal
                     other_bond = True
                 elif target_value < 2.2:
@@ -28959,13 +28966,13 @@ class NmrDpUtility:
                     other_bond_type = 'S...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1.startswith('SE') and not is_non_metal_element(atom_id_2)) or\
-                 (atom_id_2.startswith('SE') and not is_non_metal_element(atom_id_1)):
+            elif (atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
+                 (atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
 
-                if 2.3 <= target_value <= 2.7:
+                if 2.3 <= target_value <= 2.7 or not balanced:
                     other_bond_type = 'Se...' + metal
                     other_bond = True
                 elif target_value < 2.3:
@@ -29237,10 +29244,10 @@ class NmrDpUtility:
                     diselenide_bond_type = 'Se...Se (too far!)'
                     diselenide_bond = True
 
-            elif (atom_id_1_ == 'N' and not is_non_metal_element(atom_id_2))\
-                    or (atom_id_2_ == 'N' and not is_non_metal_element(atom_id_1)):
+            elif (atom_id_1_ == 'N' and not is_non_metal_element(comp_id_2, atom_id_2))\
+                    or (atom_id_2_ == 'N' and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 1.9 <= target_value <= 2.1:
@@ -29253,10 +29260,10 @@ class NmrDpUtility:
                     other_bond_type = 'N...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'O' and not is_non_metal_element(atom_id_2))\
-                    or (atom_id_2_ == 'O' and not is_non_metal_element(atom_id_1)):
+            elif (atom_id_1_ == 'O' and not is_non_metal_element(comp_id_2, atom_id_2))\
+                    or (atom_id_2_ == 'O' and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.0 <= target_value <= 2.2:
@@ -29269,10 +29276,10 @@ class NmrDpUtility:
                     other_bond_type = 'O...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'P' and not is_non_metal_element(atom_id_2))\
-                    or (atom_id_2_ == 'P' and not is_non_metal_element(atom_id_1)):
+            elif (atom_id_1_ == 'P' and not is_non_metal_element(comp_id_2, atom_id_2))\
+                    or (atom_id_2_ == 'P' and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.1 <= target_value <= 2.5:
@@ -29285,10 +29292,10 @@ class NmrDpUtility:
                     other_bond_type = 'P...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(atom_id_2)) or\
-                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(atom_id_1)):
+            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
+                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.2 <= target_value <= 2.6:
@@ -29301,10 +29308,10 @@ class NmrDpUtility:
                     other_bond_type = 'S...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1.startswith('SE') and not is_non_metal_element(atom_id_2)) or\
-                 (atom_id_2.startswith('SE') and not is_non_metal_element(atom_id_1)):
+            elif (atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
+                 (atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-                metal = atom_id_2 if is_non_metal_element(atom_id_1) else atom_id_1
+                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if 2.3 <= target_value <= 2.7:

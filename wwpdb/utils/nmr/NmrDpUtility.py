@@ -41431,7 +41431,10 @@ class NmrDpUtility:
 
         for k, v in self.__caC['auth_to_star_seq'].items():
             auth_asym_id, auth_seq_id = k
-            entity_assembly_id, seq_id, entity_id = v
+            entity_assembly_id, seq_id, entity_id, genuine = v
+
+            if not genuine:
+                continue
 
             row = [None] * len(tags)
 
@@ -41457,7 +41460,7 @@ class NmrDpUtility:
                     comp_id = None
 
             elif entity_type == 'non-polymer':
-                np = next(np for np in self.__caC['non_polymer'] if np['auth_chain_id'] == auth_asym_id and np['seq_id'][0] == auth_seq_id)
+                np = next(np for np in self.__caC['non_polymer'] if np['auth_chain_id'] == auth_asym_id and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
                 try:
                     comp_id = np['comp_id'][0]
                 except IndexError:
@@ -41571,7 +41574,7 @@ class NmrDpUtility:
                 entity_id_1 = entity_id_2 = None
 
                 if seq_key_1 in self.__caC['auth_to_star_seq']:
-                    entity_assembly_id_1, seq_id_1, entity_id_1 = self.__caC['auth_to_star_seq'][seq_key_1]
+                    entity_assembly_id_1, seq_id_1, entity_id_1, _ = self.__caC['auth_to_star_seq'][seq_key_1]
                     entity_assembly_name_1 = next((item['entity_assembly_name'] for item in self.__caC['entity_assembly']
                                                    if item['entity_id'] == entity_id_1), None)
                     row[3], row[4], row[5], row[6], row[7], row[8], row[9] =\
@@ -41583,7 +41586,7 @@ class NmrDpUtility:
                 seq_key_2 = (auth_asym_id_2, int(auth_seq_id_2))
 
                 if seq_key_2 in self.__caC['auth_to_star_seq']:
-                    entity_assembly_id_2, seq_id_2, entity_id_2 = self.__caC['auth_to_star_seq'][seq_key_2]
+                    entity_assembly_id_2, seq_id_2, entity_id_2, _ = self.__caC['auth_to_star_seq'][seq_key_2]
                     entity_assembly_name_2 = next((item['entity_assembly_name'] for item in self.__caC['entity_assembly']
                                                    if item['entity_id'] == entity_id_2), None)
                     row[10], row[11], row[12], row[13], row[14], row[15], row[16] =\
@@ -41671,7 +41674,7 @@ class NmrDpUtility:
 
                                     row[0] = index
 
-                                    entity_assembly_id, seq_id, _ = self.__caC['auth_to_star_seq'][seq_key]
+                                    entity_assembly_id, seq_id, _, _ = self.__caC['auth_to_star_seq'][seq_key]
 
                                     row[1], row[2], row[3], row[4], row[5] =\
                                         entity_assembly_id, seq_id, seq_id, comp_id, leaving_atom_id

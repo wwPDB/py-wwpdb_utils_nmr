@@ -2005,7 +2005,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         authAsymIds = set()
                         compIds = set()
                         for item in mappings:
-                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
+                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId, True)
                             authAsymIds.add(item['auth_asym_id'])
                             compIds.add(item['comp_id'])
 
@@ -2046,14 +2046,19 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
                                                             [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
                                                              {'name': 'auth_asym_id', 'type': 'str'},
+                                                             {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         authAsymIds = set()
                         for item in mappings:
-                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId)
+                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId, False)
                             authAsymIds.add(item['auth_asym_id'])
+                        for item in mappings:
+                            altKey = (item['auth_asym_id'], item['alt_seq_id'])
+                            if altKey not in authToStarSeq:
+                                authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
                         labelAsymIds = set()
                         for item in mappings:
                             labelAsymIds.add(item['label_asym_id'])
@@ -2074,6 +2079,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
                                                             [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
                                                              {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                             {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                                              {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}],
@@ -2082,10 +2088,14 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         compId = None
                         authAsymIds = set()
                         for idx, item in enumerate(mappings):
-                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, idx + 1, entityId)
+                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, idx + 1, entityId, True)
                             authAsymIds.add(item['auth_asym_id'])
                             if compId is None:
                                 compId = item['comp_id']
+                        for idx, item in enumerate(mappings):
+                            altKey = (item['auth_asym_id'], item['alt_seq_id'])
+                            if altKey not in authToStarSeq:
+                                authToStarSeq[altKey] = (entityAssemblyId, idx + 1, entityId, False)
                         labelAsymIds = set()
                         for item in mappings:
                             labelAsymIds.add(item['label_asym_id'])
@@ -2236,7 +2246,7 @@ def extendCoordChainsForExactNoes(modelChainIdExt,
                             seqVal = authToStarSeq[seqKey]
                             _seqKey = (dstChainId, seqId)
                             if _seqKey not in _authToStarSeq:
-                                _authToStarSeq[_seqKey] = (dstAsmEntityId, seqVal[1], seqVal[2])
+                                _authToStarSeq[_seqKey] = (dstAsmEntityId, seqVal[1], seqVal[2], seqVal[3])
 
     return _polySeq, _altPolySeq, _coordAtomSite, _coordUnobsRes, _labelToAuthSeq, _authToLabelSeq, _authToStarSeq
 
@@ -3119,18 +3129,18 @@ def getStarAtom(authToStarSeq, atom):
     seqKey = (chainId, seqId)
 
     if seqKey in authToStarSeq:
-        starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'] = authToStarSeq[seqKey]
+        starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
         return starAtom
 
     for offset in range(1, 1000):
         seqKey = (chainId, seqId + offset)
         if seqKey in authToStarSeq:
-            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'] = authToStarSeq[seqKey]
+            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
             starAtom['seq_id'] -= offset
             return starAtom
         seqKey = (chainId, seqId - offset)
         if seqKey in authToStarSeq:
-            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'] = authToStarSeq[seqKey]
+            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
             starAtom['seq_id'] += offset
             return starAtom
 

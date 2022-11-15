@@ -210,7 +210,7 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
-    reader = CyanaMRReader(True)
+    reader = CyanaMRReader(True, file_ext='upl')
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5ue2/methyl_NOEs.upl',
                  '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif')

@@ -726,7 +726,18 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.__min_dist_value = value
 
                 if has_square:
-                    if value2 > DIST_RANGE_MAX:  # lol_only
+
+                    if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                        upper_limit = value
+                        if len(self.numberSelection) > 1:
+                            weight = abs(value2)
+
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                        lower_limit = value
+                        if len(self.numberSelection) > 1:
+                            weight = abs(value2)
+
+                    elif value2 > DIST_RANGE_MAX:  # lol_only
                         lower_limit = value
 
                     elif (0.0 if self.__file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
@@ -745,15 +756,27 @@ class CyanaMRParserListener(ParseTreeListener):
                             upper_limit = value2
 
                 elif delta is not None:
-                    target_value = value
-                    if delta > 0.0:
-                        lower_limit = value - delta
-                        upper_limit = value + delta
 
-                elif self.__file_ext is not None and self.__file_ext == 'upl':
+                    if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                        upper_limit = value
+                        if len(self.numberSelection) > 1:
+                            weight = abs(value2)
+
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                        lower_limit = value
+                        if len(self.numberSelection) > 1:
+                            weight = abs(value2)
+
+                    else:
+                        target_value = value
+                        if delta > 0.0:
+                            lower_limit = value - delta
+                            upper_limit = value + delta
+
+                elif 'upl' in (self.__file_ext, self.__cur_dist_type):
                     upper_limit = value
 
-                elif self.__file_ext is not None and self.__file_ext == 'lol':
+                elif 'lol' in (self.__file_ext, self.__cur_dist_type):
                     lower_limit = value
 
                 elif self.__upl_or_lol is None:
@@ -1179,7 +1202,18 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.__min_dist_value = value
 
                 if has_square:
-                    if value2 > DIST_RANGE_MAX:  # lol_only
+
+                    if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                        upper_limit = value
+                        if len(self.numberSelection) > 1:
+                            weight = abs(value2)
+
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                        lower_limit = value
+                        if len(self.numberSelection) > 1:
+                            weight = abs(value2)
+
+                    elif value2 > DIST_RANGE_MAX:  # lol_only
                         lower_limit = value
 
                     elif (0.0 if self.__file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
@@ -1198,15 +1232,27 @@ class CyanaMRParserListener(ParseTreeListener):
                             upper_limit = value2
 
                 elif delta is not None:
-                    target_value = value
-                    if delta > 0.0:
-                        lower_limit = value - delta
-                        upper_limit = value + delta
 
-                elif self.__file_ext is not None and self.__file_ext == 'upl':
+                    if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                        upper_limit = value
+                        if len(self.numberSelection) > 1:
+                            weight = abs(value2)
+
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                        lower_limit = value
+                        if len(self.numberSelection) > 1:
+                            weight = abs(value2)
+
+                    else:
+                        target_value = value
+                        if delta > 0.0:
+                            lower_limit = value - delta
+                            upper_limit = value + delta
+
+                elif 'upl' in (self.__file_ext, self.__cur_dist_type):
                     upper_limit = value
 
-                elif self.__file_ext is not None and self.__file_ext == 'lol':
+                elif 'lol' in (self.__file_ext, self.__cur_dist_type):
                     lower_limit = value
 
                 elif self.__upl_or_lol is None:
@@ -2521,7 +2567,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
                         for cifAtomId in atomIds:
                             self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
-                        atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+                            atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
                     if len(atomSelection) > 0:
                         self.atomSelectionSet.append(atomSelection)
                     return
@@ -2546,7 +2592,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
                         for cifAtomId in atomIds:
                             self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
-                        atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
+                            atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
                     if len(atomSelection) > 0:
                         self.atomSelectionSet.append(atomSelection)
                     return
@@ -2781,6 +2827,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#torsion_angle_restraints.
     def enterTorsion_angle_restraints(self, ctx: CyanaMRParser.Torsion_angle_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dihed'
+        self.__cur_dist_type = ''
 
         self.__cur_subtype_altered = False
 
@@ -2982,11 +3029,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         _cifSeqId = cifSeqId + offset
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, self.__hasCoord)
+
                         if _cifCompId is None:
-                            try:
-                                _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
-                            except IndexError:
-                                pass
+                            # """
+                            # try:
+                            #     _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
+                            # except IndexError:
+                            #     pass
+                            # """
                             if _cifCompId is None:
                                 self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
                                     f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
@@ -3001,7 +3052,10 @@ class CyanaMRParserListener(ParseTreeListener):
                             if isinstance(atomId, str):
                                 cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                             else:
-                                cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+                                cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
+                                                  if atomId.match(cca[self.__ccU.ccaAtomId])
+                                                  and (coordAtomSite is None
+                                                       or (coordAtomSite is not None and cca[self.__ccU.ccaAtomId] in coordAtomSite['atom_id']))), None)
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
@@ -3009,6 +3063,11 @@ class CyanaMRParserListener(ParseTreeListener):
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+
+                        self.testCoordAtomIdConsistency(chainId, _cifSeqId, _cifCompId, cifAtomId, seqKey, coordAtomSite, True)
+
+                        if self.__hasCoord and coordAtomSite is None:
+                            return
 
                         if len(atomSelection) > 0:
                             self.atomSelectionSet.append(atomSelection)
@@ -3222,6 +3281,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'rdc'
+        self.__cur_dist_type = ''
 
         self.__cur_subtype_altered = False
         self.__cur_comment_inlined = True
@@ -3526,6 +3586,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#pcs_restraints.
     def enterPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'pcs'
+        self.__cur_dist_type = ''
 
         self.__cur_subtype_altered = False
         self.__cur_comment_inlined = True
@@ -3777,10 +3838,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         if value < self.__min_dist_value:
                             self.__min_dist_value = value
 
-                    elif self.__file_ext is not None and self.__file_ext == 'upl':
+                    if 'upl' in (self.__file_ext, self.__cur_dist_type):
                         upper_limit = value
 
-                    elif self.__file_ext is not None and self.__file_ext == 'lol':
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
                         lower_limit = value
 
                     elif self.__upl_or_lol is None:
@@ -3980,7 +4041,18 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.__min_dist_value = value
 
                     if has_square:
-                        if value2 > DIST_RANGE_MAX:  # lol_only
+
+                        if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                            upper_limit = value
+                            if len(self.numberSelection) > 1:
+                                weight = abs(value2)
+
+                        elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                            lower_limit = value
+                            if len(self.numberSelection) > 1:
+                                weight = abs(value2)
+
+                        elif value2 > DIST_RANGE_MAX:  # lol_only
                             lower_limit = value
 
                         elif (0.0 if self.__file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
@@ -3999,15 +4071,27 @@ class CyanaMRParserListener(ParseTreeListener):
                                 upper_limit = value2
 
                     elif delta is not None:
-                        target_value = value
-                        if delta > 0.0:
-                            lower_limit = value - delta
-                            upper_limit = value + delta
 
-                    elif self.__file_ext is not None and self.__file_ext == 'upl':
+                        if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                            upper_limit = value
+                            if len(self.numberSelection) > 1:
+                                weight = abs(value2)
+
+                        elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                            lower_limit = value
+                            if len(self.numberSelection) > 1:
+                                weight = abs(value2)
+
+                        else:
+                            target_value = value
+                            if delta > 0.0:
+                                lower_limit = value - delta
+                                upper_limit = value + delta
+
+                    elif 'upl' in (self.__file_ext, self.__cur_dist_type):
                         upper_limit = value
 
-                    elif self.__file_ext is not None and self.__file_ext == 'lol':
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
                         lower_limit = value
 
                     elif self.__upl_or_lol is None:
@@ -4356,10 +4440,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         if value < self.__min_dist_value:
                             self.__min_dist_value = value
 
-                    elif self.__file_ext is not None and self.__file_ext == 'upl':
+                    if 'upl' in (self.__file_ext, self.__cur_dist_type):
                         upper_limit = value
 
-                    elif self.__file_ext is not None and self.__file_ext == 'lol':
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
                         lower_limit = value
 
                     elif self.__upl_or_lol is None:
@@ -4559,7 +4643,18 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.__min_dist_value = value
 
                     if has_square:
-                        if value2 > DIST_RANGE_MAX:  # lol_only
+
+                        if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                            upper_limit = value
+                            if len(self.numberSelection) > 1:
+                                weight = abs(value2)
+
+                        elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                            lower_limit = value
+                            if len(self.numberSelection) > 1:
+                                weight = abs(value2)
+
+                        elif value2 > DIST_RANGE_MAX:  # lol_only
                             lower_limit = value
 
                         elif (0.0 if self.__file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
@@ -4578,15 +4673,27 @@ class CyanaMRParserListener(ParseTreeListener):
                                 upper_limit = value2
 
                     elif delta is not None:
-                        target_value = value
-                        if delta > 0.0:
-                            lower_limit = value - delta
-                            upper_limit = value + delta
 
-                    elif self.__file_ext is not None and self.__file_ext == 'upl':
+                        if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                            upper_limit = value
+                            if len(self.numberSelection) > 1:
+                                weight = abs(value2)
+
+                        elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                            lower_limit = value
+                            if len(self.numberSelection) > 1:
+                                weight = abs(value2)
+
+                        else:
+                            target_value = value
+                            if delta > 0.0:
+                                lower_limit = value - delta
+                                upper_limit = value + delta
+
+                    elif 'upl' in (self.__file_ext, self.__cur_dist_type):
                         upper_limit = value
 
-                    elif self.__file_ext is not None and self.__file_ext == 'lol':
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
                         lower_limit = value
 
                     elif self.__upl_or_lol is None:
@@ -5106,7 +5213,18 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.__min_dist_value = value
 
             if has_square:
-                if value2 > DIST_RANGE_MAX:  # lol_only
+
+                if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                    upper_limit = value
+                    if len(self.numberSelection) > 1:
+                        weight = abs(value2)
+
+                elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                    lower_limit = value
+                    if len(self.numberSelection) > 1:
+                        weight = abs(value2)
+
+                elif value2 > DIST_RANGE_MAX:  # lol_only
                     lower_limit = value
 
                 elif (0.0 if self.__file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
@@ -5125,15 +5243,27 @@ class CyanaMRParserListener(ParseTreeListener):
                         upper_limit = value2
 
             elif delta is not None:
-                target_value = value
-                if delta > 0.0:
-                    lower_limit = value - delta
-                    upper_limit = value + delta
 
-            elif self.__file_ext is not None and self.__file_ext == 'upl':
+                if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                    upper_limit = value
+                    if len(self.numberSelection) > 1:
+                        weight = abs(value2)
+
+                elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                    lower_limit = value
+                    if len(self.numberSelection) > 1:
+                        weight = abs(value2)
+
+                else:
+                    target_value = value
+                    if delta > 0.0:
+                        lower_limit = value - delta
+                        upper_limit = value + delta
+
+            elif 'upl' in (self.__file_ext, self.__cur_dist_type):
                 upper_limit = value
 
-            elif self.__file_ext is not None and self.__file_ext == 'lol':
+            elif 'lol' in (self.__file_ext, self.__cur_dist_type):
                 lower_limit = value
 
             elif self.__upl_or_lol is None:
@@ -5394,6 +5524,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraints.
     def enterTorsion_angle_w_chain_restraints(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dihed'
+        self.__cur_dist_type = ''
 
         self.__cur_subtype_altered = False
 
@@ -5585,11 +5716,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         _cifSeqId = cifSeqId + offset
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, self.__hasCoord)
+
                         if _cifCompId is None:
-                            try:
-                                _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
-                            except IndexError:
-                                pass
+                            # """"
+                            # try:
+                            #     _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
+                            # except IndexError:
+                            #     pass
+                            # """
                             if _cifCompId is None:
                                 self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
                                     f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
@@ -5604,7 +5739,10 @@ class CyanaMRParserListener(ParseTreeListener):
                             if isinstance(atomId, str):
                                 cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                             else:
-                                cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+                                cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
+                                                  if atomId.match(cca[self.__ccU.ccaAtomId])
+                                                  and (coordAtomSite is None
+                                                       or (coordAtomSite is not None and cca[self.__ccU.ccaAtomId] in coordAtomSite['atom_id']))), None)
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
@@ -5612,6 +5750,11 @@ class CyanaMRParserListener(ParseTreeListener):
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+
+                        self.testCoordAtomIdConsistency(chainId, _cifSeqId, _cifCompId, cifAtomId, seqKey, coordAtomSite, True)
+
+                        if self.__hasCoord and coordAtomSite is None:
+                            return
 
                         if len(atomSelection) > 0:
                             self.atomSelectionSet.append(atomSelection)
@@ -5931,6 +6074,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#ssbond_macro.
     def enterSsbond_macro(self, ctx: CyanaMRParser.Ssbond_macroContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'ssbond'
+        self.__cur_dist_type = ''
 
         self.atomSelectionSet.clear()
 
@@ -6059,6 +6203,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#hbond_macro.
     def enterHbond_macro(self, ctx: CyanaMRParser.Hbond_macroContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'hbond'
+        self.__cur_dist_type = ''
 
         self.atomSelectionSet.clear()
 
@@ -6171,6 +6316,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#link_statement.
     def enterLink_statement(self, ctx: CyanaMRParser.Link_statementContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'geo'
+        self.__cur_dist_type = ''
 
         self.atomSelectionSet.clear()
 
@@ -6288,6 +6434,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#stereoassign_macro.
     def enterStereoassign_macro(self, ctx: CyanaMRParser.Stereoassign_macroContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'fchiral'
+        self.__cur_dist_type = ''
 
         self.atomSelectionSet.clear()
 

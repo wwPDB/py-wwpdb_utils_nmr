@@ -155,9 +155,9 @@ KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           }
 
 # @see: http://dx.doi.org/10.1107/S0907444909001905
-KNOWN_ANGLE_CARBO_ATOM_NAMES = {'PHI': [re.compile(r'^H1|O5$'), 'C1', 'O1', re.compile(r'^C[46]$')],
-                                'PSI': ['C1', 'O1', re.compile(r'^C[46]$'), re.compile(r'^H4|C[35]$')],
-                                'OMEGA': ['O1', 'C6', 'C5', re.compile('^H5|C4|O5$')]}
+KNOWN_ANGLE_CARBO_ATOM_NAMES = {'PHI': [re.compile(r'^H1|O5$'), 'C1', re.compile(r'^O[14]$'), re.compile(r'^C[46]$')],
+                                'PSI': ['C1', re.compile(r'^O[14]$'), re.compile(r'^C[46]$'), re.compile(r'^H4|C[35]$')],
+                                'OMEGA': [re.compile(r'^O[14]$'), 'C6', 'C5', re.compile('^H5|C4|O5$')]}
 
 KNOWN_ANGLE_NAMES = KNOWN_ANGLE_ATOM_NAMES.keys()
 
@@ -1855,6 +1855,37 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             authToLabelChain = {ps['auth_chain_id']: ps['chain_id'] for ps in polySeq}
             labelToAuthChain = {ps['chain_id']: ps['auth_chain_id'] for ps in polySeq}
 
+            if cR.hasCategory('pdbx_entity_branch'):
+
+                for br in branched:
+                    authToLabelChain[br['auth_chain_id']] = br['chain_id']
+                    labelToAuthChain[br['chain_id']] = br['auth_chain_id']
+
+                labelToAuthSeqForBranched = {}
+
+                entities = cR.getDictList('entity')
+
+                for entity in entities:
+                    entityId = int(entity['id'])
+                    entityType = entity['type']
+
+                    if entityType == 'branched':
+                        mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
+                                                            [{'name': 'asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
+                                                             {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'}],
+                                                            [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+
+                        for item in mappings:
+                            seqKey = (item['alt_chain_id'], item['seq_id'])
+                            labelToAuthSeqForBranched[seqKey] = item['alt_seq_id']
+
+                for c in coord:
+                    if c['alt_seq_id'] is None:
+                        seqKey = (c['alt_chain_id'], c['seq_id'])
+                        if seqKey in labelToAuthSeqForBranched:
+                            c['seq_id'], c['alt_seq_id'] = labelToAuthSeqForBranched[seqKey], str(c['seq_id'])
+
             coordAtomSite = {}
             labelToAuthSeq = {}
             chainIds = set(c['chain_id'] for c in coord)
@@ -2075,7 +2106,6 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         entityAssemblyId += 1
                 elif entityType == 'non-polymer':
                     if cR.hasCategory('pdbx_nonpoly_scheme'):
-
                         mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
                                                             [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
                                                              {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},

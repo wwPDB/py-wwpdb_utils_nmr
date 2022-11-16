@@ -405,6 +405,10 @@ class GromacsMRParserListener(ParseTreeListener):
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                         sf['constraint_subsubtype'] = 'ambi'
+                    if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                        upperLimit = float(dstFunc['upper_limit'])
+                        if upperLimit <= 1.0 or upperLimit >= 12.0:
+                            sf['constraint_subsubtype'] = 'ambi'
 
         except ValueError:
             self.distRestraints -= 1

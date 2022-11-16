@@ -4948,6 +4948,8 @@ class CnsMRParserListener(ParseTreeListener):
         atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
         if 'alt_atom_id' in factor and details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+            if atomId[-1].isdigit() and int(atomId[-1]) <= len(atomIds):
+                atomIds = [atomIds[int(atomId[-1]) - 1]]
 
         if details is not None:
             _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))

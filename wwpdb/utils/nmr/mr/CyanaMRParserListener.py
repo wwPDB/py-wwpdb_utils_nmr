@@ -2621,6 +2621,8 @@ class CyanaMRParserListener(ParseTreeListener):
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
             if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                    _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None:
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
@@ -3031,6 +3033,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                         seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
 
+                    prevCifAtomId = None
+                    prevOffset = None
+
                     for atomId, offset in zip(atomNames, seqOffset):
 
                         atomSelection = []
@@ -3061,15 +3066,26 @@ class CyanaMRParserListener(ParseTreeListener):
                             if isinstance(atomId, str):
                                 cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                             else:
-                                cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
-                                                  if atomId.match(cca[self.__ccU.ccaAtomId])
-                                                  and (coordAtomSite is None
-                                                       or (coordAtomSite is not None and cca[self.__ccU.ccaAtomId] in coordAtomSite['atom_id']))), None)
+                                cifAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomLis
+                                              if atomId.match(cca[self.__ccU.ccaAtomId])
+                                              and (coordAtomSite is None
+                                                   or (coordAtomSite is not None and cca[self.__ccU.ccaAtomId] in coordAtomSite['atom_id']))]
+
+                                if cifAtomId is not None and prevCifAtomId is not None and offset == prevOffset:
+                                    cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
+                                                      if any(b for b in self.__ccU.lastBonds
+                                                             if ((b[self.__ccU.ccbAtomId1] == prevCifAtomId and b[self.__ccU.ccbAtomId2] == _cifAtomId)
+                                                                 or (b[self.__ccU.ccbAtomId1] == _cifAtomId and b[self.__ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                else:
+                                    cifAtomId = cifAtomIds[0]
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                     f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
                                 return
+
+                        prevCifAtomId = cifAtomId
+                        prevOffset = offset
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
 
@@ -5138,6 +5154,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                        _atomId = [_atomId[int(atomId[-1]) - 1]]
 
                                 if details is not None:
                                     _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
@@ -5161,6 +5179,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                        _atomId = [_atomId[int(atomId[-1]) - 1]]
 
                                 if details is not None:
                                     _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
@@ -5718,6 +5738,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                         seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
 
+                    prevCifAtomId = None
+                    prevOffset = None
+
                     for atomId, offset in zip(atomNames, seqOffset):
 
                         atomSelection = []
@@ -5748,15 +5771,26 @@ class CyanaMRParserListener(ParseTreeListener):
                             if isinstance(atomId, str):
                                 cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                             else:
-                                cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
-                                                  if atomId.match(cca[self.__ccU.ccaAtomId])
-                                                  and (coordAtomSite is None
-                                                       or (coordAtomSite is not None and cca[self.__ccU.ccaAtomId] in coordAtomSite['atom_id']))), None)
+                                cifAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomLis
+                                              if atomId.match(cca[self.__ccU.ccaAtomId])
+                                              and (coordAtomSite is None
+                                                   or (coordAtomSite is not None and cca[self.__ccU.ccaAtomId] in coordAtomSite['atom_id']))]
+
+                                if cifAtomId is not None and prevCifAtomId is not None and offset == prevOffset:
+                                    cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
+                                                      if any(b for b in self.__ccU.lastBonds
+                                                             if ((b[self.__ccU.ccbAtomId1] == prevCifAtomId and b[self.__ccU.ccbAtomId2] == _cifAtomId)
+                                                                 or (b[self.__ccU.ccbAtomId1] == _cifAtomId and b[self.__ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                else:
+                                    cifAtomId = cifAtomIds[0]
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                     f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
                                 return
+
+                        prevCifAtomId = cifAtomId
+                        prevOffset = offset
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
 

@@ -4357,10 +4357,13 @@ class NEFTranslator:
                         return (atom_list, ambiguity_code, details)
 
             atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched)
+
             if details is not None and atom_id[-1] != '%':
                 _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
+                else:
+                    atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id + '*', details, leave_unmatched)
 
             return (atom_list, ambiguity_code, details)
 
@@ -4420,6 +4423,7 @@ class NEFTranslator:
                 return (atom_list, ambiguity_code, details)
 
             atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
+
             if details is not None and atom_id[-1] != '%':
                 _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
                 if _details is None:
@@ -4530,7 +4534,7 @@ class NEFTranslator:
                         elif self.__verbose:
                             self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
-                    atom_list = [i for i in atoms if re.search(pattern, i)]
+                    atom_list = [i for i in atoms if re.search(pattern, i) and nef_atom[0] in ('H', '1', '2', '3', i[0])]
 
                     methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 

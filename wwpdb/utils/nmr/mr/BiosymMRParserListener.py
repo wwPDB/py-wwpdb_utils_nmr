@@ -1075,6 +1075,8 @@ class BiosymMRParserListener(ParseTreeListener):
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
             if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                    _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None:
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)

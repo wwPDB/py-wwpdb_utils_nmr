@@ -1050,18 +1050,16 @@ class DynamoMRParserListener(ParseTreeListener):
         """ Assign polymer sequences of the coordinates.
         """
 
-        chainAssign = []
-
         if self.__has_sequence and self.__reasons is None:
             # """
             # if seqId < self.__first_resid:
             #     self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
             #         f"The residue number '{seqId}' must be grater than or equal to the internally defined first residue number {self.__first_resid}.\n"
-            #     return chainAssign
+            #     return []
             # if seqId - self.__first_resid >= len(self.__cur_sequence):
             #     self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
             #         f"The residue number '{seqId}' must be less than {len(self.__cur_sequence)}, total number of the internally defined sequence.\n"
-            #     return chainAssign
+            #     return []
             # """
             if self.__first_resid <= seqId < self.__first_resid + len(self.__cur_sequence):
                 oneLetterCode = self.__cur_sequence[seqId - self.__first_resid].upper()
@@ -1074,7 +1072,9 @@ class DynamoMRParserListener(ParseTreeListener):
                         f"and data ({seqId}:{compId}). "\
                         "Please verify the consistency between the internally defined sequence and restraints and re-upload the restraint file(s).\n"
                     self.__has_seq_align_err = True
-                    return chainAssign
+                    return []
+
+        chainAssign = set()
 
         _seqId = seqId
 
@@ -1127,11 +1127,11 @@ class DynamoMRParserListener(ParseTreeListener):
                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if compId in (cifCompId, origCompId):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId, True))
+                        chainAssign.add((chainId, seqId, cifCompId, True))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                             self.__chainNumberDict[refChainId] = chainId
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.append((chainId, seqId, cifCompId, True))
+                    chainAssign.add((chainId, seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
@@ -1165,11 +1165,11 @@ class DynamoMRParserListener(ParseTreeListener):
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((chainId, seqId_, cifCompId, True))
+                                    chainAssign.add((chainId, seqId_, cifCompId, True))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((chainId, seqId_, cifCompId, True))
+                                chainAssign.add((chainId, seqId_, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
                         except IndexError:
@@ -1199,11 +1199,11 @@ class DynamoMRParserListener(ParseTreeListener):
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((chainId, seqId, cifCompId, False))
+                            chainAssign.add((chainId, seqId, cifCompId, False))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                     elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId, False))
+                        chainAssign.add((chainId, seqId, cifCompId, False))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                             self.__chainNumberDict[refChainId] = chainId
 
@@ -1227,13 +1227,13 @@ class DynamoMRParserListener(ParseTreeListener):
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
+                                chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
                                 # if 'label_seq_scheme' not in self.reasonsForReParsing:
                                 #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
+                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
@@ -1262,13 +1262,13 @@ class DynamoMRParserListener(ParseTreeListener):
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if compId in (cifCompId, origCompId):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
+                                    chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
                                     # if 'label_seq_scheme' not in self.reasonsForReParsing:
                                     #     self.reasonsForReParsing['label_seq_scheme'] = True
                             elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
+                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
 
@@ -1282,7 +1282,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.append((chainId, _seqId, cifCompId, True))
+                    chainAssign.add((chainId, _seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
@@ -1303,7 +1303,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint(n=index,g=group)}"\
                     f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
-        return chainAssign
+        return list(chainAssign)
 
     def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, index=None, group=None):
         """ Select atoms of the coordinates.

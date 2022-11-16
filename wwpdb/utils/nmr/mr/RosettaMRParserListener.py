@@ -914,7 +914,7 @@ class RosettaMRParserListener(ParseTreeListener):
         """ Assign polymer sequences of the coordinates.
         """
 
-        chainAssign = []
+        chainAssign = set()
         _seqId = seqId
 
         fixedSeqId = None
@@ -952,7 +952,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if atomId is None\
                    or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                    chainAssign.append((chainId, seqId, cifCompId, True))
+                    chainAssign.add((chainId, seqId, cifCompId, True))
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
@@ -980,7 +980,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if atomId is None\
                                or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                                chainAssign.append((chainId, seqId_, cifCompId, True))
+                                chainAssign.add((chainId, seqId_, cifCompId, True))
                         except IndexError:
                             pass
 
@@ -1012,7 +1012,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if atomId is None\
                        or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                        chainAssign.append((chainId, seqId, cifCompId, False))
+                        chainAssign.add((chainId, seqId, cifCompId, False))
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
@@ -1032,7 +1032,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if atomId is None\
                            or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
+                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             # if 'label_seq_scheme' not in self.reasonsForReParsing:
                             #     self.reasonsForReParsing['label_seq_scheme'] = True
 
@@ -1054,7 +1054,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if atomId is None\
                                or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
+                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                                 # if 'label_seq_scheme' not in self.reasonsForReParsing:
                                 #     self.reasonsForReParsing['label_seq_scheme'] = True
 
@@ -1066,7 +1066,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                    chainAssign.append((chainId, _seqId, cifCompId, True))
+                    chainAssign.add((chainId, _seqId, cifCompId, True))
 
         if len(chainAssign) == 0:
             if atomId is not None:
@@ -1089,7 +1089,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                         f"The residue number '{_seqId}' is not present in the coordinates.\n"
 
-        return chainAssign
+        return list(chainAssign)
 
     def selectCoordAtoms(self, chainAssign, seqId, atomId, allowAmbig=True, subtype_name=None):
         """ Select atoms of the coordinates.

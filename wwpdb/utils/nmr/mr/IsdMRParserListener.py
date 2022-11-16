@@ -525,7 +525,7 @@ class IsdMRParserListener(ParseTreeListener):
             return
 
         if self.__createSfDict:
-            sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+            sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                               potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
             sf['id'] += 1
             memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'

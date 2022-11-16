@@ -213,12 +213,12 @@ if __name__ == "__main__":
     reader = CyanaMRReader(True, file_ext='upl')
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5ue2/pro_csp_28dec16.upl',
-                 '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif')
+                 '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif', originalFileName='pro_csp_28dec16.upl')
 
     reader = CyanaMRReader(True, file_ext='upl')
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5ue2/pro_mutations_28dec16.upl',
-                 '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif')
+                 '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif', originalFileName='pro_mutations_28dec16.upl')
 
     reader = CyanaMRReader(True, file_ext='upl')
     reader.setDebugMode(True)

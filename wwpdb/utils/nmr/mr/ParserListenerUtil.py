@@ -3045,10 +3045,10 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
             sf.add_tag(tag_item_name, 'metal coordination')
         elif tag_item_name == 'Constraint_type' and mrSubtype == 'rdc':
             sf.add_tag(tag_item_name, 'RDC')
-        elif tag_item_name == 'Constraint_type' and mrSubtype == 'dist':
-            sf.add_tag(tag_item_name, 'NOE')
         elif tag_item_name == 'Constraint_type':
             sf.add_tag(tag_item_name, constraintType)
+        elif tag_item_name == 'Constraint_type' and mrSubtype == 'dist':
+            sf.add_tag(tag_item_name, 'NOE')
         elif tag_item_name == 'Potential_type':
             sf.add_tag(tag_item_name, potentialType)
         elif tag_item_name == 'Homonuclear_NOE_val_type' and mrSubtype == 'noepk':
@@ -3545,7 +3545,7 @@ def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
     return row
 
 
-def getDistConstraintType(atomSelectionSet):
+def getDistConstraintType(atomSelectionSet, dstFunc, fileName):
     """ Return distance constraint type.
         @return 'hydrogen bond', 'disulfide bond', None for others
     """
@@ -3566,6 +3566,22 @@ def getDistConstraintType(atomSelectionSet):
         return 'metal coordination'
 
     if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']:
+        return None
+
+    upperLimit = 0.0
+    if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+        upperLimit = float(dstFunc['upper_limit'])
+
+    if atom1['chain_id'] != atom2['chain_id']:
+        _fileName = fileName.lower()
+        if upperLimit >= 12.0 and ('pre' in _fileName or 'paramag' in _fileName):
+            return 'paramagnetic relaxation'
+        if (upperLimit <= 1.0 or upperLimit >= 6.0) and ('csp' in _fileName or 'perturb' in _fileName):
+            return 'chemical shift perturbation'
+        if (upperLimit <= 1.0 or upperLimit >= 6.0) and 'mutat' in _fileName:
+            return 'mutation'
+
+    if upperLimit <= 1.0 or upperLimit >= 6.0:
         return None
 
     if atom_id_1 == 'SE' and atom_id_2 == 'SE':

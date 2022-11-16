@@ -28792,7 +28792,9 @@ class NmrDpUtility:
                 target_value += 0.4
 
             balanced = (upper_limit_value is None and lower_limit_value is None)\
-                or (upper_limit_value is not None and lower_limit_value is not None)
+                or (upper_limit_value is not None and lower_limit_value is not None)\
+                or (upper_limit_value is not None and upper_limit_value == 0.0)\
+                or (lower_limit_value is not None and lower_limit_value == 0.0)
 
             if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 

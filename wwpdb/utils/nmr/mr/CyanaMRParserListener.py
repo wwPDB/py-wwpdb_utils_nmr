@@ -965,7 +965,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                                       potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -1422,7 +1422,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                                       potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -3066,18 +3066,29 @@ class CyanaMRParserListener(ParseTreeListener):
                             if isinstance(atomId, str):
                                 cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                             else:
-                                cifAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomLis
+                                cifAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
                                               if atomId.match(cca[self.__ccU.ccaAtomId])
                                               and (coordAtomSite is None
                                                    or (coordAtomSite is not None and cca[self.__ccU.ccaAtomId] in coordAtomSite['atom_id']))]
 
-                                if cifAtomId is not None and prevCifAtomId is not None and offset == prevOffset:
-                                    cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
-                                                      if any(b for b in self.__ccU.lastBonds
-                                                             if ((b[self.__ccU.ccbAtomId1] == prevCifAtomId and b[self.__ccU.ccbAtomId2] == _cifAtomId)
-                                                                 or (b[self.__ccU.ccbAtomId1] == _cifAtomId and b[self.__ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                if len(cifAtomIds) > 0:
+                                    if prevCifAtomId is not None and offset == prevOffset:
+                                        cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
+                                                          if any(b for b in self.__ccU.lastBonds
+                                                                 if ((b[self.__ccU.ccbAtomId1] == prevCifAtomId and b[self.__ccU.ccbAtomId2] == _cifAtomId)
+                                                                     or (b[self.__ccU.ccbAtomId1] == _cifAtomId and b[self.__ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                        if cifAtomId is None:
+                                            offset -= 1
+                                            _cifSeqId = cifSeqId + offset
+                                            _cifCompId = cifCompId if offset == 0\
+                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, self.__hasCoord)
+                                            cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
+
+                                    else:
+                                        cifAtomId = cifAtomIds[0]
                                 else:
-                                    cifAtomId = cifAtomIds[0]
+                                    cifAtomId = None
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
@@ -3942,7 +3953,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                                       potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -4196,7 +4207,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                                       potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -4362,7 +4373,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                                       potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -4544,7 +4555,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                                       potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -4798,7 +4809,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                                       potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -4964,7 +4975,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                                       potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -5083,7 +5094,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -5483,7 +5494,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet),
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -5771,18 +5782,29 @@ class CyanaMRParserListener(ParseTreeListener):
                             if isinstance(atomId, str):
                                 cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
                             else:
-                                cifAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomLis
+                                cifAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
                                               if atomId.match(cca[self.__ccU.ccaAtomId])
                                               and (coordAtomSite is None
                                                    or (coordAtomSite is not None and cca[self.__ccU.ccaAtomId] in coordAtomSite['atom_id']))]
 
-                                if cifAtomId is not None and prevCifAtomId is not None and offset == prevOffset:
-                                    cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
-                                                      if any(b for b in self.__ccU.lastBonds
-                                                             if ((b[self.__ccU.ccbAtomId1] == prevCifAtomId and b[self.__ccU.ccbAtomId2] == _cifAtomId)
-                                                                 or (b[self.__ccU.ccbAtomId1] == _cifAtomId and b[self.__ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                if len(cifAtomIds) > 0:
+                                    if prevCifAtomId is not None and offset == prevOffset:
+                                        cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
+                                                          if any(b for b in self.__ccU.lastBonds
+                                                                 if ((b[self.__ccU.ccbAtomId1] == prevCifAtomId and b[self.__ccU.ccbAtomId2] == _cifAtomId)
+                                                                     or (b[self.__ccU.ccbAtomId1] == _cifAtomId and b[self.__ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                        if cifAtomId is None:
+                                            offset -= 1
+                                            _cifSeqId = cifSeqId + offset
+                                            _cifCompId = cifCompId if offset == 0\
+                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, self.__hasCoord)
+                                            cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
+
+                                    else:
+                                        cifAtomId = cifAtomIds[0]
                                 else:
-                                    cifAtomId = cifAtomIds[0]
+                                    cifAtomId = None
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\

@@ -113,6 +113,10 @@ SCALE_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 100.0}
 
 PROBABILITY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 1.0}
 
+DIST_AMBIG_LOW = 1.0
+DIST_AMBIG_MED = 6.0
+DIST_AMBIG_UP = 12.0
+
 # @see: https://x3dna.org/highlights/torsion-angles-of-nucleic-acid-structures for nucleic acids
 KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'PSI': ['N', 'CA', 'C', 'N'],  # i, i, i, i+1
@@ -1767,6 +1771,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     labelToAuthSeq = None if prevResult is None or 'label_to_auth_seq' not in prevResult else prevResult['label_to_auth_seq']
     authToLabelSeq = None if prevResult is None or 'auth_to_label_seq' not in prevResult else prevResult['auth_to_label_seq']
     authToStarSeq = None if prevResult is None or 'auth_to_star_seq' not in prevResult else prevResult['auth_to_star_seq']
+    authToEntityType = None if prevResult is None or 'auth_to_entity_type' not in prevResult else prevResult['auth_to_entity_type']
     labelToAuthChain = None if prevResult is None or 'label_to_auth_chain' not in prevResult else prevResult['label_to_auth_chain']
     authToLabelChain = None if prevResult is None or 'auth_to_label_chain' not in prevResult else prevResult['auth_to_label_chain']
     entityAssembly = None if prevResult is None or 'entity_assembly' not in prevResult else prevResult['entity_assembly']
@@ -1958,8 +1963,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         if labelSeqKey not in labelToAuthSeq:
                                             labelToAuthSeq[labelSeqKey] = authSeqKey
 
-        if authToStarSeq is None:
+        if authToStarSeq is None or authToEntityType is None:
             authToStarSeq = {}
+            authToEntityType = {}
             entityAssembly = []
 
             entityAssemblyId = 1
@@ -2036,7 +2042,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         authAsymIds = set()
                         compIds = set()
                         for item in mappings:
-                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId, True)
+                            seqKey = (item['auth_asym_id'], item['auth_seq_id'])
+                            authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                            authToEntityType[seqKey] = polyType
                             authAsymIds.add(item['auth_asym_id'])
                             compIds.add(item['comp_id'])
 
@@ -2084,7 +2092,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                         authAsymIds = set()
                         for item in mappings:
-                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, item['seq_id'], entityId, False)
+                            seqKey = (item['auth_asym_id'], item['auth_seq_id'])
+                            authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
+                            authToEntityType[seqKey] = entityPolyType
                             authAsymIds.add(item['auth_asym_id'])
                         for item in mappings:
                             altKey = (item['auth_asym_id'], item['alt_seq_id'])
@@ -2118,7 +2128,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         compId = None
                         authAsymIds = set()
                         for idx, item in enumerate(mappings):
-                            authToStarSeq[(item['auth_asym_id'], item['auth_seq_id'])] = (entityAssemblyId, idx + 1, entityId, True)
+                            seqKey = (item['auth_asym_id'], item['auth_seq_id'])
+                            authToStarSeq[seqKey] = (entityAssemblyId, idx + 1, entityId, True)
+                            authToEntityType[seqKey] = 'non-polymer'
                             authAsymIds.add(item['auth_asym_id'])
                             if compId is None:
                                 compId = item['comp_id']
@@ -2163,6 +2175,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'label_to_auth_chain': labelToAuthChain,
             'auth_to_label_chain': authToLabelChain,
             'auth_to_star_seq': authToStarSeq,
+            'auth_to_entity_type': authToEntityType,
             'entity_assembly': entityAssembly}
 
 
@@ -3587,11 +3600,11 @@ def getDistConstraintType(atomSelectionSet, dstFunc, fileName):
     _fileName = fileName.lower()
 
     if atom1['chain_id'] != atom2['chain_id']:
-        if upperLimit >= 12.0 and ('pre' in _fileName or 'paramag' in _fileName):
+        if upperLimit >= DIST_AMBIG_UP and ('pre' in _fileName or 'paramag' in _fileName):
             return 'paramagnetic relaxation'
-        if (upperLimit <= 1.0 or upperLimit >= 6.0) and ('csp' in _fileName or 'perturb' in _fileName):
+        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED) and ('csp' in _fileName or 'perturb' in _fileName):
             return 'chemical shift perturbation'
-        if (upperLimit <= 1.0 or upperLimit >= 6.0) and 'mutat' in _fileName:
+        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED) and 'mutat' in _fileName:
             return 'mutation'
         if 'symm' in _fileName:
             return 'symmetry'
@@ -3602,13 +3615,13 @@ def getDistConstraintType(atomSelectionSet, dstFunc, fileName):
         return 'NOE build-up'
 
     if 'not' in _fileName and 'seen' in _fileName:
-        if (upperLimit <= 1.0 or upperLimit >= 6.0):
+        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED):
             return 'NOE not seen'
 
     if 'roe' in _fileName:
         return 'ROE'
 
-    if upperLimit <= 1.0 or upperLimit >= 6.0:
+    if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED:
         return None
 
     if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _fileName:

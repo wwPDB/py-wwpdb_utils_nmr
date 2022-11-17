@@ -55,6 +55,8 @@ try:
                                                        CS_RESTRAINT_ERROR,
                                                        T1T2_RESTRAINT_RANGE,
                                                        T1T2_RESTRAINT_ERROR,
+                                                       DIST_AMBIG_LOW,
+                                                       DIST_AMBIG_UP,
                                                        XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                                        XPLOR_NITROXIDE_NAMES,
                                                        XPLOR_ORIGIN_AXIS_COLS)
@@ -118,6 +120,8 @@ except ImportError:
                                            CS_RESTRAINT_ERROR,
                                            T1T2_RESTRAINT_RANGE,
                                            T1T2_RESTRAINT_ERROR,
+                                           DIST_AMBIG_LOW,
+                                           DIST_AMBIG_UP,
                                            XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                            XPLOR_NITROXIDE_NAMES,
                                            XPLOR_ORIGIN_AXIS_COLS)
@@ -1293,6 +1297,9 @@ class CnsMRParserListener(ParseTreeListener):
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
                         if isinstance(combinationId, int)\
                            or (memberLogicCode == 'OR'
                                and (isAmbigAtomSelection(self.atomSelectionSet[i], self.__csStat)
@@ -1300,7 +1307,7 @@ class CnsMRParserListener(ParseTreeListener):
                             sf['constraint_subsubtype'] = 'ambi'
                         if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                             upperLimit = float(dstFunc['upper_limit'])
-                            if upperLimit <= 1.0 or upperLimit >= 12.0:
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
         finally:

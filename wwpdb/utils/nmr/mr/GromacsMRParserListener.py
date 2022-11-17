@@ -36,7 +36,9 @@ try:
                                                        ANGLE_RESTRAINT_RANGE,
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_ERROR)
+                                                       RDC_RESTRAINT_ERROR,
+                                                       DIST_AMBIG_LOW,
+                                                       DIST_AMBIG_UP)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -68,7 +70,9 @@ except ImportError:
                                            ANGLE_RESTRAINT_RANGE,
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_ERROR)
+                                           RDC_RESTRAINT_ERROR,
+                                           DIST_AMBIG_LOW,
+                                           DIST_AMBIG_UP)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -401,13 +405,16 @@ class GromacsMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
+                    if sf['constraint_subsubtype'] == 'ambi':
+                        continue
+
                     if memberLogicCode == 'OR'\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                         sf['constraint_subsubtype'] = 'ambi'
                     if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                         upperLimit = float(dstFunc['upper_limit'])
-                        if upperLimit <= 1.0 or upperLimit >= 12.0:
+                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
 
         except ValueError:

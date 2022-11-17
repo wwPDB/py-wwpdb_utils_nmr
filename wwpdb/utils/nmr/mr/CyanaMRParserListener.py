@@ -48,6 +48,8 @@ try:
                                                        RDC_RESTRAINT_ERROR,
                                                        PCS_RESTRAINT_RANGE,
                                                        PCS_RESTRAINT_ERROR,
+                                                       DIST_AMBIG_LOW,
+                                                       DIST_AMBIG_UP,
                                                        KNOWN_ANGLE_NAMES,
                                                        KNOWN_ANGLE_ATOM_NAMES,
                                                        KNOWN_ANGLE_SEQ_OFFSET,
@@ -107,6 +109,8 @@ except ImportError:
                                            RDC_RESTRAINT_ERROR,
                                            PCS_RESTRAINT_RANGE,
                                            PCS_RESTRAINT_ERROR,
+                                           DIST_AMBIG_LOW,
+                                           DIST_AMBIG_UP,
                                            KNOWN_ANGLE_NAMES,
                                            KNOWN_ANGLE_ATOM_NAMES,
                                            KNOWN_ANGLE_SEQ_OFFSET,
@@ -987,13 +991,16 @@ class CyanaMRParserListener(ParseTreeListener):
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                             sf['constraint_subsubtype'] = 'ambi'
                         if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                             upperLimit = float(dstFunc['upper_limit'])
-                            if upperLimit <= 1.0 or upperLimit >= 12.0:
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
             else:  # cco
@@ -1466,13 +1473,16 @@ class CyanaMRParserListener(ParseTreeListener):
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                             sf['constraint_subsubtype'] = 'ambi'
                         if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                             upperLimit = float(dstFunc['upper_limit'])
-                            if upperLimit <= 1.0 or upperLimit >= 12.0:
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
             else:  # cco
@@ -4022,16 +4032,19 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__cur_subtype == 'noepk':
                             break
 
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                             sf['constraint_subsubtype'] = 'ambi'
                         if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                             upperLimit = float(dstFunc['upper_limit'])
-                            if upperLimit <= 1.0 or upperLimit >= 12.0:
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
-                if num_col > 0 and self.__cur_dist_type == 'dist':
+                if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
 
                 int_col += 1
@@ -4298,13 +4311,16 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__cur_subtype == 'noepk':
                             break
 
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                             sf['constraint_subsubtype'] = 'ambi'
                         if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                             upperLimit = float(dstFunc['upper_limit'])
-                            if upperLimit <= 1.0 or upperLimit >= 12.0:
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
@@ -4486,13 +4502,16 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__cur_subtype == 'noepk':
                             break
 
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                             sf['constraint_subsubtype'] = 'ambi'
                         if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                             upperLimit = float(dstFunc['upper_limit'])
-                            if upperLimit <= 1.0 or upperLimit >= 12.0:
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
@@ -4690,13 +4709,16 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__cur_subtype == 'noepk':
                             break
 
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                             sf['constraint_subsubtype'] = 'ambi'
                         if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                             upperLimit = float(dstFunc['upper_limit'])
-                            if upperLimit <= 1.0 or upperLimit >= 12.0:
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
@@ -4966,13 +4988,16 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__cur_subtype == 'noepk':
                             break
 
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                             sf['constraint_subsubtype'] = 'ambi'
                         if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                             upperLimit = float(dstFunc['upper_limit'])
-                            if upperLimit <= 1.0 or upperLimit >= 12.0:
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
@@ -5154,13 +5179,16 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__cur_subtype == 'noepk':
                             break
 
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                             sf['constraint_subsubtype'] = 'ambi'
                         if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                             upperLimit = float(dstFunc['upper_limit'])
-                            if upperLimit <= 1.0 or upperLimit >= 12.0:
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
@@ -5292,13 +5320,16 @@ class CyanaMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
+                    if sf['constraint_subsubtype'] == 'ambi':
+                        continue
+
                     if memberLogicCode == 'OR'\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                         sf['constraint_subsubtype'] = 'ambi'
                     if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                         upperLimit = float(dstFunc['upper_limit'])
-                        if upperLimit <= 1.0 or upperLimit >= 12.0:
+                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
 
         except ValueError:
@@ -5710,13 +5741,16 @@ class CyanaMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
+                    if sf['constraint_subsubtype'] == 'ambi':
+                        continue
+
                     if memberLogicCode == 'OR'\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                         sf['constraint_subsubtype'] = 'ambi'
                     if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                         upperLimit = float(dstFunc['upper_limit'])
-                        if upperLimit <= 1.0 or upperLimit >= 12.0:
+                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
 
         except ValueError:

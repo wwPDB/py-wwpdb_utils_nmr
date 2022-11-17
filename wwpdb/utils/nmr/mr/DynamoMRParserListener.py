@@ -44,6 +44,8 @@ try:
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_RANGE,
                                                        RDC_RESTRAINT_ERROR,
+                                                       DIST_AMBIG_LOW,
+                                                       DIST_AMBIG_UP,
                                                        KNOWN_ANGLE_ATOM_NAMES,
                                                        KNOWN_ANGLE_SEQ_OFFSET)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -97,6 +99,8 @@ except ImportError:
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_RANGE,
                                            RDC_RESTRAINT_ERROR,
+                                           DIST_AMBIG_LOW,
+                                           DIST_AMBIG_UP,
                                            KNOWN_ANGLE_ATOM_NAMES,
                                            KNOWN_ANGLE_SEQ_OFFSET)
     from nmr.ChemCompUtil import ChemCompUtil
@@ -670,13 +674,16 @@ class DynamoMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
+                    if sf['constraint_subsubtype'] == 'ambi':
+                        continue
+
                     if memberLogicCode == 'OR'\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                         sf['constraint_subsubtype'] = 'ambi'
                     if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                         upperLimit = float(dstFunc['upper_limit'])
-                        if upperLimit <= 1.0 or upperLimit >= 12.0:
+                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
 
         except ValueError:
@@ -805,13 +812,16 @@ class DynamoMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
+                    if sf['constraint_subsubtype'] == 'ambi':
+                        continue
+
                     if memberLogicCode == 'OR'\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                         sf['constraint_subsubtype'] = 'ambi'
                     if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                         upperLimit = float(dstFunc['upper_limit'])
-                        if upperLimit <= 1.0 or upperLimit >= 12.0:
+                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
 
         except ValueError:
@@ -941,13 +951,16 @@ class DynamoMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
+                    if sf['constraint_subsubtype'] == 'ambi':
+                        continue
+
                     if memberLogicCode == 'OR'\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                         sf['constraint_subsubtype'] = 'ambi'
                     if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                         upperLimit = float(dstFunc['upper_limit'])
-                        if upperLimit <= 1.0 or upperLimit >= 12.0:
+                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
 
         except ValueError:

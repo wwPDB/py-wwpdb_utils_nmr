@@ -2044,7 +2044,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         for item in mappings:
                             seqKey = (item['auth_asym_id'], item['auth_seq_id'])
                             authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                            authToEntityType[seqKey] = polyType
+                            authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                             authAsymIds.add(item['auth_asym_id'])
                             compIds.add(item['comp_id'])
 
@@ -2094,7 +2094,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         for item in mappings:
                             seqKey = (item['auth_asym_id'], item['auth_seq_id'])
                             authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
-                            authToEntityType[seqKey] = entityPolyType
+                            authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
                             authAsymIds.add(item['auth_asym_id'])
                         for item in mappings:
                             altKey = (item['auth_asym_id'], item['alt_seq_id'])

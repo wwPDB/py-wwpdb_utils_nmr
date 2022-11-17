@@ -42287,6 +42287,108 @@ class NmrDpUtility:
         if Dihedral_angle_tot_num > 0:
             cst_sf.add_tag('Dihedral_angle_tot_num', Dihedral_angle_tot_num)
 
+        Protein_dihedral_angle_tot_num = 0
+        Protein_phi_angle_tot_num = 0
+        Protein_psi_angle_tot_num = 0
+        Protein_chi_one_angle_tot_num = 0
+        Protein_other_angle_tot_num = 0
+        if content_subtype in self.__mr_sf_dict_holder:
+            auth_to_entity_type = self.__caC['auth_to_entity_type']
+            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+
+                lp = sf_item['loop']
+
+                auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
+                auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                angle_name_col = lp.tags.index('Torsion_angle_name')
+
+                for row in lp:
+                    auth_asym_id = row[auth_asym_id_col]
+                    auth_seq_id = int(row[auth_seq_id_col])
+                    angle_name = row[angle_name_col]
+
+                    seq_key = (auth_asym_id, auth_seq_id)
+
+                    if seq_key in auth_to_entity_type:
+                        entity_type = auth_to_entity_type[seq_key]
+
+                        if 'peptide' in entity_type:
+                            Protein_dihedral_angle_tot_num += 1
+                            if angle_name == 'PHI':
+                                Protein_phi_angle_tot_num += 1
+                            elif angle_name == 'PSI':
+                                Protein_psi_angle_tot_num += 1
+                            elif angle_name == 'CHI1':
+                                Protein_chi_one_angle_tot_num += 1
+                            else:
+                                Protein_other_angle_tot_num += 1
+
+        if Protein_dihedral_angle_tot_num > 0:
+            cst_sf.add_tag('Protein_dihedral_angle_tot_num', Protein_dihedral_angle_tot_num)
+            cst_sf.add_tag('Protein_phi_angle_tot_num', Protein_phi_angle_tot_num)
+            cst_sf.add_tag('Protein_psi_angle_tot_num', Protein_psi_angle_tot_num)
+            cst_sf.add_tag('Protein_chi_one_angle_tot_num', Protein_chi_one_angle_tot_num)
+            cst_sf.add_tag('Protein_other_angle_tot_num', Protein_other_angle_tot_num)
+
+        NA_dihedral_angle_tot_num = 0
+        NA_alpha_angle_tot_num = 0
+        NA_beta_angle_tot_num = 0
+        NA_gamma_angle_tot_num = 0
+        NA_delta_angle_tot_num = 0
+        NA_epsilon_angle_tot_num = 0
+        NA_chi_angle_tot_num = 0
+        NA_other_angle_tot_num = 0
+        NA_amb_dihedral_angle_tot_num = 0
+        if content_subtype in self.__mr_sf_dict_holder:
+            auth_to_entity_type = self.__caC['auth_to_entity_type']
+            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+
+                lp = sf_item['loop']
+
+                auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
+                auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                angle_name_col = lp.tags.index('Torsion_angle_name')
+
+                for row in lp:
+                    auth_asym_id = row[auth_asym_id_col]
+                    auth_seq_id = int(row[auth_seq_id_col])
+                    angle_name = row[angle_name_col]
+
+                    seq_key = (auth_asym_id, auth_seq_id)
+
+                    if seq_key in auth_to_entity_type:
+                        entity_type = auth_to_entity_type[seq_key]
+
+                        if 'nucleotide' in entity_type:
+                            NA_dihedral_angle_tot_num += 1
+                            if angle_name == 'ALPHA':
+                                NA_alpha_angle_tot_num += 1
+                            elif angle_name == 'BETA':
+                                NA_beta_angle_tot_num += 1
+                            elif angle_name == 'GAMMA':
+                                NA_gamma_angle_tot_num += 1
+                            elif angle_name == 'DELTA':
+                                NA_delta_angle_tot_num += 1
+                            elif angle_name == 'EPSILON':
+                                NA_epsilon_angle_tot_num += 1
+                            elif angle_name == 'CHI':
+                                NA_chi_angle_tot_num += 1
+                            elif angle_name == 'PPA':
+                                NA_amb_dihedral_angle_tot_num += 1
+                            else:
+                                NA_other_angle_tot_num += 1
+
+        if NA_dihedral_angle_tot_num > 0:
+            cst_sf.add_tag('NA_dihedral_angle_tot_num', NA_dihedral_angle_tot_num)
+            cst_sf.add_tag('NA_alpha_angle_tot_num', NA_alpha_angle_tot_num)
+            cst_sf.add_tag('NA_beta_angle_tot_num', NA_beta_angle_tot_num)
+            cst_sf.add_tag('NA_gamma_angle_tot_num', NA_gamma_angle_tot_num)
+            cst_sf.add_tag('NA_delta_angle_tot_num', NA_delta_angle_tot_num)
+            cst_sf.add_tag('NA_epsilon_angle_tot_num', NA_epsilon_angle_tot_num)
+            cst_sf.add_tag('NA_chi_angle_tot_num', NA_chi_angle_tot_num)
+            cst_sf.add_tag('NA_other_angle_tot_num', NA_other_angle_tot_num)
+            cst_sf.add_tag('NA_amb_dihedral_angle_tot_num', NA_amb_dihedral_angle_tot_num)
+
         content_subtype = 'rdc_restraint'
 
         RDC_tot_num = 0

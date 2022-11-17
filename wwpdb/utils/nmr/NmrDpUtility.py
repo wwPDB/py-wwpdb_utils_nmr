@@ -42288,6 +42288,7 @@ class NmrDpUtility:
             cst_sf.add_tag('Dihedral_angle_tot_num', Dihedral_angle_tot_num)
 
         Protein_dihedral_angle_tot_num = 0
+
         Protein_phi_angle_tot_num = 0
         Protein_psi_angle_tot_num = 0
         Protein_chi_one_angle_tot_num = 0
@@ -42298,11 +42299,17 @@ class NmrDpUtility:
 
                 lp = sf_item['loop']
 
+                id_col = lp.tags.index('ID')
                 auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
                 auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
                 angle_name_col = lp.tags.index('Torsion_angle_name')
 
+                prev_id = -1
                 for row in lp:
+                    _id = int(row[id_col])
+                    if _id == prev_id:
+                        continue
+                    prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
                     auth_seq_id = int(row[auth_seq_id_col])
                     angle_name = row[angle_name_col]
@@ -42331,6 +42338,7 @@ class NmrDpUtility:
             cst_sf.add_tag('Protein_other_angle_tot_num', Protein_other_angle_tot_num)
 
         NA_dihedral_angle_tot_num = 0
+
         NA_alpha_angle_tot_num = 0
         NA_beta_angle_tot_num = 0
         NA_gamma_angle_tot_num = 0
@@ -42345,11 +42353,17 @@ class NmrDpUtility:
 
                 lp = sf_item['loop']
 
+                id_col = lp.tags.index('ID')
                 auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
                 auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
                 angle_name_col = lp.tags.index('Torsion_angle_name')
 
+                prev_id = -1
                 for row in lp:
+                    _id = int(row[id_col])
+                    if _id == prev_id:
+                        continue
+                    prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
                     auth_seq_id = int(row[auth_seq_id_col])
                     angle_name = row[angle_name_col]
@@ -42392,12 +42406,130 @@ class NmrDpUtility:
         content_subtype = 'rdc_restraint'
 
         RDC_tot_num = 0
+
+        RDC_HH_tot_num = 0
+        RDC_HNC_tot_num = 0
+        RDC_NH_tot_num = 0
+        RDC_CC_tot_num = 0
+        RDC_CN_i_1_tot_num = 0
+        RDC_CAHA_tot_num = 0
+        RDC_HNHA_tot_num = 0
+        RDC_HNHA_i_1_tot_num = 0
+        RDC_CAC_tot_num = 0
+        RDC_CAN_tot_num = 0
+
+        RDC_intraresidue_tot_num = 0
+        RDC_sequential_tot_num = 0
+        RDC_medium_range_tot_num = 0
+        RDC_long_range_tot_num = 0
+        RDC_other_tot_num = 0
+
+        RDC_unambig_intramol_tot_num = 0
+        RDC_unambig_intermol_tot_num = 0
+        RDC_ambig_intramol_tot_num = 0
+        RDC_ambig_intermol_tot_num = 0
+        RDC_intermol_tot_num = 0
+
         if content_subtype in self.__mr_sf_dict_holder:
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                 RDC_tot_num += sf_item['id']
 
+                lp = sf_item['loop']
+
+                item_names = self.item_names_in_rdc_loop[file_type]
+                id_col = lp.tags.index('ID')
+                chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
+                chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
+                seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
+                seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+                comb_id_col = lp.tags.index(item_names['combination_id'])
+
+                prev_id = -1
+                for row in lp:
+                    _id = int(row[id_col])
+                    if _id == prev_id:
+                        continue
+                    prev_id = _id
+                    chain_id_1 = int(row[chain_id_1_col])
+                    chain_id_2 = int(row[chain_id_2_col])
+                    seq_id_1 = int(row[seq_id_1_col])
+                    seq_id_2 = int(row[seq_id_2_col])
+                    atom_id_1 = row[atom_id_1_col]
+                    atom_id_2 = row[atom_id_2_col]
+                    comb_id = row[comb_id_col]
+
+                    vector = {atom_id_1, atom_id_2}
+                    offset = abs(seq_id_1 - seq_id_2)
+
+                    if chain_id_1 == chain_id_2:
+                        if vector == {'H', 'C'} and offset == 1:
+                            RDC_HNC_tot_num += 1
+                        elif vector == {'H', 'N'} and offset == 0:
+                            RDC_NH_tot_num += 1
+                        elif vector == {'C', 'N'} and offset == 1:
+                            RDC_CN_i_1_tot_num += 1
+                        elif vector == {'CA', 'HA'} and offset == 0:
+                            RDC_CAHA_tot_num += 1
+                        elif vector == {'H', 'HA'} and offset == 0:
+                            RDC_HNHA_tot_num += 1
+                        elif vector == {'H', 'HA'} and offset == 1:
+                            RDC_HNHA_i_1_tot_num += 1
+                        elif vector == {'CA', 'C'} and offset == 0:
+                            RDC_CAC_tot_num += 1
+                        elif vector == {'CA', 'N'} and offset == 0:
+                            RDC_CAN_tot_num += 1
+                        elif atom_id_1[0] == atom_id_2[0]:
+                            if atom_id_1[0] == 'H':
+                                RDC_HH_tot_num += 1
+                            elif atom_id_1[0] == 'C':
+                                RDC_CC_tot_num += 1
+
+                    if chain_id_1 == chain_id_2:
+                        if seq_id_1 == seq_id_2:
+                            RDC_intraresidue_tot_num += 1
+                        elif offset == 1:
+                            RDC_sequential_tot_num += 1
+                        elif offset < 4:
+                            RDC_medium_range_tot_num += 1
+                        else:
+                            RDC_long_range_tot_num += 1
+                        if comb_id in emptyValue:
+                            RDC_unambig_intramol_tot_num += 1
+                        else:
+                            RDC_ambig_intramol_tot_num += 1
+
+                    else:
+                        RDC_other_tot_num += 1
+                        RDC_intermol_tot_num += 1
+                        if comb_id in emptyValue:
+                            RDC_unambig_intermol_tot_num += 1
+                        else:
+                            RDC_ambig_intermol_tot_num += 1
+
         if RDC_tot_num > 0:
             cst_sf.add_tag('RDC_tot_num', RDC_tot_num)
+            cst_sf.add_tag('RDC_HH_tot_num', RDC_HH_tot_num)
+            cst_sf.add_tag('RDC_HNC_tot_num', RDC_HNC_tot_num)
+            cst_sf.add_tag('RDC_NH_tot_num', RDC_NH_tot_num)
+            cst_sf.add_tag('RDC_CC_tot_num', RDC_CC_tot_num)
+            cst_sf.add_tag('RDC_CN_i_1_tot_num', RDC_CN_i_1_tot_num)
+            cst_sf.add_tag('RDC_CAHA_tot_num', RDC_CAHA_tot_num)
+            cst_sf.add_tag('RDC_HNHA_tot_num', RDC_HNHA_tot_num)
+            cst_sf.add_tag('RDC_HNHA_i_1_tot_num', RDC_HNHA_i_1_tot_num)
+            cst_sf.add_tag('RDC_CAC_tot_num', RDC_CAC_tot_num)
+            cst_sf.add_tag('RDC_CAN_tot_num', RDC_CAN_tot_num)
+            cst_sf.add_tag('RDC_intraresidue_tot_num', RDC_intraresidue_tot_num)
+            cst_sf.add_tag('RDC_sequential_tot_num', RDC_sequential_tot_num)
+            cst_sf.add_tag('RDC_medium_range_tot_num', RDC_medium_range_tot_num)
+            cst_sf.add_tag('RDC_long_range_tot_num', RDC_long_range_tot_num)
+            cst_sf.add_tag('RDC_other_tot_num', RDC_other_tot_num)
+            cst_sf.add_tag('RDC_unambig_intramol_tot_num', RDC_unambig_intramol_tot_num)
+            cst_sf.add_tag('RDC_unambig_intermol_tot_num', RDC_unambig_intermol_tot_num)
+            cst_sf.add_tag('RDC_ambig_intramol_tot_num', RDC_ambig_intramol_tot_num)
+            cst_sf.add_tag('RDC_ambig_intermol_tot_num', RDC_ambig_intermol_tot_num)
+            cst_sf.add_tag('RDC_intermol_tot_num', RDC_intermol_tot_num)
 
         content_subtype = 'dist_restraint'
 

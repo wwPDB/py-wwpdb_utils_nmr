@@ -3580,14 +3580,28 @@ def getDistConstraintType(atomSelectionSet, dstFunc, fileName):
             return 'chemical shift perturbation'
         if (upperLimit <= 1.0 or upperLimit >= 6.0) and 'mutat' in _fileName:
             return 'mutation'
+        if 'symm' in _fileName:
+            return 'symmetry'
+
+    if 'build' in _fileName and 'up' in _fileName:
+        if 'roe' in _fileName:
+            return 'ROE build-up'
+        return 'NOE build-up'
+
+    if 'not' in _fileName and 'seen' in _fileName:
+        if (upperLimit <= 1.0 or upperLimit >= 6.0):
+            return 'NOE not seen'
+
+    if 'roe' in _fileName:
+        return 'ROE'
 
     if upperLimit <= 1.0 or upperLimit >= 6.0:
         return None
 
-    if atom_id_1 == 'SE' and atom_id_2 == 'SE':
+    if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _fileName:
         return 'diselenide bond'
 
-    if atom_id_1 == 'SG' and atom_id_2 == 'SG':
+    if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _fileName or ('ss' in _fileName and 'bond' in _fileName)):
         return 'disulfide bond'
 
     atom_id_1_ = atom_id_1[0]

@@ -24,7 +24,8 @@ try:
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        isLongRangeRestraint,
-                                                       hasIntraChainResraint,
+                                                       hasIntraChainRestraint,
+                                                       hasInterChainRestraint,
                                                        isAmbigAtomSelection,
                                                        isCyclicPolymer,
                                                        getRestraintName,
@@ -82,7 +83,8 @@ except ImportError:
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            isLongRangeRestraint,
-                                           hasIntraChainResraint,
+                                           hasIntraChainRestraint,
+                                           hasInterChainRestraint,
                                            isAmbigAtomSelection,
                                            isCyclicPolymer,
                                            getRestraintName,
@@ -955,11 +957,10 @@ class CyanaMRParserListener(ParseTreeListener):
                        and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
                             or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                         self.__allowZeroUpperLimit = True
+                self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
                 dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
                                                      self.__omitDistLimitOutlier)
-
-                self.__allowZeroUpperLimit = False
 
                 if dstFunc is None:
                     return
@@ -970,7 +971,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+                has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -1419,6 +1420,24 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             return
 
+                self.__allowZeroUpperLimit = False
+                if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                   and len(self.atomSelectionSet[0]) > 0\
+                   and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                    chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                    seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                    atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                    chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                    seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                    atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                    if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                       and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                            or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                        self.__allowZeroUpperLimit = True
+                self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
                 dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
                                                      self.__omitDistLimitOutlier)
 
@@ -1431,7 +1450,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+                has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -1618,11 +1637,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value:.3f}"
             else:
                 if target_value <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     if 'upl' in (self.__file_ext, self.__cur_dist_type) or 'lol' in (self.__file_ext, self.__cur_dist_type):
                         dstFunc['target_value'] = f"{target_value:.3f}"
                     else:
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                            f"The target value='{target_value:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                         target_value = None
                 else:
                     validRange = False
@@ -1634,11 +1653,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
                 if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     if 'lol' in (self.__file_ext, self.__cur_dist_type):
                         dstFunc['lower_limit'] = f"{lower_limit:.3f}"
                     else:
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                            f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                         lower_limit = None
                 else:
                     validRange = False
@@ -1650,11 +1669,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                     if 'upl' in (self.__file_ext, self.__cur_dist_type):
                         dstFunc['upper_limit'] = f"{upper_limit:.3f}"
                     else:
+                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
+                            f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
                         upper_limit = None
                 else:
                     validRange = False
@@ -3929,6 +3948,24 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
 
+                    self.__allowZeroUpperLimit = False
+                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                       and len(self.atomSelectionSet[0]) > 0\
+                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                            self.__allowZeroUpperLimit = True
+                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
                     dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
@@ -3966,7 +4003,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+                has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -4183,6 +4220,24 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
 
+                    self.__allowZeroUpperLimit = False
+                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                       and len(self.atomSelectionSet[0]) > 0\
+                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                            self.__allowZeroUpperLimit = True
+                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
@@ -4224,7 +4279,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+                has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -4356,6 +4411,24 @@ class CyanaMRParserListener(ParseTreeListener):
                         else:
                             upper_limit = value2
 
+                    self.__allowZeroUpperLimit = False
+                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                       and len(self.atomSelectionSet[0]) > 0\
+                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                            self.__allowZeroUpperLimit = True
+                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
@@ -4394,7 +4467,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+                has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -4543,6 +4616,24 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
 
+                    self.__allowZeroUpperLimit = False
+                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                       and len(self.atomSelectionSet[0]) > 0\
+                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                            self.__allowZeroUpperLimit = True
+                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
                     dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
@@ -4580,7 +4671,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+                has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -4797,6 +4888,24 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
 
+                    self.__allowZeroUpperLimit = False
+                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                       and len(self.atomSelectionSet[0]) > 0\
+                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                            self.__allowZeroUpperLimit = True
+                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
@@ -4838,7 +4947,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+                has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -4970,6 +5079,24 @@ class CyanaMRParserListener(ParseTreeListener):
                         else:
                             upper_limit = value2
 
+                    self.__allowZeroUpperLimit = False
+                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                       and len(self.atomSelectionSet[0]) > 0\
+                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                            self.__allowZeroUpperLimit = True
+                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
@@ -5008,7 +5135,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+                has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -5116,6 +5243,24 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 2:
                 return
 
+            self.__allowZeroUpperLimit = False
+            if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) > 0\
+               and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                   and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                    self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
             dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
                                                  self.__omitDistLimitOutlier)
 
@@ -5131,7 +5276,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 sf['id'] += 1
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-            has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+            has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -5508,6 +5653,24 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.__cur_subtype = 'dist'
 
                         return
+
+            self.__allowZeroUpperLimit = False
+            if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) > 0\
+               and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                   and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                    self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
                                                  self.__omitDistLimitOutlier)
@@ -6286,7 +6449,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 sf = self.__getSf()
                 sf['id'] += 1
 
-            has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+            has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -6399,7 +6562,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 sf = self.__getSf()
                 sf['id'] += 1
 
-            has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+            has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -6517,7 +6680,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                           'list_id', 'entry_id']
 
-            has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+            has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):

@@ -3943,7 +3943,17 @@ class NmrDpUtility:
                                                          {'name': 'UUID', 'type': 'str', 'mandatory': False},
                                                          {'name': 'Related_coordinate_file_name', 'type': 'str', 'mandatory': False}
                                                          ],
-                                          'entity': None,
+                                          'entity': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                     {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                     {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                     {'name': 'Name', 'type': 'str', 'mandatory': True},
+                                                     {'name': 'Polymer_common_type', 'type': 'enum',
+                                                      'enum': ('protein', 'DNA', 'RNA', 'DNA/RNA hybrid', 'polysaccharide')},
+                                                     {'name': 'Polymer_type', 'type': 'enum',
+                                                      'enum': ('cyclic-pseudo-peptide', 'polypeptide(L)', 'polydeoxyribonucleotide', 'polyribonucleotide',
+                                                               'polydeoxyribonucleotide/polyribonucleotide hybrid',
+                                                               'polypeptide(D)', 'polysaccharide(D)', 'polysaccharide(L)', 'other')}
+                                                     ],
                                           'poly_seq': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                        {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True}
                                                        ],
@@ -4229,7 +4239,16 @@ class NmrDpUtility:
                                                           'Ambiguous_conformational_states', 'Ambiguous_chem_comp_sites', 'Molecules_in_chemical_exchange',
                                                           'Paramagnetic', 'Thiol_state', 'Molecular_mass', 'Enzyme_commission_number',
                                                           'Details', 'DB_query_date', 'DB_query_revised_last_date'],
-                                             'entity': None,
+                                             'entity': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'BMRB_code', 'Name',
+                                                        'Type', 'Polymer_common_type', 'Polymer_type', 'Polymer_type_details', 'Polymer_strand_ID',
+                                                        'Polymer_seq_one_letter_code_can', 'Polymer_seq_one_letter_code', 'Target_identifier',
+                                                        'Polymer_author_defined_seq', 'Polymer_author_seq_details',
+                                                        'Ambiguous_conformational_states', 'Ambiguous_chem_comp_sites',
+                                                        'Nstd_monomer', 'Nstd_chirality', 'Nstd_linkage', 'Nonpolymer_comp_ID', 'Nonpolymer_comp_label',
+                                                        'Number_of_monomers', 'Number_of_nonpolymer_components', 'Paramagnetic', 'Thiol_state', 'Src_method',
+                                                        'Parent_entity_ID', 'Fragment', 'Mutation', 'EC_number', 'Calc_isoelectric_point',
+                                                        'Formula_weight', 'Formula_weight_exptl', 'Formula_weight_exptl_meth',
+                                                        'Details', 'DB_query_date', 'DB_query_revised_last_date'],
                                              'chem_shift': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
                                                             'Sample_condition_list_ID', 'Sample_condition_list_label', 'Chem_shift_reference_ID',
                                                             'Chem_shift_reference_label',
@@ -4497,7 +4516,9 @@ class NmrDpUtility:
                                                                '_Assembly_citation', '_Author_annotation', '_Sample_component',
                                                                '_Chemical_rate', '_Auto_relaxation', '_Theoretical_auto_relaxation',
                                                                '_Binding_result', '_Binding_partners', '_Struct_anno_char'],
-                                                  'entity': [],
+                                                  'entity': ['_Entity_db_link', '_Entity_biological_function', '_Entity_common_name', '_Entity_systematic_name', '_Entity_keyword'
+                                                             '_Entity_comp_index', '_Entity_poly_seq', '_Entity_chimera_segment', '_Entity_comp_index_alt',
+                                                             '_Entity_atom_list', '_Entity_chem_comp_deleted_atom', '_Entity_bond', '_Entity_citation'],
                                                   'chem_shift': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset',
                                                                  '_Chem_shift_software', '_Atom_chem_shift', '_Ambiguous_atom_chem_shift',
                                                                  '_Spectral_peak_list', '_Assigned_peak_chem_shift', '_Assigned_spectral_transition'],
@@ -19781,8 +19802,8 @@ class NmrDpUtility:
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype == 'entity':
-                    continue
+                # if content_subtype == 'entity':
+                #     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
 

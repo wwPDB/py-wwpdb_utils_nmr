@@ -2360,13 +2360,25 @@ def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):
     return False
 
 
-def hasIntraChainResraint(atomSelectionSet):
+def hasIntraChainRestraint(atomSelectionSet):
     """ Return whether intra-chain distance restraints in the atom selection.
     """
 
     for atom1, atom2 in itertools.product(atomSelectionSet[0],
                                           atomSelectionSet[1]):
         if atom1['chain_id'] == atom2['chain_id']:
+            return True
+
+    return False
+
+
+def hasInterChainRestraint(atomSelectionSet):
+    """ Return whether inter-chain distance restraints in the atom selection.
+    """
+
+    for atom1, atom2 in itertools.product(atomSelectionSet[0],
+                                          atomSelectionSet[1]):
+        if atom1['chain_id'] != atom2['chain_id']:
             return True
 
     return False
@@ -3572,8 +3584,9 @@ def getDistConstraintType(atomSelectionSet, dstFunc, fileName):
     if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
         upperLimit = float(dstFunc['upper_limit'])
 
+    _fileName = fileName.lower()
+
     if atom1['chain_id'] != atom2['chain_id']:
-        _fileName = fileName.lower()
         if upperLimit >= 12.0 and ('pre' in _fileName or 'paramag' in _fileName):
             return 'paramagnetic relaxation'
         if (upperLimit <= 1.0 or upperLimit >= 6.0) and ('csp' in _fileName or 'perturb' in _fileName):

@@ -25,6 +25,7 @@ try:
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       hasInterChainRestraint,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
                                                        isCyclicPolymer,
@@ -73,6 +74,7 @@ except ImportError:
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           hasInterChainRestraint,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
                                            getRestraintName,
@@ -636,6 +638,7 @@ class CharmmMRParserListener(ParseTreeListener):
                    and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
                         or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(self.scale, self.squareExponent if self.rSwitch is not None else 1.0,
                                                  target_value, lower_limit, upper_limit,

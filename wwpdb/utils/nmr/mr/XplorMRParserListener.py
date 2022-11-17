@@ -25,6 +25,7 @@ try:
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       hasInterChainRestraint,
                                                        isLongRangeRestraint,
                                                        isAsymmetricRangeRestraint,
                                                        isAmbigAtomSelection,
@@ -99,6 +100,7 @@ except ImportError:
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           hasInterChainRestraint,
                                            isLongRangeRestraint,
                                            isAsymmetricRangeRestraint,
                                            isAmbigAtomSelection,
@@ -1616,6 +1618,7 @@ class XplorMRParserListener(ParseTreeListener):
                    and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
                         or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(scale,
                                                  target_value, lower_limit, upper_limit,

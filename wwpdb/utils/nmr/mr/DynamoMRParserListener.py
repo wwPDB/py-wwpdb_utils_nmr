@@ -19,7 +19,8 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
                                                        isLongRangeRestraint,
-                                                       hasIntraChainResraint,
+                                                       hasIntraChainRestraint,
+                                                       hasInterChainRestraint,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
                                                        translateToStdResName,
@@ -71,7 +72,8 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
                                            isLongRangeRestraint,
-                                           hasIntraChainResraint,
+                                           hasIntraChainRestraint,
+                                           hasInterChainRestraint,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
                                            translateToStdResName,
@@ -638,6 +640,7 @@ class DynamoMRParserListener(ParseTreeListener):
                    and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
                         or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(index, group, weight, scale, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 
@@ -650,7 +653,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf['id'] += 1
                 memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
 
-            has_inter_chain = hasIntraChainResraint(self.atomSelectionSet)
+            has_inter_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -761,6 +764,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             self.__allowZeroUpperLimit = False
             if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) > 0\
                and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
@@ -774,6 +778,7 @@ class DynamoMRParserListener(ParseTreeListener):
                    and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
                         or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(index, group, weight, scale, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 
@@ -894,6 +899,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             self.__allowZeroUpperLimit = False
             if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) > 0\
                and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
@@ -907,6 +913,7 @@ class DynamoMRParserListener(ParseTreeListener):
                    and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
                         or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(index, group, weight, scale, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 

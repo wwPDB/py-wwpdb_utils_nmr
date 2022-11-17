@@ -20,7 +20,8 @@ try:
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
-                                                       hasIntraChainResraint,
+                                                       hasIntraChainRestraint,
+                                                       hasInterChainRestraint,
                                                        isAmbigAtomSelection,
                                                        isCyclicPolymer,
                                                        getRestraintName,
@@ -62,7 +63,8 @@ except ImportError:
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
-                                           hasIntraChainResraint,
+                                           hasIntraChainRestraint,
+                                           hasInterChainRestraint,
                                            isAmbigAtomSelection,
                                            isCyclicPolymer,
                                            getRestraintName,
@@ -518,6 +520,7 @@ class IsdMRParserListener(ParseTreeListener):
                and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
                     or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                 self.__allowZeroUpperLimit = True
+        self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
         dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
 
@@ -530,7 +533,7 @@ class IsdMRParserListener(ParseTreeListener):
             sf['id'] += 1
             memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
 
-        has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
+        has_intra_chain = hasIntraChainRestraint(self.atomSelectionSet)
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):

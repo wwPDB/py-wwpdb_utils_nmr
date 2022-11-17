@@ -42868,6 +42868,39 @@ class NmrDpUtility:
         if Derived_paramag_relax_tot_num > 0:
             cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)
 
+        content_subtype = 'other_restraint'
+
+        if content_subtype in self.__mr_sf_dict_holder:
+            Protein_other_tot_num = 0
+            NA_other_tot_num = 0
+            auth_to_entity_type = self.__caC['auth_to_entity_type']
+            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                lp = sf['loop']
+                lp_tags = lp['tags']
+                lp_data = lp['data']
+
+                auth_asym_id_col = lp_tags.index('auth_asym_id') if 'auth_asym_id' in lp_tags else lp_tags.index('auth_asym_id_1')
+                auth_seq_id_col = lp_tags.index('auth_seq_id') if 'auth_seq_id' in lp_tags else lp_tags.index('auth_seq_id_1')
+
+                for row in lp_data:
+                    auth_asym_id = row[auth_asym_id_col]
+                    auth_seq_id = row[auth_seq_id_col]
+
+                    seq_key = (auth_asym_id, auth_seq_id)
+
+                    if seq_key in auth_to_entity_type:
+                        entity_type = auth_to_entity_type[seq_key]
+
+                        if 'peptide' in entity_type:
+                            Protein_other_tot_num += 1
+                        elif 'nucleotide' in entity_type:
+                            NA_other_tot_num += 1
+
+            if Protein_other_tot_num > 0:
+                cst_sf.add_tag('Protein_other_tot_num', Protein_other_tot_num)
+            if NA_other_tot_num > 0:
+                cst_sf.add_tag('NA_other_tot_num', NA_other_tot_num)
+
         lp_category = '_Constraint_file'
         cf_loop = pynmrstar.Loop.from_scratch(lp_category)
 

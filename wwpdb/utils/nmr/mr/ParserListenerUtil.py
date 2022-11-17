@@ -2432,7 +2432,7 @@ def isAmbigAtomSelection(atoms, csStat):
     if geminalAtom is not None:
 
         if atomId0[0] not in ('H', '1', '2', '3'):
-            if set(atomIds) == set([atomId0, geminalAtom]):
+            if set(atomIds) == {atomId0, geminalAtom}:
                 return False
 
         if protonsInGroup is not None:
@@ -3070,7 +3070,7 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
             sf.add_tag(tag_item_name, 'metal coordination')
         elif tag_item_name == 'Constraint_type' and mrSubtype == 'rdc':
             sf.add_tag(tag_item_name, 'RDC')
-        elif tag_item_name == 'Constraint_type':
+        elif tag_item_name == 'Constraint_type' and constraintType is not None:
             sf.add_tag(tag_item_name, constraintType)
         elif tag_item_name == 'Constraint_type' and mrSubtype == 'dist':
             sf.add_tag(tag_item_name, 'NOE')
@@ -3602,6 +3602,8 @@ def getDistConstraintType(atomSelectionSet, dstFunc, fileName):
     if atom1['chain_id'] != atom2['chain_id']:
         if upperLimit >= DIST_AMBIG_UP and ('pre' in _fileName or 'paramag' in _fileName):
             return 'paramagnetic relaxation'
+        if upperLimit >= DIST_AMBIG_UP and ('cidnp' in _fileName):
+            return 'photo cidnp'
         if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED) and ('csp' in _fileName or 'perturb' in _fileName):
             return 'chemical shift perturbation'
         if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED) and 'mutat' in _fileName:

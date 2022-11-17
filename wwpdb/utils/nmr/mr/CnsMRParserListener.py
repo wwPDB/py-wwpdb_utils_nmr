@@ -7697,6 +7697,10 @@ class CnsMRParserListener(ParseTreeListener):
 
         if self.__cur_subtype == 'dist':
             item['constraint_subsubtype'] = 'simple'
+            if constraintType is None:
+                item['NOE_dist_averaging_method'] = self.noeAverage
+            elif 'ROE' in constraintType:
+                item['ROE_dist_averaging_method'] = self.noeAverage
 
         self.sfDict[key].append(item)
 

@@ -229,10 +229,10 @@ class BMRBChemShiftStat:
         if key in self.__cachedDictForSimilarCompId:
             return self.__cachedDictForSimilarCompId[key]
 
-        aa_bb = set(['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'])
-        dn_bb = set(["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", 'P'])
-        rn_bb = set(["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", "H5'1", "H5'2", "H2'1", "HO'2", 'P', "O2'"])
-        ch_bb = set(['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H61', 'H62'])
+        aa_bb = {'C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'}
+        dn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", 'P'}
+        rn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", "H5'1", "H5'2", "H2'1", "HO'2", 'P', "O2'"}
+        ch_bb = {'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H61', 'H62'}
 
         try:
 

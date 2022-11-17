@@ -3558,7 +3558,7 @@ def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
 
 
 def getDistConstraintType(atomSelectionSet, dstFunc, fileName):
-    """ Return distance constraint type.
+    """ Return distance constraint type for _Constraint_file.Constraint_type tag value.
         @return 'hydrogen bond', 'disulfide bond', None for others
     """
 

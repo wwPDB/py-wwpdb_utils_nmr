@@ -649,7 +649,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
-                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO')
                 sf['id'] += 1
                 memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
 
@@ -787,7 +788,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
-                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO')
                 sf['id'] += 1
                 memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
 
@@ -922,7 +924,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
-                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO')
                 sf['id'] += 1
                 memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
 
@@ -1696,7 +1699,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
-                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO/TALOS')
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1805,7 +1809,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
-                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO/TALOS')
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1914,7 +1919,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
-                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO/TALOS')
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -2165,7 +2171,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO/PALES')
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -2336,7 +2343,8 @@ class DynamoMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO/PALES')
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -2507,7 +2515,8 @@ class DynamoMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO/PALES')
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -2685,7 +2694,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='PALES')
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -2878,7 +2888,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
-                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO')
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -3014,7 +3025,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
-                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO')
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -3150,7 +3162,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
-                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  softwareName='DYNAMO')
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -3426,7 +3439,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
                     if self.__createSfDict:
                         sf = self.__getSf(constraintType='backbone chemical shifts',
-                                          potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                          potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                          softwareName='TALOS')
                         sf['id'] += 1
 
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -3600,7 +3614,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
                     if self.__createSfDict:
                         sf = self.__getSf(constraintType='backbone chemical shifts',
-                                          potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                                          potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                          softwareName='TALOS')
                         sf['id'] += 1
 
                     for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -3689,7 +3704,7 @@ class DynamoMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None, potentialType=None):
+    def __addSf(self, constraintType=None, potentialType=None, softwareName=None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -3706,7 +3721,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         restraint_name = getRestraintName(self.__cur_subtype)
 
-        sf_framecode = 'DYNAMO/PALES/TALOS_' + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = ('DYNAMO/PALES/TALOS' if softwareName is None else softwareName) + '_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType)
@@ -3732,7 +3747,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None):
+    def __getSf(self, constraintType=None, potentialType=None, softwareName=None):
         key = (self.__cur_subtype, constraintType, potentialType, None)
 
         if key not in self.sfDict:
@@ -3752,7 +3767,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     else:
                         sf.add_tag('Potential_type', potentialType)
             if not replaced:
-                self.__addSf(constraintType=constraintType, potentialType=potentialType)
+                self.__addSf(constraintType=constraintType, potentialType=potentialType, softwareName=softwareName)
 
         return self.sfDict[key][-1]
 

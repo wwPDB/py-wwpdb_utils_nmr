@@ -248,6 +248,8 @@ try:
                                                        CSA_RESTRAINT_RANGE,
                                                        CCR_RESTRAINT_RANGE,
                                                        PRE_RESTRAINT_RANGE,
+                                                       DIST_AMBIG_LOW,
+                                                       DIST_AMBIG_UP,
                                                        WEIGHT_RANGE,
                                                        SCALE_RANGE,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -326,6 +328,8 @@ except ImportError:
                                            CSA_RESTRAINT_RANGE,
                                            CCR_RESTRAINT_RANGE,
                                            PRE_RESTRAINT_RANGE,
+                                           DIST_AMBIG_LOW,
+                                           DIST_AMBIG_UP,
                                            WEIGHT_RANGE,
                                            SCALE_RANGE,
                                            REPRESENTATIVE_MODEL_ID,
@@ -42264,7 +42268,7 @@ class NmrDpUtility:
             NOE_ambig_intramol_tot_num = 0
             NOE_ambig_intermol_tot_num = 0
             NOE_interentity_tot_num = 0
-            # NOE_other_tot_num = 0
+            NOE_other_tot_num = 0
 
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                 sf = sf_item['saveframe']
@@ -42286,6 +42290,7 @@ class NmrDpUtility:
                     atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                     atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                     comb_id_col = lp.tags.index(item_names['combination_id'])
+                    upper_limit_col = lp.tags.index(item_names['upper_limit'])
 
                     prev_id = -1
                     for row in lp:
@@ -42300,9 +42305,10 @@ class NmrDpUtility:
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
                         comb_id = row[comb_id_col]
+                        upper_limit = float(row[upper_limit_col]) if row[upper_limit_col] not in emptyValue else 0.0
 
                         offset = abs(seq_id_1 - seq_id_2)
-                        uniq = comb_id in emptyValue
+                        uniq = comb_id in emptyValue or upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP
 
                         if uniq:
                             NOE_unique_tot_num += 1
@@ -42330,11 +42336,23 @@ class NmrDpUtility:
                                     NOE_long_range_unique_tot_num += 1
                         else:
                             NOE_interentity_tot_num += 1
-                            # NOE_other_tot_num += 1
                             if uniq:
                                 NOE_unamb_intermol_tot_num += 1
                             else:
                                 NOE_ambig_intermol_tot_num += 1
+
+            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                sf = sf_item['saveframe']
+                potential_type = get_first_sf_tag(sf, 'Potential_type')
+                if 'lower' in potential_type:
+                    continue
+                constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                if constraint_type is not None and constraint_type in ('paramagnetic relaxation',
+                                                                       'photo cidnp',
+                                                                       'chemical shift perturbation',
+                                                                       'mutation',
+                                                                       'symmetry'):
+                    NOE_other_tot_num += sf_item['id']
 
             if NOE_tot_num > 0:
                 cst_sf.add_tag('NOE_tot_num', NOE_tot_num)
@@ -42352,7 +42370,7 @@ class NmrDpUtility:
                 cst_sf.add_tag('NOE_ambig_intramol_tot_num', NOE_ambig_intramol_tot_num)
                 cst_sf.add_tag('NOE_ambig_intermol_tot_num', NOE_ambig_intermol_tot_num)
                 cst_sf.add_tag('NOE_interentity_tot_num', NOE_interentity_tot_num)
-                # cst_sf.add_tag('NOE_other_tot_num', NOE_other_tot_num)
+                cst_sf.add_tag('NOE_other_tot_num', NOE_other_tot_num)
 
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                 if 'ROE_dist_averaging_method' in sf_item:
@@ -42390,6 +42408,7 @@ class NmrDpUtility:
                     atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                     atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                     comb_id_col = lp.tags.index(item_names['combination_id'])
+                    upper_limit_col = lp.tags.index(item_names['upper_limit'])
 
                     prev_id = -1
                     for row in lp:
@@ -42404,9 +42423,10 @@ class NmrDpUtility:
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
                         comb_id = row[comb_id_col]
+                        upper_limit = float(row[upper_limit_col]) if row[upper_limit_col] not in emptyValue else 0.0
 
                         offset = abs(seq_id_1 - seq_id_2)
-                        uniq = comb_id in emptyValue
+                        uniq = comb_id in emptyValue or upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP
 
                         if chain_id_1 == chain_id_2:
                             if uniq:
@@ -42467,6 +42487,9 @@ class NmrDpUtility:
                 auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
                 angle_name_col = lp.tags.index('Torsion_angle_name')
 
+                _protein_angles = 0
+                _other_angles = 0
+
                 prev_id = -1
                 for row in lp:
                     _id = int(row[id_col])
@@ -42484,6 +42507,7 @@ class NmrDpUtility:
 
                         if 'peptide' in entity_type:
                             Protein_dihedral_angle_tot_num += 1
+                            _protein_angles += 1
                             if angle_name == 'PHI':
                                 Protein_phi_angle_tot_num += 1
                             elif angle_name == 'PSI':
@@ -42492,6 +42516,13 @@ class NmrDpUtility:
                                 Protein_chi_one_angle_tot_num += 1
                             else:
                                 Protein_other_angle_tot_num += 1
+                        else:
+                            _other_angles += 1
+
+                if _protein_angles > 0 and _other_angles == 0:
+                    sf = sf_item['saveframe']
+                    tagNames = [t[0] for t in sf.tags]
+                    sf.tags[tagNames.index('Constraint_type')][1] = 'protein dihedral angle'
 
         if Protein_dihedral_angle_tot_num > 0:
             cst_sf.add_tag('Protein_dihedral_angle_tot_num', Protein_dihedral_angle_tot_num)
@@ -42521,6 +42552,9 @@ class NmrDpUtility:
                 auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
                 angle_name_col = lp.tags.index('Torsion_angle_name')
 
+                _na_angles = 0
+                _other_angles = 0
+
                 prev_id = -1
                 for row in lp:
                     _id = int(row[id_col])
@@ -42538,6 +42572,7 @@ class NmrDpUtility:
 
                         if 'nucleotide' in entity_type:
                             NA_dihedral_angle_tot_num += 1
+                            _na_angles += 1
                             if angle_name == 'ALPHA':
                                 NA_alpha_angle_tot_num += 1
                             elif angle_name == 'BETA':
@@ -42554,6 +42589,13 @@ class NmrDpUtility:
                                 NA_amb_dihedral_angle_tot_num += 1
                             else:
                                 NA_other_angle_tot_num += 1
+                    else:
+                        _other_angles += 1
+
+                if _na_angles > 0 and _other_angles == 0:
+                    sf = sf_item['saveframe']
+                    tagNames = [t[0] for t in sf.tags]
+                    sf.tags[tagNames.index('Constraint_type')][1] = 'nucleic acid dihedral angle'
 
         if NA_dihedral_angle_tot_num > 0:
             cst_sf.add_tag('NA_dihedral_angle_tot_num', NA_dihedral_angle_tot_num)
@@ -42580,12 +42622,12 @@ class NmrDpUtility:
         RDC_HNHA_i_1_tot_num = 0
         RDC_CAC_tot_num = 0
         RDC_CAN_tot_num = 0
+        RDC_other_tot_num = 0
 
         RDC_intraresidue_tot_num = 0
         RDC_sequential_tot_num = 0
         RDC_medium_range_tot_num = 0
         RDC_long_range_tot_num = 0
-        # RDC_other_tot_num = 0
 
         RDC_unambig_intramol_tot_num = 0
         RDC_unambig_intermol_tot_num = 0
@@ -42648,6 +42690,8 @@ class NmrDpUtility:
                                 RDC_HH_tot_num += 1
                             elif atom_id_1[0] == 'C':
                                 RDC_CC_tot_num += 1
+                        else:
+                            RDC_other_tot_num += 1
 
                     if chain_id_1 == chain_id_2:
                         if offset == 0:
@@ -42664,7 +42708,6 @@ class NmrDpUtility:
                             RDC_ambig_intramol_tot_num += 1
 
                     else:
-                        # RDC_other_tot_num += 1
                         RDC_intermol_tot_num += 1
                         if comb_id in emptyValue:
                             RDC_unambig_intermol_tot_num += 1
@@ -42683,11 +42726,11 @@ class NmrDpUtility:
             cst_sf.add_tag('RDC_HNHA_i_1_tot_num', RDC_HNHA_i_1_tot_num)
             cst_sf.add_tag('RDC_CAC_tot_num', RDC_CAC_tot_num)
             cst_sf.add_tag('RDC_CAN_tot_num', RDC_CAN_tot_num)
+            cst_sf.add_tag('RDC_other_tot_num', RDC_other_tot_num)
             cst_sf.add_tag('RDC_intraresidue_tot_num', RDC_intraresidue_tot_num)
             cst_sf.add_tag('RDC_sequential_tot_num', RDC_sequential_tot_num)
             cst_sf.add_tag('RDC_medium_range_tot_num', RDC_medium_range_tot_num)
             cst_sf.add_tag('RDC_long_range_tot_num', RDC_long_range_tot_num)
-            # cst_sf.add_tag('RDC_other_tot_num', RDC_other_tot_num)
             cst_sf.add_tag('RDC_unambig_intramol_tot_num', RDC_unambig_intramol_tot_num)
             cst_sf.add_tag('RDC_unambig_intermol_tot_num', RDC_unambig_intermol_tot_num)
             cst_sf.add_tag('RDC_ambig_intramol_tot_num', RDC_ambig_intramol_tot_num)

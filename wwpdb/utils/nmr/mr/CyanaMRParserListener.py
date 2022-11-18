@@ -3129,7 +3129,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                                    f"{seqId+offset}:{compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
                                 return
 
                         prevCifAtomId = cifAtomId
@@ -3234,7 +3234,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                                    f"{seqId+offset}:{compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
@@ -6045,7 +6045,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                                    f"{seqId+offset}:{compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
                                 return
 
                         prevCifAtomId = cifAtomId
@@ -6150,7 +6150,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                                    f"{seqId+offset}:{compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})

@@ -3951,9 +3951,9 @@ class NmrDpUtility:
                                                      {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                      {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                      {'name': 'Name', 'type': 'str', 'mandatory': True},
-                                                     {'name': 'Polymer_common_type', 'type': 'enum',
+                                                     {'name': 'Polymer_common_type', 'type': 'enum', 'mandatory': False,
                                                       'enum': ('protein', 'DNA', 'RNA', 'DNA/RNA hybrid', 'polysaccharide')},
-                                                     {'name': 'Polymer_type', 'type': 'enum',
+                                                     {'name': 'Polymer_type', 'type': 'enum', 'mandatory': False,
                                                       'enum': ('cyclic-pseudo-peptide', 'polypeptide(L)', 'polydeoxyribonucleotide', 'polyribonucleotide',
                                                                'polydeoxyribonucleotide/polyribonucleotide hybrid',
                                                                'polypeptide(D)', 'polysaccharide(D)', 'polysaccharide(L)', 'other')}

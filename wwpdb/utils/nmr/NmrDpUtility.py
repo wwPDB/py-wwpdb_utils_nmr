@@ -27864,8 +27864,8 @@ class NmrDpUtility:
 
                 target_value = i[target_value_name] if target_value_name in i else None
 
-                upper_limit_value = None
-                lower_limit_value = None
+                upper_limit = None
+                lower_limit = None
 
                 if target_value is None:
 
@@ -27879,19 +27879,19 @@ class NmrDpUtility:
 
                     elif has_key_value(i, upper_linear_limit_name):
                         target_value = i[upper_linear_limit_name]
-                        upper_limit_value = target_value
+                        upper_limit = target_value
 
                     elif has_key_value(i, upper_limit_name):
                         target_value = i[upper_limit_name]
-                        upper_limit_value = target_value
+                        upper_limit = target_value
 
                     elif has_key_value(i, lower_linear_limit_name):
                         target_value = i[lower_linear_limit_name]
-                        lower_limit_value = target_value
+                        lower_limit = target_value
 
                     elif has_key_value(i, lower_limit_name):
                         target_value = i[lower_limit_name]
-                        lower_limit_value = target_value
+                        lower_limit = target_value
 
                     else:
                         continue
@@ -27902,7 +27902,7 @@ class NmrDpUtility:
                 if target_value < min_val:
                     min_val = target_value
 
-                data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, l, target_value, upper_limit_value, lower_limit_value,
+                data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, l, target_value, upper_limit, lower_limit,
                                                               chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                 if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
@@ -28044,31 +28044,31 @@ class NmrDpUtility:
                 # detect potential type
 
                 # targe_value = i[target_value_name] if target_value_name in i else None
-                lower_limit_value = i[lower_limit_name] if lower_limit_name in i else None
-                upper_limit_value = i[upper_limit_name] if upper_limit_name in i else None
-                lower_linear_limit_value = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
-                upper_linear_limit_value = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
+                lower_limit = i[lower_limit_name] if lower_limit_name in i else None
+                upper_limit = i[upper_limit_name] if upper_limit_name in i else None
+                lower_linear_limit = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
+                upper_linear_limit = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
 
-                if (lower_limit_value is not None) and (upper_limit_value is not None)\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                if (lower_limit is not None) and (upper_limit is not None)\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'square-well-parabolic'
-                elif (lower_limit_value is not None) and (upper_limit_value is not None)\
-                        and (lower_linear_limit_value is not None) and (upper_linear_limit_value is not None):
+                elif (lower_limit is not None) and (upper_limit is not None)\
+                        and (lower_linear_limit is not None) and (upper_linear_limit is not None):
                     potential_type = 'square-well-parabolic-linear'
-                elif lower_limit_value is None and (upper_limit_value is not None)\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                elif lower_limit is None and (upper_limit is not None)\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'upper-bound-parabolic'
-                elif (lower_limit_value is not None) and upper_limit_value is None\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                elif (lower_limit is not None) and upper_limit is None\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'lower-bound-parabolic'
-                elif lower_limit_value is None and (upper_limit_value is not None)\
-                        and lower_linear_limit_value is None and (upper_linear_limit_value is not None):
+                elif lower_limit is None and (upper_limit is not None)\
+                        and lower_linear_limit is None and (upper_linear_limit is not None):
                     potential_type = 'upper-bound-parabolic-linear'
-                elif (lower_limit_value is not None) and upper_limit_value is None\
-                        and (lower_linear_limit_value is not None) and upper_linear_limit_value is None:
+                elif (lower_limit is not None) and upper_limit is None\
+                        and (lower_linear_limit is not None) and upper_linear_limit is None:
                     potential_type = 'lower-bound-parabolic-linear'
-                elif (target_value is not None) and lower_limit_value is None and upper_limit_value is None\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                elif (target_value is not None) and lower_limit is None and upper_limit is None\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'log-harmonic'
                 else:
                     potential_type = 'undefined'
@@ -28197,8 +28197,8 @@ class NmrDpUtility:
 
                     target_value = i[target_value_name] if target_value_name in i else None
 
-                    upper_limit_value = None
-                    lower_limit_value = None
+                    upper_limit = None
+                    lower_limit = None
 
                     if target_value is None:
 
@@ -28212,19 +28212,19 @@ class NmrDpUtility:
 
                         elif has_key_value(i, upper_linear_limit_name):
                             target_value = i[upper_linear_limit_name]
-                            upper_limit_value = target_value
+                            upper_limit = target_value
 
                         elif has_key_value(i, upper_limit_name):
                             target_value = i[upper_limit_name]
-                            upper_limit_value = target_value
+                            upper_limit = target_value
 
                         elif has_key_value(i, lower_linear_limit_name):
                             target_value = i[lower_linear_limit_name]
-                            lower_limit_value = target_value
+                            lower_limit = target_value
 
                         elif has_key_value(i, lower_limit_name):
                             target_value = i[lower_limit_name]
-                            lower_limit_value = target_value
+                            lower_limit = target_value
 
                         else:
                             continue
@@ -28232,7 +28232,7 @@ class NmrDpUtility:
                     if target_value < v or target_value >= v + scale:
                         continue
 
-                    data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, l, target_value, upper_limit_value, lower_limit_value,
+                    data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, l, target_value, upper_limit, lower_limit,
                                                                   chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                     _count[data_type] += 1
@@ -28474,8 +28474,8 @@ class NmrDpUtility:
 
                                     target_value = row_1[target_value_name] if target_value_name in row_1 else None
 
-                                    upper_limit_value = None
-                                    lower_limit_value = None
+                                    upper_limit = None
+                                    lower_limit = None
 
                                     if target_value is None:
 
@@ -28489,19 +28489,19 @@ class NmrDpUtility:
 
                                         elif has_key_value(row_1, upper_linear_limit_name):
                                             target_value = row_1[upper_linear_limit_name]
-                                            upper_limit_value = target_value
+                                            upper_limit = target_value
 
                                         elif has_key_value(row_1, upper_limit_name):
                                             target_value = row_1[upper_limit_name]
-                                            upper_limit_value = target_value
+                                            upper_limit = target_value
 
                                         elif has_key_value(row_1, lower_linear_limit_name):
                                             target_value = row_1[lower_linear_limit_name]
-                                            lower_limit_value = target_value
+                                            lower_limit = target_value
 
                                         elif has_key_value(row_1, lower_limit_name):
                                             target_value = row_1[lower_limit_name]
-                                            lower_limit_value = target_value
+                                            lower_limit = target_value
 
                                         else:
                                             continue
@@ -28515,7 +28515,7 @@ class NmrDpUtility:
                                     atom_id_1 = row_1[atom_id_1_name]
                                     atom_id_2 = row_1[atom_id_2_name]
 
-                                    data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit_value, lower_limit_value,
+                                    data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit, lower_limit,
                                                                                   chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                     _count[data_type] += 1
@@ -28524,8 +28524,8 @@ class NmrDpUtility:
 
                                 target_value = row_1[target_value_name] if target_value_name in row_1 else None
 
-                                upper_limit_value = None
-                                lower_limit_value = None
+                                upper_limit = None
+                                lower_limit = None
 
                                 if target_value is None:
 
@@ -28539,19 +28539,19 @@ class NmrDpUtility:
 
                                     elif has_key_value(row_1, upper_linear_limit_name):
                                         target_value = row_1[upper_linear_limit_name]
-                                        upper_limit_value = target_value
+                                        upper_limit = target_value
 
                                     elif has_key_value(row_1, upper_limit_name):
                                         target_value = row_1[upper_limit_name]
-                                        upper_limit_value = target_value
+                                        upper_limit = target_value
 
                                     elif has_key_value(row_1, lower_linear_limit_name):
                                         target_value = row_1[lower_linear_limit_name]
-                                        lower_limit_value = target_value
+                                        lower_limit = target_value
 
                                     elif has_key_value(row_1, lower_limit_name):
                                         target_value = row_1[lower_limit_name]
-                                        lower_limit_value = target_value
+                                        lower_limit = target_value
 
                                     else:
                                         continue
@@ -28565,7 +28565,7 @@ class NmrDpUtility:
                                 atom_id_1 = row_1[atom_id_1_name]
                                 atom_id_2 = row_1[atom_id_2_name]
 
-                                data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit_value, lower_limit_value,
+                                data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit, lower_limit,
                                                                               chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 _count[data_type] += 1
@@ -28792,7 +28792,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Error  - {str(e)}\n")
 
-    def __getTypeOfDistanceRestraint(self, file_type, lp_data, row_id, target_value, upper_limit_value, lower_limit_value,
+    def __getTypeOfDistanceRestraint(self, file_type, lp_data, row_id, target_value, upper_limit, lower_limit,
                                      chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2):
         """ Return type of distance restraint.
         """
@@ -28820,230 +28820,234 @@ class NmrDpUtility:
             atom_id_1_ = atom_id_1[0]
             atom_id_2_ = atom_id_2[0]
 
-            if upper_limit_value is not None:
+            if upper_limit is not None:
                 target_value -= 0.4
 
-            elif lower_limit_value is not None:
+            elif lower_limit is not None:
                 target_value += 0.4
 
-            balanced = (upper_limit_value is None and lower_limit_value is None)\
-                or (upper_limit_value is not None and lower_limit_value is not None)\
-                or (upper_limit_value is not None and upper_limit_value == 0.0)\
-                or (lower_limit_value is not None and lower_limit_value == 0.0)
+            balanced = (upper_limit is None and lower_limit is None)\
+                or (upper_limit is not None and lower_limit is not None)\
+                or (upper_limit is not None and upper_limit == 0.0)\
+                or (lower_limit is not None and lower_limit == 0.0)
 
-            if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
+            ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
 
-                if 1.2 <= target_value <= 1.5:
-                    hydrogen_bond_type = 'F...H-x'
-                    hydrogen_bond = True
-                elif target_value < 1.2:
-                    hydrogen_bond_type = 'F...H-x (too close!)'
-                    hydrogen_bond = True
-                elif target_value <= 2.0:
-                    hydrogen_bond_type = 'F...H-x (too far!)'
-                    hydrogen_bond = True
+            if not ambig:
 
-            elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+                if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
-                if 2.2 <= target_value <= 2.5:
-                    hydrogen_bond_type = 'F...h-F'
-                    hydrogen_bond = True
-                elif target_value < 2.2:
-                    hydrogen_bond_type = 'F...h-F (too close!)'
-                    hydrogen_bond = True
-                elif target_value <= 3.0:
-                    hydrogen_bond_type = 'F...h-F (too far!)'
-                    hydrogen_bond = True
+                    if 1.2 <= target_value <= 1.5:
+                        hydrogen_bond_type = 'F...H-x'
+                        hydrogen_bond = True
+                    elif target_value < 1.2:
+                        hydrogen_bond_type = 'F...H-x (too close!)'
+                        hydrogen_bond = True
+                    elif target_value <= 2.0:
+                        hydrogen_bond_type = 'F...H-x (too far!)'
+                        hydrogen_bond = True
 
-            elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+                elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
 
-                if 1.5 <= target_value <= 2.5:
-                    hydrogen_bond_type = 'O...H-x'
-                    hydrogen_bond = True
-                elif target_value < 1.5:
-                    hydrogen_bond_type = 'O...H-x (too close!)'
-                    hydrogen_bond = True
-                elif target_value <= 4.0:
-                    hydrogen_bond_type = 'O...H-x (too far!)'
-                    hydrogen_bond = True
+                    if 2.2 <= target_value <= 2.5:
+                        hydrogen_bond_type = 'F...h-F'
+                        hydrogen_bond = True
+                    elif target_value < 2.2:
+                        hydrogen_bond_type = 'F...h-F (too close!)'
+                        hydrogen_bond = True
+                    elif target_value <= 3.0:
+                        hydrogen_bond_type = 'F...h-F (too far!)'
+                        hydrogen_bond = True
 
-            elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+                elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
 
-                if 2.5 <= target_value <= 3.5:
-                    hydrogen_bond_type = 'O...h-N'
-                    hydrogen_bond = True
-                elif target_value < 2.5:
-                    hydrogen_bond_type = 'O...h-N (too close!)'
-                    hydrogen_bond = True
-                elif target_value <= 5.0:
-                    hydrogen_bond_type = 'O...h-N (too far!)'
-                    hydrogen_bond = True
+                    if 1.5 <= target_value <= 2.5:
+                        hydrogen_bond_type = 'O...H-x'
+                        hydrogen_bond = True
+                    elif target_value < 1.5:
+                        hydrogen_bond_type = 'O...H-x (too close!)'
+                        hydrogen_bond = True
+                    elif target_value <= 4.0:
+                        hydrogen_bond_type = 'O...H-x (too far!)'
+                        hydrogen_bond = True
 
-            elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+                elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
 
-                if 2.5 <= target_value <= 3.5:
-                    hydrogen_bond_type = 'O...h-O'
-                    hydrogen_bond = True
-                elif target_value < 2.5:
-                    hydrogen_bond_type = 'O...h-O (too close!)'
-                    hydrogen_bond = True
-                elif target_value <= 5.0:
-                    hydrogen_bond_type = 'O...h-O (too far!)'
-                    hydrogen_bond = True
+                    if 2.5 <= target_value <= 3.5:
+                        hydrogen_bond_type = 'O...h-N'
+                        hydrogen_bond = True
+                    elif target_value < 2.5:
+                        hydrogen_bond_type = 'O...h-N (too close!)'
+                        hydrogen_bond = True
+                    elif target_value <= 5.0:
+                        hydrogen_bond_type = 'O...h-N (too far!)'
+                        hydrogen_bond = True
 
-            elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+                elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
 
-                if 1.5 <= target_value <= 2.5:
-                    hydrogen_bond_type = 'N...H-x'
-                    hydrogen_bond = True
-                elif target_value < 1.5:
-                    hydrogen_bond_type = 'N...H-x (too close!)'
-                    hydrogen_bond = True
-                elif target_value <= 4.0:
-                    hydrogen_bond_type = 'N...H-x (too far!)'
-                    hydrogen_bond = True
+                    if 2.5 <= target_value <= 3.5:
+                        hydrogen_bond_type = 'O...h-O'
+                        hydrogen_bond = True
+                    elif target_value < 2.5:
+                        hydrogen_bond_type = 'O...h-O (too close!)'
+                        hydrogen_bond = True
+                    elif target_value <= 5.0:
+                        hydrogen_bond_type = 'O...h-O (too far!)'
+                        hydrogen_bond = True
 
-            elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+                elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
 
-                if 2.5 <= target_value <= 3.5:
-                    hydrogen_bond_type = 'N...h_N'
-                    hydrogen_bond = True
-                elif target_value < 2.5:
-                    hydrogen_bond_type = 'N...h_N (too close!)'
-                    hydrogen_bond = True
-                elif target_value <= 5.0:
-                    hydrogen_bond_type = 'N...h_N (too far!)'
-                    hydrogen_bond = True
+                    if 1.5 <= target_value <= 2.5:
+                        hydrogen_bond_type = 'N...H-x'
+                        hydrogen_bond = True
+                    elif target_value < 1.5:
+                        hydrogen_bond_type = 'N...H-x (too close!)'
+                        hydrogen_bond = True
+                    elif target_value <= 4.0:
+                        hydrogen_bond_type = 'N...H-x (too far!)'
+                        hydrogen_bond = True
 
-            elif atom_id_1_ == 'S' and atom_id_2_ == 'S' and not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
+                elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
 
-                if 1.9 <= target_value <= 2.3:
-                    disulfide_bond_type = 'S...S'
-                    disulfide_bond = True
-                elif target_value < 1.9:
-                    disulfide_bond_type = 'S...S (too close!)'
-                    disulfide_bond = True
-                elif target_value <= 3.6:
-                    disulfide_bond_type = 'S...S (too far!)'
-                    disulfide_bond = True
+                    if 2.5 <= target_value <= 3.5:
+                        hydrogen_bond_type = 'N...h_N'
+                        hydrogen_bond = True
+                    elif target_value < 2.5:
+                        hydrogen_bond_type = 'N...h_N (too close!)'
+                        hydrogen_bond = True
+                    elif target_value <= 5.0:
+                        hydrogen_bond_type = 'N...h_N (too far!)'
+                        hydrogen_bond = True
 
-            elif atom_id_1.startswith('SE') and atom_id_2.startswith('SE'):
+                elif atom_id_1_ == 'S' and atom_id_2_ == 'S' and not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
 
-                if 2.1 <= target_value <= 2.6:
-                    diselenide_bond_type = 'Se...Se'
-                    diselenide_bond = True
-                elif target_value < 2.1:
-                    diselenide_bond_type = 'Se...Se (too close!)'
-                    diselenide_bond = True
-                elif target_value <= 4.2:
-                    diselenide_bond_type = 'Se...Se (too far!)'
-                    diselenide_bond = True
+                    if 1.9 <= target_value <= 2.3:
+                        disulfide_bond_type = 'S...S'
+                        disulfide_bond = True
+                    elif target_value < 1.9:
+                        disulfide_bond_type = 'S...S (too close!)'
+                        disulfide_bond = True
+                    elif target_value <= 3.6:
+                        disulfide_bond_type = 'S...S (too far!)'
+                        disulfide_bond = True
 
-            elif (atom_id_1_ == 'N' and not is_non_metal_element(comp_id_2, atom_id_2))\
-                    or (atom_id_2_ == 'N' and not is_non_metal_element(comp_id_1, atom_id_1)):
+                elif atom_id_1.startswith('SE') and atom_id_2.startswith('SE'):
 
-                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
-                metal = metal.title()
+                    if 2.1 <= target_value <= 2.6:
+                        diselenide_bond_type = 'Se...Se'
+                        diselenide_bond = True
+                    elif target_value < 2.1:
+                        diselenide_bond_type = 'Se...Se (too close!)'
+                        diselenide_bond = True
+                    elif target_value <= 4.2:
+                        diselenide_bond_type = 'Se...Se (too far!)'
+                        diselenide_bond = True
 
-                if 1.9 <= target_value <= 2.1 or not balanced:
-                    other_bond_type = 'N...' + metal
-                    other_bond = True
-                elif target_value < 1.9:
-                    other_bond_type = 'N...' + metal + ' (too close!)'
-                    other_bond = True
-                elif target_value <= 3.2:
-                    other_bond_type = 'N...' + metal + ' (too far!)'
-                    other_bond = True
+                elif (atom_id_1_ == 'N' and not is_non_metal_element(comp_id_2, atom_id_2))\
+                        or (atom_id_2_ == 'N' and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-            elif (atom_id_1_ == 'O' and not is_non_metal_element(comp_id_2, atom_id_2))\
-                    or (atom_id_2_ == 'O' and not is_non_metal_element(comp_id_1, atom_id_1)):
+                    metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
+                    metal = metal.title()
 
-                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
-                metal = metal.title()
+                    if 1.9 <= target_value <= 2.1 or not balanced:
+                        other_bond_type = 'N...' + metal
+                        other_bond = True
+                    elif target_value < 1.9:
+                        other_bond_type = 'N...' + metal + ' (too close!)'
+                        other_bond = True
+                    elif target_value <= 3.2:
+                        other_bond_type = 'N...' + metal + ' (too far!)'
+                        other_bond = True
 
-                if 2.0 <= target_value <= 2.2 or not balanced:
-                    other_bond_type = 'O...' + metal
-                    other_bond = True
-                elif target_value < 2.0:
-                    other_bond_type = 'O...' + metal + ' (too close!)'
-                    other_bond = True
-                elif target_value <= 3.4:
-                    other_bond_type = 'O...' + metal + ' (too far!)'
-                    other_bond = True
+                elif (atom_id_1_ == 'O' and not is_non_metal_element(comp_id_2, atom_id_2))\
+                        or (atom_id_2_ == 'O' and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-            elif (atom_id_1_ == 'P' and not is_non_metal_element(comp_id_2, atom_id_2))\
-                    or (atom_id_2_ == 'P' and not is_non_metal_element(comp_id_1, atom_id_1)):
+                    metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
+                    metal = metal.title()
 
-                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
-                metal = metal.title()
+                    if 2.0 <= target_value <= 2.2 or not balanced:
+                        other_bond_type = 'O...' + metal
+                        other_bond = True
+                    elif target_value < 2.0:
+                        other_bond_type = 'O...' + metal + ' (too close!)'
+                        other_bond = True
+                    elif target_value <= 3.4:
+                        other_bond_type = 'O...' + metal + ' (too far!)'
+                        other_bond = True
 
-                if 2.1 <= target_value <= 2.5 or not balanced:
-                    other_bond_type = 'P...' + metal
-                    other_bond = True
-                elif target_value < 2.1:
-                    other_bond_type = 'P...' + metal + ' (too close!)'
-                    other_bond = True
-                elif target_value <= 4.0:
-                    other_bond_type = 'P...' + metal + ' (too far!)'
-                    other_bond = True
+                elif (atom_id_1_ == 'P' and not is_non_metal_element(comp_id_2, atom_id_2))\
+                        or (atom_id_2_ == 'P' and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
-                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
+                    metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
+                    metal = metal.title()
 
-                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
-                metal = metal.title()
+                    if 2.1 <= target_value <= 2.5 or not balanced:
+                        other_bond_type = 'P...' + metal
+                        other_bond = True
+                    elif target_value < 2.1:
+                        other_bond_type = 'P...' + metal + ' (too close!)'
+                        other_bond = True
+                    elif target_value <= 4.0:
+                        other_bond_type = 'P...' + metal + ' (too far!)'
+                        other_bond = True
 
-                if 2.2 <= target_value <= 2.6 or not balanced:
-                    other_bond_type = 'S...' + metal
-                    other_bond = True
-                elif target_value < 2.2:
-                    other_bond_type = 'S...' + metal + ' (too close!)'
-                    other_bond = True
-                elif target_value <= 4.2:
-                    other_bond_type = 'S...' + metal + ' (too far!)'
-                    other_bond = True
+                elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
+                     (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-            elif (atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
-                 (atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
+                    metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
+                    metal = metal.title()
 
-                metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
-                metal = metal.title()
+                    if 2.2 <= target_value <= 2.6 or not balanced:
+                        other_bond_type = 'S...' + metal
+                        other_bond = True
+                    elif target_value < 2.2:
+                        other_bond_type = 'S...' + metal + ' (too close!)'
+                        other_bond = True
+                    elif target_value <= 4.2:
+                        other_bond_type = 'S...' + metal + ' (too far!)'
+                        other_bond = True
 
-                if 2.3 <= target_value <= 2.7 or not balanced:
-                    other_bond_type = 'Se...' + metal
-                    other_bond = True
-                elif target_value < 2.3:
-                    other_bond_type = 'Se...' + metal + ' (too close!)'
-                    other_bond = True
-                elif target_value <= 4.4:
-                    other_bond_type = 'Se...' + metal + ' (too far!)'
-                    other_bond = True
+                elif (atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
+                     (atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
 
-            elif chain_id_1 != chain_id_2:
+                    metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
+                    metal = metal.title()
 
-                for l, j in enumerate(lp_data):  # noqa: E741
+                    if 2.3 <= target_value <= 2.7 or not balanced:
+                        other_bond_type = 'Se...' + metal
+                        other_bond = True
+                    elif target_value < 2.3:
+                        other_bond_type = 'Se...' + metal + ' (too close!)'
+                        other_bond = True
+                    elif target_value <= 4.4:
+                        other_bond_type = 'Se...' + metal + ' (too far!)'
+                        other_bond = True
 
-                    if l == row_id:  # noqa: E741
-                        continue
+                elif chain_id_1 != chain_id_2:
 
-                    _chain_id_1 = j[chain_id_1_name]
-                    _chain_id_2 = j[chain_id_2_name]
-                    _seq_id_1 = j[seq_id_1_name]
-                    _seq_id_2 = j[seq_id_2_name]
-                    _comp_id_1 = j[comp_id_1_name]
-                    _comp_id_2 = j[comp_id_2_name]
+                    for l, j in enumerate(lp_data):  # noqa: E741
 
-                    if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
+                        if l == row_id:  # noqa: E741
+                            continue
 
-                        if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
-                           seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
-                            symmetry = True
-                            break
+                        _chain_id_1 = j[chain_id_1_name]
+                        _chain_id_2 = j[chain_id_2_name]
+                        _seq_id_1 = j[seq_id_1_name]
+                        _seq_id_2 = j[seq_id_2_name]
+                        _comp_id_1 = j[comp_id_1_name]
+                        _comp_id_2 = j[comp_id_2_name]
 
-                        if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
-                           seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
-                            symmetry = True
-                            break
+                        if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
+
+                            if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
+                               seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
+                                symmetry = True
+                                break
+
+                            if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
+                               seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                                symmetry = True
+                                break
 
         range_of_seq = abs(seq_id_1 - seq_id_2)
 
@@ -29748,31 +29752,31 @@ class NmrDpUtility:
                 # detect potential type
 
                 # targe_value = i[target_value_name] if target_value_name in i else None
-                lower_limit_value = i[lower_limit_name] if lower_limit_name in i else None
-                upper_limit_value = i[upper_limit_name] if upper_limit_name in i else None
-                lower_linear_limit_value = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
-                upper_linear_limit_value = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
+                lower_limit = i[lower_limit_name] if lower_limit_name in i else None
+                upper_limit = i[upper_limit_name] if upper_limit_name in i else None
+                lower_linear_limit = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
+                upper_linear_limit = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
 
-                if (lower_limit_value is not None) and (upper_limit_value is not None)\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                if (lower_limit is not None) and (upper_limit is not None)\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'square-well-parabolic'
-                elif (lower_limit_value is not None) and (upper_limit_value is not None)\
-                        and (lower_linear_limit_value is not None) and (upper_linear_limit_value is not None):
+                elif (lower_limit is not None) and (upper_limit is not None)\
+                        and (lower_linear_limit is not None) and (upper_linear_limit is not None):
                     potential_type = 'square-well-parabolic-linear'
-                elif lower_limit_value is None and (upper_limit_value is not None)\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                elif lower_limit is None and (upper_limit is not None)\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'upper-bound-parabolic'
-                elif (lower_limit_value is not None) and upper_limit_value is None\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                elif (lower_limit is not None) and upper_limit is None\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'lower-bound-parabolic'
-                elif lower_limit_value is None and (upper_limit_value is not None)\
-                        and lower_linear_limit_value is None and (upper_linear_limit_value is not None):
+                elif lower_limit is None and (upper_limit is not None)\
+                        and lower_linear_limit is None and (upper_linear_limit is not None):
                     potential_type = 'upper-bound-parabolic-linear'
-                elif (lower_limit_value is not None) and upper_limit_value is None\
-                        and (lower_linear_limit_value is not None) and upper_linear_limit_value is None:
+                elif (lower_limit is not None) and upper_limit is None\
+                        and (lower_linear_limit is not None) and upper_linear_limit is None:
                     potential_type = 'lower-bound-parabolic-linear'
-                elif (target_value is not None) and lower_limit_value is None and upper_limit_value is None\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                elif (target_value is not None) and lower_limit is None and upper_limit is None\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'parabolic'
                 else:
                     potential_type = 'undefined'
@@ -30418,31 +30422,31 @@ class NmrDpUtility:
                 # detect potential type
 
                 targe_value = i[target_value_name] if target_value_name in i else None
-                lower_limit_value = i[lower_limit_name] if lower_limit_name in i else None
-                upper_limit_value = i[upper_limit_name] if upper_limit_name in i else None
-                lower_linear_limit_value = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
-                upper_linear_limit_value = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
+                lower_limit = i[lower_limit_name] if lower_limit_name in i else None
+                upper_limit = i[upper_limit_name] if upper_limit_name in i else None
+                lower_linear_limit = i[lower_linear_limit_name] if lower_linear_limit_name in i else None
+                upper_linear_limit = i[upper_linear_limit_name] if upper_linear_limit_name in i else None
 
-                if (lower_limit_value is not None) and (upper_limit_value is not None)\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                if (lower_limit is not None) and (upper_limit is not None)\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'square-well-parabolic'
-                elif (lower_limit_value is not None) and (upper_limit_value is not None)\
-                        and (lower_linear_limit_value is not None) and (upper_linear_limit_value is not None):
+                elif (lower_limit is not None) and (upper_limit is not None)\
+                        and (lower_linear_limit is not None) and (upper_linear_limit is not None):
                     potential_type = 'square-well-parabolic-linear'
-                elif lower_limit_value is None and (upper_limit_value is not None)\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                elif lower_limit is None and (upper_limit is not None)\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'upper-bound-parabolic'
-                elif (lower_limit_value is not None) and upper_limit_value is None\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                elif (lower_limit is not None) and upper_limit is None\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'lower-bound-parabolic'
-                elif lower_limit_value is None and (upper_limit_value is not None)\
-                        and lower_linear_limit_value is None and (upper_linear_limit_value is not None):
+                elif lower_limit is None and (upper_limit is not None)\
+                        and lower_linear_limit is None and (upper_linear_limit is not None):
                     potential_type = 'upper-bound-parabolic-linear'
-                elif (lower_limit_value is not None) and upper_limit_value is None\
-                        and (lower_linear_limit_value is not None) and upper_linear_limit_value is None:
+                elif (lower_limit is not None) and upper_limit is None\
+                        and (lower_linear_limit is not None) and upper_linear_limit is None:
                     potential_type = 'lower-bound-parabolic-linear'
-                elif (target_value is not None) and lower_limit_value is None and upper_limit_value is None\
-                        and lower_linear_limit_value is None and upper_linear_limit_value is None:
+                elif (target_value is not None) and lower_limit is None and upper_limit is None\
+                        and lower_linear_limit is None and upper_linear_limit is None:
                     potential_type = 'parabolic'
                 else:
                     potential_type = 'undefined'
@@ -39021,8 +39025,8 @@ class NmrDpUtility:
 
                 target_value = i[target_value_name] if target_value_name in i else None
 
-                upper_limit_value = None
-                lower_limit_value = None
+                upper_limit = None
+                lower_limit = None
 
                 if target_value is None:
 
@@ -39036,19 +39040,19 @@ class NmrDpUtility:
 
                     elif has_key_value(i, upper_linear_limit_name):
                         target_value = i[upper_linear_limit_name]
-                        upper_limit_value = target_value
+                        upper_limit = target_value
 
                     elif has_key_value(i, upper_limit_name):
                         target_value = i[upper_limit_name]
-                        upper_limit_value = target_value
+                        upper_limit = target_value
 
                     elif has_key_value(i, lower_linear_limit_name):
                         target_value = i[lower_linear_limit_name]
-                        lower_limit_value = target_value
+                        lower_limit = target_value
 
                     elif has_key_value(i, lower_limit_name):
                         target_value = i[lower_limit_name]
-                        lower_limit_value = target_value
+                        lower_limit = target_value
 
                     else:
                         return False
@@ -39056,9 +39060,9 @@ class NmrDpUtility:
                 atom_id_1_ = i[atom_id_1_name][0]
                 atom_id_2_ = i[atom_id_2_name][0]
 
-                if upper_limit_value is not None:
+                if upper_limit is not None:
                     target_value -= 0.4
-                elif lower_limit_value is not None:
+                elif lower_limit is not None:
                     target_value += 0.4
 
                 if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
@@ -39154,8 +39158,8 @@ class NmrDpUtility:
 
                 target_value = i[target_value_name] if target_value_name in i else None
 
-                upper_limit_value = None
-                lower_limit_value = None
+                upper_limit = None
+                lower_limit = None
 
                 if target_value is None:
 
@@ -39169,19 +39173,19 @@ class NmrDpUtility:
 
                     elif has_key_value(i, upper_linear_limit_name):
                         target_value = i[upper_linear_limit_name]
-                        upper_limit_value = target_value
+                        upper_limit = target_value
 
                     elif has_key_value(i, upper_limit_name):
                         target_value = i[upper_limit_name]
-                        upper_limit_value = target_value
+                        upper_limit = target_value
 
                     elif has_key_value(i, lower_linear_limit_name):
                         target_value = i[lower_linear_limit_name]
-                        lower_limit_value = target_value
+                        lower_limit = target_value
 
                     elif has_key_value(i, lower_limit_name):
                         target_value = i[lower_limit_name]
-                        lower_limit_value = target_value
+                        lower_limit = target_value
 
                     else:
                         return False
@@ -39189,9 +39193,9 @@ class NmrDpUtility:
                 atom_id_1_ = i[atom_id_1_name][0]
                 atom_id_2_ = i[atom_id_2_name][0]
 
-                if upper_limit_value is not None:
+                if upper_limit is not None:
                     target_value -= 0.4
-                elif lower_limit_value is not None:
+                elif lower_limit is not None:
                     target_value += 0.4
 
                 if atom_id_1_ == 'S' and atom_id_2_ == 'S':
@@ -42509,6 +42513,9 @@ class NmrDpUtility:
                 _protein_angles = 0
                 _other_angles = 0
 
+                _protein_bb_angles = 0
+                _protein_oth_angles = 0
+
                 prev_id = -1
                 for row in lp:
                     _id = int(row[id_col])
@@ -42529,17 +42536,71 @@ class NmrDpUtility:
                             _protein_angles += 1
                             if angle_name == 'PHI':
                                 Protein_phi_angle_tot_num += 1
+                                _protein_bb_angles += 1
                             elif angle_name == 'PSI':
                                 Protein_psi_angle_tot_num += 1
+                                _protein_bb_angles += 1
                             elif angle_name == 'CHI1':
                                 Protein_chi_one_angle_tot_num += 1
+                                _protein_oth_angles += 1
                             else:
                                 Protein_other_angle_tot_num += 1
+                                _protein_oth_angles += 1
                         else:
                             _other_angles += 1
 
                 if _protein_angles > 0 and _other_angles == 0:
                     sf_item['constraint_type'] = 'protein dihedral angle'
+
+                    sf = sf_item['saveframe']
+                    tagNames = [t[0] for t in sf.tags]
+
+                    if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
+                        sf.tags[tagNames.index('Constraint_type')][1] = 'backbone chemical shifts'
+
+                    else:
+
+                        _protein_jcoups = 0
+                        _protein_bb_jcoups = 0
+                        _protein_oth_jcoups = 0
+
+                        for _sf_item in self.__mr_sf_dict_holder['jcoup_restraint']:
+
+                            _lp = _sf_item['loop']
+
+                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_1')
+                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_1')
+                            atom_id_1_col = _lp.tags.index('Atom_ID_1')
+                            atom_id_4_col = _lp.tags.index('Atom_ID_4')
+
+                            for _row in _lp:
+                                auth_asym_id = _row[auth_asym_id_col]
+                                auth_seq_id = int(_row[auth_seq_id_col])
+                                atom_id_1 = _row[atom_id_1_col]
+                                atom_id_4 = _row[atom_id_4_col]
+
+                                seq_key = (auth_asym_id, auth_seq_id)
+
+                                if seq_key in auth_to_entity_type:
+                                    entity_type = auth_to_entity_type[seq_key]
+
+                                    if 'peptide' in entity_type:
+                                        _protein_jcoups += 1
+                                        if 'H' in (atom_id_1, atom_id_4):
+                                            _protein_bb_jcoups += 1
+                                        else:
+                                            _protein_oth_jcoups += 1
+
+                        if (_protein_bb_angles > 0 and _protein_oth_angles == 0 and _protein_bb_jcoups > 0 and _protein_oth_jcoups == 0)\
+                           or (_protein_bb_angles > 0 and _protein_oth_angles > 0 and _protein_bb_jcoups > 0 and _protein_oth_jcoups > 0)\
+                           or (_protein_bb_angles == 0 and _protein_oth_angles > 0 and _protein_bb_jcoups == 0 and _protein_oth_jcoups > 0):
+                            sf.tags[tagNames.index('Constraint_type')][1] = 'J-couplings'
+
+                        elif _protein_jcoups == 0:
+                            sf.tags[tagNames.index('Constraint_type')][1] = 'backbone chemical shifts'
+
+                        else:
+                            sf.tags[tagNames.index('Constraint_type')][1] = 'unknown'
 
         if Protein_dihedral_angle_tot_num > 0:
             cst_sf.add_tag('Protein_dihedral_angle_tot_num', Protein_dihedral_angle_tot_num)
@@ -42611,6 +42672,41 @@ class NmrDpUtility:
                 if _na_angles > 0 and _other_angles == 0:
                     sf_item['constraint_type'] = 'nucleic acid dihedral angle'
 
+                    sf = sf_item['saveframe']
+                    tagNames = [t[0] for t in sf.tags]
+
+                    if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
+                        sf.tags[tagNames.index('Constraint_type')][1] = 'unknown'
+
+                    else:
+
+                        _na_jcoups = 0
+
+                        for _sf_item in self.__mr_sf_dict_holder['jcoup_restraint']:
+
+                            _lp = _sf_item['loop']
+
+                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_1')
+                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_1')
+
+                            for _row in _lp:
+                                auth_asym_id = _row[auth_asym_id_col]
+                                auth_seq_id = int(_row[auth_seq_id_col])
+
+                                seq_key = (auth_asym_id, auth_seq_id)
+
+                                if seq_key in auth_to_entity_type:
+                                    entity_type = auth_to_entity_type[seq_key]
+
+                                    if 'nucleotide' in entity_type:
+                                        _na_jcoups += 1
+
+                        if _na_jcoups > 0:
+                            sf.tags[tagNames.index('Constraint_type')][1] = 'J-couplings'
+
+                        else:
+                            sf.tags[tagNames.index('Constraint_type')][1] = 'unknown'
+
         if NA_dihedral_angle_tot_num > 0:
             cst_sf.add_tag('NA_dihedral_angle_tot_num', NA_dihedral_angle_tot_num)
             cst_sf.add_tag('NA_alpha_angle_tot_num', NA_alpha_angle_tot_num)
@@ -42657,6 +42753,41 @@ class NmrDpUtility:
 
                 if _br_angles > 0 and _other_angles == 0:
                     sf_item['constraint_type'] = 'saccaride dihedral angle'
+
+                    sf = sf_item['saveframe']
+                    tagNames = [t[0] for t in sf.tags]
+
+                    if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
+                        sf.tags[tagNames.index('Constraint_type')][1] = 'unknown'
+
+                    else:
+
+                        _br_jcoups = 0
+
+                        for _sf_item in self.__mr_sf_dict_holder['jcoup_restraint']:
+
+                            _lp = _sf_item['loop']
+
+                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_1')
+                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_1')
+
+                            for _row in _lp:
+                                auth_asym_id = _row[auth_asym_id_col]
+                                auth_seq_id = int(_row[auth_seq_id_col])
+
+                                seq_key = (auth_asym_id, auth_seq_id)
+
+                                if seq_key in auth_to_entity_type:
+                                    entity_type = auth_to_entity_type[seq_key]
+
+                                    if 'saccharide' in entity_type:
+                                        _br_jcoups += 1
+
+                        if _br_jcoups > 0:
+                            sf.tags[tagNames.index('Constraint_type')][1] = 'J-couplings'
+
+                        else:
+                            sf.tags[tagNames.index('Constraint_type')][1] = 'unknown'
 
         content_subtype = 'rdc_restraint'
 

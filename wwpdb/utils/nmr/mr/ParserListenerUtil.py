@@ -2100,6 +2100,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             altKey = (item['auth_asym_id'], item['alt_seq_id'])
                             if altKey not in authToStarSeq:
                                 authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                authToEntityType[altKey] = entityPolyType  # e.g. oligosaccharide
                         labelAsymIds = set()
                         for item in mappings:
                             labelAsymIds.add(item['label_asym_id'])
@@ -2138,6 +2139,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             altKey = (item['auth_asym_id'], item['alt_seq_id'])
                             if altKey not in authToStarSeq:
                                 authToStarSeq[altKey] = (entityAssemblyId, idx + 1, entityId, False)
+                                authToEntityType[altKey] = 'non-polymer'
                         labelAsymIds = set()
                         for item in mappings:
                             labelAsymIds.add(item['label_asym_id'])

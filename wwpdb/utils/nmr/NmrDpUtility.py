@@ -42242,6 +42242,22 @@ class NmrDpUtility:
         cst_sf.add_tag('Entry_ID', self.__entry_id)
         cst_sf.add_tag('ID', 1)
 
+        if self.__remediation_mode:
+
+            ar_file_path_list = 'atypical_restraint_file_path_list'
+
+            fileListId = self.__file_path_list_len
+
+            for ar in self.__inputParamDict[ar_file_path_list]:
+
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
+
+                file_name = input_source_dic['file_name']
+                cst_sf.add_tag('Data_file_name', file_name)
+
+                break
+
         # statistics
 
         content_subtype = 'dist_restraint'
@@ -42305,10 +42321,11 @@ class NmrDpUtility:
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
                         comb_id = row[comb_id_col]
-                        upper_limit = float(row[upper_limit_col]) if row[upper_limit_col] not in emptyValue else 0.0
+                        upper_limit = float(row[upper_limit_col]) if row[upper_limit_col] not in emptyValue else None
 
                         offset = abs(seq_id_1 - seq_id_2)
-                        uniq = comb_id in emptyValue or upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP
+                        ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
+                        uniq = comb_id in emptyValue and not ambig
 
                         if uniq:
                             NOE_unique_tot_num += 1
@@ -42423,10 +42440,11 @@ class NmrDpUtility:
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
                         comb_id = row[comb_id_col]
-                        upper_limit = float(row[upper_limit_col]) if row[upper_limit_col] not in emptyValue else 0.0
+                        upper_limit = float(row[upper_limit_col]) if row[upper_limit_col] not in emptyValue else None
 
                         offset = abs(seq_id_1 - seq_id_2)
-                        uniq = comb_id in emptyValue or upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP
+                        ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
+                        uniq = comb_id in emptyValue and not ambig
 
                         if chain_id_1 == chain_id_2:
                             if uniq:
@@ -42462,6 +42480,8 @@ class NmrDpUtility:
 
         content_subtype = 'dihed_restraint'
 
+        auth_to_entity_type = self.__caC['auth_to_entity_type']
+
         Dihedral_angle_tot_num = 0
         if content_subtype in self.__mr_sf_dict_holder:
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
@@ -42477,7 +42497,6 @@ class NmrDpUtility:
         Protein_chi_one_angle_tot_num = 0
         Protein_other_angle_tot_num = 0
         if content_subtype in self.__mr_sf_dict_holder:
-            auth_to_entity_type = self.__caC['auth_to_entity_type']
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
 
                 lp = sf_item['loop']
@@ -42520,9 +42539,7 @@ class NmrDpUtility:
                             _other_angles += 1
 
                 if _protein_angles > 0 and _other_angles == 0:
-                    sf = sf_item['saveframe']
-                    tagNames = [t[0] for t in sf.tags]
-                    sf.tags[tagNames.index('Constraint_type')][1] = 'protein dihedral angle'
+                    sf_item['constraint_type'] = 'protein dihedral angle'
 
         if Protein_dihedral_angle_tot_num > 0:
             cst_sf.add_tag('Protein_dihedral_angle_tot_num', Protein_dihedral_angle_tot_num)
@@ -42542,7 +42559,6 @@ class NmrDpUtility:
         NA_other_angle_tot_num = 0
         NA_amb_dihedral_angle_tot_num = 0
         if content_subtype in self.__mr_sf_dict_holder:
-            auth_to_entity_type = self.__caC['auth_to_entity_type']
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
 
                 lp = sf_item['loop']
@@ -42589,13 +42605,11 @@ class NmrDpUtility:
                                 NA_amb_dihedral_angle_tot_num += 1
                             else:
                                 NA_other_angle_tot_num += 1
-                    else:
-                        _other_angles += 1
+                        else:
+                            _other_angles += 1
 
                 if _na_angles > 0 and _other_angles == 0:
-                    sf = sf_item['saveframe']
-                    tagNames = [t[0] for t in sf.tags]
-                    sf.tags[tagNames.index('Constraint_type')][1] = 'nucleic acid dihedral angle'
+                    sf_item['constraint_type'] = 'nucleic acid dihedral angle'
 
         if NA_dihedral_angle_tot_num > 0:
             cst_sf.add_tag('NA_dihedral_angle_tot_num', NA_dihedral_angle_tot_num)
@@ -42607,6 +42621,42 @@ class NmrDpUtility:
             cst_sf.add_tag('NA_chi_angle_tot_num', NA_chi_angle_tot_num)
             cst_sf.add_tag('NA_other_angle_tot_num', NA_other_angle_tot_num)
             cst_sf.add_tag('NA_amb_dihedral_angle_tot_num', NA_amb_dihedral_angle_tot_num)
+
+        if content_subtype in self.__mr_sf_dict_holder:
+            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+
+                lp = sf_item['loop']
+
+                id_col = lp.tags.index('ID')
+                auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
+                auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                angle_name_col = lp.tags.index('Torsion_angle_name')
+
+                _br_angles = 0
+                _other_angles = 0
+
+                prev_id = -1
+                for row in lp:
+                    _id = int(row[id_col])
+                    if _id == prev_id:
+                        continue
+                    prev_id = _id
+                    auth_asym_id = row[auth_asym_id_col]
+                    auth_seq_id = int(row[auth_seq_id_col])
+                    angle_name = row[angle_name_col]
+
+                    seq_key = (auth_asym_id, auth_seq_id)
+
+                    if seq_key in auth_to_entity_type:
+                        entity_type = auth_to_entity_type[seq_key]
+
+                        if 'saccharide' in entity_type:
+                            _br_angles += 1
+                        else:
+                            _other_angles += 1
+
+                if _br_angles > 0 and _other_angles == 0:
+                    sf_item['constraint_type'] = 'saccaride dihedral angle'
 
         content_subtype = 'rdc_restraint'
 
@@ -42916,7 +42966,6 @@ class NmrDpUtility:
         if content_subtype in self.__mr_sf_dict_holder:
             Protein_other_tot_num = 0
             NA_other_tot_num = 0
-            auth_to_entity_type = self.__caC['auth_to_entity_type']
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                 lp = sf['loop']
                 lp_tags = lp['tags']

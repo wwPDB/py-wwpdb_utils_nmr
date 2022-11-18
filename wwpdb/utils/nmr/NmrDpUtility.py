@@ -14885,7 +14885,7 @@ class NmrDpUtility:
             if chain_id_col == -1 or seq_id_col == -1 or comp_id_col == -1:
                 return
 
-            for row in loop.data:
+            for row in loop:
 
                 if row[chain_id_col] != chain_id:
                     continue
@@ -14915,7 +14915,7 @@ class NmrDpUtility:
                 if chain_id_col == -1 or seq_id_col == -1 or comp_id_col == -1:
                     continue
 
-                for row in loop.data:
+                for row in loop:
 
                     if row[chain_id_col] != chain_id:
                         continue
@@ -16704,7 +16704,7 @@ class NmrDpUtility:
             if chain_id_col == -1:
                 return
 
-            for row in loop.data:
+            for row in loop:
 
                 if row[chain_id_col] != chain_id:
                     continue
@@ -16729,7 +16729,7 @@ class NmrDpUtility:
                 if chain_id_col == -1:
                     continue
 
-                for row in loop.data:
+                for row in loop:
 
                     if row[chain_id_col] != chain_id:
                         continue
@@ -16822,7 +16822,7 @@ class NmrDpUtility:
             if chain_id_col == -1 or seq_id_col == -1:
                 return
 
-            for row in loop.data:
+            for row in loop:
 
                 if row[chain_id_col] != chain_id:
                     continue
@@ -16857,7 +16857,7 @@ class NmrDpUtility:
                 if chain_id_col == -1 or seq_id_col == -1:
                     continue
 
-                for row in loop.data:
+                for row in loop:
 
                     if row[chain_id_col] != chain_id:
                         continue
@@ -21756,7 +21756,7 @@ class NmrDpUtility:
                     atom_id_col = loop.tags.index(cs_atom_id_name)
                     value_col = loop.tags.index(cs_value_name)
 
-                    for row in loop.data:
+                    for row in loop:
                         new_loop.add_data(row)
                         chain_id = row[chain_id_col]
                         try:
@@ -25940,6 +25940,48 @@ class NmrDpUtility:
         if lp_data is None or len(lp_data) == 0:
             return
 
+        ambig = False
+
+        if file_type == 'nmr-star' and self.__star_data_type[file_list_id] == 'Entry':
+
+            _sf_category = 'constraint_statistics'
+            _lp_category = '_Constraint_file'
+
+            if _sf_category in self.__sf_category_list and _lp_category in self.__lp_category_list:
+
+                try:
+
+                    block_id = int(get_first_sf_tag(sf_data, 'Block_ID'))
+
+                    _sf_data = self.__star_data[file_list_id].get_saveframes_by_category(_sf_category)
+
+                    if __pynmrstar_v3_2__:
+                        _loop = _sf_data[0].get_loop(_lp_category)
+                    else:
+                        _loop = _sf_data[0].get_loop_by_category(_lp_category)
+
+                    _block_id_col = _loop.tags.index('Block_ID')
+                    _constraint_type_col = _loop.tags.index('Constraint_type')
+                    _constraint_subtype_col = _loop.tags.index('Constraint_subtype')
+                    _constraint_subsubtype_col = _loop.tags.index('Constraint_subsubtype')
+
+                    _row = next((_row for _row in _loop if int(_row[_block_id_col]) == block_id), None)
+
+                    if _row is not None:
+                        _constraint_type = _row[_constraint_type_col]
+                        _constraint_subtype = _row[_constraint_subtype_col]
+                        _constraint_subsubtype = _row[_constraint_subsubtype_col]
+
+                        if (_constraint_type == 'distance' and _constraint_subtype not in ('NOE', 'ROE'))\
+                           or ('dihedral angle' in _constraint_type and _constraint_subtype == 'unknown'):
+                            ambig = True
+
+                        if _constraint_subsubtype not in emptyValue and _constraint_subsubtype == 'ambi':
+                            ambig = True
+
+                except ValueError:
+                    pass
+
         sf_tag_data = next((t['data'] for t in self.__sf_tag_data[content_subtype] if t['file_name'] == file_name and t['sf_framecode'] == sf_framecode), None)
 
         ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': len(lp_data)}
@@ -25985,7 +26027,7 @@ class NmrDpUtility:
                         sc['length'] = seq_align['length']
                         sc['sequence_coverage'] = seq_align['sequence_coverage']
 
-                        if seq_align['sequence_coverage'] < LOW_SEQ_COVERAGE and seq_align['length'] > 1:
+                        if seq_align['sequence_coverage'] < LOW_SEQ_COVERAGE and seq_align['length'] > 1 and not ambig:
                             if ('exp_type' not in ent)\
                                or (ent['exp_type'] not in ('disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling')):
                                 low_seq_coverage += f"coverage {seq_align['sequence_coverage']} for chain_id {seq_align['chain_id']}, length {seq_align['length']}, "
@@ -25996,7 +26038,7 @@ class NmrDpUtility:
 
                     ent['sequence_coverage'] = seq_coverage
 
-                    if len(low_seq_coverage) > 0:
+                    if len(low_seq_coverage) > 0 and not ambig:
 
                         warn = 'Sequence coverage of NMR experimental data is relatively low ('\
                             + low_seq_coverage[:-2] + f") in {sf_framecode!r} saveframe."
@@ -37874,7 +37916,7 @@ class NmrDpUtility:
                         atomTypeCol = loop.tags.index(cs_atom_type)
                         isoNumCol = loop.tags.index(cs_iso_number)
 
-                        for row in loop.data:
+                        for row in loop:
 
                             atom_id = row[atomIdCol]
 
@@ -37892,7 +37934,7 @@ class NmrDpUtility:
 
                         atomTypeCol = loop.tags.index(cs_atom_type)
 
-                        for row in loop.data:
+                        for row in loop:
 
                             atom_id = row[atomIdCol]
 
@@ -37911,7 +37953,7 @@ class NmrDpUtility:
 
                         isoNumCol = loop.tags.index(cs_iso_number)
 
-                        for row in loop.data:
+                        for row in loop:
 
                             atom_id = row[atomIdCol]
 
@@ -37928,7 +37970,7 @@ class NmrDpUtility:
 
                     else:
 
-                        for row in loop.data:
+                        for row in loop:
 
                             atom_id = row[atomIdCol]
 
@@ -38020,7 +38062,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__appendWeightInLoop() ++ LookupError  - {err}\n")
 
-                        for row in loop.data:
+                        for row in loop:
                             row.append('1.0')
 
                         loop.add_tag(weight_tag)
@@ -38076,7 +38118,7 @@ class NmrDpUtility:
                     if angle_type_tag in loop.tags:
                         continue
 
-                    for row in loop.data:
+                    for row in loop:
                         row.append('.')
 
                     loop.add_tag(angle_type_tag)
@@ -38304,7 +38346,7 @@ class NmrDpUtility:
                         idxCol = loop.tags.index(index_id_name)
                         aglCol = loop.tags.index(angle_type_name)
 
-                        for row in loop.data:
+                        for row in loop:
 
                             index_id = int(row[idxCol])
 
@@ -38499,7 +38541,7 @@ class NmrDpUtility:
 
                             itCol = loop.tags.index(itName)
 
-                            for row in loop.data:
+                            for row in loop:
 
                                 val = row[itCol]
 
@@ -38611,7 +38653,7 @@ class NmrDpUtility:
 
                             itCol = loop.tags.index(itName)
 
-                            for row in loop.data:
+                            for row in loop:
 
                                 val = row[itCol]
 
@@ -38934,7 +38976,7 @@ class NmrDpUtility:
 
                             itCol = loop.tags.index(itName)
 
-                            for row in loop.data:
+                            for row in loop:
 
                                 val = row[itCol]
 
@@ -39907,7 +39949,7 @@ class NmrDpUtility:
     #                     if not has_loop_tag:
     #                         continue
 
-    #                     for row in loop.data:
+    #                     for row in loop:
 
     #                         exist = True
 
@@ -40055,7 +40097,7 @@ class NmrDpUtility:
 
                         itCol = loop.tags.index(itName)
 
-                        for row in loop.data:
+                        for row in loop:
 
                             val = row[itCol]
 
@@ -40082,7 +40124,7 @@ class NmrDpUtility:
 
                         itCol = loop.tags.index(itName)
 
-                        for row in loop.data:
+                        for row in loop:
 
                             val = row[itCol]
 
@@ -40201,7 +40243,7 @@ class NmrDpUtility:
 
                                 itCol = loop.tags.index(itName)
 
-                                for row in loop.data:
+                                for row in loop:
 
                                     val = row[itCol]
 
@@ -40221,7 +40263,7 @@ class NmrDpUtility:
 
                                 itCol = loop.tags.index(itName)
 
-                                for row in loop.data:
+                                for row in loop:
 
                                     val = row[itCol]
 
@@ -40309,7 +40351,7 @@ class NmrDpUtility:
 
                                         itCol = _loop.tags.index(itName)
 
-                                        for row in _loop.data:
+                                        for row in _loop:
 
                                             val = row[itCol]
 
@@ -40329,7 +40371,7 @@ class NmrDpUtility:
 
                                         itCol = _loop.tags.index(itName)
 
-                                        for row in _loop.data:
+                                        for row in _loop:
 
                                             val = row[itCol]
 
@@ -40406,7 +40448,7 @@ class NmrDpUtility:
 
                             list_ids = []
 
-                            for row in loop.data:
+                            for row in loop:
 
                                 val = row[itCol]
 
@@ -40541,12 +40583,12 @@ class NmrDpUtility:
 
                                         itCol = loop.tags.index(entryIdTag)
 
-                                        for row in loop.data:
+                                        for row in loop:
                                             row[itCol] = self.__entry_id
 
                                     else:
 
-                                        for row in loop.data:
+                                        for row in loop:
                                             row.append(self.__entry_id)
 
                                         loop.add_tag(entryIdTag)
@@ -40574,12 +40616,12 @@ class NmrDpUtility:
 
                                     itCol = _loop.tags.index(entryIdTag)
 
-                                    for row in _loop.data:
+                                    for row in _loop:
                                         row[itCol] = self.__entry_id
 
                                 else:
 
-                                    for row in _loop.data:
+                                    for row in _loop:
                                         row.append(self.__entry_id)
 
                                     _loop.add_tag(entryIdTag)
@@ -40626,12 +40668,12 @@ class NmrDpUtility:
 
                                 itCol = _loop.tags.index(entryIdTag)
 
-                                for row in _loop.data:
+                                for row in _loop:
                                     row[itCol] = self.__entry_id
 
                             else:
 
-                                for row in _loop.data:
+                                for row in _loop:
                                     row.append(self.__entry_id)
 
                                 _loop.add_tag(entryIdTag)

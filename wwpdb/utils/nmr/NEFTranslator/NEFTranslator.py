@@ -2350,12 +2350,12 @@ class NEFTranslator:
                     if k['name'] in missing_tags:
                         if 'default-from' in k and k['default-from'] != 'self' and k['default-from'] in loop.tags:
                             from_col = loop.tags.index(k['default-from'])
-                            for row in loop.data:
+                            for row in loop:
                                 ref = row[from_col]
                                 row.append(ref)
                             loop.add_tag(k['name'])
                         elif 'default' in k:
-                            for row in loop.data:
+                            for row in loop:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
                         elif 'auto-increment' in k and k['auto-increment']:
@@ -2371,12 +2371,12 @@ class NEFTranslator:
                     if k['name'] in missing_tags:
                         if 'default-from' in k and k['default-from'] != 'self' and k['default-from'] in loop.tags:
                             from_col = loop.tags.index(k['default-from'])
-                            for row in loop.data:
+                            for row in loop:
                                 ref = row[from_col]
                                 row.append(ref)
                             loop.add_tag(k['name'])
                         elif 'default' in k:
-                            for row in loop.data:
+                            for row in loop:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
                         elif 'auto-increment' in k and k['auto-increment']:
@@ -2398,7 +2398,7 @@ class NEFTranslator:
                             elif d['default-from'] != 'self' and d['default-from'] in loop.tags:
                                 from_col = loop.tags.index(d['default-from'])
                                 if d['name'] == 'element' or d['name'] == 'Atom_type':
-                                    for row in loop.data:
+                                    for row in loop:
                                         ref = row[from_col]
                                         if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
                                             row.append('H')
@@ -2406,7 +2406,7 @@ class NEFTranslator:
                                             row.append(ref[0])
                                     loop.add_tag(d['name'])
                                 elif d['name'] == 'isotope_number' or d['name'] == 'Atom_isotope_number':
-                                    for row in loop.data:
+                                    for row in loop:
                                         ref = row[from_col]
                                         if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
                                             row.append(1)
@@ -2414,7 +2414,7 @@ class NEFTranslator:
                                             row.append(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[ref[0]][0])
                                     loop.add_tag(d['name'])
                                 elif 'Entity_assembly_ID' in d['name']:
-                                    for row in loop.data:
+                                    for row in loop:
                                         ref = row[from_col]
                                         row.append(ref)
                                     loop.add_tag(d['name'])
@@ -2644,7 +2644,7 @@ class NEFTranslator:
 
                         offset = None
 
-                        for i in loop.data:
+                        for i in loop:
                             if i[to_idx] not in emptyValue and i[fr_idx] not in emptyValue:
                                 try:
                                     offset = int(i[to_idx]) - int(i[fr_idx])
@@ -3513,7 +3513,7 @@ class NEFTranslator:
                 for k in key_items:
                     if k['name'] in missing_tags:
                         if 'default' in k:
-                            for row in loop.data:
+                            for row in loop:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
                         else:
@@ -3652,7 +3652,7 @@ class NEFTranslator:
                 for k in key_items:
                     if k['name'] in missing_tags:
                         if 'default' in k:
-                            for row in loop.data:
+                            for row in loop:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
                         else:
@@ -8365,7 +8365,7 @@ class NEFTranslator:
 
         index = 1
 
-        for pk in pk_loop.data:
+        for pk in pk_loop:
 
             out = [None] * len(out_tags)
 
@@ -8637,7 +8637,7 @@ class NEFTranslator:
 
                     else:
 
-                        for data in loop.data:
+                        for data in loop:
 
                             if loop.category == '_nef_spectrum_dimension':
                                 rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
@@ -8891,7 +8891,7 @@ class NEFTranslator:
 
                 else:
 
-                    for data in loop.data:
+                    for data in loop:
 
                         if loop.category == '_nef_spectrum_dimension':
                             rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
@@ -9130,7 +9130,7 @@ class NEFTranslator:
                             has_pk_row_format = True
 
                         elif len(tags) > 0:
-                            for data in loop.data:
+                            for data in loop:
                                 rows = self.star2nef_row(loop.get_tag_names(), lp.get_tag_names(), data)
                                 for d in rows:
                                     lp.add_data(d)
@@ -9333,7 +9333,7 @@ class NEFTranslator:
                         has_pk_row_format = True
 
                     elif len(tags) > 0:
-                        for data in loop.data:
+                        for data in loop:
                             rows = self.star2nef_row(loop.get_tag_names(), lp.get_tag_names(), data)
                             for d in rows:
                                 lp.add_data(d)
@@ -9587,7 +9587,7 @@ class NEFTranslator:
 
                     else:
 
-                        for data in loop.data:
+                        for data in loop:
 
                             if loop.category == '_Spectral_dim':
                                 rows = self.star2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
@@ -9827,7 +9827,7 @@ class NEFTranslator:
 
                 else:
 
-                    for data in loop.data:
+                    for data in loop:
 
                         if loop.category == '_Spectral_dim':
                             rows = self.star2star_row(loop.get_tag_names(), lp.get_tag_names(), data)

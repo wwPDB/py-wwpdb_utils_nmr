@@ -3024,7 +3024,7 @@ class NEFTranslator:
                                             continue
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be one of {enum}.")
-                                    elif enforce_enum:
+                                    elif enforce_enum and name in mand_data_names:
                                         user_warn_msg += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                             f"{name} {val!r} should be one of {enum}.\n"
                                 ent[name] = val
@@ -3340,7 +3340,7 @@ class NEFTranslator:
                                                     continue
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                  + f"{name} {val!r} must be one of {enum}.")
-                                            elif enforce_enum:
+                                            elif enforce_enum and name in mand_data_names:
                                                 user_warn_msg += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                     f"{name} {val!r} should be one of {enum}.\n"
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
@@ -3944,7 +3944,7 @@ class NEFTranslator:
                                         star_data.tags[itCol][1] = val
                                 elif 'enforce-enum' in t and t['enforce-enum']:
                                     raise ValueError(f"{name} {val!r} must be one of {enum}.")
-                                elif enforce_enum:
+                                elif enforce_enum and name in mand_tag_names:
                                     user_warn_msg += f"[Enumeration error] {name} {val!r} should be one of {enum}.\n"
                             ent[name] = None if val in emptyValue else val
                         except KeyError:

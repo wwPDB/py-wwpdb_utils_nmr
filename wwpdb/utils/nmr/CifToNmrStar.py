@@ -211,7 +211,7 @@ class CifToNmrStar:
             _entry_id = entry_id.upper()
 
             if datablockName is None:
-                strData.entry_id = entry_id.lower()
+                strData.entry_id = f'cs_{entry_id.lower()}'
 
             # reorder
             category_order.sort(key=lambda k: k['category_order'])
@@ -422,6 +422,30 @@ class CifToNmrStar:
             self.__lfh.write(f"+ERROR- CifToNmrStar.convert() {str(e)}\n")
 
             return False
+
+    def set_entry_id(self, strData, entryId):
+        """ Set entry ID without changing datablock name.
+            @see: pynmrstar.entry
+        """
+
+        for sf in strData.frame_list:
+            for tag in sf.tags:
+                fqtn = (sf.tag_prefix + "." + tag[0]).lower()
+
+                try:
+                    if self.schema[fqtn]['entryIdFlg'] == 'Y':
+                        tag[1] = entryId
+                except KeyError:
+                    pass
+
+            for lp in sf.loops:
+                for tag in lp.tags:
+                    fqtn = (lp.category + "." + tag).lower()
+                    try:
+                        if self.schema[fqtn]['entryIdFlg'] == 'Y':
+                            lp[tag] = [entryId] * len(lp[tag])
+                    except KeyError:
+                        pass
 
     def normalize(self, strData):
         """ Sort saveframes, loops, and tags according to NMR-STAR schema.

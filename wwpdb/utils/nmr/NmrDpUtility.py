@@ -41160,6 +41160,10 @@ class NmrDpUtility:
 
         master_entry = self.__star_data[0]
 
+        master_entry.entry_id = f'nef_{self.__entry_id.lower()}'
+
+        self.__c2S.set_entry_id(master_entry, self.__entry_id)
+
         file_type = 'nmr-star'
 
         content_subtype = 'poly_seq'
@@ -43350,7 +43354,6 @@ class NmrDpUtility:
         for sf in ext_mr_sf_holder:
             master_entry.add_saveframe(sf)
 
-        master_entry.entry_id = self.__entry_id.lower()
         master_entry = self.__c2S.normalize(master_entry)
 
         if __pynmrstar_v3__:

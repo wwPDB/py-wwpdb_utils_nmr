@@ -681,7 +681,7 @@ class SybylMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
-        compId = translateToStdResName(compId)
+        compId = translateToStdResName(compId, self.__ccU)
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
@@ -727,7 +727,7 @@ class SybylMRParserListener(ParseTreeListener):
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
-        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, translateToStdResName(compId), compId)
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, translateToStdResName(compId, self.__ccU), compId)
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -751,7 +751,7 @@ class SybylMRParserListener(ParseTreeListener):
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId):
+                    # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                     #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
@@ -837,7 +837,7 @@ class SybylMRParserListener(ParseTreeListener):
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId):
+                            # if cifCompId != translateToStdResName(compId, self.__ccU):
                             #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                             #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
@@ -874,7 +874,7 @@ class SybylMRParserListener(ParseTreeListener):
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     chainAssign.add((chainId, _seqId, cifCompId, True))
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId):
+                    # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                     #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """

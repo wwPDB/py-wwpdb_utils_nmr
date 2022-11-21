@@ -1063,7 +1063,7 @@ class DynamoMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
-        compId = translateToStdResName(compId)
+        compId = translateToStdResName(compId, self.__ccU)
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
@@ -1101,7 +1101,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
                 _compId = next(k for k, v in monDict3.items() if v == oneLetterCode)
 
-                if _compId != translateToStdResName(compId) and _compId != 'X':
+                if _compId != translateToStdResName(compId, self.__ccU) and _compId != 'X':
                     self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
                         f"Sequence alignment error between the sequence ({seqId}:{_compId}) "\
                         f"and data ({seqId}:{compId}). "\
@@ -1139,7 +1139,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
-        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, translateToStdResName(compId), compId)
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, translateToStdResName(compId, self.__ccU), compId)
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -1170,7 +1170,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId):
+                    # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"\
                     #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
@@ -1272,7 +1272,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId):
+                            # if cifCompId != translateToStdResName(compId, self.__ccU):
                             #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"\
                             #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
@@ -1321,7 +1321,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId):
+                    # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"\
                     #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """

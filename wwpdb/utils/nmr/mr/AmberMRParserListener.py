@@ -3426,7 +3426,7 @@ class AmberMRParserListener(ParseTreeListener):
                     _, authCompId, _authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, authAtomId)
 
                 if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
-                   or compId == translateToStdResName(authCompId):
+                   or compId == translateToStdResName(authCompId, self.__ccU):
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
                     if coordAtomSite is not None and _authAtomId in coordAtomSite['atom_id']:
@@ -3915,7 +3915,7 @@ class AmberMRParserListener(ParseTreeListener):
                         _, authCompId, _authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, authAtomId)
 
                     if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
-                       or compId == translateToStdResName(authCompId):
+                       or compId == translateToStdResName(authCompId, self.__ccU):
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
                         if coordAtomSite is not None and _authAtomId in coordAtomSite['atom_id']:
@@ -4358,7 +4358,8 @@ class AmberMRParserListener(ParseTreeListener):
                 return None
 
             neighbor = [atom for atom in _neighbor if numpy.linalg.norm(toNpArray(atom) - origin) < around
-                        and translateToStdResName(factor['auth_comp_id']) in (atom['comp_id'], translateToStdResName(atom['comp_id']))
+                        and translateToStdResName(factor['auth_comp_id'], self.__ccU)
+                        in (atom['comp_id'], translateToStdResName(atom['comp_id'], self.__ccU))
                         and atom['atom_id'][0] == factor['auth_atom_id'][0]]
 
             len_neighbor = len(neighbor)
@@ -7495,7 +7496,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         unambigResidues = None
         if len(self.unambigAtomNameMapping) > 0:
-            unambigResidues = [translateToStdResName(residue) for residue in self.unambigAtomNameMapping.keys()]
+            unambigResidues = [translateToStdResName(residue, self.__ccU) for residue in self.unambigAtomNameMapping.keys()]
 
         for ambigDict in self.ambigAtomNameMapping.values():
             for ambigList in ambigDict.values():
@@ -7521,7 +7522,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if unambigResidues is not None and cifCompId in unambigResidues:
 
                             unambigMap = next(v for k, v in self.unambigAtomNameMapping.items()
-                                              if translateToStdResName(k) == cifCompId)
+                                              if translateToStdResName(k, self.__ccU) == cifCompId)
 
                             if atomName in unambigMap:
 
@@ -7563,7 +7564,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     def getRealChainSeqId(self, ps, seqId, compId=None, isPolySeq=True):  # pylint: disable=no-self-use
         if compId is not None:
-            compId = translateToStdResName(compId)
+            compId = translateToStdResName(compId, self.__ccU)
         if seqId in ps['auth_seq_id']:
             if compId is None:
                 return ps['auth_chain_id'], seqId

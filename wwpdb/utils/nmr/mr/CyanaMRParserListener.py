@@ -1775,7 +1775,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     def getRealChainSeqId(self, ps, seqId, compId=None, isPolySeq=True):
         if compId is not None:
-            compId = translateToStdResName(compId)
+            compId = translateToStdResName(compId, self.__ccU)
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
@@ -1840,7 +1840,7 @@ class CyanaMRParserListener(ParseTreeListener):
                and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
-        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, translateToStdResName(compId), compId)
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, translateToStdResName(compId, self.__ccU), compId)
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -1864,7 +1864,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId):
+                    # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                     #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
@@ -1948,7 +1948,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId):
+                            # if cifCompId != translateToStdResName(compId, self.__ccU):
                             #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                             #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
@@ -1985,7 +1985,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     chainAssign.add((chainId, _seqId, cifCompId, True))
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId):
+                    # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                     #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
@@ -2049,7 +2049,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
-        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId), compId)
+        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId, self.__ccU), compId)
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -2080,7 +2080,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId):
+                    # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                     #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
@@ -2179,7 +2179,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId):
+                            # if cifCompId != translateToStdResName(compId, self.__ccU):
                             #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                             #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
@@ -2233,7 +2233,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId):
+                    # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
                     #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
@@ -5366,7 +5366,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if len(self.__col_order_of_dist_w_chain) == 0:
                 for j in range(3):
-                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j]) in monDict3:
+                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j], self.__ccU) in monDict3:
                         self.__col_order_of_dist_w_chain['comp_id_1'] = j
                         compId = jVal[j]
                         if self.__ccU.updateChemCompDict(compId):
@@ -5391,7 +5391,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                         self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
                                         break
                 for j in range(3, 6):
-                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j]) in monDict3:
+                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j], self.__ccU) in monDict3:
                         self.__col_order_of_dist_w_chain['comp_id_2'] = j
                         compId = jVal[j]
                         if self.__ccU.updateChemCompDict(compId):
@@ -7044,7 +7044,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         unambigResidues = None
         if len(self.unambigAtomNameMapping) > 0:
-            unambigResidues = [translateToStdResName(residue) for residue in self.unambigAtomNameMapping.keys()]
+            unambigResidues = [translateToStdResName(residue, self.__ccU) for residue in self.unambigAtomNameMapping.keys()]
 
         for ambigDict in self.ambigAtomNameMapping.values():
             for ambigList in ambigDict.values():
@@ -7070,7 +7070,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if unambigResidues is not None and cifCompId in unambigResidues:
 
                             unambigMap = next(v for k, v in self.unambigAtomNameMapping.items()
-                                              if translateToStdResName(k) == cifCompId)
+                                              if translateToStdResName(k, self.__ccU) == cifCompId)
 
                             if atomName in unambigMap:
 

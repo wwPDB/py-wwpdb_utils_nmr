@@ -297,7 +297,7 @@ class AmberPTParserListener(ParseTreeListener):
                                if atomNum['chain_id'] == chainId
                                and atomNum['seq_id'] == seqId
                                and atomNum['auth_atom_id'][0] != 'H']
-                authCompId = translateToStdResName(authCompId)
+                authCompId = translateToStdResName(authCompId, self.__ccU)
                 if self.__ccU.updateChemCompDict(authCompId):
                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                     valid = True
@@ -377,7 +377,7 @@ class AmberPTParserListener(ParseTreeListener):
                         if 'atom_type' in atomNum:
                             del atomNum['atom_type']
                     elif atomNum['comp_id'] != atomNum['auth_comp_id']:
-                        authCompId = translateToStdResName(atomNum['auth_comp_id'])
+                        authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                         if self.__ccU.updateChemCompDict(authCompId):
                             chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
 
@@ -388,7 +388,7 @@ class AmberPTParserListener(ParseTreeListener):
                                 if 'atom_type' in atomNum:
                                     del atomNum['atom_type']
             else:
-                authCompId = translateToStdResName(atomNum['auth_comp_id'])
+                authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                 if self.__ccU.updateChemCompDict(authCompId):
                     atomIds = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomNum['auth_atom_id'])[0]
                     if len(atomIds) == 1:
@@ -414,12 +414,12 @@ class AmberPTParserListener(ParseTreeListener):
         for atomNum in self.__atomNumberDict.values():
             if 'atom_id' not in atomNum:
                 if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
-                    authCompId = translateToStdResName(atomNum['auth_comp_id'])
+                    authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
                         self.warningMessage += f"[Unknown atom name] "\
                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.\n"
                 else:
-                    authCompId = translateToStdResName(atomNum['auth_comp_id'])
+                    authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
                         atomNum['atom_id'] = atomNum['auth_atom_id']
                         self.warningMessage += f"[Unknown atom name] "\

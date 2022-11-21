@@ -13099,7 +13099,8 @@ class NmrDpUtility:
                                     is_seq = False
                                     break
                                 if len_seq == 2:
-                                    if (translateToStdResName(seq[0]) in monDict3 and seq[1].isdigit()) or (translateToStdResName(seq[1]) in monDict3 and seq[0].isdigit()):
+                                    if (translateToStdResName(seq[0], self.__ccU) in monDict3 and seq[1].isdigit())\
+                                       or (translateToStdResName(seq[1], self.__ccU) in monDict3 and seq[0].isdigit()):
                                         is_seq = True
                                     else:
                                         is_seq = False
@@ -16866,7 +16867,7 @@ class NmrDpUtility:
                             comp_id = next((k for k, v in monDict3.items() if v == auth_comp_id), auth_comp_id)
                         else:
                             comp_id = auth_comp_id
-                        comp_id = translateToStdResName(comp_id)
+                        comp_id = translateToStdResName(comp_id, self.__ccU)
                         auth_atom_ids = auth_pair['atom_id']
 
                         # standard residue
@@ -17447,14 +17448,14 @@ class NmrDpUtility:
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
-                self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
+                self.__validateAmbigCodeOfCSLoop__(fileListId, file_name, sf_data, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
+                self.__validateAmbigCodeOfCSLoop__(fileListId, file_name, sf_data, sf_framecode, lp_category)
 
             else:
 
@@ -17465,11 +17466,11 @@ class NmrDpUtility:
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                         continue
 
-                    self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
+                    self.__validateAmbigCodeOfCSLoop__(fileListId, file_name, sf_data, sf_framecode, lp_category)
 
         return not self.report.isError()
 
-    def __validateAmbigCodeOfCSLoop__(self, file_name, sf_data, sf_framecode, lp_category):
+    def __validateAmbigCodeOfCSLoop__(self, file_list_id, file_name, sf_data, sf_framecode, lp_category):
         """ Validate ambiguity code on assigned chemical shifts.
         """
 
@@ -17506,29 +17507,63 @@ class NmrDpUtility:
 
                             if allowed_ambig_code < 1:
 
-                                warn = f"Ambiguity code {str(ambig_code)!r} (comp_id {comp_id}, atom_id {atom_id}) "\
-                                    "should be '1' according to the BMRB definition."
+                                if self.__remediation_mode:
 
-                                self.report.warning.appendDescription('ambiguity_code_mismatch',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                       'description': warn})
-                                self.report.setWarning()
+                                    if __pynmrstar_v3_2__:
+                                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+                                    else:
+                                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Warning  - {warn}\n")
+                                    comp_id_col = loop.tags.index('Comp_ID')
+                                    atom_id_col = loop.tags.index('Atom_ID')
+                                    ambig_code_col = loop.tags.index('Ambiguity_code')
+
+                                    for row in loop:
+                                        if row[comp_id_col] == comp_id and row[atom_id_col] == atom_id and row[ambig_code_col] == ambig_code:
+                                            row[ambig_code_col] = 1
+
+                                else:
+
+                                    warn = f"Ambiguity code {str(ambig_code)!r} (comp_id {comp_id}, atom_id {atom_id}) "\
+                                        "should be '1' according to the BMRB definition."
+
+                                    self.report.warning.appendDescription('ambiguity_code_mismatch',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                           'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Warning  - {warn}\n")
 
                             else:
 
-                                err = f"Invalid ambiguity code {str(ambig_code)!r} (comp_id {comp_id}, atom_id {atom_id}, "\
-                                    f"allowed ambig_code {[1, allowed_ambig_code, 4, 5, 6, 9]}) in a loop {lp_category}."
+                                if self.__remediation_mode:
 
-                                self.report.error.appendDescription('invalid_ambiguity_code',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                     'description': err})
-                                self.report.setError()
+                                    if __pynmrstar_v3_2__:
+                                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+                                    else:
+                                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - {err}\n")
+                                    comp_id_col = loop.tags.index('Comp_ID')
+                                    atom_id_col = loop.tags.index('Atom_ID')
+                                    ambig_code_col = loop.tags.index('Ambiguity_code')
+
+                                    for row in loop:
+                                        if row[comp_id_col] == comp_id and row[atom_id_col] == atom_id and row[ambig_code_col] == ambig_code:
+                                            row[ambig_code_col] = allowed_ambig_code
+
+                                else:
+
+                                    err = f"Invalid ambiguity code {str(ambig_code)!r} (comp_id {comp_id}, atom_id {atom_id}, "\
+                                        f"allowed ambig_code {[1, allowed_ambig_code, 4, 5, 6, 9]}) in a loop {lp_category}."
+
+                                    self.report.error.appendDescription('invalid_ambiguity_code',
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                         'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - {err}\n")
 
             if len(comp_ids_wo_ambig_code) > 0:
 
@@ -20869,19 +20904,47 @@ class NmrDpUtility:
                                 except StopIteration:
                                     pass
 
+                                chain_id_col = loop.tags.index(chain_id_name)
+                                seq_id_col = loop.tags.index(seq_id_name)
+                                comp_id_col = loop.tags.index(comp_id_name)
+                                atom_id_col = loop.tags.index(atom_id_name)
+                                ambig_code_col = loop.tags.index(ambig_code_name)
+
+                                row = next(row for row in loop
+                                           if row[chain_id_col] == chain_id and int(row[seq_id_col]) == seq_id
+                                           and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
+
+                                row[ambig_code_col] = 1
+
                             elif allowed_ambig_code > 0:
 
-                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                    + f"] Invalid {ambig_code_name} {str(ambig_code)!r} "\
-                                    f"(allowed ambig_code {[1, allowed_ambig_code, 4, 5, 6, 9]}) in a loop {lp_category}."
+                                if self.__remediation_mode:
 
-                                self.report.error.appendDescription('invalid_ambiguity_code',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                     'description': err})
-                                self.report.setError()
+                                    chain_id_col = loop.tags.index(chain_id_name)
+                                    seq_id_col = loop.tags.index(seq_id_name)
+                                    comp_id_col = loop.tags.index(comp_id_name)
+                                    atom_id_col = loop.tags.index(atom_id_name)
+                                    ambig_code_col = loop.tags.index(ambig_code_name)
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError  - {err}\n")
+                                    row = next(row for row in loop
+                                               if row[chain_id_col] == chain_id and int(row[seq_id_col]) == seq_id
+                                               and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
+
+                                    row[ambig_code_col] = allowed_ambig_code
+
+                                else:
+
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                        + f"] Invalid {ambig_code_name} {str(ambig_code)!r} "\
+                                        f"(allowed ambig_code {[1, allowed_ambig_code, 4, 5, 6, 9]}) in a loop {lp_category}."
+
+                                    self.report.error.appendDescription('invalid_ambiguity_code',
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                         'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ ValueError  - {err}\n")
 
                         try:
 
@@ -20894,19 +20957,36 @@ class NmrDpUtility:
                             ambig_code2 = j[ambig_code_name]
 
                             if ambig_code2 != ambig_code:
+
                                 loop.data[lp_data.index(j)][loop.tags.index(ambig_code_name)] = ambig_code
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                    + f"] {ambig_code_name} {str(ambig_code)!r} indicates {ambig_code_desc}. "\
-                                    f"However, {ambig_code_name} {ambig_code2} of {atom_id_name} {_atom_id2} is inconsistent."
+                                if self.__remediation_mode:
 
-                                self.report.warning.appendDescription('ambiguity_code_mismatch',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                       'description': warn})
-                                self.report.setWarning()
+                                    chain_id_col = loop.tags.index(chain_id_name)
+                                    seq_id_col = loop.tags.index(seq_id_name)
+                                    comp_id_col = loop.tags.index(comp_id_name)
+                                    atom_id_col = loop.tags.index(atom_id_name)
+                                    ambig_code_col = loop.tags.index(ambig_code_name)
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ Warning  - {warn}\n")
+                                    row = next(row for row in loop
+                                               if row[chain_id_col] == chain_id and int(row[seq_id_col]) == seq_id
+                                               and row[comp_id_col] == comp_id and row[atom_id_col] == _atom_id2)
+
+                                    row[ambig_code_col] = ambig_code
+
+                                else:
+
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                        + f"] {ambig_code_name} {str(ambig_code)!r} indicates {ambig_code_desc}. "\
+                                        f"However, {ambig_code_name} {ambig_code2} of {atom_id_name} {_atom_id2} is inconsistent."
+
+                                    self.report.warning.appendDescription('ambiguity_code_mismatch',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                           'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateCSValue() ++ Warning  - {warn}\n")
 
                         except StopIteration:
                             # """
@@ -40063,6 +40143,20 @@ class NmrDpUtility:
         master_entry.entry_id = f'nef_{self.__entry_id.lower()}'
 
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
+
+        cs_file_path_list = 'chem_shift_file_path_list'
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        dst_cs_path = os.path.join(os.path.dirname(self.__inputParamDict[cs_file_path_list][0]), input_source_dic['file_name'])
+
+        # update Atom_chem_shift.Ambiguity_code
+
+        if __pynmrstar_v3__:
+            master_entry.write_to_file(dst_cs_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+        else:
+            master_entry.write_to_file(dst_cs_path)
 
         file_type = 'nmr-star'
 

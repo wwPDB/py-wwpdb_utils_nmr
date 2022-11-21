@@ -1505,7 +1505,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
     return atomId
 
 
-def translateToStdResName(compId):
+def translateToStdResName(compId, ccU=None):
     """ Translate software specific residue name for standard residues to the CCD one.
     """
 
@@ -1535,6 +1535,12 @@ def translateToStdResName(compId):
         """
     if compId in ('HIE', 'HIP', 'HID'):
         return 'HIS'
+
+    if compId.startswith('CY'):
+        if ccU.updateChemCompDict(compId):
+            if ccU.lastChemCompDict['_chem_comp.type'] == 'L-PEPTIDE LINKING'\
+               and 'CYSTEINE' in ccU.lastChemCompDict['_chem_comp.name']:
+                return 'CYS'
 
     if len(compId) == 3:
         if compId == 'ADE' or compId.startswith('DA'):

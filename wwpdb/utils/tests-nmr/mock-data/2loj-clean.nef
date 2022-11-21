@@ -1,15 +1,15 @@
 data_NEED_ACC_NO
 
 save_nef_nmr_meta_data
-   _nef_nmr_meta_data.coordinate_file_name  .
-   _nef_nmr_meta_data.creation_date         2017-01-09T14:38:10.583314
-   _nef_nmr_meta_data.program_name          CcpNmr
-   _nef_nmr_meta_data.sf_framecode          nef_nmr_meta_data
-   _nef_nmr_meta_data.uuid                  CcpNmr-2017-01-09T14:38:10.583314-119061452
-   _nef_nmr_meta_data.program_version       3.0.b1
    _nef_nmr_meta_data.sf_category           nef_nmr_meta_data
+   _nef_nmr_meta_data.sf_framecode          nef_nmr_meta_data
    _nef_nmr_meta_data.format_name           nmr_exchange_format
    _nef_nmr_meta_data.format_version        1.0
+   _nef_nmr_meta_data.program_name          CcpNmr
+   _nef_nmr_meta_data.program_version       3.0.b1
+   _nef_nmr_meta_data.creation_date         2017-01-09T14:38:10.583314
+   _nef_nmr_meta_data.uuid                  CcpNmr-2017-01-09T14:38:10.583314-119061452
+   _nef_nmr_meta_data.coordinate_file_name  .
 
    loop_
       _nef_program_script.program_name
@@ -23,8 +23,8 @@ save_nef_nmr_meta_data
 save_
 
 save_nef_molecular_system
-   _nef_molecular_system.sf_framecode  nef_molecular_system
    _nef_molecular_system.sf_category   nef_molecular_system
+   _nef_molecular_system.sf_framecode  nef_molecular_system
 
    loop_
       _nef_sequence.index
@@ -104,8 +104,8 @@ save_nef_molecular_system
 save_
 
 save_nef_chemical_shift_list_18214
-   _nef_chemical_shift_list.sf_framecode  nef_chemical_shift_list_18214
    _nef_chemical_shift_list.sf_category   nef_chemical_shift_list
+   _nef_chemical_shift_list.sf_framecode  nef_chemical_shift_list_18214
 
    loop_
       _nef_chemical_shift.chain_code
@@ -806,10 +806,10 @@ save_nef_chemical_shift_list_18214
 save_
 
 save_nef_distance_restraint_list_distance_constraint_list
-   _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_distance_constraint_list
-   _nef_distance_restraint_list.restraint_origin  undefined
-   _nef_distance_restraint_list.potential_type    unknown
    _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
+   _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_distance_constraint_list
+   _nef_distance_restraint_list.potential_type    unknown
+   _nef_distance_restraint_list.restraint_origin  .
 
    loop_
       _nef_distance_restraint.index
@@ -2002,10 +2002,10 @@ save_nef_distance_restraint_list_distance_constraint_list
 save_
 
 save_nef_distance_restraint_list_hBond_constraint_list
-   _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_hBond_constraint_list
-   _nef_distance_restraint_list.restraint_origin  hbond
-   _nef_distance_restraint_list.potential_type    unknown
    _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
+   _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_hBond_constraint_list
+   _nef_distance_restraint_list.potential_type    unknown
+   _nef_distance_restraint_list.restraint_origin  hbond
 
    loop_
       _nef_distance_restraint.index
@@ -2069,10 +2069,10 @@ save_nef_distance_restraint_list_hBond_constraint_list
 save_
 
 save_nef_dihedral_restraint_list_dihedral_constraint_list
-   _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dihedral_constraint_list
    _nef_dihedral_restraint_list.sf_category       nef_dihedral_restraint_list
+   _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dihedral_constraint_list
    _nef_dihedral_restraint_list.potential_type    unknown
-   _nef_dihedral_restraint_list.restraint_origin  chemical_shift
+   _nef_dihedral_restraint_list.restraint_origin  .
 
    loop_
       _nef_dihedral_restraint.index
@@ -2179,12 +2179,12 @@ save_nef_dihedral_restraint_list_dihedral_constraint_list
 save_
 
 save_nef_nmr_spectrum_StT322_Cnoesy
-   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_18214
-   _nef_nmr_spectrum.experiment_type            '13C NOESY-HSQC'
-   _nef_nmr_spectrum.experiment_classification  H_H[C].through-space
    _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
-   _nef_nmr_spectrum.num_dimensions             3
    _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_StT322_Cnoesy
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_18214
+   _nef_nmr_spectrum.experiment_classification  H_H[C].through-space
+   _nef_nmr_spectrum.experiment_type            '13C NOESY-HSQC'
 
    loop_
       _nef_spectrum_dimension.dimension_id
@@ -3842,12 +3842,12 @@ save_nef_nmr_spectrum_StT322_Cnoesy
 save_
 
 save_nef_nmr_spectrum_StT322_Cnoesy_aro
-   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_18214
-   _nef_nmr_spectrum.experiment_type            '13C NOESY-HSQC'
-   _nef_nmr_spectrum.experiment_classification  H_H[C].through-space
    _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
-   _nef_nmr_spectrum.num_dimensions             3
    _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_StT322_Cnoesy_aro
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_18214
+   _nef_nmr_spectrum.experiment_classification  H_H[C].through-space
+   _nef_nmr_spectrum.experiment_type            '13C NOESY-HSQC'
 
    loop_
       _nef_spectrum_dimension.dimension_id
@@ -3935,12 +3935,12 @@ save_nef_nmr_spectrum_StT322_Cnoesy_aro
 save_
 
 save_nef_nmr_spectrum_StT322_Cnoesy_d2o
-   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_18214
-   _nef_nmr_spectrum.experiment_type            '13C NOESY-HSQC'
-   _nef_nmr_spectrum.experiment_classification  H_H[C].through-space
    _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
-   _nef_nmr_spectrum.num_dimensions             3
    _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_StT322_Cnoesy_d2o
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_18214
+   _nef_nmr_spectrum.experiment_classification  H_H[C].through-space
+   _nef_nmr_spectrum.experiment_type            '13C NOESY-HSQC'
 
    loop_
       _nef_spectrum_dimension.dimension_id
@@ -4272,12 +4272,12 @@ save_nef_nmr_spectrum_StT322_Cnoesy_d2o
 save_
 
 save_nef_nmr_spectrum_StT322_Nnoesy
-   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_18214
-   _nef_nmr_spectrum.experiment_type            '15N NOESY-HSQC'
-   _nef_nmr_spectrum.experiment_classification  H_H[N].through-space
    _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
-   _nef_nmr_spectrum.num_dimensions             3
    _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_StT322_Nnoesy
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_18214
+   _nef_nmr_spectrum.experiment_classification  H_H[N].through-space
+   _nef_nmr_spectrum.experiment_type            '15N NOESY-HSQC'
 
    loop_
       _nef_spectrum_dimension.dimension_id

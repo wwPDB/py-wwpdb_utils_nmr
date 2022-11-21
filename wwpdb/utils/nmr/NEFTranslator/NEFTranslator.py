@@ -4358,7 +4358,7 @@ class NEFTranslator:
 
             atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched)
 
-            if details is not None and atom_id[-1] != '%':
+            if details is not None and atom_id[-1] not in ('%', '*'):
                 _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
@@ -4424,7 +4424,7 @@ class NEFTranslator:
 
             atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
 
-            if details is not None and atom_id[-1] != '%':
+            if details is not None and atom_id[-1] not in ('%', '*'):
                 _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
@@ -8656,7 +8656,6 @@ class NEFTranslator:
                                 for d in rows:
                                     lp.add_data(d)
 
-                    lp.sort_tags()
                     sf.add_loop(lp)
 
                     if len(aux_rows) > 0 and ((loop.category == '_nef_sequence' and not has_covalent_links)
@@ -8667,7 +8666,6 @@ class NEFTranslator:
                         for d in aux_rows:
                             d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
                             lp.add_data(d)
-                        lp.sort_tags()
                         sf.add_loop(lp)
 
                 if saveframe.category == 'nef_nmr_meta_data':
@@ -8711,7 +8709,6 @@ class NEFTranslator:
                 else:
                     continue
 
-                sf.sort_tags()
                 star_data.add_saveframe(sf)
 
         elif data_type in ('Saveframe', 'Loop'):
@@ -8910,7 +8907,6 @@ class NEFTranslator:
                             for d in rows:
                                 lp.add_data(d)
 
-                lp.sort_tags()
                 sf.add_loop(lp)
 
                 if len(aux_rows) > 0 and ((loop.category == '_nef_sequence' and not has_covalent_links)
@@ -8921,7 +8917,6 @@ class NEFTranslator:
                     for d in aux_rows:
                         d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
                         lp.add_data(d)
-                    lp.sort_tags()
                     sf.add_loop(lp)
 
             if sf.category == 'nef_nmr_meta_data':
@@ -8962,7 +8957,6 @@ class NEFTranslator:
             elif sf.category == 'nef_nmr_spectrum':
                 sf.add_tag('ID', peak_list_id)
 
-            sf.sort_tags()
             star_data.add_saveframe(sf)
 
         # star_data.normalize()  # do not invoke normalize() to preserve ID
@@ -9606,7 +9600,6 @@ class NEFTranslator:
                                 for d in rows:
                                     lp.add_data(d)
 
-                    lp.sort_tags()
                     sf.add_loop(lp)
 
                 if saveframe.tag_prefix == '_Entry':
@@ -9650,7 +9643,6 @@ class NEFTranslator:
                 else:
                     continue
 
-                sf.sort_tags()
                 out_data.add_saveframe(sf)
 
         elif data_type in ('Saveframe', 'Loop'):
@@ -9846,7 +9838,6 @@ class NEFTranslator:
                             for d in rows:
                                 lp.add_data(d)
 
-                lp.sort_tags()
                 sf.add_loop(lp)
 
                 if len(aux_rows) > 0 and ((loop.category == '_Chem_comp_assembly' and not has_covalent_links)
@@ -9857,7 +9848,6 @@ class NEFTranslator:
                     for d in aux_rows:
                         d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
                         lp.add_data(d)
-                    lp.sort_tags()
                     sf.add_loop(lp)
 
             if sf.tag_prefix == '_Entry':
@@ -9898,7 +9888,6 @@ class NEFTranslator:
             elif sf.tag_prefix == '_Peak_row_format':
                 sf.add_tag('ID', peak_list_id)
 
-            sf.sort_tags()
             out_data.add_saveframe(sf)
 
         # out_data.normalize()  # do not invoke normalize() to preserve ID

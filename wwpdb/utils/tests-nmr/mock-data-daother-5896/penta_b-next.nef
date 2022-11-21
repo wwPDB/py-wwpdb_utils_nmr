@@ -281,16 +281,16 @@ save_ccpn_additional_data
 save_
 
 save_nef_nmr_meta_data
-   _nef_nmr_meta_data.program_version       3.0.1.1
-   _nef_nmr_meta_data.coordinate_file_name  .
-   _nef_nmr_meta_data.program_name          AnalysisAssign
-   _nef_nmr_meta_data.uuid                  AnalysisAssign-2020-06-29T12:36:47.067993-749824897
-   _nef_nmr_meta_data.format_version        1.1
-   _nef_nmr_meta_data.sf_framecode          nef_nmr_meta_data
-   _nef_nmr_meta_data.ccpn_dataset_serial   .
-   _nef_nmr_meta_data.creation_date         2020-06-29T12:36:47.067993
    _nef_nmr_meta_data.sf_category           nef_nmr_meta_data
+   _nef_nmr_meta_data.sf_framecode          nef_nmr_meta_data
    _nef_nmr_meta_data.format_name           nmr_exchange_format
+   _nef_nmr_meta_data.format_version        1.1
+   _nef_nmr_meta_data.program_name          AnalysisAssign
+   _nef_nmr_meta_data.program_version       3.0.1.1
+   _nef_nmr_meta_data.creation_date         2020-06-29T12:36:47.067993
+   _nef_nmr_meta_data.uuid                  AnalysisAssign-2020-06-29T12:36:47.067993-749824897
+   _nef_nmr_meta_data.coordinate_file_name  .
+   _nef_nmr_meta_data.ccpn_dataset_serial   .
 
    loop_
       _nef_program_script.program_name
@@ -304,8 +304,8 @@ save_nef_nmr_meta_data
 save_
 
 save_nef_molecular_system
-   _nef_molecular_system.sf_framecode  nef_molecular_system
    _nef_molecular_system.sf_category   nef_molecular_system
+   _nef_molecular_system.sf_framecode  nef_molecular_system
 
    loop_
       _nef_sequence.index
@@ -327,12 +327,12 @@ save_nef_molecular_system
 save_
 
 save_nef_chemical_shift_list_cs1
-   _nef_chemical_shift_list.ccpn_is_simulated  false
-   _nef_chemical_shift_list.ccpn_auto_update   true
-   _nef_chemical_shift_list.ccpn_serial        1
-   _nef_chemical_shift_list.sf_framecode       nef_chemical_shift_list_cs1
-   _nef_chemical_shift_list.ccpn_comment       .
    _nef_chemical_shift_list.sf_category        nef_chemical_shift_list
+   _nef_chemical_shift_list.sf_framecode       nef_chemical_shift_list_cs1
+   _nef_chemical_shift_list.ccpn_serial        1
+   _nef_chemical_shift_list.ccpn_auto_update   true
+   _nef_chemical_shift_list.ccpn_is_simulated  false
+   _nef_chemical_shift_list.ccpn_comment       .
 
    loop_
       _nef_chemical_shift.chain_code
@@ -412,20 +412,20 @@ save_nef_chemical_shift_list_cs1
 save_
 
 save_nef_distance_restraint_list_dis1
-   _nef_distance_restraint_list.restraint_origin             undefined
-   _nef_distance_restraint_list.ccpn_tensor_magnitude        0
-   _nef_distance_restraint_list.ccpn_comment                 .
-   _nef_distance_restraint_list.ccpn_tensor_sequence_code    .
-   _nef_distance_restraint_list.ccpn_tensor_chain_code       .
-   _nef_distance_restraint_list.sf_framecode                 nef_distance_restraint_list_dis1
    _nef_distance_restraint_list.sf_category                  nef_distance_restraint_list
+   _nef_distance_restraint_list.sf_framecode                 nef_distance_restraint_list_dis1
+   _nef_distance_restraint_list.potential_type               undefined
+   _nef_distance_restraint_list.restraint_origin             .
+   _nef_distance_restraint_list.ccpn_tensor_chain_code       .
+   _nef_distance_restraint_list.ccpn_tensor_sequence_code    .
+   _nef_distance_restraint_list.ccpn_tensor_residue_name     .
+   _nef_distance_restraint_list.ccpn_tensor_magnitude        0
+   _nef_distance_restraint_list.ccpn_tensor_rhombicity       0
    _nef_distance_restraint_list.ccpn_tensor_isotropic_value  0
    _nef_distance_restraint_list.ccpn_serial                  1
-   _nef_distance_restraint_list.ccpn_tensor_residue_name     .
-   _nef_distance_restraint_list.ccpn_unit                    .
-   _nef_distance_restraint_list.ccpn_tensor_rhombicity       0
-   _nef_distance_restraint_list.potential_type               undefined
    _nef_distance_restraint_list.ccpn_dataset_serial          1
+   _nef_distance_restraint_list.ccpn_unit                    .
+   _nef_distance_restraint_list.ccpn_comment                 .
 
    loop_
       _nef_distance_restraint.index
@@ -510,20 +510,20 @@ save_nef_distance_restraint_list_dis1
 save_
 
 save_nef_dihedral_restraint_list_dih1
-   _nef_dihedral_restraint_list.ccpn_comment                 .
-   _nef_dihedral_restraint_list.ccpn_tensor_residue_name     .
-   _nef_dihedral_restraint_list.ccpn_serial                  2
-   _nef_dihedral_restraint_list.ccpn_tensor_sequence_code    .
-   _nef_dihedral_restraint_list.ccpn_tensor_isotropic_value  0
-   _nef_dihedral_restraint_list.ccpn_dataset_serial          1
    _nef_dihedral_restraint_list.sf_category                  nef_dihedral_restraint_list
-   _nef_dihedral_restraint_list.ccpn_tensor_rhombicity       0
-   _nef_dihedral_restraint_list.ccpn_tensor_magnitude        0
-   _nef_dihedral_restraint_list.ccpn_tensor_chain_code       .
-   _nef_dihedral_restraint_list.potential_type               undefined
    _nef_dihedral_restraint_list.sf_framecode                 nef_dihedral_restraint_list_dih1
-   _nef_dihedral_restraint_list.restraint_origin             chemical_shift
+   _nef_dihedral_restraint_list.potential_type               undefined
+   _nef_dihedral_restraint_list.restraint_origin             .
+   _nef_dihedral_restraint_list.ccpn_tensor_chain_code       .
+   _nef_dihedral_restraint_list.ccpn_tensor_sequence_code    .
+   _nef_dihedral_restraint_list.ccpn_tensor_residue_name     .
+   _nef_dihedral_restraint_list.ccpn_tensor_magnitude        0
+   _nef_dihedral_restraint_list.ccpn_tensor_rhombicity       0
+   _nef_dihedral_restraint_list.ccpn_tensor_isotropic_value  0
+   _nef_dihedral_restraint_list.ccpn_serial                  2
+   _nef_dihedral_restraint_list.ccpn_dataset_serial          1
    _nef_dihedral_restraint_list.ccpn_unit                    .
+   _nef_dihedral_restraint_list.ccpn_comment                 .
 
    loop_
       _nef_dihedral_restraint.index
@@ -565,42 +565,42 @@ save_nef_dihedral_restraint_list_dih1
 save_
 
 save_nef_nmr_spectrum_173
-   _nef_nmr_spectrum.ccpn_positive_contour_colour  '#008080'
-   _nef_nmr_spectrum.num_dimensions                3
-   _nef_nmr_spectrum.experiment_type               '13C HSQC-NOESY'
-   _nef_nmr_spectrum.ccpn_spectrum_scale           1
-   _nef_nmr_spectrum.ccpn_peaklist_symbol_style    cross
-   _nef_nmr_spectrum.ccpn_peaklist_name            .
-   _nef_nmr_spectrum.ccpn_peaklist_comment         .
-   _nef_nmr_spectrum.chemical_shift_list           nef_chemical_shift_list_cs1
-   _nef_nmr_spectrum.ccpn_spinning_rate            .
-   _nef_nmr_spectrum.ccpn_peaklist_text_colour     '#7a7a7a'
-   _nef_nmr_spectrum.ccpn_file_is_big_endian       false
-   _nef_nmr_spectrum.ccpn_negative_contour_colour  '#DA70D6'
-   _nef_nmr_spectrum.ccpn_peaklist_is_simulated    false
-   _nef_nmr_spectrum.ccpn_file_type                Azara
-   _nef_nmr_spectrum.ccpn_file_scale_factor        1
+   _nef_nmr_spectrum.sf_category                   nef_nmr_spectrum
    _nef_nmr_spectrum.sf_framecode                  nef_nmr_spectrum_173
-   _nef_nmr_spectrum.ccpn_negative_contour_factor  1.414214
+   _nef_nmr_spectrum.num_dimensions                3
+   _nef_nmr_spectrum.chemical_shift_list           nef_chemical_shift_list_cs1
    _nef_nmr_spectrum.experiment_classification     H[C]_H.through-space
-   _nef_nmr_spectrum.ccpn_peaklist_serial          1
-   _nef_nmr_spectrum.ccpn_file_has_block_padding   true
-   _nef_nmr_spectrum.ccpn_file_complex_stored_by   dimension
-   _nef_nmr_spectrum.ccpn_file_block_header_size   0
+   _nef_nmr_spectrum.experiment_type               '13C HSQC-NOESY'
    _nef_nmr_spectrum.ccpn_positive_contour_count   10
+   _nef_nmr_spectrum.ccpn_positive_contour_base    479297.6777
+   _nef_nmr_spectrum.ccpn_positive_contour_factor  1.414214
+   _nef_nmr_spectrum.ccpn_positive_contour_colour  '#008080'
+   _nef_nmr_spectrum.ccpn_negative_contour_count   10
+   _nef_nmr_spectrum.ccpn_negative_contour_base    -479297.6777
+   _nef_nmr_spectrum.ccpn_negative_contour_factor  1.414214
+   _nef_nmr_spectrum.ccpn_negative_contour_colour  '#DA70D6'
    _nef_nmr_spectrum.ccpn_slice_colour             '#008080'
+   _nef_nmr_spectrum.ccpn_spectrum_scale           1
+   _nef_nmr_spectrum.ccpn_spinning_rate            .
+   _nef_nmr_spectrum.ccpn_spectrum_comment         .
    _nef_nmr_spectrum.ccpn_spectrum_file_path       /Users/eliza/Documents/tutorials_v2/spectra/173.spc
    _nef_nmr_spectrum.ccpn_sample                   .
-   _nef_nmr_spectrum.ccpn_positive_contour_base    479297.6777
-   _nef_nmr_spectrum.ccpn_file_number_type         float
-   _nef_nmr_spectrum.ccpn_peaklist_symbol_colour   '#7a7a7a'
    _nef_nmr_spectrum.ccpn_file_header_size         0
-   _nef_nmr_spectrum.ccpn_spectrum_comment         .
-   _nef_nmr_spectrum.ccpn_positive_contour_factor  1.414214
-   _nef_nmr_spectrum.sf_category                   nef_nmr_spectrum
-   _nef_nmr_spectrum.ccpn_negative_contour_base    -479297.6777
+   _nef_nmr_spectrum.ccpn_file_number_type         float
+   _nef_nmr_spectrum.ccpn_file_complex_stored_by   dimension
+   _nef_nmr_spectrum.ccpn_file_scale_factor        1
+   _nef_nmr_spectrum.ccpn_file_is_big_endian       false
    _nef_nmr_spectrum.ccpn_file_byte_number         4
-   _nef_nmr_spectrum.ccpn_negative_contour_count   10
+   _nef_nmr_spectrum.ccpn_file_has_block_padding   true
+   _nef_nmr_spectrum.ccpn_file_block_header_size   0
+   _nef_nmr_spectrum.ccpn_file_type                Azara
+   _nef_nmr_spectrum.ccpn_peaklist_serial          1
+   _nef_nmr_spectrum.ccpn_peaklist_comment         .
+   _nef_nmr_spectrum.ccpn_peaklist_name            .
+   _nef_nmr_spectrum.ccpn_peaklist_is_simulated    false
+   _nef_nmr_spectrum.ccpn_peaklist_symbol_colour   '#7a7a7a'
+   _nef_nmr_spectrum.ccpn_peaklist_symbol_style    cross
+   _nef_nmr_spectrum.ccpn_peaklist_text_colour     '#7a7a7a'
 
    loop_
       _nef_spectrum_dimension.dimension_id
@@ -701,42 +701,42 @@ save_nef_nmr_spectrum_173
 save_
 
 save_nef_nmr_spectrum_182
-   _nef_nmr_spectrum.ccpn_positive_contour_colour  '#800080'
-   _nef_nmr_spectrum.num_dimensions                3
-   _nef_nmr_spectrum.experiment_type               '15N HSQC-NOESY'
-   _nef_nmr_spectrum.ccpn_spectrum_scale           1
-   _nef_nmr_spectrum.ccpn_peaklist_symbol_style    cross
-   _nef_nmr_spectrum.ccpn_peaklist_name            .
-   _nef_nmr_spectrum.ccpn_peaklist_comment         .
-   _nef_nmr_spectrum.chemical_shift_list           nef_chemical_shift_list_cs1
-   _nef_nmr_spectrum.ccpn_spinning_rate            .
-   _nef_nmr_spectrum.ccpn_peaklist_text_colour     '#7a7a7a'
-   _nef_nmr_spectrum.ccpn_file_is_big_endian       false
-   _nef_nmr_spectrum.ccpn_negative_contour_colour  '#808000'
-   _nef_nmr_spectrum.ccpn_peaklist_is_simulated    false
-   _nef_nmr_spectrum.ccpn_file_type                Azara
-   _nef_nmr_spectrum.ccpn_file_scale_factor        1
+   _nef_nmr_spectrum.sf_category                   nef_nmr_spectrum
    _nef_nmr_spectrum.sf_framecode                  nef_nmr_spectrum_182
-   _nef_nmr_spectrum.ccpn_negative_contour_factor  1.414214
+   _nef_nmr_spectrum.num_dimensions                3
+   _nef_nmr_spectrum.chemical_shift_list           nef_chemical_shift_list_cs1
    _nef_nmr_spectrum.experiment_classification     H[N]_H.through-space
-   _nef_nmr_spectrum.ccpn_peaklist_serial          1
-   _nef_nmr_spectrum.ccpn_file_has_block_padding   true
-   _nef_nmr_spectrum.ccpn_file_complex_stored_by   dimension
-   _nef_nmr_spectrum.ccpn_file_block_header_size   0
+   _nef_nmr_spectrum.experiment_type               '15N HSQC-NOESY'
    _nef_nmr_spectrum.ccpn_positive_contour_count   10
+   _nef_nmr_spectrum.ccpn_positive_contour_base    609165.046
+   _nef_nmr_spectrum.ccpn_positive_contour_factor  1.414214
+   _nef_nmr_spectrum.ccpn_positive_contour_colour  '#800080'
+   _nef_nmr_spectrum.ccpn_negative_contour_count   10
+   _nef_nmr_spectrum.ccpn_negative_contour_base    -609165.046
+   _nef_nmr_spectrum.ccpn_negative_contour_factor  1.414214
+   _nef_nmr_spectrum.ccpn_negative_contour_colour  '#808000'
    _nef_nmr_spectrum.ccpn_slice_colour             '#800080'
+   _nef_nmr_spectrum.ccpn_spectrum_scale           1
+   _nef_nmr_spectrum.ccpn_spinning_rate            .
+   _nef_nmr_spectrum.ccpn_spectrum_comment         .
    _nef_nmr_spectrum.ccpn_spectrum_file_path       /Users/eliza/Documents/tutorials_v2/spectra/182.spc
    _nef_nmr_spectrum.ccpn_sample                   .
-   _nef_nmr_spectrum.ccpn_positive_contour_base    609165.046
-   _nef_nmr_spectrum.ccpn_file_number_type         float
-   _nef_nmr_spectrum.ccpn_peaklist_symbol_colour   '#7a7a7a'
    _nef_nmr_spectrum.ccpn_file_header_size         0
-   _nef_nmr_spectrum.ccpn_spectrum_comment         .
-   _nef_nmr_spectrum.ccpn_positive_contour_factor  1.414214
-   _nef_nmr_spectrum.sf_category                   nef_nmr_spectrum
-   _nef_nmr_spectrum.ccpn_negative_contour_base    -609165.046
+   _nef_nmr_spectrum.ccpn_file_number_type         float
+   _nef_nmr_spectrum.ccpn_file_complex_stored_by   dimension
+   _nef_nmr_spectrum.ccpn_file_scale_factor        1
+   _nef_nmr_spectrum.ccpn_file_is_big_endian       false
    _nef_nmr_spectrum.ccpn_file_byte_number         4
-   _nef_nmr_spectrum.ccpn_negative_contour_count   10
+   _nef_nmr_spectrum.ccpn_file_has_block_padding   true
+   _nef_nmr_spectrum.ccpn_file_block_header_size   0
+   _nef_nmr_spectrum.ccpn_file_type                Azara
+   _nef_nmr_spectrum.ccpn_peaklist_serial          1
+   _nef_nmr_spectrum.ccpn_peaklist_comment         .
+   _nef_nmr_spectrum.ccpn_peaklist_name            .
+   _nef_nmr_spectrum.ccpn_peaklist_is_simulated    false
+   _nef_nmr_spectrum.ccpn_peaklist_symbol_colour   '#7a7a7a'
+   _nef_nmr_spectrum.ccpn_peaklist_symbol_style    cross
+   _nef_nmr_spectrum.ccpn_peaklist_text_colour     '#7a7a7a'
 
    loop_
       _nef_spectrum_dimension.dimension_id

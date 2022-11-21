@@ -117,8 +117,8 @@ class CifToNmrStar:
             ofp.write(schema.version)
         print(f"version: {schema.version}")
 
-    def convert(self, cifPath=None, strPath=None):
-        """ Convert CIF to NMR-STAR for re-upload without CS data
+    def convert(self, cifPath=None, strPath=None, datablockName=None):
+        """ Convert CIF formatted NMR data file to normalized NMR-STAR file.
         """
 
         if cifPath is None or strPath is None:
@@ -135,7 +135,7 @@ class CifToNmrStar:
 
             entry_id = None
 
-            strData = pynmrstar.Entry.from_scratch(os.path.basename(cifPath))
+            strData = pynmrstar.Entry.from_scratch(datablockName)
 
             # check category order in CIF
             category_order = []
@@ -209,6 +209,9 @@ class CifToNmrStar:
                 entry_id = block_name_list[0]
 
             _entry_id = entry_id.upper()
+
+            if datablockName is None:
+                strData.entry_id = entry_id.lower()
 
             # reorder
             category_order.sort(key=lambda k: k['category_order'])
@@ -306,7 +309,6 @@ class CifToNmrStar:
                         continue
 
                     if sf is not None:
-                        sf.sort_tags()
                         strData.add_saveframe(sf)
 
                     sf = pynmrstar.Saveframe.from_scratch(new_block_name)
@@ -326,7 +328,6 @@ class CifToNmrStar:
                         continue
 
                     if sf is not None:
-                        sf.sort_tags()
                         strData.add_saveframe(sf)
 
                     sf = pynmrstar.Saveframe.from_scratch(new_block_name)
@@ -376,12 +377,12 @@ class CifToNmrStar:
                             _value[entry_id_idx] = _entry_id
                         lp.add_data(_value)
 
-                    lp.sort_tags()
                     sf.add_loop(lp)
 
             if sf is not None:
-                sf.sort_tags()
                 strData.add_saveframe(sf)
+
+            self.normalize(strData)
 
             if __pynmrstar_v3__:
                 strData.write_to_file(strPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
@@ -422,8 +423,8 @@ class CifToNmrStar:
 
             return False
 
-    def sortSf(self, strData):
-        """ Sort saveframes based on NMR-STAR schema.
+    def normalize(self, strData):
+        """ Sort saveframes, loops, and tags according to NMR-STAR schema.
             @see: pynmrstar.entry.normalize
         """
 
@@ -455,6 +456,12 @@ class CifToNmrStar:
         try:
             strData.frame_list.sort(key=sf_key)
         except Exception as e:
-            self.__lfh.write(f"+ERROR- CifToNmrStar.sortSf() {str(e)}\n")
+            self.__lfh.write(f"+ERROR- CifToNmrStar.normalize() {str(e)}\n")
+
+        for sf in strData.frame_list:
+            sf.sort_tags()
+            # Iterate through the loops
+            for lp in sf:
+                lp.sort_tags()
 
         return strData

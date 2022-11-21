@@ -130,7 +130,7 @@ save_
 save_nef_distance_restraint_list_dis1
    _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
    _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_dis1
-   _nef_distance_restraint_list.restraint_origin  undefined
+   _nef_distance_restraint_list.restraint_origin  .
    _nef_distance_restraint_list.potential_type    undefined
 
    loop_
@@ -219,7 +219,7 @@ save_nef_dihedral_restraint_list_dih1
    _nef_dihedral_restraint_list.sf_category       nef_dihedral_restraint_list
    _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dih1
    _nef_dihedral_restraint_list.potential_type    undefined
-   _nef_dihedral_restraint_list.restraint_origin  chemical_shift
+   _nef_dihedral_restraint_list.restraint_origin  .
 
    loop_
       _nef_dihedral_restraint.index
@@ -277,9 +277,9 @@ save_nef_nmr_spectrum_173
       _nef_spectrum_dimension.absolute_peak_positions
       _nef_spectrum_dimension.is_acquisition
 
-     1   ppm   1H    500.13    19.99480135   14.89740068   folded   true   false    
-     2   ppm   1H    500.13    10.29280387   10.04640194   folded   true   false    
-     3   ppm   13C   125.757   31.8175529    47.20877645   folded   true   false    
+     1   ppm   1H    500.13    19.99480135   14.89740068   circular   true   false    
+     2   ppm   1H    500.13    10.29280387   10.04640194   circular   true   false    
+     3   ppm   13C   125.757   31.8175529    47.20877645   circular   true   false    
 
    stop_
 
@@ -353,9 +353,9 @@ save_nef_nmr_spectrum_182
       _nef_spectrum_dimension.absolute_peak_positions
       _nef_spectrum_dimension.is_acquisition
 
-     1   ppm   1H    500.13   4.998700338   9.898700338   folded   true   false    
-     2   ppm   1H    500.13   10.9861536    10.3930768    folded   true   false    
-     3   ppm   15N   50.666   24.00290135   128.0014507   folded   true   false    
+     1   ppm   1H    500.13   4.998700338   9.898700338   circular   true   false    
+     2   ppm   1H    500.13   10.9861536    10.3930768    circular   true   false    
+     3   ppm   15N   50.666   24.00290135   128.0014507   circular   true   false    
 
    stop_
 

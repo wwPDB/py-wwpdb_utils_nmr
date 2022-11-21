@@ -1,15 +1,15 @@
 data_NEED_ACC_NO
 
 save_nef_nmr_meta_data
-   _nef_nmr_meta_data.coordinate_file_name  .
-   _nef_nmr_meta_data.creation_date         2017-01-09T14:55:35.087212
-   _nef_nmr_meta_data.program_name          CcpNmr
-   _nef_nmr_meta_data.sf_framecode          nef_nmr_meta_data
-   _nef_nmr_meta_data.uuid                  CcpNmr-2017-01-09T14:55:35.087212-940453071
-   _nef_nmr_meta_data.program_version       3.0.b1
    _nef_nmr_meta_data.sf_category           nef_nmr_meta_data
+   _nef_nmr_meta_data.sf_framecode          nef_nmr_meta_data
    _nef_nmr_meta_data.format_name           nmr_exchange_format
    _nef_nmr_meta_data.format_version        1.0
+   _nef_nmr_meta_data.program_name          CcpNmr
+   _nef_nmr_meta_data.program_version       3.0.b1
+   _nef_nmr_meta_data.creation_date         2017-01-09T14:55:35.087212
+   _nef_nmr_meta_data.uuid                  CcpNmr-2017-01-09T14:55:35.087212-940453071
+   _nef_nmr_meta_data.coordinate_file_name  .
 
    loop_
       _nef_program_script.program_name
@@ -23,8 +23,8 @@ save_nef_nmr_meta_data
 save_
 
 save_nef_molecular_system
-   _nef_molecular_system.sf_framecode  nef_molecular_system
    _nef_molecular_system.sf_category   nef_molecular_system
+   _nef_molecular_system.sf_framecode  nef_molecular_system
 
    loop_
       _nef_sequence.index
@@ -140,8 +140,8 @@ save_nef_molecular_system
 save_
 
 save_nef_chemical_shift_list_17508
-   _nef_chemical_shift_list.sf_framecode  nef_chemical_shift_list_17508
    _nef_chemical_shift_list.sf_category   nef_chemical_shift_list
+   _nef_chemical_shift_list.sf_framecode  nef_chemical_shift_list_17508
 
    loop_
       _nef_chemical_shift.chain_code
@@ -1166,10 +1166,10 @@ save_nef_chemical_shift_list_17508
 save_
 
 save_nef_distance_restraint_list_distance_constraint_list
-   _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_distance_constraint_list
-   _nef_distance_restraint_list.restraint_origin  undefined
-   _nef_distance_restraint_list.potential_type    unknown
    _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
+   _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_distance_constraint_list
+   _nef_distance_restraint_list.potential_type    unknown
+   _nef_distance_restraint_list.restraint_origin  .
 
    loop_
       _nef_distance_restraint.index
@@ -4373,10 +4373,10 @@ save_nef_distance_restraint_list_distance_constraint_list
 save_
 
 save_nef_distance_restraint_list_hBond_constraint_list
-   _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_hBond_constraint_list
-   _nef_distance_restraint_list.restraint_origin  hbond
-   _nef_distance_restraint_list.potential_type    unknown
    _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
+   _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_hBond_constraint_list
+   _nef_distance_restraint_list.potential_type    unknown
+   _nef_distance_restraint_list.restraint_origin  hbond
 
    loop_
       _nef_distance_restraint.index
@@ -4434,10 +4434,10 @@ save_nef_distance_restraint_list_hBond_constraint_list
 save_
 
 save_nef_dihedral_restraint_list_dihedral_constraint_list
-   _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dihedral_constraint_list
    _nef_dihedral_restraint_list.sf_category       nef_dihedral_restraint_list
+   _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dihedral_constraint_list
    _nef_dihedral_restraint_list.potential_type    unknown
-   _nef_dihedral_restraint_list.restraint_origin  chemical_shift
+   _nef_dihedral_restraint_list.restraint_origin  .
 
    loop_
       _nef_dihedral_restraint.index
@@ -4554,15 +4554,15 @@ save_nef_dihedral_restraint_list_dihedral_constraint_list
 save_
 
 save_nef_rdc_restraint_list_peg_gel-1
-   _nef_rdc_restraint_list.tensor_residue_name   .
+   _nef_rdc_restraint_list.sf_category           nef_rdc_restraint_list
    _nef_rdc_restraint_list.sf_framecode          nef_rdc_restraint_list_peg_gel-1
+   _nef_rdc_restraint_list.potential_type        unknown
+   _nef_rdc_restraint_list.restraint_origin      .
    _nef_rdc_restraint_list.tensor_magnitude      9
-   _nef_rdc_restraint_list.tensor_sequence_code  106
-   _nef_rdc_restraint_list.restraint_origin      measured
    _nef_rdc_restraint_list.tensor_rhombicity     0.415
    _nef_rdc_restraint_list.tensor_chain_code     .
-   _nef_rdc_restraint_list.potential_type        unknown
-   _nef_rdc_restraint_list.sf_category           nef_rdc_restraint_list
+   _nef_rdc_restraint_list.tensor_sequence_code  106
+   _nef_rdc_restraint_list.tensor_residue_name   .
 
    loop_
       _nef_rdc_restraint.index
@@ -4653,15 +4653,15 @@ save_nef_rdc_restraint_list_peg_gel-1
 save_
 
 save_nef_rdc_restraint_list_peg_gel-2
-   _nef_rdc_restraint_list.tensor_residue_name   .
+   _nef_rdc_restraint_list.sf_category           nef_rdc_restraint_list
    _nef_rdc_restraint_list.sf_framecode          nef_rdc_restraint_list_peg_gel-2
+   _nef_rdc_restraint_list.potential_type        unknown
+   _nef_rdc_restraint_list.restraint_origin      .
    _nef_rdc_restraint_list.tensor_magnitude      -8.747
-   _nef_rdc_restraint_list.tensor_sequence_code  112
-   _nef_rdc_restraint_list.restraint_origin      measured
    _nef_rdc_restraint_list.tensor_rhombicity     0.448
    _nef_rdc_restraint_list.tensor_chain_code     .
-   _nef_rdc_restraint_list.potential_type        unknown
-   _nef_rdc_restraint_list.sf_category           nef_rdc_restraint_list
+   _nef_rdc_restraint_list.tensor_sequence_code  112
+   _nef_rdc_restraint_list.tensor_residue_name   .
 
    loop_
       _nef_rdc_restraint.index
@@ -4756,12 +4756,12 @@ save_nef_rdc_restraint_list_peg_gel-2
 save_
 
 save_nef_nmr_spectrum_anoe_final
-   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_17508
-   _nef_nmr_spectrum.experiment_type            '13C NOESY-HSQC'
-   _nef_nmr_spectrum.experiment_classification  H_H[C].through-space
    _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
-   _nef_nmr_spectrum.num_dimensions             3
    _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_anoe_final
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_17508
+   _nef_nmr_spectrum.experiment_classification  H_H[C].through-space
+   _nef_nmr_spectrum.experiment_type            '13C NOESY-HSQC'
 
    loop_
       _nef_spectrum_dimension.dimension_id
@@ -5126,12 +5126,12 @@ save_nef_nmr_spectrum_anoe_final
 save_
 
 save_nef_nmr_spectrum_cnoe_final
-   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_17508
-   _nef_nmr_spectrum.experiment_type            '13C NOESY-HSQC'
-   _nef_nmr_spectrum.experiment_classification  H_H[C].through-space
    _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
-   _nef_nmr_spectrum.num_dimensions             3
    _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_cnoe_final
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_17508
+   _nef_nmr_spectrum.experiment_classification  H_H[C].through-space
+   _nef_nmr_spectrum.experiment_type            '13C NOESY-HSQC'
 
    loop_
       _nef_spectrum_dimension.dimension_id
@@ -9890,12 +9890,12 @@ save_nef_nmr_spectrum_cnoe_final
 save_
 
 save_nef_nmr_spectrum_nnoe_final
-   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_17508
-   _nef_nmr_spectrum.experiment_type            '15N NOESY-HSQC'
-   _nef_nmr_spectrum.experiment_classification  H_H[N].through-space
    _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
-   _nef_nmr_spectrum.num_dimensions             3
    _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_nnoe_final
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_17508
+   _nef_nmr_spectrum.experiment_classification  H_H[N].through-space
+   _nef_nmr_spectrum.experiment_type            '15N NOESY-HSQC'
 
    loop_
       _nef_spectrum_dimension.dimension_id

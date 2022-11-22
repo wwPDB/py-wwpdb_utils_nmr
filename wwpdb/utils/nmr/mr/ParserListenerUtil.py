@@ -19,11 +19,13 @@ import pynmrstar
 try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            MAJOR_ASYM_ID_SET,
-                                           LEN_MAJOR_ASYM_ID_SET)
+                                           LEN_MAJOR_ASYM_ID_SET,
+                                           MAX_MAG_IDENT_ASYM_ID)
 except ImportError:
     from nmr.AlignUtil import (monDict3,
                                MAJOR_ASYM_ID_SET,
-                               LEN_MAJOR_ASYM_ID_SET)
+                               LEN_MAJOR_ASYM_ID_SET,
+                               MAX_MAG_IDENT_ASYM_ID)
 
 
 MAX_ERROR_REPORT = 1
@@ -2045,39 +2047,78 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                              {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
-                        authAsymIds = set()
+                        authAsymIds = []
                         compIds = set()
                         for item in mappings:
-                            seqKey = (item['auth_asym_id'], item['auth_seq_id'])
-                            authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                            authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
-                            authAsymIds.add(item['auth_asym_id'])
+                            if item['auth_asym_id'] not in authAsymIds:
+                                authAsymIds.append(item['auth_asym_id'])
                             compIds.add(item['comp_id'])
+                            
+                        if len(authAsymIds) <= MAX_MAG_IDENT_ASYM_ID:
+                            labelAsymIds = []
+                            for item in mappings:
+                                seqKey = (item['auth_asym_id'], item['auth_seq_id'])
+                                authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                if item['label_asym_id'] not in labelAsymIds:
+                                    labelAsymIds.append(item['label_asym_id'])
 
-                        labelAsymIds = set()
-                        for item in mappings:
-                            labelAsymIds.add(item['label_asym_id'])
-                        entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                               'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                               'entity_desc': entityDesc, 'entity_fw': entityFW,
-                                               'entity_copies': entityCopies, 'entity_ec': entityEC,
-                                               'entity_parent': entityParent,
-                                               'entity_mutation': entityMutation,
-                                               'entity_fragment': entityFragment,
-                                               'entity_details': entityDetails,
-                                               'entity_role': entityRole,
-                                               'entity_poly_type': entityPolyType,
-                                               'one_letter_code_can': oneLetterCodeCan,
-                                               'one_letter_code': oneLetterCode,
-                                               'nstd_monomer': nstdMonomer,
-                                               'nstd_linkage': nstdLinkage,
-                                               'nstd_chirality': nstdChirality,
-                                               'target_identifier': targetIdentifier,
-                                               'num_of_monomers': len(mappings),
-                                               'auth_asym_id': ','.join(list(authAsymIds)),
-                                               'label_asym_id': ','.join(list(labelAsymIds)),
-                                               'comp_id_set': compIds})
-                        entityAssemblyId += 1
+                            entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
+                                                   'entity_type': entityType, 'entity_src_method': entitySrcMethod,
+                                                   'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                                   'entity_copies': entityCopies, 'entity_ec': entityEC,
+                                                   'entity_parent': entityParent,
+                                                   'entity_mutation': entityMutation,
+                                                   'entity_fragment': entityFragment,
+                                                   'entity_details': entityDetails,
+                                                   'entity_role': entityRole,
+                                                   'entity_poly_type': entityPolyType,
+                                                   'one_letter_code_can': oneLetterCodeCan,
+                                                   'one_letter_code': oneLetterCode,
+                                                   'nstd_monomer': nstdMonomer,
+                                                   'nstd_linkage': nstdLinkage,
+                                                   'nstd_chirality': nstdChirality,
+                                                   'target_identifier': targetIdentifier,
+                                                   'num_of_monomers': len(mappings),
+                                                   'auth_asym_id': ','.join(authAsymIds),
+                                                   'label_asym_id': ','.join(labelAsymIds),
+                                                   'comp_id_set': compIds})
+                            entityAssemblyId += 1
+
+                        else:
+
+                            for authAsymId in authAsymIds:
+                                labelAsymIds = []
+                                for item in mappings:
+                                    if item['auth_asym_id'] == authAsymId:
+                                        seqKey = (item['auth_asym_id'], item['auth_seq_id'])
+                                        authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                        authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                        if item['label_asym_id'] not in labelAsymIds:
+                                            labelAsymIds.append(item['label_asym_id'])
+
+                                entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
+                                                       'entity_type': entityType, 'entity_src_method': entitySrcMethod,
+                                                       'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                                       'entity_copies': entityCopies, 'entity_ec': entityEC,
+                                                       'entity_parent': entityParent,
+                                                       'entity_mutation': entityMutation,
+                                                       'entity_fragment': entityFragment,
+                                                       'entity_details': entityDetails,
+                                                       'entity_role': entityRole,
+                                                       'entity_poly_type': entityPolyType,
+                                                       'one_letter_code_can': oneLetterCodeCan,
+                                                       'one_letter_code': oneLetterCode,
+                                                       'nstd_monomer': nstdMonomer,
+                                                       'nstd_linkage': nstdLinkage,
+                                                       'nstd_chirality': nstdChirality,
+                                                       'target_identifier': targetIdentifier,
+                                                       'num_of_monomers': len(mappings),
+                                                       'auth_asym_id': authAsymId,
+                                                       'label_asym_id': ','.join(labelAsymIds),
+                                                       'comp_id_set': compIds})
+                                entityAssemblyId += 1
+
                 elif entityType == 'branched':
                     entityPolyType = '.'
                     if cR.hasCategory('pdbx_entity_branch'):
@@ -2096,31 +2137,69 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                              {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
-                        authAsymIds = set()
+                        authAsymIds = []
                         for item in mappings:
-                            seqKey = (item['auth_asym_id'], item['auth_seq_id'])
-                            authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
-                            authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
-                            authAsymIds.add(item['auth_asym_id'])
-                        for item in mappings:
-                            altKey = (item['auth_asym_id'], item['alt_seq_id'])
-                            if altKey not in authToStarSeq:
-                                authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                authToEntityType[altKey] = entityPolyType  # e.g. oligosaccharide
-                        labelAsymIds = set()
-                        for item in mappings:
-                            labelAsymIds.add(item['label_asym_id'])
-                        entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                               'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                               'entity_desc': entityDesc, 'entity_fw': entityFW,
-                                               'entity_copies': entityCopies,
-                                               'entity_details': entityDetails,
-                                               'entity_role': entityRole,
-                                               'entity_poly_type': entityPolyType,
-                                               'num_of_monomers': len(mappings),
-                                               'auth_asym_id': ','.join(list(authAsymIds)),
-                                               'label_asym_id': ','.join(list(labelAsymIds))})
-                        entityAssemblyId += 1
+                            if item['auth_asym_id'] not in authAsymIds:
+                                authAsymIds.append(item['auth_asym_id'])
+
+                        if len(authAsymIds) <= MAX_MAG_IDENT_ASYM_ID:
+                            labelAsymIds = []
+                            for item in mappings:
+                                seqKey = (item['auth_asym_id'], item['auth_seq_id'])
+                                authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
+                                authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
+                                if item['label_asym_id'] not in labelAsymIds:
+                                    labelAsymIds.append(item['label_asym_id'])
+
+                            for item in mappings:
+                                altKey = (item['auth_asym_id'], item['alt_seq_id'])
+                                if altKey not in authToStarSeq:
+                                    authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                    authToEntityType[altKey] = entityPolyType  # e.g. oligosaccharide
+
+                            entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
+                                                   'entity_type': entityType, 'entity_src_method': entitySrcMethod,
+                                                   'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                                   'entity_copies': entityCopies,
+                                                   'entity_details': entityDetails,
+                                                   'entity_role': entityRole,
+                                                   'entity_poly_type': entityPolyType,
+                                                   'num_of_monomers': len(mappings),
+                                                   'auth_asym_id': ','.join(authAsymIds),
+                                                   'label_asym_id': ','.join(labelAsymIds)})
+                            entityAssemblyId += 1
+
+                        else:
+
+                            for authAsymId in authAsymIds:
+                                labelAsymIds = []
+                                for item in mappings:
+                                    if item['auth_asym_id'] == authAsymId:
+                                        seqKey = (item['auth_asym_id'], item['auth_seq_id'])
+                                        authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
+                                        authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
+                                        if item['label_asym_id'] not in labelAsymIds:
+                                            labelAsymIds.append(item['label_asym_id'])
+
+                                for item in mappings:
+                                    if item['auth_asym_id'] == authAsymId:
+                                        altKey = (item['auth_asym_id'], item['alt_seq_id'])
+                                        if altKey not in authToStarSeq:
+                                            authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                            authToEntityType[altKey] = entityPolyType  # e.g. oligosaccharide
+
+                                entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
+                                                       'entity_type': entityType, 'entity_src_method': entitySrcMethod,
+                                                       'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                                       'entity_copies': entityCopies,
+                                                       'entity_details': entityDetails,
+                                                       'entity_role': entityRole,
+                                                       'entity_poly_type': entityPolyType,
+                                                       'num_of_monomers': len(mappings),
+                                                       'auth_asym_id': authAsymId,
+                                                       'label_asym_id': ','.join(labelAsymIds)})
+                                entityAssemblyId += 1
+
                 elif entityType == 'non-polymer':
                     if cR.hasCategory('pdbx_nonpoly_scheme'):
                         mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
@@ -2132,31 +2211,36 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                              {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
+                        authAsymIds = []
                         compId = None
-                        authAsymIds = set()
                         for idx, item in enumerate(mappings):
                             seqKey = (item['auth_asym_id'], item['auth_seq_id'])
                             authToStarSeq[seqKey] = (entityAssemblyId, idx + 1, entityId, True)
                             authToEntityType[seqKey] = 'non-polymer'
-                            authAsymIds.add(item['auth_asym_id'])
+                            if item['auth_asym_id'] not in authAsymIds:
+                                authAsymIds.append(item['auth_asym_id'])
                             if compId is None:
                                 compId = item['comp_id']
+
                         for idx, item in enumerate(mappings):
                             altKey = (item['auth_asym_id'], item['alt_seq_id'])
                             if altKey not in authToStarSeq:
                                 authToStarSeq[altKey] = (entityAssemblyId, idx + 1, entityId, False)
                                 authToEntityType[altKey] = 'non-polymer'
-                        labelAsymIds = set()
+
+                        labelAsymIds = []
                         for item in mappings:
-                            labelAsymIds.add(item['label_asym_id'])
+                            if item['label_asym_id'] not in labelAsymIds:
+                                labelAsymIds.append(item['label_asym_id'])
+
                         entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
                                                'entity_type': entityType, 'entity_src_method': entitySrcMethod,
                                                'entity_desc': entityDesc, 'entity_fw': entityFW,
                                                'entity_copies': entityCopies,
                                                'entity_details': entityDetails,
                                                'entity_role': entityRole,
-                                               'auth_asym_id': ','.join(list(authAsymIds)),
-                                               'label_asym_id': ','.join(list(labelAsymIds)),
+                                               'auth_asym_id': ','.join(authAsymIds),
+                                               'label_asym_id': ','.join(labelAsymIds),
                                                'comp_id': compId})
                         entityAssemblyId += 1
 
@@ -2388,9 +2472,9 @@ def hasIntraChainRestraint(atomSelectionSet):
     for atom1, atom2 in itertools.product(atomSelectionSet[0],
                                           atomSelectionSet[1]):
         if atom1['chain_id'] == atom2['chain_id']:
-            return True
+            return True, getRepresentativeIntraChainIds(atomSelectionSet)
 
-    return False
+    return False, None
 
 
 def hasInterChainRestraint(atomSelectionSet):
@@ -2403,6 +2487,24 @@ def hasInterChainRestraint(atomSelectionSet):
             return True
 
     return False
+
+
+def getRepresentativeIntraChainIds(atomSelectionSet):
+    """ Return representative set of chain id of intra-chain distance restraints in case of large assembly.
+    """
+
+    intraChainIds = set()
+    for atom1, atom2 in itertools.product(atomSelectionSet[0],
+                                          atomSelectionSet[1]):
+        if atom1['chain_id'] == atom2['chain_id']:
+            intraChainIds.add(atom1['chain_id'])
+
+    if len(intraChainIds) > MAX_MAG_IDENT_ASYM_ID:
+        for chainId in MAJOR_ASYM_ID_SET:
+            if chainId in intraChainIds:
+                return {chainId}
+
+    return intraChainIds
 
 
 def isAmbigAtomSelection(atoms, csStat):

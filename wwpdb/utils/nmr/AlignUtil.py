@@ -67,6 +67,9 @@ MAJOR_ASYM_ID_SET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
                      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 LEN_MAJOR_ASYM_ID_SET = len(MAJOR_ASYM_ID_SET)
 
+# maximum number of magnetically identifiable chain IDs
+MAX_MAG_IDENT_ASYM_ID = 2
+
 
 def hasLargeInnerSeqGap(polySeq, seqIdName='seq_id'):
     """ Return whether large gap in a sequence.

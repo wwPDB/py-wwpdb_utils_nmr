@@ -649,11 +649,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
 
-            has_intra_chain = hasIntraChainRestraint(self.atomSelectionSet)
+            has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
+                if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
@@ -1925,11 +1925,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
 
-            has_intra_chain = hasIntraChainRestraint(self.atomSelectionSet)
+            has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
+                if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (Coordinate) id={self.geoRestraints} "
@@ -3581,11 +3581,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf['id'] += 1
                 memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
 
-            has_intra_chain = hasIntraChainRestraint(self.atomSelectionSet)
+            has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
+                if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CS-ROSETTA: disulfide bond linkage) id={self.ssbondRestraints} "

@@ -65,6 +65,7 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
                                            MAJOR_ASYM_ID_SET,
+                                           MAX_MAG_IDENT_ASYM_ID,
                                            monDict3,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
@@ -130,6 +131,7 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
                                MAJOR_ASYM_ID_SET,
+                               MAX_MAG_IDENT_ASYM_ID,
                                monDict3,
                                updatePolySeqRst,
                                sortPolySeqRst,
@@ -2035,7 +2037,7 @@ class CnsMRParserListener(ParseTreeListener):
                     chain_id_set.sort()
                     if self.__symmetric != 'no':
                         pass
-                    elif len(chain_id_set) > 2 and chain_id_2 in chain_id_set:
+                    elif len(chain_id_set) > MAX_MAG_IDENT_ASYM_ID and chain_id_2 in chain_id_set:
                         self.__symmetric = 'linear'
 
                         try:

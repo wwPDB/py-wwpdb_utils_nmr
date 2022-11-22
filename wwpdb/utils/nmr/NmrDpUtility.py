@@ -40497,6 +40497,8 @@ class NmrDpUtility:
         for tag in tags:
             cca_loop.add_tag(tag)
 
+        seq_keys = set()
+
         nef_index = 1
 
         for k, v in self.__caC['auth_to_star_seq'].items():
@@ -40505,6 +40507,13 @@ class NmrDpUtility:
 
             if not genuine:
                 continue
+
+            seq_key = (entity_assembly_id, seq_id)
+
+            if seq_key in seq_keys:
+                continue
+
+            seq_keys.add(seq_key)
 
             row = [None] * len(tags)
 
@@ -41150,6 +41159,8 @@ class NmrDpUtility:
             for tag in tags:
                 eci_loop.add_tag(tag)
 
+            auth_seq_ids = set()
+
             index = 1
 
             label_asym_ids = list(set(item['label_asym_id'].split(',')))
@@ -41162,11 +41173,16 @@ class NmrDpUtility:
                     ps = next(ps for ps in self.__caC['non_polymer'] if ps['chain_id'] == chain_id)
 
                 for idx, comp_id in enumerate(ps['comp_id']):
-                    row = [None] * len(tags)
-
                     auth_seq_id = ps['auth_seq_id'][idx]
                     if entity_type == 'non-polymer':
                         auth_seq_id = ps['seq_id'][idx]
+
+                    if auth_seq_id in auth_seq_ids:
+                        continue
+
+                    row = [None] * len(tags)
+
+                    auth_seq_ids.add(auth_seq_id)
 
                     row[0], row[1], row[2] = index, auth_seq_id, comp_id
 
@@ -41202,6 +41218,8 @@ class NmrDpUtility:
                 for tag in tags:
                     eps_loop.add_tag(tag)
 
+                seq_ids = set()
+
                 label_asym_ids = list(set(item['label_asym_id'].split(',')))
                 for chain_id in sorted(sorted(label_asym_ids), key=len):
                     if entity_type == 'polymer':
@@ -41212,9 +41230,14 @@ class NmrDpUtility:
                         ps = next(ps for ps in self.__caC['non_polymer'] if ps['chain_id'] == chain_id)
 
                     for i, comp_id in enumerate(ps['comp_id']):
+                        seq_id = ps['seq_id'][i]
+
+                        if seq_id in seq_ids:
+                            continue
+
                         row = [None] * len(tags)
 
-                        seq_id = ps['seq_id'][i]
+                        seq_ids.add(seq_id)
 
                         row[1], row[2], row[3], row[4], row[5] =\
                             comp_id, seq_id, seq_id, entity_id, self.__entry_id

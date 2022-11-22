@@ -977,6 +977,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
+                if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                    memberLogicCode = '.'
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -1458,6 +1461,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
                 has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
+
+                if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                    memberLogicCode = '.'
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -4015,6 +4021,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
+                if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                    memberLogicCode = '.'
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -4294,6 +4303,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
+                if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                    memberLogicCode = '.'
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -4484,6 +4496,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
                 has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
+
+                if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                    memberLogicCode = '.'
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -4691,6 +4706,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
                 has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
+
+                if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                    memberLogicCode = '.'
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
@@ -4971,6 +4989,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
+                if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                    memberLogicCode = '.'
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -5162,6 +5183,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
+                if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                    memberLogicCode = '.'
+
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -5305,6 +5329,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
             has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
+
+            if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                memberLogicCode = '.'
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):

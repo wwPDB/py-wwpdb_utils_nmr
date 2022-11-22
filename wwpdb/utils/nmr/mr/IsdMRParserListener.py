@@ -539,6 +539,9 @@ class IsdMRParserListener(ParseTreeListener):
 
         has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
+        if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+            memberLogicCode = '.'
+
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
             if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):

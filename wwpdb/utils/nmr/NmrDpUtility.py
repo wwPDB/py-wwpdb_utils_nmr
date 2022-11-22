@@ -28559,16 +28559,18 @@ class NmrDpUtility:
                 or (upper_limit is not None and upper_limit == 0.0)\
                 or (lower_limit is not None and lower_limit == 0.0)
 
+            delta_minus = 0.1 if upper_limit is not None and lower_limit is not None else 0.0
+
             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
 
             if not ambig:
 
                 if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
-                    if 1.2 <= target_value <= 1.5:
+                    if 1.2 - delta_minus <= target_value <= 1.5:
                         hydrogen_bond_type = 'F...H-x'
                         hydrogen_bond = True
-                    elif target_value < 1.2:
+                    elif target_value < 1.2 - delta_minus:
                         hydrogen_bond_type = 'F...H-x (too close!)'
                         hydrogen_bond = True
                     elif target_value <= 2.0:
@@ -28577,10 +28579,10 @@ class NmrDpUtility:
 
                 elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
 
-                    if 2.2 <= target_value <= 2.5:
+                    if 2.2 - delta_minus <= target_value <= 2.5:
                         hydrogen_bond_type = 'F...h-F'
                         hydrogen_bond = True
-                    elif target_value < 2.2:
+                    elif target_value < 2.2 - delta_minus:
                         hydrogen_bond_type = 'F...h-F (too close!)'
                         hydrogen_bond = True
                     elif target_value <= 3.0:
@@ -28589,10 +28591,10 @@ class NmrDpUtility:
 
                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
 
-                    if 1.5 <= target_value <= 2.5:
+                    if 1.5 - delta_minus <= target_value <= 2.5:
                         hydrogen_bond_type = 'O...H-x'
                         hydrogen_bond = True
-                    elif target_value < 1.5:
+                    elif target_value < 1.5 - delta_minus:
                         hydrogen_bond_type = 'O...H-x (too close!)'
                         hydrogen_bond = True
                     elif target_value <= 4.0:
@@ -28601,10 +28603,10 @@ class NmrDpUtility:
 
                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
 
-                    if 2.5 <= target_value <= 3.5:
+                    if 2.5 - delta_minus <= target_value <= 3.5:
                         hydrogen_bond_type = 'O...h-N'
                         hydrogen_bond = True
-                    elif target_value < 2.5:
+                    elif target_value < 2.5 - delta_minus:
                         hydrogen_bond_type = 'O...h-N (too close!)'
                         hydrogen_bond = True
                     elif target_value <= 5.0:
@@ -28613,10 +28615,10 @@ class NmrDpUtility:
 
                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
 
-                    if 2.5 <= target_value <= 3.5:
+                    if 2.5 - delta_minus <= target_value <= 3.5:
                         hydrogen_bond_type = 'O...h-O'
                         hydrogen_bond = True
-                    elif target_value < 2.5:
+                    elif target_value < 2.5 - delta_minus:
                         hydrogen_bond_type = 'O...h-O (too close!)'
                         hydrogen_bond = True
                     elif target_value <= 5.0:
@@ -28625,10 +28627,10 @@ class NmrDpUtility:
 
                 elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
 
-                    if 1.5 <= target_value <= 2.5:
+                    if 1.5 - delta_minus <= target_value <= 2.5:
                         hydrogen_bond_type = 'N...H-x'
                         hydrogen_bond = True
-                    elif target_value < 1.5:
+                    elif target_value < 1.5 - delta_minus:
                         hydrogen_bond_type = 'N...H-x (too close!)'
                         hydrogen_bond = True
                     elif target_value <= 4.0:
@@ -28637,10 +28639,10 @@ class NmrDpUtility:
 
                 elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
 
-                    if 2.5 <= target_value <= 3.5:
+                    if 2.5 - delta_minus <= target_value <= 3.5:
                         hydrogen_bond_type = 'N...h_N'
                         hydrogen_bond = True
-                    elif target_value < 2.5:
+                    elif target_value < 2.5 - delta_minus:
                         hydrogen_bond_type = 'N...h_N (too close!)'
                         hydrogen_bond = True
                     elif target_value <= 5.0:
@@ -28649,10 +28651,10 @@ class NmrDpUtility:
 
                 elif atom_id_1_ == 'S' and atom_id_2_ == 'S' and not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
 
-                    if 1.9 <= target_value <= 2.3:
+                    if 1.9 - delta_minus <= target_value <= 2.3:
                         disulfide_bond_type = 'S...S'
                         disulfide_bond = True
-                    elif target_value < 1.9:
+                    elif target_value < 1.9 - delta_minus:
                         disulfide_bond_type = 'S...S (too close!)'
                         disulfide_bond = True
                     elif target_value <= 3.6:
@@ -28661,10 +28663,10 @@ class NmrDpUtility:
 
                 elif atom_id_1.startswith('SE') and atom_id_2.startswith('SE'):
 
-                    if 2.1 <= target_value <= 2.6:
+                    if 2.1 - delta_minus <= target_value <= 2.6:
                         diselenide_bond_type = 'Se...Se'
                         diselenide_bond = True
-                    elif target_value < 2.1:
+                    elif target_value < 2.1 - delta_minus:
                         diselenide_bond_type = 'Se...Se (too close!)'
                         diselenide_bond = True
                     elif target_value <= 4.2:
@@ -28677,10 +28679,10 @@ class NmrDpUtility:
                     metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                     metal = metal.title()
 
-                    if 1.9 <= target_value <= 2.1 or not balanced:
+                    if 1.9 - delta_minus <= target_value <= 2.1 or not balanced:
                         other_bond_type = 'N...' + metal
                         other_bond = True
-                    elif target_value < 1.9:
+                    elif target_value < 1.9 - delta_minus:
                         other_bond_type = 'N...' + metal + ' (too close!)'
                         other_bond = True
                     elif target_value <= 3.2:
@@ -28693,10 +28695,10 @@ class NmrDpUtility:
                     metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                     metal = metal.title()
 
-                    if 2.0 <= target_value <= 2.2 or not balanced:
+                    if 2.0 - delta_minus <= target_value <= 2.2 or not balanced:
                         other_bond_type = 'O...' + metal
                         other_bond = True
-                    elif target_value < 2.0:
+                    elif target_value < 2.0 - delta_minus:
                         other_bond_type = 'O...' + metal + ' (too close!)'
                         other_bond = True
                     elif target_value <= 3.4:
@@ -28709,10 +28711,10 @@ class NmrDpUtility:
                     metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                     metal = metal.title()
 
-                    if 2.1 <= target_value <= 2.5 or not balanced:
+                    if 2.1 - delta_minus <= target_value <= 2.5 or not balanced:
                         other_bond_type = 'P...' + metal
                         other_bond = True
-                    elif target_value < 2.1:
+                    elif target_value < 2.1 - delta_minus:
                         other_bond_type = 'P...' + metal + ' (too close!)'
                         other_bond = True
                     elif target_value <= 4.0:
@@ -28725,10 +28727,10 @@ class NmrDpUtility:
                     metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                     metal = metal.title()
 
-                    if 2.2 <= target_value <= 2.6 or not balanced:
+                    if 2.2 - delta_minus <= target_value <= 2.6 or not balanced:
                         other_bond_type = 'S...' + metal
                         other_bond = True
-                    elif target_value < 2.2:
+                    elif target_value < 2.2 - delta_minus:
                         other_bond_type = 'S...' + metal + ' (too close!)'
                         other_bond = True
                     elif target_value <= 4.2:
@@ -28741,10 +28743,10 @@ class NmrDpUtility:
                     metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                     metal = metal.title()
 
-                    if 2.3 <= target_value <= 2.7 or not balanced:
+                    if 2.3 - delta_minus <= target_value <= 2.7 or not balanced:
                         other_bond_type = 'Se...' + metal
                         other_bond = True
-                    elif target_value < 2.3:
+                    elif target_value < 2.3 - delta_minus:
                         other_bond_type = 'Se...' + metal + ' (too close!)'
                         other_bond = True
                     elif target_value <= 4.4:
@@ -37590,6 +37592,7 @@ class NmrDpUtility:
                                      'atom_id': atom_id_4}
 
                             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+
                             data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
 
                             if data_type in emptyValue:
@@ -40140,29 +40143,15 @@ class NmrDpUtility:
 
         master_entry = self.__star_data[0]
 
-        master_entry.entry_id = f'nef_{self.__entry_id.lower()}'
-
-        self.__c2S.set_entry_id(master_entry, self.__entry_id)
-
-        cs_file_path_list = 'chem_shift_file_path_list'
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        dst_cs_path = os.path.join(os.path.dirname(self.__inputParamDict[cs_file_path_list][0]), input_source_dic['file_name'])
-
-        # update Atom_chem_shift.Ambiguity_code
-
-        if __pynmrstar_v3__:
-            master_entry.write_to_file(dst_cs_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
-        else:
-            master_entry.write_to_file(dst_cs_path)
-
         file_type = 'nmr-star'
 
         content_subtype = 'poly_seq'
 
-        asm_sfs = self.__star_data[0].get_saveframes_by_category(self.lp_categories[file_type][content_subtype])
+        asm_sfs = master_entry.get_saveframes_by_category(self.sf_categories[file_type][content_subtype])
+
+        for sf in reversed(asm_sfs):
+            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            master_entry.remove_saveframe(sf_framecode)
 
         components_ex_water = 0
         for item in self.__caC['entity_assembly']:
@@ -40257,115 +40246,33 @@ class NmrDpUtility:
         else:
             details = details[:-1]
 
-        if len(asm_sfs) == 0:
-            sf_framecode = 'assembly'
-            asm_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
-            asm_sf.set_tag_prefix(self.sf_tag_prefixes[file_type][content_subtype])
-            asm_sf.add_tag('Sf_category', self.sf_categories[file_type][content_subtype])
-            asm_sf.add_tag('Sf_framecode', sf_framecode)
-            asm_sf.add_tag('Entry_ID', self.__entry_id)
-            asm_sf.add_tag('ID', 1)
-            assembly_name = '?'
-            if self.__cR.hasItem('struct', 'pdbx_descriptor'):
-                struct = self.__cR.getDictList('struct')
-                assembly_name = struct[0]['pdbx_descriptor']
-            asm_sf.add_tag('Name', assembly_name)
-            asm_sf.add_tag('BMRB_code', None)
-            asm_sf.add_tag('Number_of_components', components_ex_water)
-            asm_sf.add_tag('Organic_ligands', ligand_total if ligand_total > 0 else None)
-            asm_sf.add_tag('Metal_ions', ion_total if ion_total > 0 else None)
-            asm_sf.add_tag('Non_standard_bonds', None)
-            asm_sf.add_tag('Ambiguous_conformational_states', None)
-            asm_sf.add_tag('Ambiguous_chem_comp_sites', None)
-            asm_sf.add_tag('Molecules_in_chemical_exchange', None)
-            asm_sf.add_tag('Paramagnetic', 'yes' if paramag else 'no')
-            asm_sf.add_tag('Thiol_state', thiol_state)
-            asm_sf.add_tag('Molecular_mass', formula_weight)
-            asm_sf.add_tag('Enzyme_commission_number', ec_number)
-            asm_sf.add_tag('Details', details)
-            asm_sf.add_tag('DB_query_date', None)
-            asm_sf.add_tag('DB_query_revised_last_date', None)
-
-        else:
-            asm_sf = asm_sfs[0]
-            tagNames = [t[0] for t in asm_sf.tags]
-            if 'Sf_category' in tagNames:
-                asm_sf.tags[tagNames.index('Sf_category')][1] = self.sf_categories[file_type][content_subtype]
-            else:
-                asm_sf.add_tag('Sf_category', self.sf_categories[file_type][content_subtype])
-            if 'Sf_framecode' in tagNames:
-                asm_sf.tags[tagNames.index('Sf_framecode')][1] = asm_sf.name
-            else:
-                asm_sf.add_tag('Sf_framecode', asm_sf.name)
-            if 'Entry_ID' in tagNames:
-                asm_sf.tags[tagNames.index('Entry_ID')][1] = self.__entry_id
-            else:
-                asm_sf.add_tag('Entry_ID', self.__entry_id)
-            if 'ID' in tagNames:
-                asm_sf.tags[tagNames.index('ID')] = 1
-            else:
-                asm_sf.add_tag('ID', 1)
-            assembly_name = get_first_sf_tag(asm_sf, 'Name')
-            if len(assembly_name) == 0 or assembly_name in emptyValue:
-                assembly_name = '?'
-                if self.__cR.hasItem('struct', 'pdbx_descriptor'):
-                    struct = self.__cR.getDictList('struct')
-                    assembly_name = struct[0]['pdbx_descriptor']
-                if 'Name' in tagNames:
-                    asm_sf.tags[tagNames.index('Name')][1] = assembly_name
-                else:
-                    asm_sf.add_tag('Name', assembly_name)
-            if 'BMRB_code' not in tagNames:
-                asm_sf.add_tag('BMRB_code', None)
-            if 'Number_of_components' in tagNames:
-                asm_sf.tags[tagNames.index('Number_of_components')][1] = components_ex_water
-            else:
-                asm_sf.add_tag('Number_of_components', components_ex_water)
-            if 'Organic_ligands' in tagNames:
-                asm_sf.tags[tagNames.index('Organic_ligands')][1] = ligand_total if ligand_total > 0 else None
-            else:
-                asm_sf.add_tag('Organic_ligands', ligand_total if ligand_total > 0 else None)
-            if 'Metal_ions' in tagNames:
-                asm_sf.tags[tagNames.index('Metal_ions')][1] = ion_total if ion_total > 0 else None
-            else:
-                asm_sf.add_tag('Metal_ions', ion_total if ion_total > 0 else None)
-            if 'Non_standard_bonds' not in tagNames:
-                asm_sf.add_tag('Non_standard_bonds', None)
-            if 'Ambiguous_conformational_states' not in tagNames:
-                asm_sf.add_tag('Ambiguous_conformational_states', None)
-            if 'Ambiguous_chem_comp_sites' not in tagNames:
-                asm_sf.add_tag('Ambiguous_chem_comp_sites', None)
-            if 'Molecules_in_chemical_exchange' not in tagNames:
-                asm_sf.add_tag('Molecules_in_chemical_exchange', None)
-            if 'Paramagnetic' in tagNames:
-                asm_sf.tags[tagNames.index('Paramagnetic')][1] = 'yes' if paramag else 'no'
-            else:
-                asm_sf.add_tag('Paramagnetic', 'yes' if paramag else 'no')
-            if 'Thiol_state' in tagNames:
-                asm_sf.tags[tagNames.index('Thiol_state')][1] = thiol_state
-            else:
-                asm_sf.add_tag('Thiol_state', thiol_state)
-            if 'Molecular_mass' in tagNames:
-                asm_sf.tags[tagNames.index('Molecular_mass')][1] = formula_weight
-            else:
-                asm_sf.add_tag('Molecular_mass', formula_weight)
-            if 'Enzyme_commission_number' in tagNames:
-                asm_sf.tags[tagNames.index('Enzyme_commission_number')][1] = ec_number
-            else:
-                asm_sf.add_tag('Enzyme_commission_number', ec_number)
-            if 'Details' in tagNames:
-                if details != '.':
-                    asm_sf.tags[tagNames.index('Details')][0] = details
-            else:
-                asm_sf.add_tag('Details', details)
-            if 'DB_query_date' in tagNames:
-                asm_sf.tags[tagNames.index('DB_query_date')][1] = None
-            else:
-                asm_sf.add_tag('DB_query_date', None)
-            if 'DB_query_revised_last_date' in tagNames:
-                asm_sf.tags[tagNames.index('DB_query_revised_last_date')][1] = None
-            else:
-                asm_sf.add_tag('DB_query_revised_last_date', None)
+        sf_framecode = 'assembly'
+        asm_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
+        asm_sf.set_tag_prefix(self.sf_tag_prefixes[file_type][content_subtype])
+        asm_sf.add_tag('Sf_category', self.sf_categories[file_type][content_subtype])
+        asm_sf.add_tag('Sf_framecode', sf_framecode)
+        asm_sf.add_tag('Entry_ID', self.__entry_id)
+        asm_sf.add_tag('ID', 1)
+        assembly_name = '?'
+        if self.__cR.hasItem('struct', 'pdbx_descriptor'):
+            struct = self.__cR.getDictList('struct')
+            assembly_name = struct[0]['pdbx_descriptor']
+        asm_sf.add_tag('Name', assembly_name)
+        asm_sf.add_tag('BMRB_code', None)
+        asm_sf.add_tag('Number_of_components', components_ex_water)
+        asm_sf.add_tag('Organic_ligands', ligand_total if ligand_total > 0 else None)
+        asm_sf.add_tag('Metal_ions', ion_total if ion_total > 0 else None)
+        asm_sf.add_tag('Non_standard_bonds', None)
+        asm_sf.add_tag('Ambiguous_conformational_states', None)
+        asm_sf.add_tag('Ambiguous_chem_comp_sites', None)
+        asm_sf.add_tag('Molecules_in_chemical_exchange', None)
+        asm_sf.add_tag('Paramagnetic', 'yes' if paramag else 'no')
+        asm_sf.add_tag('Thiol_state', thiol_state)
+        asm_sf.add_tag('Molecular_mass', formula_weight)
+        asm_sf.add_tag('Enzyme_commission_number', ec_number)
+        asm_sf.add_tag('Details', details)
+        asm_sf.add_tag('DB_query_date', None)
+        asm_sf.add_tag('DB_query_revised_last_date', None)
 
         entity_type_of = {item['entity_id']: item['entity_type'] for item in self.__caC['entity_assembly']}
         entity_total = {entity_id: len([item for item in self.__caC['entity_assembly'] if item['entity_id'] == entity_id])
@@ -40375,15 +40282,6 @@ class NmrDpUtility:
         # Refresh _Entity_assembly
 
         lp_category = '_Entity_assembly'
-
-        if lp_category in self.__lp_category_list:
-
-            if __pynmrstar_v3_2__:
-                loop = asm_sf.get_loop(lp_category)
-            else:
-                loop = asm_sf.get_loop_by_category(lp_category)
-
-            del asm_sf[loop]
 
         ea_loop = pynmrstar.Loop.from_scratch(lp_category)
 
@@ -40460,15 +40358,6 @@ class NmrDpUtility:
         # Refresh _Chem_comp_assembly
 
         lp_category = self.lp_categories[file_type][content_subtype]
-
-        if lp_category in self.__lp_category_list:
-
-            if __pynmrstar_v3_2__:
-                loop = asm_sf.get_loop(lp_category)
-            else:
-                loop = asm_sf.get_loop_by_category(lp_category)
-
-            del asm_sf[loop]
 
         cca_loop = pynmrstar.Loop.from_scratch(lp_category)
 
@@ -40559,15 +40448,6 @@ class NmrDpUtility:
         if self.__cR.hasCategory('struct_conn'):
 
             lp_category = '_Bond'
-
-            if lp_category in self.__lp_category_list:
-
-                if __pynmrstar_v3_2__:
-                    loop = asm_sf.get_loop(lp_category)
-                else:
-                    loop = asm_sf.get_loop_by_category(lp_category)
-
-                del asm_sf[loop]
 
             b_loop = pynmrstar.Loop.from_scratch(lp_category)
 
@@ -40812,11 +40692,12 @@ class NmrDpUtility:
         # Refresh _Entity
 
         content_subtype = 'entity'
-        lp_category = self.lp_categories[file_type][content_subtype]
 
-        for sf in self.__star_data[0].get_saveframes_by_category(lp_category):
+        ent_sfs = master_entry.get_saveframes_by_category(self.sf_categories[file_type][content_subtype])
+
+        for sf in reversed(ent_sfs):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
-            self.__star_data[0].remove_saveframe(sf_framecode)
+            master_entry.remove_saveframe(sf_framecode)
         # """
         # sf_key_items = [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
         #                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
@@ -41247,6 +41128,28 @@ class NmrDpUtility:
                 ent_sf.add_loop(eps_loop)
 
             master_entry.add_saveframe(ent_sf)
+
+        # Write refreshed _Assembly, _Entity categories and remediation for _Atom_chem_shift.Ambiguity_code as remediated CS file
+
+        master_entry.entry_id = f'cs_{self.__entry_id.lower()}'
+
+        self.__c2S.set_entry_id(master_entry, self.__entry_id)
+
+        cs_file_path_list = 'chem_shift_file_path_list'
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        dst_cs_path = os.path.join(os.path.dirname(self.__inputParamDict[cs_file_path_list][0]), input_source_dic['file_name'])
+
+        if __pynmrstar_v3__:
+            master_entry.write_to_file(dst_cs_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+        else:
+            master_entry.write_to_file(dst_cs_path)
+
+        master_entry.entry_id = f'nef_{self.__entry_id.lower()}'
+
+        self.__c2S.set_entry_id(master_entry, self.__entry_id)
 
         # Refresh _Constraint_stat_list
 
@@ -42197,7 +42100,7 @@ class NmrDpUtility:
         software_id = 0
 
         if 'software' in self.__sf_category_list:
-            for sf in self.__star_data[0].get_saveframes_by_category('software'):
+            for sf in master_entry.get_saveframes_by_category('software'):
                 _id = get_first_sf_tag('ID')
                 _name = get_first_sf_tag(sf, 'Name')
                 _code = get_first_sf_tag(sf, 'Sf_framecode')

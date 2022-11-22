@@ -1286,7 +1286,7 @@ class CnsMRParserListener(ParseTreeListener):
                 if isinstance(combinationId, int):
                     combinationId += 1
                 if self.__createSfDict:
-                    memberLogicCode = '.' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else 'OR'
+                    memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     if self.__debug:

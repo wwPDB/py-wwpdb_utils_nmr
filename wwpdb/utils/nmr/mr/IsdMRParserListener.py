@@ -535,7 +535,7 @@ class IsdMRParserListener(ParseTreeListener):
             sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
                               potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
             sf['id'] += 1
-            memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
+            memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
         has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 

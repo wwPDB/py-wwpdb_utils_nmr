@@ -5053,12 +5053,50 @@ class CnsMRParserListener(ParseTreeListener):
         if isinstance(_selection2[0], str) and _selection2[0] == '*':
             return _selection1
 
+        hasAuthSeqId1 = any(_atom for _atom in _selection1 if 'auth_atom_id' in _atom)
+        hasAuthSeqId2 = any(_atom for _atom in _selection2 if 'auth_atom_id' in _atom)
+
         _atomSelection = []
-        for _atom in _selection1:
-            if isinstance(_atom, str) and _atom == '*':
-                return _selection2
-            if _atom in _selection2:
-                _atomSelection.append(_atom)
+
+        if not hasAuthSeqId1 and not hasAuthSeqId2:
+            for _atom in _selection1:
+                if isinstance(_atom, str) and _atom == '*':
+                    return _selection2
+                if _atom in _selection2:
+                    _atomSelection.append(_atom)
+
+        elif hasAuthSeqId1 and not hasAuthSeqId2:
+            __selection1 = copy.deepcopy(_selection1)
+            for _atom in __selection1:
+                _atom.pop('auth_atom_id')
+            for idx, _atom in enumerate(__selection1):
+                if isinstance(_atom, str) and _atom == '*':
+                    return _selection2
+                if _atom in _selection2:
+                    _atomSelection.append(_selection1[idx])
+
+        elif not hasAuthSeqId1 and hasAuthSeqId2:
+            __selection2 = copy.deepcopy(_selection2)
+            for idx, _atom in enumerate(__selection2):
+                _atom.pop('auth_atom_id')
+            for idx, _atom in enumerate(__selection2):
+                if isinstance(_atom, str) and _atom == '*':
+                    return _selection1
+                if _atom in _selection1:
+                    _atomSelection.append(_selection2[idx])
+
+        else:
+            __selection1 = copy.deepcopy(_selection1)
+            for _atom in __selection1:
+                _atom.pop('auth_atom_id')
+            __selection2 = copy.deepcopy(_selection2)
+            for _atom in __selection2:
+                _atom.pop('auth_atom_id')
+            for idx, _atom in enumerate(__selection1):
+                if isinstance(_atom, str) and _atom == '*':
+                    return _selection2
+                if _atom in __selection2:
+                    _atomSelection.append(_selection1[idx])
 
         return _atomSelection
 

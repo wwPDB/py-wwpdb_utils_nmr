@@ -4590,7 +4590,9 @@ class NEFTranslator:
             if len(atom_list) == 0:
 
                 if nef_atom == 'HN' and self.__csStat.peptideLike(comp_id):
-                    atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H', 'HN converted to H.' if leave_unmatched else None, leave_unmatched)
+                    atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H', None,
+                                                                            # 'HN converted to H.'
+                                                                            leave_unmatched)
                     return (atom_list, ambiguity_code, details)
 
                 if self.__csStat.hasCompId(comp_id):
@@ -4599,25 +4601,29 @@ class NEFTranslator:
 
                     if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, nef_atom + '%', f"{nef_atom} converted to {nef_atom}%." if leave_unmatched else None, leave_unmatched)
+                            self.get_star_atom(comp_id, nef_atom + '%', None,
+                                               # f"{nef_atom} converted to {nef_atom}%."
+                                               leave_unmatched)
                         return (atom_list, ambiguity_code, details)
 
                     if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, nef_atom[:-1] + '%', f"{nef_atom} converted to {nef_atom[:-1]}%." if leave_unmatched else None, leave_unmatched)
+                            self.get_star_atom(comp_id, nef_atom[:-1] + '%', None,
+                                               # f"{nef_atom} converted to {nef_atom[:-1]}%."
+                                               leave_unmatched)
                         return (atom_list, ambiguity_code, details)
 
                     if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
                        len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
-                                               f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%." if leave_unmatched else None,
+                            self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%', None,
+                                               # f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%."
                                                leave_unmatched)
                         return (atom_list, ambiguity_code, details)
 
                     if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and nef_atom[:-1] in atoms:
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, nef_atom[:-1], f"{nef_atom} converted to {nef_atom[:-1]}." if leave_unmatched else None,
+                            self.get_star_atom(comp_id, nef_atom[:-1], None,  # f"{nef_atom} converted to {nef_atom[:-1]}."
                                                leave_unmatched)
                         return (atom_list, ambiguity_code, details)
 

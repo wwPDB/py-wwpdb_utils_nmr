@@ -30,6 +30,7 @@ try:
                                                        isAsymmetricRangeRestraint,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
+                                                       getRdcCode,
                                                        isCyclicPolymer,
                                                        getRestraintName,
                                                        contentSubtypeOf,
@@ -108,6 +109,7 @@ except ImportError:
                                            isAsymmetricRangeRestraint,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
+                                           getRdcCode,
                                            isCyclicPolymer,
                                            getRestraintName,
                                            contentSubtypeOf,
@@ -2367,7 +2369,8 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  rdcCode=getRdcCode([self.atomSelectionSet[4][0], self.atomSelectionSet[5][0]]))
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
@@ -2755,7 +2758,8 @@ class XplorMRParserListener(ParseTreeListener):
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
 
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  rdcCode=getRdcCode([self.atomSelectionSet[4][0], self.atomSelectionSet[5][0]]))
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
@@ -3291,7 +3295,8 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]))
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -11721,7 +11726,8 @@ class XplorMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None, potentialType=None, alignCenter=None):
+    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None,
+                alignCenter=None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -11729,7 +11735,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, constraintType, potentialType, None if alignCenter is None else str(alignCenter))
+        key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None if alignCenter is None else str(alignCenter))
 
         if self.__cur_subtype not in self.sfDict:
             self.sfDict[key] = []
@@ -11744,7 +11750,8 @@ class XplorMRParserListener(ParseTreeListener):
             + '_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
-                          constraintType=constraintType, potentialType=potentialType, alignCenter=alignCenter)
+                          constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode,
+                          alignCenter=alignCenter)
 
         not_valid = True
 
@@ -11771,13 +11778,14 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None, alignCenter=None):
-        key = (self.__cur_subtype, constraintType, potentialType, None if alignCenter is None else str(alignCenter))
+    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None,
+                alignCenter=None):
+        key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None if alignCenter is None else str(alignCenter))
 
         if key not in self.sfDict:
             replaced = False
-            if potentialType is not None:
-                old_key = (self.__cur_subtype, constraintType, None, None if alignCenter is None else str(alignCenter))
+            if potentialType is not None or rdcCode is not None:
+                old_key = (self.__cur_subtype, constraintType, None, None, None if alignCenter is None else str(alignCenter))
                 if old_key in self.sfDict:
                     replaced = True
                     self.sfDict[key] = [self.sfDict[old_key][-1]]
@@ -11790,8 +11798,15 @@ class XplorMRParserListener(ParseTreeListener):
                         sf.tags[idx][1] = potentialType
                     else:
                         sf.add_tag('Potential_type', potentialType)
+                    if rdcCode is not None:
+                        idx = next((idx for idx, t in enumerate(sf.tags) if t[0] == 'Details'), -1)
+                        if idx != -1:
+                            sf.tags[idx][1] = rdcCode
+                        else:
+                            sf.add_tag('Details', rdcCode)
             if not replaced:
-                self.__addSf(constraintType=constraintType, potentialType=potentialType, alignCenter=alignCenter)
+                self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode,
+                             alignCenter=alignCenter)
 
         return self.sfDict[key][-1]
 

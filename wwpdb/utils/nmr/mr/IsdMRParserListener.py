@@ -1166,7 +1166,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, constraintType, potentialType, None)
+        key = (self.__cur_subtype, constraintType, potentialType, None, None)
 
         if key not in self.sfDict:
             self.sfDict[key] = []
@@ -1196,12 +1196,12 @@ class IsdMRParserListener(ParseTreeListener):
         self.sfDict[key].append(item)
 
     def __getSf(self, constraintType=None, potentialType=None):
-        key = (self.__cur_subtype, constraintType, potentialType, None)
+        key = (self.__cur_subtype, constraintType, potentialType, None, None)
 
         if key not in self.sfDict:
             replaced = False
             if potentialType is not None:
-                old_key = (self.__cur_subtype, constraintType, None, None)
+                old_key = (self.__cur_subtype, constraintType, None, None, None)
                 if old_key in self.sfDict:
                     replaced = True
                     self.sfDict[key] = [self.sfDict[old_key][-1]]

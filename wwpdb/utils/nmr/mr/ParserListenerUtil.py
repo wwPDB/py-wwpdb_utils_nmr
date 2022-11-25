@@ -309,6 +309,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                            {'name': 'Tensor_auth_asym_ID', 'type': 'str', 'mandatory': False},
                                            {'name': 'Tensor_auth_seq_ID', 'type': 'str', 'mandatory': False},
                                            {'name': 'Tensor_auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -2897,6 +2898,52 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     return '.' if lenCommonSeqId == 1 else None
 
 
+def getRdcCode(atoms):
+    """ Return type of residual dipolar coupling restraint.
+    """
+
+    if len(atoms) != 2:
+        return None
+
+    atom1 = atoms[0]
+    atom2 = atoms[1]
+
+    chain_id_1 = atom1['chain_id']
+    chain_id_2 = atom2['chain_id']
+    seq_id_1 = atom1['seq_id']
+    seq_id_2 = atom2['seq_id']
+    atom_id_1 = atom1['atom_id']
+    atom_id_2 = atom2['atom_id']
+
+    vector = {atom_id_1, atom_id_2}
+    offset = abs(seq_id_1 - seq_id_2)
+
+    if chain_id_1 == chain_id_2:
+        if vector == {'H', 'C'} and offset == 1:
+            return 'RDC_HNC'
+        if vector == {'H', 'N'} and offset == 0:
+            return 'RDC_NH'
+        if vector == {'C', 'N'} and offset == 1:
+            return 'RDC_CN_i_1'
+        if vector == {'CA', 'HA'} and offset == 0:
+            return 'RDC_CAHA'
+        if vector == {'H', 'HA'} and offset == 0:
+            return 'RDC_HNHA'
+        if vector == {'H', 'HA'} and offset == 1:
+            return 'RDC_HNHA_i_1'
+        if vector == {'CA', 'C'} and offset == 0:
+            return 'RDC_CAC'
+        if vector == {'CA', 'N'} and offset == 0:
+            return 'RDC_CAN'
+        if atom_id_1[0] == atom_id_2[0]:
+            if atom_id_1[0] == 'H':
+                return 'RDC_HH'
+            if atom_id_1[0] == 'C':
+                return 'RDC_CC'
+
+    return 'RDC_other'
+
+
 def startsWithPdbRecord(line):
     """ Return whether a given line string starts with legacy PDB records.
     """
@@ -3161,7 +3208,8 @@ def incListIdCounter(mrSubtype, listIdCounter):
 
 
 def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=None,
-                 constraintType=None, potentialType=None, alignCenter=None, cyanaParameter=None):
+                 constraintType=None, potentialType=None,
+                 rdcCode=None, alignCenter=None, cyanaParameter=None):
     """ Return pynmrstar saveframe for a given internal restraint subtype.
         @return: pynmrstar saveframe
     """
@@ -3236,6 +3284,8 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
             sf.add_tag(tag_item_name, cyanaParameter['magnitude'])
         elif tag_item_name == 'Tensor_rhombicity' and mrSubtype == 'rdc' and cyanaParameter is not None:
             sf.add_tag(tag_item_name, cyanaParameter['rhombicity'])
+        elif tag_item_name == 'Details' and mrSubtype == 'rdc' and rdcCode is not None:
+            sf.add_tag(tag_item_name, rdcCode)
         elif tag_item_name == 'Details' and mrSubtype == 'pcs' and cyanaParameter is not None:
             sf.add_tag(tag_item_name, f"Tensor_magnitude {cyanaParameter['magnitude']}, "
                        f"Tensor_rhombicity {cyanaParameter['rhombicity']}, "

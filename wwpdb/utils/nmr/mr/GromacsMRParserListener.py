@@ -20,6 +20,7 @@ try:
                                                        isLongRangeRestraint,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
+                                                       getRdcCode,
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
@@ -54,6 +55,7 @@ except ImportError:
                                            isLongRangeRestraint,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
+                                           getRdcCode,
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
@@ -872,7 +874,8 @@ class GromacsMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]))
                 sf['id'] += 1
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
@@ -1413,7 +1416,7 @@ class GromacsMRParserListener(ParseTreeListener):
             return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "
         return ''
 
-    def __addSf(self, constraintType=None, potentialType=None):
+    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -1421,7 +1424,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, constraintType, potentialType, None)
+        key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
             self.sfDict[key] = []
@@ -1433,7 +1436,7 @@ class GromacsMRParserListener(ParseTreeListener):
         sf_framecode = 'GROMACS_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
-                          constraintType=constraintType, potentialType=potentialType)
+                          constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         not_valid = True
 
@@ -1456,13 +1459,13 @@ class GromacsMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None):
-        key = (self.__cur_subtype, constraintType, potentialType, None)
+    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None):
+        key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
             replaced = False
-            if potentialType is not None:
-                old_key = (self.__cur_subtype, constraintType, None, None)
+            if potentialType is not None or rdcCode is not None:
+                old_key = (self.__cur_subtype, constraintType, None, None, None)
                 if old_key in self.sfDict:
                     replaced = True
                     self.sfDict[key] = [self.sfDict[old_key][-1]]
@@ -1475,8 +1478,14 @@ class GromacsMRParserListener(ParseTreeListener):
                         sf.tags[idx][1] = potentialType
                     else:
                         sf.add_tag('Potential_type', potentialType)
+                    if rdcCode is not None:
+                        idx = next((idx for idx, t in enumerate(sf.tags) if t[0] == 'Details'), -1)
+                        if idx != -1:
+                            sf.tags[idx][1] = rdcCode
+                        else:
+                            sf.add_tag('Details', rdcCode)
             if not replaced:
-                self.__addSf(constraintType=constraintType, potentialType=potentialType)
+                self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         return self.sfDict[key][-1]
 

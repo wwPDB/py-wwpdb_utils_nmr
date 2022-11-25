@@ -4356,7 +4356,7 @@ class NmrDpUtility:
                                           'other_restraint': None
                                           },
                                   'nmr-star': {'entry_info': None,
-                                               'poly_seq': ['_Entity_assembly', '_Bond', '_Entity_deleted_atom'],
+                                               'poly_seq': ['_Bond', '_Entity_deleted_atom', '_Entity_assembly'],
                                                'entity': ['_Entity_poly_seq'],
                                                'chem_shift': ['_Ambiguous_atom_chem_shift'],
                                                'chem_shift_ref': None,
@@ -4611,11 +4611,6 @@ class NmrDpUtility:
                                       },
                               'nmr-star': {'entry_info': None,
                                            'poly_seq': {
-                                               '_Entity_assembly': [{'name': 'ID', 'type': 'index-int', 'mandatory': True, 'default-from': 'self'},
-                                                                    {'name': 'Entity_assembly_name', 'type': 'str', 'mandatory': True},
-                                                                    {'name': 'Entity_ID', 'type': 'positive-int'},
-                                                                    {'name': 'Entity_label', 'type': 'str'}
-                                                                    ],
                                                '_Bond': [{'name': 'ID', 'type': 'index-int', 'mandatory': True, 'default-from': 'self'},
                                                          {'name': 'Type', 'type': 'enum', 'mandatory': True, 'default': 'covalent',
                                                           'enum': ('amide', 'covalent', 'directed', 'disulfide', 'ester', 'ether', 'hydrogen',
@@ -4637,7 +4632,12 @@ class NmrDpUtility:
                                                                         {'name': 'Comp_index_ID', 'type': 'int'},
                                                                         {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                                         {'name': 'Atom_ID', 'type': 'str'}
-                                                                        ]
+                                                                        ],
+                                               '_Entity_assembly': [{'name': 'ID', 'type': 'index-int', 'mandatory': True, 'default-from': 'self'},
+                                                                    {'name': 'Entity_assembly_name', 'type': 'str', 'mandatory': True},
+                                                                    {'name': 'Entity_ID', 'type': 'positive-int'},
+                                                                    {'name': 'Entity_label', 'type': 'str'}
+                                                                    ]
                                            },
                                            'entity': None,
                                            'chem_shift': {
@@ -4738,14 +4738,6 @@ class NmrDpUtility:
                                        },
                                'nmr-star': {'entry_info': None,
                                             'poly_seq': {
-                                                '_Entity_assembly': [{'name': 'Asym_ID', 'type': 'str', 'mandatory': False},
-                                                                     {'name': 'PDB_chain_ID', 'type': 'str', 'mandatory': False},
-                                                                     {'name': 'Experimental_data_reported', 'type': 'enum', 'mandatory': False,
-                                                                      'enum': ('no', 'yes')},
-                                                                     {'name': 'Physical_state', 'type': 'enum', 'mandatory': False,
-                                                                      'enum': ('native', 'denatured', 'molten globule', 'unfolded',
-                                                                               'intrinsically disordered', 'partially disordered', 'na')}
-                                                                     ],
                                                 '_Bond': [{'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                           {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                           {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -4759,7 +4751,15 @@ class NmrDpUtility:
                                                                          {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                                          {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                                                          {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False}
-                                                                         ]
+                                                                         ],
+                                                '_Entity_assembly': [{'name': 'Asym_ID', 'type': 'str', 'mandatory': False},
+                                                                     {'name': 'PDB_chain_ID', 'type': 'str', 'mandatory': False},
+                                                                     {'name': 'Experimental_data_reported', 'type': 'enum', 'mandatory': False,
+                                                                      'enum': ('no', 'yes')},
+                                                                     {'name': 'Physical_state', 'type': 'enum', 'mandatory': False,
+                                                                      'enum': ('native', 'denatured', 'molten globule', 'unfolded',
+                                                                               'intrinsically disordered', 'partially disordered', 'na')}
+                                                                     ]
                                             },
                                             'entity': None,
                                             'chem_shift': {
@@ -4917,9 +4917,6 @@ class NmrDpUtility:
                                          },
                                  'nmr-star': {'entry_info': None,
                                               'poly_seq': {
-                                                  '_Entity_assembly': ['ID', 'Entity_assembly_name', 'Entity_ID', 'Entity_label', 'Asym_ID', 'PDB_chain_ID',
-                                                                       'Experimental_data_reported', 'Physical_state', 'Conformational_isomer', 'Chemical_exchange_state',
-                                                                       'Magnetic_equivalence_group_code', 'Role', 'Details', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
                                                   '_Bond': ['ID', 'Type', 'Value_order', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1',
                                                             'Entity_assembly_name_1', 'Entity_ID_1', 'Comp_ID_1', 'Comp_index_ID_1',
                                                             'Seq_ID_1', 'Atom_ID_1',
@@ -4931,7 +4928,10 @@ class NmrDpUtility:
                                                             'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
                                                   '_Entity_deleted_atom': ['ID', 'Entity_atom_list_ID', 'Entity_assembly_ID', 'Entity_ID',
                                                                            'Comp_ID', 'Comp_index_ID', 'Seq_ID', 'Atom_ID', 'Auth_entity_assembly_ID',
-                                                                           'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Sf_ID', 'Entry_ID', 'Assembly_ID']
+                                                                           'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
+                                                  '_Entity_assembly': ['ID', 'Entity_assembly_name', 'Entity_ID', 'Entity_label', 'Asym_ID', 'PDB_chain_ID',
+                                                                       'Experimental_data_reported', 'Physical_state', 'Conformational_isomer', 'Chemical_exchange_state',
+                                                                       'Magnetic_equivalence_group_code', 'Role', 'Details', 'Sf_ID', 'Entry_ID', 'Assembly_ID']
                                               },
                                               'entity': None,
                                               'chem_shift': {
@@ -34225,7 +34225,7 @@ class NmrDpUtility:
                 lp_category = self.lp_categories[file_type][content_subtype]
 
                 if content_subtype == 'poly_seq':
-                    lp_category = self.aux_lp_categories[file_type][content_subtype][1]  # _Bond loop
+                    lp_category = self.aux_lp_categories[file_type][content_subtype][0]
 
                 list_id = 1
 

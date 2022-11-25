@@ -4623,7 +4623,8 @@ class NEFTranslator:
 
                     if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and nef_atom[:-1] in atoms:
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, nef_atom[:-1], None,  # f"{nef_atom} converted to {nef_atom[:-1]}."
+                            self.get_star_atom(comp_id, nef_atom[:-1], None,
+                                               # f"{nef_atom} converted to {nef_atom[:-1]}."
                                                leave_unmatched)
                         return (atom_list, ambiguity_code, details)
 

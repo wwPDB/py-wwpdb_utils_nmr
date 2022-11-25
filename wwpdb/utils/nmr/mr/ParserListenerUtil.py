@@ -1779,6 +1779,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     labelToAuthSeq = None if prevResult is None or 'label_to_auth_seq' not in prevResult else prevResult['label_to_auth_seq']
     authToLabelSeq = None if prevResult is None or 'auth_to_label_seq' not in prevResult else prevResult['auth_to_label_seq']
     authToStarSeq = None if prevResult is None or 'auth_to_star_seq' not in prevResult else prevResult['auth_to_star_seq']
+    authToOrigSeq = None if prevResult is None or 'auth_to_orig_seq' not in prevResult else prevResult['auth_to_orig_seq']
     authToEntityType = None if prevResult is None or 'auth_to_entity_type' not in prevResult else prevResult['auth_to_entity_type']
     labelToAuthChain = None if prevResult is None or 'label_to_auth_chain' not in prevResult else prevResult['label_to_auth_chain']
     authToLabelChain = None if prevResult is None or 'auth_to_label_chain' not in prevResult else prevResult['auth_to_label_chain']
@@ -1973,6 +1974,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
         if authToStarSeq is None or authToEntityType is None:
             authToStarSeq = {}
+            authToOrigSeq = {}
             authToEntityType = {}
             entityAssembly = []
 
@@ -2045,7 +2047,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                              {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'seq_id', 'type': 'int'},
-                                                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}],
+                                                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         authAsymIds = []
@@ -2060,6 +2063,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             for item in mappings:
                                 seqKey = (item['auth_asym_id'], item['auth_seq_id'])
                                 authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                                 authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                 if item['label_asym_id'] not in labelAsymIds:
                                     labelAsymIds.append(item['label_asym_id'])
@@ -2100,6 +2104,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     if item['auth_asym_id'] == authAsymId:
                                         seqKey = (item['auth_asym_id'], item['auth_seq_id'])
                                         authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                        authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                                         authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                         if item['label_asym_id'] not in labelAsymIds:
                                             labelAsymIds.append(item['label_asym_id'])
@@ -2148,7 +2153,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                              {'name': 'auth_asym_id', 'type': 'str'},
                                                              {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                             {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'}],
+                                                             {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
+                                                             {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         authAsymIds = []
@@ -2161,6 +2167,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             for item in mappings:
                                 seqKey = (item['auth_asym_id'], item['auth_seq_id'])
                                 authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
+                                authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                                 authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
                                 if item['label_asym_id'] not in labelAsymIds:
                                     labelAsymIds.append(item['label_asym_id'])
@@ -2222,7 +2229,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                              {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
                                                              {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                              {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}],
+                                                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         authAsymIds = []
@@ -2230,6 +2238,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         for idx, item in enumerate(mappings):
                             seqKey = (item['auth_asym_id'], item['auth_seq_id'])
                             authToStarSeq[seqKey] = (entityAssemblyId, idx + 1, entityId, True)
+                            authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                             authToEntityType[seqKey] = 'non-polymer'
                             if item['auth_asym_id'] not in authAsymIds:
                                 authAsymIds.append(item['auth_asym_id'])
@@ -2281,6 +2290,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'label_to_auth_chain': labelToAuthChain,
             'auth_to_label_chain': authToLabelChain,
             'auth_to_star_seq': authToStarSeq,
+            'auth_to_orig_seq': authToOrigSeq,
             'auth_to_entity_type': authToEntityType,
             'entity_assembly': entityAssembly}
 

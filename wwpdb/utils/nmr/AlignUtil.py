@@ -986,6 +986,9 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
     elif fileType == 'nm-res-cha':
         _mr_format_name = 'CHARMM'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
+    elif fileType == 'nmr-star':
+        _mr_format_name = 'NMR-STAR'
+        _a_mr_format_name = 'the ' + _mr_format_name + ' data'
     else:
         _mr_format_name = 'MR'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'

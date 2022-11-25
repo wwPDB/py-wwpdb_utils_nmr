@@ -3353,6 +3353,8 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
     key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
     data_size = len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
 
+    float_row_idx = []
+
     row = [None] * (key_size + data_size)
 
     row[0] = id
@@ -3397,16 +3399,22 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
         row[key_size + 2] = code
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 3] = dstFunc['target_value']
+            float_row_idx.append(key_size + 3)
         if hasKeyValue(dstFunc, 'target_value_uncertainty'):
             row[key_size + 4] = dstFunc['target_value_uncertainty']
+            float_row_idx.append(key_size + 4)
         if hasKeyValue(dstFunc, 'lower_linear_limit'):
             row[key_size + 5] = dstFunc['lower_linear_limit']
+            float_row_idx.append(key_size + 5)
         if hasKeyValue(dstFunc, 'lower_limit'):
             row[key_size + 6] = dstFunc['lower_limit']
+            float_row_idx.append(key_size + 6)
         if hasKeyValue(dstFunc, 'upper_limit'):
             row[key_size + 7] = dstFunc['upper_limit']
+            float_row_idx.append(key_size + 7)
         if hasKeyValue(dstFunc, 'upper_linear_limit'):
             row[key_size + 8] = dstFunc['upper_linear_limit']
+            float_row_idx.append(key_size + 8)
         if hasKeyValue(dstFunc, 'weight'):
             row[key_size + 9] = dstFunc['weight']
         # Distance val
@@ -3438,16 +3446,22 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
         row[key_size + 2] = code
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 3] = dstFunc['target_value']
+            float_row_idx.append(key_size + 3)
         if hasKeyValue(dstFunc, 'target_value_uncertainty'):
             row[key_size + 4] = dstFunc['target_value_uncertainty']
+            float_row_idx.append(key_size + 4)
         if hasKeyValue(dstFunc, 'lower_linear_limit'):
             row[key_size + 5] = dstFunc['lower_linear_limit']
+            float_row_idx.append(key_size + 5)
         if hasKeyValue(dstFunc, 'lower_limit'):
             row[key_size + 6] = dstFunc['lower_limit']
+            float_row_idx.append(key_size + 6)
         if hasKeyValue(dstFunc, 'upper_limit'):
             row[key_size + 7] = dstFunc['upper_limit']
+            float_row_idx.append(key_size + 7)
         if hasKeyValue(dstFunc, 'upper_linear_limit'):
             row[key_size + 8] = dstFunc['upper_linear_limit']
+            float_row_idx.append(key_size + 8)
         if hasKeyValue(dstFunc, 'weight'):
             row[key_size + 9] = dstFunc['weight']
 
@@ -3488,16 +3502,22 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
         # row[key_size + 1] = combinationId
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
+            float_row_idx.append(key_size + 2)
         if hasKeyValue(dstFunc, 'target_value_uncertainty'):
             row[key_size + 3] = dstFunc['target_value_uncertainty']
+            float_row_idx.append(key_size + 3)
         if hasKeyValue(dstFunc, 'lower_linear_limit'):
             row[key_size + 4] = dstFunc['lower_linear_limit']
+            float_row_idx.append(key_size + 4)
         if hasKeyValue(dstFunc, 'lower_limit'):
             row[key_size + 5] = dstFunc['lower_limit']
+            float_row_idx.append(key_size + 5)
         if hasKeyValue(dstFunc, 'upper_limit'):
             row[key_size + 6] = dstFunc['upper_limit']
+            float_row_idx.append(key_size + 6)
         if hasKeyValue(dstFunc, 'upper_linear_limit'):
             row[key_size + 7] = dstFunc['upper_linear_limit']
+            float_row_idx.append(key_size + 7)
         if hasKeyValue(dstFunc, 'weight'):
             row[key_size + 8] = dstFunc['weight']
         # Rdc_val
@@ -3517,12 +3537,16 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
     elif mrSubtype == 'noepk':
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size] = dstFunc['target_value']
+            float_row_idx.append(key_size)
         if hasKeyValue(dstFunc, 'target_value_uncertainty'):
             row[key_size + 1] = dstFunc['target_value_uncertainty']
+            float_row_idx.append(key_size + 1)
         if hasKeyValue(dstFunc, 'lower_limit'):
             row[key_size + 2] = dstFunc['linear_limit']
+            float_row_idx.append(key_size + 2)
         if hasKeyValue(dstFunc, 'upper_limit'):
             row[key_size + 3] = dstFunc['upper_limit']
+            float_row_idx.append(key_size + 3)
 
         row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 8] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
@@ -3542,12 +3566,16 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
 
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size] = dstFunc['target_value']
+            float_row_idx.append(key_size)
         if hasKeyValue(dstFunc, 'target_value_uncertainty'):
             row[key_size + 1] = dstFunc['target_value_uncertainty']
+            float_row_idx.append(key_size + 1)
         if hasKeyValue(dstFunc, 'lower_limit'):
             row[key_size + 2] = dstFunc['lower_limit']
+            float_row_idx.append(key_size + 2)
         if hasKeyValue(dstFunc, 'upper_limit'):
             row[key_size + 3] = dstFunc['upper_limit']
+            float_row_idx.append(key_size + 3)
 
         row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
@@ -3563,8 +3591,10 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
         row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
+            float_row_idx.append(key_size + 2)
         if hasKeyValue(dstFunc, 'target_value_uncertainty'):
             row[key_size + 3] = dstFunc['target_value_uncertainty']
+            float_row_idx.append(key_size + 3)
         # Principal_value_sigma_11_val
         # Principal_value_sigma_22_val
         # Principal_value_sigma_33_val
@@ -3612,8 +3642,10 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
         # Chem_shift_val_err
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 4] = dstFunc['target_value']
+            float_row_idx.append(key_size + 4)
         if hasKeyValue(dstFunc, 'lower_value') and hasKeyValue(dstFunc, 'upper_value'):
             row[key_size + 5] = (dstFunc['upper_value'] - dstFunc['lower_value']) / 2.0
+            float_row_idx.append(key_size + 5)
 
         row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
@@ -3623,8 +3655,10 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
         row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
+            float_row_idx.append(key_size + 2)
         if hasKeyValue(dstFunc, 'lower_value') and hasKeyValue(dstFunc, 'upper_value'):
             row[key_size + 3] = (dstFunc['upper_value'] - dstFunc['lower_value']) / 2.0
+            float_row_idx.append(key_size + 3)
         # Rex_val
         # Rex_val_err
 
@@ -3654,8 +3688,10 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
         row[key_size + 7] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 8] = dstFunc['target_value']
+            float_row_idx.append(key_size + 8)
         if hasKeyValue(dstFunc, 'lower_value') and hasKeyValue(dstFunc, 'upper_value'):
             row[key_size + 9] = (dstFunc['upper_value'] - dstFunc['lower_value']) / 2.0
+            float_row_idx.append(key_size + 9)
 
         row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
@@ -3667,6 +3703,28 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         row[key_size + 22], row[key_size + 23], row[key_size + 24], row[key_size + 25] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    if len(float_row_idx) > 0:
+        max_e = 0
+        for idx in float_row_idx:
+            val = row[idx]
+            if '.' in val and val[-1] == '0':
+                p = val.index('.')
+                l = len(val) - 1
+                while val[l] == '0':
+                    l -= 1
+                e = l - p
+                if e > 0 and e > max_e:
+                    max_e = e
+        for idx in float_row_idx:
+            val = row[idx]
+            if '.' in val and val[-1] == '0':
+                q = val.index('.') + 1
+                e = len(val) - q
+                if 0 < max_e < e:
+                    row[idx] = row[idx][0:q + max_e]
+                else:
+                    row[idx] = row[idx][0:q + 1]
 
     return row
 

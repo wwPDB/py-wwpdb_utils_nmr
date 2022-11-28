@@ -18,11 +18,13 @@ import pynmrstar
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
+                                           protonBeginCode,
                                            MAJOR_ASYM_ID_SET,
                                            LEN_MAJOR_ASYM_ID_SET,
                                            MAX_MAG_IDENT_ASYM_ID)
 except ImportError:
     from nmr.AlignUtil import (monDict3,
+                               protonBeginCode,
                                MAJOR_ASYM_ID_SET,
                                LEN_MAJOR_ASYM_ID_SET,
                                MAX_MAG_IDENT_ASYM_ID)
@@ -2566,7 +2568,7 @@ def isAmbigAtomSelection(atoms, csStat):
 
     if geminalAtom is not None:
 
-        if atomId0[0] not in ('H', '1', '2', '3'):
+        if atomId0[0] not in protonBeginCode:
             if set(atomIds) == {atomId0, geminalAtom}:
                 return False
 

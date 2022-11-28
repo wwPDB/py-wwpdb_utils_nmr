@@ -7514,9 +7514,12 @@ class XplorMRParserListener(ParseTreeListener):
             while self.stackSelections:
                 _selection = self.stackSelections.pop()
                 if _selection is not None:
-                    for _atom in _selection:
-                        if _atom not in atomSelection:
-                            atomSelection.append(_atom)
+                    if self.depth > 0:
+                        for _atom in _selection:
+                            if _atom not in atomSelection:
+                                atomSelection.append(_atom)
+                    else:
+                        atomSelection = self.__intersectionAtom_selections(_selection, atomSelection)
 
         else:
 
@@ -7558,6 +7561,9 @@ class XplorMRParserListener(ParseTreeListener):
 
         if '*' in atomSelection:
             atomSelection.remove('*')
+
+        if self.__createSfDict:
+            atomSelection = sorted(atomSelection, key=lambda x: (x['chain_id'], x['seq_id'], x['atom_id']))
 
         if self.__sel_expr_debug:
             print("  " * self.depth + f"atom selection: {atomSelection}")
@@ -7690,6 +7696,10 @@ class XplorMRParserListener(ParseTreeListener):
             self.__cur_auth_atom_id = _factor['atom_ids'][0]
         else:
             self.__cur_auth_atom_id = ''
+
+        if 'atom_id' not in _factor and 'atom_ids' not in _factor\
+           and 'type_symbol' not in _factor and 'type_symbols' not in _factor:
+            _factor['atom_not_specified'] = True
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
@@ -8182,6 +8192,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         if 'atom_ids' in _factor:
             del _factor['atom_ids']
+        if 'atom_not_specified' in _factor:
+            del _factor['atom_not_specified']
 
         atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
@@ -8249,6 +8261,9 @@ class XplorMRParserListener(ParseTreeListener):
         return _factor
 
     def __consumeFactor_expressions__(self, _factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True, altPolySeq=None):
+        atomSpecified = True
+        if 'atom_not_specified' in _factor:
+            atomSpecified = not _factor['atom_not_specified']
         foundCompId = False
 
         for chainId in (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]):
@@ -8445,7 +8460,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         _atom['comp_id'] = coordAtomSite['comp_id']
                                         _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
                                         self.__authAtomId = 'auth_atom_id'
-                                    elif self.__preferAuthSeq:
+                                    elif self.__preferAuthSeq and atomSpecified:
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
@@ -8471,7 +8486,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                 chainId, seqId = seqKey
                                                 if len(self.atomSelectionSet) > 0:
                                                     self.__setLocalSeqScheme()
-                                    elif _seqId_ in ps['auth_seq_id']:
+                                    elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                         self.__preferAuthSeq = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck)
                                         if _coordAtomSite is not None:
@@ -8501,7 +8516,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         else:
                                             self.__preferAuthSeq = False
 
-                                elif self.__preferAuthSeq:
+                                elif self.__preferAuthSeq and atomSpecified:
                                     if len(self.atomSelectionSet) == 0:
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
                                         if _coordAtomSite is not None:
@@ -8528,7 +8543,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                 chainId, seqId = seqKey
                                                 if len(self.atomSelectionSet) > 0:
                                                     self.__setLocalSeqScheme()
-                                elif _seqId_ in ps['auth_seq_id']:
+                                elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                     if len(self.atomSelectionSet) == 0:
                                         self.__preferAuthSeq = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck)
@@ -8570,7 +8585,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 else:
                                     ccdCheck = True
 
-                            if len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1:
+                            if (len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1) and not atomSpecified:
                                 continue
 
                             if isPolySeq and 'ambig_auth_seq_id' in ps and _seqId in ps['ambig_auth_seq_id']:
@@ -8612,6 +8627,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                         if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
                                                             if len(origAtomId) == 1:
+                                                                _atomSelection[-1]['hydrogen_not_instantiated'] = True
                                                                 self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "\
                                                                     "Please re-upload the model file.\n"
@@ -8808,6 +8824,11 @@ class XplorMRParserListener(ParseTreeListener):
                 return _factor
             if _atom in atomSelection:
                 _atomSelection.append(_atom)
+            elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+                chain_id = _atom['chain_id']
+                seq_id = _atom['seq_id']
+                if any(_atom2 for _atom2 in atomSelection if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                    _atomSelection.append(_atom)
 
         _factor['atom_selection'] = _atomSelection
 
@@ -8831,6 +8852,11 @@ class XplorMRParserListener(ParseTreeListener):
                     return _selection2
                 if _atom in _selection2:
                     _atomSelection.append(_atom)
+                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+                    chain_id = _atom['chain_id']
+                    seq_id = _atom['seq_id']
+                    if any(_atom2 for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                        _atomSelection.append(_atom)
 
         elif hasAuthSeqId1 and not hasAuthSeqId2:
             __selection1 = copy.deepcopy(_selection1)
@@ -8841,6 +8867,11 @@ class XplorMRParserListener(ParseTreeListener):
                     return _selection2
                 if _atom in _selection2:
                     _atomSelection.append(_selection1[idx])
+                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+                    chain_id = _atom['chain_id']
+                    seq_id = _atom['seq_id']
+                    if any(_atom2 for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                        _atomSelection.append(_selection1[idx])
 
         elif not hasAuthSeqId1 and hasAuthSeqId2:
             __selection2 = copy.deepcopy(_selection2)
@@ -8851,6 +8882,11 @@ class XplorMRParserListener(ParseTreeListener):
                     return _selection1
                 if _atom in _selection1:
                     _atomSelection.append(_selection2[idx])
+                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+                    chain_id = _atom['chain_id']
+                    seq_id = _atom['seq_id']
+                    if any(_atom1 for _atom1 in _selection1 if _atom1['chain_id'] == chain_id and _atom1['seq_id'] == seq_id):
+                        _atomSelection.append(_selection2[idx])
 
         else:
             __selection1 = copy.deepcopy(_selection1)
@@ -8864,6 +8900,11 @@ class XplorMRParserListener(ParseTreeListener):
                     return _selection2
                 if _atom in __selection2:
                     _atomSelection.append(_selection1[idx])
+                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+                    chain_id = _atom['chain_id']
+                    seq_id = _atom['seq_id']
+                    if any(_atom2 for _atom2 in __selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                        _atomSelection.append(_selection1[idx])
 
         return _atomSelection
 

@@ -106,6 +106,7 @@ from packaging import version
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue, monDict3,
+                                           pseProBeginCode,
                                            letterToDigit, indexToLetter)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -113,6 +114,7 @@ try:
                                                        ALLOWED_AMBIGUITY_CODES)
 except ImportError:
     from nmr.AlignUtil import (emptyValue, trueValue, monDict3,
+                               pseProBeginCode,
                                letterToDigit, indexToLetter)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -2400,7 +2402,7 @@ class NEFTranslator:
                                 if d['name'] == 'element' or d['name'] == 'Atom_type':
                                     for row in loop:
                                         ref = row[from_col]
-                                        if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
+                                        if ref[0] in pseProBeginCode:
                                             row.append('H')
                                         else:
                                             row.append(ref[0])
@@ -2408,7 +2410,7 @@ class NEFTranslator:
                                 elif d['name'] == 'isotope_number' or d['name'] == 'Atom_isotope_number':
                                     for row in loop:
                                         ref = row[from_col]
-                                        if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
+                                        if ref[0] in pseProBeginCode:
                                             row.append(1)
                                         else:
                                             row.append(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[ref[0]][0])
@@ -4328,6 +4330,9 @@ class NEFTranslator:
                 atom_id = atom_id.replace('#', '%')
 
             if atom_id[0] in ('1', '2', '3'):
+                atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched)
+                if details is None:
+                    return (atom_list, ambiguity_code, details)
                 atom_id = atom_id[1:] + atom_id[0]
 
             if atom_id[0] in ('H', 'Q', 'M'):

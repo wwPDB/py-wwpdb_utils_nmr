@@ -206,6 +206,7 @@ try:
                                            LEN_MAJOR_ASYM_ID_SET,
                                            emptyValue, trueValue,
                                            monDict3,
+                                           protonBeginCode, pseProBeginCode,
                                            hasLargeInnerSeqGap, hasLargeSeqGap,
                                            fillInnerBlankCompId, fillBlankCompId, fillBlankCompIdWithOffset,
                                            beautifyPolySeq,
@@ -286,6 +287,7 @@ except ImportError:
                                LEN_MAJOR_ASYM_ID_SET,
                                emptyValue, trueValue,
                                monDict3,
+                               protonBeginCode, pseProBeginCode,
                                hasLargeInnerSeqGap, hasLargeSeqGap,
                                fillInnerBlankCompId, fillBlankCompId, fillBlankCompIdWithOffset,
                                beautifyPolySeq,
@@ -19926,7 +19928,7 @@ class NmrDpUtility:
 
                             has_cs_stat = True
 
-                            if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
+                            if atom_id_[0] in protonBeginCode and 'methyl' in cs_stat['desc']:
                                 _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
                                 _, methyl_h_list = self.__nefT.get_group(comp_id, _atom_id)
 
@@ -20528,7 +20530,7 @@ class NmrDpUtility:
 
                             has_cs_stat = True
 
-                            if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
+                            if atom_id_[0] in protonBeginCode and 'methyl' in cs_stat['desc']:
                                 methyl_cs_key = (chain_id, seq_id, atom_id_[:-1], occupancy)
 
                                 if methyl_cs_key not in methyl_cs_vals:
@@ -21364,7 +21366,7 @@ class NmrDpUtility:
                             if orig_atom_id == atom_id:
                                 continue
                             ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                            if ambig_code == 0 or atom_id[0] not in ('H', '1', '2', '3'):
+                            if ambig_code == 0 or atom_id[0] not in protonBeginCode:
                                 continue
                             len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
                             if len_in_grp == 2 and ambig_code == 2:
@@ -21469,7 +21471,7 @@ class NmrDpUtility:
                                 orig_comp_id = comp_id
                             new_row[20], new_row[21], new_row[22] =\
                                 auth_asym_id, orig_seq_id, orig_comp_id
-                            if atom_id[0] not in ('H', '1', '2', '3'):
+                            if atom_id[0] not in protonBeginCode:
                                 new_row[23] = atom_id
                             else:
                                 len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
@@ -21495,7 +21497,7 @@ class NmrDpUtility:
                             len_atom_ids = len(atom_ids)
                             if len_atom_ids == 0:
                                 new_row[6] = atom_id
-                                new_row[7] = 'H' if atom_id[0] in ('H', 'Q', 'M', '1', '2', '3') else atom_id[0]
+                                new_row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                 if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                             else:
@@ -21507,11 +21509,11 @@ class NmrDpUtility:
                                         if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                                     else:
-                                        new_row[7] = 'H' if new_row[6][0] in ('H', '1', '2', '3') else atom_id[0]
+                                        new_row[7] = 'H' if new_row[6][0] in protonBeginCode else atom_id[0]
                                         if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                                 else:
-                                    new_row[7] = 'H' if atom_id[0] in ('H', 'Q', 'M', '1', '2', '3') else atom_id[0]
+                                    new_row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                     if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
 
@@ -21563,7 +21565,7 @@ class NmrDpUtility:
                                         orig_comp_id = comp_id
                                     new_row[20], new_row[21], new_row[22] =\
                                         auth_asym_id, orig_seq_id, orig_comp_id
-                                    if atom_id[0] not in ('H', '1', '2', '3'):
+                                    if atom_id[0] not in protonBeginCode:
                                         new_row[23] = atom_id
                                     else:
                                         len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
@@ -21589,7 +21591,7 @@ class NmrDpUtility:
                                     len_atom_ids = len(atom_ids)
                                     if len_atom_ids == 0:
                                         new_row[6] = atom_id
-                                        new_row[7] = 'H' if atom_id[0] in ('H', 'Q', 'M', '1', '2', '3') else atom_id[0]
+                                        new_row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                         if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                                     else:
@@ -21601,11 +21603,11 @@ class NmrDpUtility:
                                                 if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                     new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                                             else:
-                                                new_row[7] = 'H' if new_row[6][0] in ('H', '1', '2', '3') else atom_id[0]
+                                                new_row[7] = 'H' if new_row[6][0] in protonBeginCode else atom_id[0]
                                                 if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                     new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                                         else:
-                                            new_row[7] = 'H' if atom_id[0] in ('H', 'Q', 'M', '1', '2', '3') else atom_id[0]
+                                            new_row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                             if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                 new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
 
@@ -21699,7 +21701,7 @@ class NmrDpUtility:
                                     orig_comp_id = comp_id
                                 new_row[20], new_row[21], new_row[22] =\
                                     auth_asym_id, orig_seq_id, orig_comp_id
-                                if atom_id[0] not in ('H', '1', '2', '3'):
+                                if atom_id[0] not in protonBeginCode:
                                     new_row[23] = atom_id
                                 else:
                                     len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
@@ -21725,7 +21727,7 @@ class NmrDpUtility:
                                 len_atom_ids = len(atom_ids)
                                 if len_atom_ids == 0:
                                     new_row[6] = atom_id
-                                    new_row[7] = 'H' if atom_id[0] in ('H', 'Q', 'M', '1', '2', '3') else atom_id[0]
+                                    new_row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                     if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                                 else:
@@ -21737,11 +21739,11 @@ class NmrDpUtility:
                                             if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                 new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                                         else:
-                                            new_row[7] = 'H' if new_row[6][0] in ('H', '1', '2', '3') else atom_id[0]
+                                            new_row[7] = 'H' if new_row[6][0] in protonBeginCode else atom_id[0]
                                             if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                 new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                                     else:
-                                        new_row[7] = 'H' if atom_id[0] in ('H', 'Q', 'M', '1', '2', '3') else atom_id[0]
+                                        new_row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                         if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
 
@@ -21780,7 +21782,7 @@ class NmrDpUtility:
                     len_atom_ids = len(atom_ids)
                     if len_atom_ids == 0:
                         new_row[6] = atom_id
-                        new_row[7] = 'H' if atom_id[0] in ('H', 'Q', 'M', '1', '2', '3') else atom_id[0]
+                        new_row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                         if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                     else:
@@ -21792,11 +21794,11 @@ class NmrDpUtility:
                                 if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                             else:
-                                new_row[7] = 'H' if new_row[6][0] in ('H', '1', '2', '3') else atom_id[0]
+                                new_row[7] = 'H' if new_row[6][0] in protonBeginCode else atom_id[0]
                                 if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
                         else:
-                            new_row[7] = 'H' if atom_id[0] in ('H', 'Q', 'M', '1', '2', '3') else atom_id[0]
+                            new_row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                             if new_row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 new_row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[new_row[7]][0]
 
@@ -26670,7 +26672,7 @@ class NmrDpUtility:
 
                                 for a in all_atoms:
 
-                                    if h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
                                         all_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -26708,7 +26710,7 @@ class NmrDpUtility:
 
                                             if a in all_atoms:
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
                                                     all_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -26732,7 +26734,7 @@ class NmrDpUtility:
 
                                         if atom_id in all_atoms:
 
-                                            if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id.startswith('H'):
+                                            if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in protonBeginCode:
                                                 all_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                             elif data_type == '13C' and c13_col != -1:
@@ -26809,7 +26811,7 @@ class NmrDpUtility:
 
                                 for a in bb_atoms:
 
-                                    if h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
                                         bb_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -26847,7 +26849,7 @@ class NmrDpUtility:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
                                                     bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -26866,7 +26868,7 @@ class NmrDpUtility:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id.startswith('H'):
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in protonBeginCode:
                                             bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -26935,7 +26937,7 @@ class NmrDpUtility:
 
                                 for a in sc_atoms:
 
-                                    if h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
                                         sc_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -26973,7 +26975,7 @@ class NmrDpUtility:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
                                                     sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -26992,7 +26994,7 @@ class NmrDpUtility:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id.startswith('H'):
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in protonBeginCode:
                                             sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -27056,7 +27058,7 @@ class NmrDpUtility:
 
                                 for a in ch3_atoms:
 
-                                    if h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
                                         ch3_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -27088,7 +27090,7 @@ class NmrDpUtility:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
                                                     ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -27101,7 +27103,7 @@ class NmrDpUtility:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id.startswith('H'):
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in protonBeginCode:
                                             ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -27160,7 +27162,7 @@ class NmrDpUtility:
 
                                 for a in aro_atoms:
 
-                                    if h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
                                         aro_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -27195,7 +27197,7 @@ class NmrDpUtility:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a.startswith('H'):
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
                                                     aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -27211,7 +27213,7 @@ class NmrDpUtility:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id.startswith('H'):
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in protonBeginCode:
                                             aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:

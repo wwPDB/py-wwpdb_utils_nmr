@@ -2619,13 +2619,6 @@ class CnsMRParserListener(ParseTreeListener):
                     f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
                 return
 
-            if CS_ERROR_MIN < cb_shift < CS_ERROR_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"CB chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
-                return
-
             if not self.__hasPolySeq:
                 return
 
@@ -2666,6 +2659,20 @@ class CnsMRParserListener(ParseTreeListener):
                     "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].\n"
                 return
 
+            comp_id = self.atomSelectionSet[2][0]['comp_id']
+
+            if comp_id == 'GLY':
+                del dstFunc['cb_shift']
+
+            else:
+
+                if CS_ERROR_MIN < cb_shift < CS_ERROR_MAX:
+                    pass
+                else:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"CB chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                    return
+
             if self.__createSfDict:
                 sf = self.__getSf()
                 sf['id'] += 1
@@ -2675,7 +2682,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                        self.atomSelectionSet[2],
                                                                        self.atomSelectionSet[3],
                                                                        self.atomSelectionSet[4]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
+                    continue
+                if isLongRangeRestraint([atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CARB) id={self.hvycsRestraints} "

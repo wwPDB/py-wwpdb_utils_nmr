@@ -3661,7 +3661,8 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
     elif mrSubtype == 'hvycs':
         row[key_size] = dstFunc['ca_shift']
         # CA_chem_shift_val_err
-        row[key_size + 2] = dstFunc['cb_shift']
+        if hasKeyValue(dstFunc, 'cb_shift'):
+            row[key_size + 2] = dstFunc['cb_shift']
         # CB_chem_shift_val_err
         row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']

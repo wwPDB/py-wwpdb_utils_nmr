@@ -3659,6 +3659,13 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     elif mrSubtype == 'hvycs':
+        row[11], row[12], row[13], row[14], row[15] =\
+            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        row[16], row[17], row[18], row[19], row[20] =\
+            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+        row[21], row[22], row[23], row[24], row[25] =\
+            star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id'], star_atom5['atom_id']
+
         row[key_size] = dstFunc['ca_shift']
         # CA_chem_shift_val_err
         if hasKeyValue(dstFunc, 'cb_shift'):

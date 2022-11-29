@@ -8017,6 +8017,10 @@ class NmrDpUtility:
                     if file_type == 'nef':
                         warn = f"Ignored third party software's saveframe {sf_category!r}."
                     else:
+
+                        if sf_category == 'constraint_statistics':
+                            continue
+
                         warn = f"Ignored saveframe category {sf_category!r}."
 
                     self.report.warning.appendDescription('skipped_saveframe_category',
@@ -29374,7 +29378,7 @@ class NmrDpUtility:
             if upper_limit is not None:
                 target_value -= 0.4
 
-            elif lower_limit is not None:
+            if lower_limit is not None:
                 target_value += 0.4
 
             balanced = (upper_limit is None and lower_limit is None)\
@@ -39209,7 +39213,8 @@ class NmrDpUtility:
 
                 if upper_limit is not None:
                     target_value -= 0.4
-                elif lower_limit is not None:
+
+                if lower_limit is not None:
                     target_value += 0.4
 
                 if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
@@ -39342,7 +39347,8 @@ class NmrDpUtility:
 
                 if upper_limit is not None:
                     target_value -= 0.4
-                elif lower_limit is not None:
+
+                if lower_limit is not None:
                     target_value += 0.4
 
                 if atom_id_1_ == 'S' and atom_id_2_ == 'S':

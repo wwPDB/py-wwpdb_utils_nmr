@@ -460,7 +460,7 @@ class CifToNmrStar:
                     fqtn = (lp.category + '.' + tag).lower()
 
                     try:
-                        if self.schema[fqtn]['entryIdFlg'] == 'Y':
+                        if self.schema[fqtn]['entryIdFlg'] == 'Y' or tag == 'Entry_ID':
                             lp[tag] = [entryId] * len(lp[tag])
                             filled = True
                             break
@@ -470,15 +470,10 @@ class CifToNmrStar:
                 if not filled:
                     entry_id_tag = lp.category + '.Entry_ID'
 
-                    try:
-                        if self.schema[entry_id_tag.lower()]['entryIdFlg'] == 'Y':
-                            lp.add_tag(entry_id_tag)
+                    lp.add_tag(entry_id_tag)
 
-                            for row in lp:
-                                row.append(entryId)
-
-                    except KeyError:
-                        pass
+                    for row in lp:
+                        row.append(entryId)
 
     def normalize(self, strData):
         """ Sort saveframes, loops, and tags according to NMR-STAR schema.

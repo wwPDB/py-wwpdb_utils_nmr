@@ -5083,7 +5083,7 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return None, None
 
-        if atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
+        if atom_id is None or atom_id[0] not in ('H', '1', '2', '3', 'C', 'N', 'O'):
             return None, None
 
         if not self.__ccU.updateChemCompDict(comp_id):
@@ -5114,7 +5114,7 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return None, None
 
-        if atom_id is None or atom_id[0] not in ('H', 'C', 'N', 'O'):
+        if atom_id is None or atom_id[0] not in ('H', '1', '2', '3', 'C', 'N', 'O'):
             return None, None
 
         if not self.__ccU.updateChemCompDict(comp_id):

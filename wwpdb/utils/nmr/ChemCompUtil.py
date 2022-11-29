@@ -235,9 +235,10 @@ class ChemCompUtil:
         bondedTo = next((b[self.ccbAtomId1] if b[self.ccbAtomId1] != atomId else b[self.ccbAtomId2])
                         for b in self.lastBonds if atomId in (b[self.ccbAtomId1], b[self.ccbAtomId2]))
 
-        return [p for p in [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != bondedTo else b[self.ccbAtomId2])
-                            for b in self.lastBonds if bondedTo in (b[self.ccbAtomId1], b[self.ccbAtomId2])]
-                if p in allProtons and ((exclSelf and p != atomId) or not exclSelf)]
+        attached = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != bondedTo else b[self.ccbAtomId2])
+                    for b in self.lastBonds if bondedTo in (b[self.ccbAtomId1], b[self.ccbAtomId2])]
+
+        return [p for p in attached if p in allProtons and ((exclSelf and p != atomId) or not exclSelf)]
 
     def write_std_dict_as_pickle(self):
         """ Write dictionary for standard residues as pickle file.

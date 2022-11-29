@@ -2563,7 +2563,7 @@ def isAmbigAtomSelection(atoms, csStat):
     atomId0 = atomIds[0]
     compId = atoms[0]['comp_id']
 
-    protonsInGroup = csStat.getProtonsInSameGroup(compId, atomId0, True)
+    _protonsInGroup = copy.copy(csStat.getProtonsInSameGroup(compId, atomId0, True))
     geminalAtom = csStat.getGeminalAtom(compId, atomId0)
 
     if geminalAtom is not None:
@@ -2572,20 +2572,20 @@ def isAmbigAtomSelection(atoms, csStat):
             if set(atomIds) == {atomId0, geminalAtom}:
                 return False
 
-        if protonsInGroup is not None:
-            protonsInGroup.append(geminalAtom)
+        if _protonsInGroup is not None:
+            _protonsInGroup.append(geminalAtom)
         else:
-            protonsInGroup = [geminalAtom]
+            _protonsInGroup = [geminalAtom]
 
         geminalProtonsInGroup = csStat.getProtonsInSameGroup(compId, geminalAtom, True)
         if geminalProtonsInGroup is not None and len(geminalProtonsInGroup) > 0:
-            protonsInGroup.extend(geminalProtonsInGroup)
+            _protonsInGroup.extend(geminalProtonsInGroup)
 
-    if protonsInGroup is None or len(protonsInGroup) == 0:
+    if _protonsInGroup is None or len(_protonsInGroup) == 0:
         return True
 
     for atomId in atomIds[1:]:
-        if atomId not in protonsInGroup:
+        if atomId not in _protonsInGroup:
             return True
 
     return False

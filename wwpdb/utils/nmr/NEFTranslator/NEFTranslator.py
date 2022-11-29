@@ -106,7 +106,7 @@ from packaging import version
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue, monDict3,
-                                           pseProBeginCode,
+                                           protonBeginCode, pseProBeginCode,
                                            letterToDigit, indexToLetter)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -114,7 +114,7 @@ try:
                                                        ALLOWED_AMBIGUITY_CODES)
 except ImportError:
     from nmr.AlignUtil import (emptyValue, trueValue, monDict3,
-                               pseProBeginCode,
+                               protonBeginCode, pseProBeginCode,
                                letterToDigit, indexToLetter)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -4407,7 +4407,7 @@ class NEFTranslator:
 
             if atom_id.startswith('QR'):
                 qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
-                                      if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
+                                      if atom_id[0] in protonBeginCode and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
                 if len(qr_atoms) == 0:
                     return (atom_list, ambiguity_code, details)
                 atom_list = []
@@ -4699,7 +4699,7 @@ class NEFTranslator:
                             _atom_id = 'H' + atom_id[2:] + '%'
                         elif atom_id.startswith('QR'):
                             qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
-                                                  if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
+                                                  if atom_id[0] in protonBeginCode and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
                             if len(qr_atoms) > 0:
                                 for qr_atom in qr_atoms:
                                     _a = copy.copy(a)
@@ -4755,7 +4755,7 @@ class NEFTranslator:
 
                     if ambig_code == 1:
 
-                        if atom_id[0] == 'H' and atom_id in methyl_atoms:
+                        if atom_id[0] in protonBeginCode and atom_id in methyl_atoms:
 
                             methyl_c, methyl_h_list = self.get_group(comp_id, atom_id)
 
@@ -4811,7 +4811,7 @@ class NEFTranslator:
                             elif self.__verbose:
                                 self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
 
-                        elif atom_id[0] == 'H':
+                        elif atom_id[0] in protonBeginCode:
 
                             if atom_id in methyl_atoms:
 
@@ -5092,15 +5092,15 @@ class NEFTranslator:
         try:
 
             ccb = next(b for b in self.__ccU.lastBonds
-                       if (b[self.__ccU.ccbAtomId1] == atom_id and (atom_id[0] == 'H' or b[self.__ccU.ccbAtomId2][0] == 'H'))
-                       or (b[self.__ccU.ccbAtomId2] == atom_id and (atom_id[0] == 'H' or b[self.__ccU.ccbAtomId1][0] == 'H')))
+                       if (b[self.__ccU.ccbAtomId1] == atom_id and (atom_id[0] in protonBeginCode or b[self.__ccU.ccbAtomId2][0] in protonBeginCode))
+                       or (b[self.__ccU.ccbAtomId2] == atom_id and (atom_id[0] in protonBeginCode or b[self.__ccU.ccbAtomId1][0] in protonBeginCode)))
 
-            hvy_col = self.__ccU.ccbAtomId1 if ccb[self.__ccU.ccbAtomId2 if atom_id[0] == 'H' else self.__ccU.ccbAtomId1] == atom_id else self.__ccU.ccbAtomId2
+            hvy_col = self.__ccU.ccbAtomId1 if ccb[self.__ccU.ccbAtomId2 if atom_id[0] in protonBeginCode else self.__ccU.ccbAtomId1] == atom_id else self.__ccU.ccbAtomId2
             pro_col = self.__ccU.ccbAtomId2 if self.__ccU.ccbAtomId1 == hvy_col else self.__ccU.ccbAtomId1
 
             hvy = ccb[hvy_col]
 
-            return hvy, [b[pro_col] for b in self.__ccU.lastBonds if b[hvy_col] == hvy and b[pro_col][0] == 'H']
+            return hvy, [b[pro_col] for b in self.__ccU.lastBonds if b[hvy_col] == hvy and b[pro_col][0] in protonBeginCode]
 
         except StopIteration:
             return None, None
@@ -5130,17 +5130,17 @@ class NEFTranslator:
         try:
 
             ccb = next(b for b in self.__ccU.lastBonds
-                       if (b[self.__ccU.ccbAtomId2] == atom_id and b[self.__ccU.ccbAtomId1][0] != 'H')
-                       or (b[self.__ccU.ccbAtomId1] == atom_id and b[self.__ccU.ccbAtomId2][0] != 'H'))
+                       if (b[self.__ccU.ccbAtomId2] == atom_id and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
+                       or (b[self.__ccU.ccbAtomId1] == atom_id and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode))
 
             hvy_conn = ccb[self.__ccU.ccbAtomId1 if ccb[self.__ccU.ccbAtomId2] == atom_id else self.__ccU.ccbAtomId2]
 
             hvy_2 = next(c[self.__ccU.ccbAtomId1 if c[self.__ccU.ccbAtomId2] == hvy_conn else self.__ccU.ccbAtomId2]
                          for c in self.__ccU.lastBonds
-                         if (c[self.__ccU.ccbAtomId2] == hvy_conn and c[self.__ccU.ccbAtomId1] != atom_id and c[self.__ccU.ccbAtomId1][0] != 'H'
+                         if (c[self.__ccU.ccbAtomId2] == hvy_conn and c[self.__ccU.ccbAtomId1] != atom_id and c[self.__ccU.ccbAtomId1][0] not in protonBeginCode
                              and self.get_group(comp_id, c[self.__ccU.ccbAtomId1])[1] is not None
                              and len(self.get_group(comp_id, c[self.__ccU.ccbAtomId1])[1]) == h_list_len)
-                         or (c[self.__ccU.ccbAtomId1] == hvy_conn and c[self.__ccU.ccbAtomId2] != atom_id and c[self.__ccU.ccbAtomId2][0] != 'H'
+                         or (c[self.__ccU.ccbAtomId1] == hvy_conn and c[self.__ccU.ccbAtomId2] != atom_id and c[self.__ccU.ccbAtomId2][0] not in protonBeginCode
                              and self.get_group(comp_id, c[self.__ccU.ccbAtomId2])[1] is not None
                              and len(self.get_group(comp_id, c[self.__ccU.ccbAtomId2])[1]) == h_list_len))
 

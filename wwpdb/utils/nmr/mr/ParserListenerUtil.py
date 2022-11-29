@@ -1361,7 +1361,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
             return atomId
 
     elif refCompId is not None and ccU is not None:
-        refCompId = translateToStdResName(refCompId)
+        refCompId = translateToStdResName(refCompId, ccU)
         if ccU.updateChemCompDict(refCompId):
             refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
             if atomId in refAtomIdList:

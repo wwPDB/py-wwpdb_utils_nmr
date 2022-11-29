@@ -2120,6 +2120,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                    or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
                                     _atomIdSelect.add(realAtomId)
             _factor['atom_id'] = list(_atomIdSelect)
+
             if len(_factor['atom_id']) == 0:
                 self.__preferAuthSeq = not self.__preferAuthSeq
 
@@ -2560,9 +2561,14 @@ class CharmmMRParserListener(ParseTreeListener):
                                         atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
 
                         if coordAtomSite is not None\
-                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
-                           and atomId in coordAtomSite['atom_id']:
-                            atomIds = [atomId]
+                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id']):
+                            if atomId in coordAtomSite['atom_id']:
+                                atomIds = [atomId]
+                            elif 'alt_atom_id' in _factor:
+                                _atomId_ = toNefEx(toRegEx(_factor['alt_atom_id']))
+                                _atomIds_ = [_atomId for _atomId in coordAtomSite['atom_id'] if re.match(_atomId_, _atomId)]
+                                if len(_atomIds_) > 0:
+                                    atomIds = _atomIds_
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck

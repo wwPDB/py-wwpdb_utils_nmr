@@ -21330,10 +21330,10 @@ class NmrDpUtility:
 
         if self.__remediation_mode:
             if all(tag for tag in auth_pdb_tags if tag in loop.tags):
-                dat = get_lp_tag(loop, auth_pdb_tags)
-                if len(dat) > 0:
+                auth_dat = get_lp_tag(loop, auth_pdb_tags)
+                if len(auth_dat) > 0:
                     has_auth_seq = valid_auth_seq = True
-                    for row in dat:
+                    for row in auth_dat:
                         try:
                             seq_key = (row[0], int(row[1]))
                             if seq_key not in auth_to_star_seq:
@@ -21374,6 +21374,94 @@ class NmrDpUtility:
                             elif len_in_grp == 3 and atom_id[-1] == orig_atom_id[0]:
                                 ch3_name_in_xplor = True
 
+        chain_id_col = loop.tags.index('Entity_assembly_ID')
+        seq_id_col = loop.tags.index('Comp_index_ID')
+        comp_id_col = loop.tags.index('Comp_ID')
+        atom_id_col = loop.tags.index('Atom_ID')
+        val_col = loop.tags.index('Val')
+        val_err_col = loop.tags.index('Val_err') if 'Val_err' in loop.tags else -1
+        fig_of_merit_col = loop.tags.index('Assign_fig_of_merit') if 'Assign_fig_of_merit' in loop.tags else -1
+        ambig_code_col = loop.tags.index('Ambiguity_code') if 'Ambiguity_code' in loop.tags else -1
+        ambig_set_id_col = loop.tags.index('Ambiguity_set_ID') if 'Ambiguity_set_ID' in loop.tags else -1
+        occupancy_col = loop.tags.index('Occupancy') if 'Occupancy' in loop.tags else -1
+        reson_id_col = loop.tags.index('Resonance_ID') if 'Resonance_ID' in loop.tags else -1
+        details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
+
+        copied_auth_chain_ids = set()
+        copied_chain_ids = set()
+
+        if has_auth_seq:
+            auth_asym_id_col = loop.tags.index('Auth_asym_ID')
+            auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+            auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+            auth_atom_id_col = loop.tags.index('Auth_atom_ID')
+
+            auth_asym_ids = [row[0] for row in auth_dat]
+
+            common_auth_asym_ids = collections.Counter(auth_asym_ids).most_common()
+
+            if len(common_auth_asym_ids) > 1:
+                auth_cs_tags = ['Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Val']
+                auth_to_entity_type = self.__caC['auth_to_entity_type']
+
+                for _auth_chain_id_1, _auth_chain_id_2 in itertools.combinations(common_auth_asym_ids.keys(), 2):
+
+                    if common_auth_asym_ids[_auth_chain_id_1] != common_auth_asym_ids[_auth_chain_id_2]:
+                        continue
+
+                    _auth_seq_id_1 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_1)
+                    _auth_seq_id_2 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_2)
+
+                    _seq_key_1 = (_auth_chain_id_1, _auth_seq_id_1)
+                    _seq_key_2 = (_auth_chain_id_2, _auth_seq_id_2)
+
+                    if _seq_key_1 not in auth_to_entity_type or _seq_key_2 not in auth_to_entity_type:
+                        continue
+
+                    if auth_to_entity_type[_seq_key_1] != auth_to_entity_type[_seq_key_2] or auth_to_entity_type[_seq_key_1] == 'non-polymer':
+                        continue
+
+                    _auth_cs_1 = [row[1:] for row in get_lp_tag(loop, auth_cs_tags) if row[0] == _auth_chain_id_1]
+                    _auth_cs_2 = [row[1:] for row in get_lp_tag(loop, auth_cs_tags) if row[0] == _auth_chain_id_2]
+
+                    _auth_cs_1 = sorted(_auth_cs_1, key=lambda x: (x[0], x[2]))
+                    _auth_cs_2 = sorted(_auth_cs_2, key=lambda x: (x[0], x[2]))
+
+                    if _auth_cs_1 == _auth_cs_2:
+                        copied_auth_chain_ids.add(_auth_chain_id_2)
+
+        else:
+
+            tags = ['Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID']
+            dat = get_lp_tag(loop, tags)
+
+            chain_ids = [row[0] for row in dat]
+
+            common_chain_ids = collections.Counter(chain_ids).most_common()
+
+            if len(common_chain_ids) > 1:
+                cs_tags = ['Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Val']
+
+                for _chain_id_1, _chain_id_2 in itertools.combinations(common_chain_ids.keys(), 2):
+
+                    if common_chain_ids[_chain_id_1] != common_chain_ids[_chain_id_2]:
+                        continue
+
+                    _cs_1 = [row[1:] for row in get_lp_tag(loop, cs_tags) if row[0] == _chain_id_1]
+                    _cs_2 = [row[1:] for row in get_lp_tag(loop, cs_tags) if row[0] == _chain_id_2]
+
+                    _cs_1 = sorted(_cs_1, key=lambda x: (x[0], x[2]))
+                    _cs_2 = sorted(_cs_2, key=lambda x: (x[0], x[2]))
+
+                    if _cs_1 == _cs_2:
+                        copied_chain_ids.add(_chain_id_2)
+
+        if has_orig_seq:
+            orig_asym_id_col = loop.tags.index('Original_PDB_strand_ID')
+            orig_seq_id_col = loop.tags.index('Original_PDB_residue_no')
+            orig_comp_id_col = loop.tags.index('Original_PDB_residue_name')
+            orig_atom_id_col = loop.tags.index('Original_PDB_atom_name')
+
         new_loop = pynmrstar.Loop.from_scratch(lp_category)
 
         tags = [lp_category + '.' + item for item in items]
@@ -21389,19 +21477,19 @@ class NmrDpUtility:
 
             new_row[0] = index
 
-            comp_id = row[loop.tags.index('Comp_ID')].upper()
-            _orig_atom_id = row[loop.tags.index('Atom_ID')]
+            comp_id = row[comp_id_col].upper()
+            _orig_atom_id = row[atom_id_col]
             atom_id = _orig_atom_id.upper()
 
-            new_row[9] = row[loop.tags.index('Val')]
+            new_row[9] = row[val_col]
 
             try:
                 float(new_row[9])
             except ValueError:
                 continue
 
-            if 'Val_err' in loop.tags:
-                val_err = row[loop.tags.index('Val_err')]
+            if val_err_col != -1:
+                val_err = row[val_err_col]
                 new_row[10] = val_err
 
                 if val_err not in emptyValue:
@@ -21412,41 +21500,45 @@ class NmrDpUtility:
                     except ValueError:
                         pass
 
-            if 'Assign_fig_of_merit' in loop.tags:
-                new_row[11] = row[loop.tags.index('Assign_fig_of_merit')]
+            if fig_of_merit_col != -1:
+                new_row[11] = row[fig_of_merit_col]
 
-            if 'Ambiguity_code' in loop.tags:
-                new_row[12] = row[loop.tags.index('Ambiguity_code')]
+            if ambig_code_col != -1:
+                new_row[12] = row[ambig_code_col]
 
-            if 'Ambiguity_set_ID' in loop.tags:
-                new_row[13] = row[loop.tags.index('Ambiguity_set_ID')]
+            if ambig_set_id_col != -1:
+                new_row[13] = row[ambig_set_id_col]
 
-            if 'Occupancy' in loop.tags:
-                new_row[14] = row[loop.tags.index('Occupancy')]
+            if occupancy_col != -1:
+                new_row[14] = row[occupancy_col]
 
-            if 'Resonance_ID' in loop.tags:
-                new_row[15] = row[loop.tags.index('Resonance_ID')]
+            if reson_id_col != -1:
+                new_row[15] = row[reson_id_col]
 
             if has_auth_seq:
+
+                if row[auth_asym_id_col] in copied_auth_chain_ids:
+                    continue
+
                 new_row[16], new_row[17], new_row[18], new_row[19] =\
-                    row[loop.tags.index('Auth_asym_ID')], row[loop.tags.index('Auth_seq_ID')],\
-                    row[loop.tags.index('Auth_comp_ID')], row[loop.tags.index('Auth_atom_ID')]
+                    row[auth_asym_id_col], row[auth_seq_id_col],\
+                    row[auth_comp_id_col], row[auth_atom_id_col]
 
             if has_orig_seq:
                 new_row[20], new_row[21], new_row[22], new_row[23] =\
-                    row[loop.tags.index('Original_PDB_strand_ID')], row[loop.tags.index('Original_PDB_residue_no')],\
-                    row[loop.tags.index('Original_PDB_residue_name')], row[loop.tags.index('Original_PDB_atom_name')]
+                    row[orig_asym_id_col], row[orig_seq_id_col],\
+                    row[orig_comp_id_col], row[orig_atom_id_col]
 
-            if 'Details' in loop.tags:
-                new_row[24] = row[loop.tags.index('Details')]
+            if details_col != -1:
+                new_row[24] = row[details_col]
 
             new_row[25], new_row[26] = self.__entry_id, list_id
 
             resolved = True
 
             if has_auth_seq:
-                auth_asym_id = row[loop.tags.index('Auth_asym_ID')]
-                auth_seq_id = row[loop.tags.index('Auth_seq_ID')]
+                auth_asym_id = row[auth_asym_id_col]
+                auth_seq_id = row[auth_seq_id_col]
 
                 if valid_auth_seq:
                     seq_key = (auth_asym_id, int(auth_seq_id))
@@ -21732,8 +21824,12 @@ class NmrDpUtility:
                 resolved = False
 
             if not resolved:
-                chain_id = row[loop.tags.index('Entity_assembly_ID')]
-                seq_id = int(row[loop.tags.index('Comp_index_ID')])
+                chain_id = row[chain_id_col]
+
+                if chain_id in copied_chain_ids:
+                    continue
+
+                seq_id = int(row[seq_id_col])
 
                 if chain_id in emptyValue:
                     chain_id = ps[0]['chain_id']
@@ -40995,7 +41091,7 @@ class NmrDpUtility:
         asm_sf.add_tag('Molecules_in_chemical_exchange', None)
         asm_sf.add_tag('Paramagnetic', 'yes' if paramag else 'no')
         asm_sf.add_tag('Thiol_state', thiol_state)
-        asm_sf.add_tag('Molecular_mass', formula_weight)
+        asm_sf.add_tag('Molecular_mass', f'{formula_weight:.3f}' if isinstance(formula_weight, float) else None)
         asm_sf.add_tag('Enzyme_commission_number', ec_number)
         asm_sf.add_tag('Details', details)
         asm_sf.add_tag('DB_query_date', None)
@@ -42617,7 +42713,7 @@ class NmrDpUtility:
                     seq_id_2 = int(row[seq_id_2_col])
                     atom_id_1 = row[atom_id_1_col]
                     atom_id_2 = row[atom_id_2_col]
-                    if atom_id_1[0] == 'H':
+                    if atom_id_1[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_1_col]):
                             bonded_atom_id_1 = next((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_1 else b[self.__ccU.ccbAtomId2])
                                                     for b in self.__ccU.lastBonds if atom_id_1 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]))
@@ -42625,7 +42721,7 @@ class NmrDpUtility:
                                    if (int(_row[chain_id_1_col]) == chain_id_1 and int(_row[seq_id_1_col]) == seq_id_1 and _row[atom_id_1_col] == bonded_atom_id_1)
                                    or (int(_row[chain_id_2_col]) == chain_id_1 and int(_row[seq_id_2_col]) == seq_id_1 and _row[atom_id_2_col] == bonded_atom_id_1)):
                                 continue
-                    if atom_id_2[0] == 'H':
+                    if atom_id_2[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_2_col]):
                             bonded_atom_id_2 = next((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_2 else b[self.__ccU.ccbAtomId2])
                                                     for b in self.__ccU.lastBonds if atom_id_2 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]))
@@ -42672,7 +42768,7 @@ class NmrDpUtility:
                     seq_id_2 = int(row[seq_id_2_col])
                     atom_id_1 = row[atom_id_1_col]
                     atom_id_2 = row[atom_id_2_col]
-                    if atom_id_1[0] == 'H':
+                    if atom_id_1[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_1_col]):
                             bonded_atom_id_1 = next((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_1 else b[self.__ccU.ccbAtomId2])
                                                     for b in self.__ccU.lastBonds if atom_id_1 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]))
@@ -42680,7 +42776,7 @@ class NmrDpUtility:
                                    if (int(_row[chain_id_1_col]) == chain_id_1 and int(_row[seq_id_1_col]) == seq_id_1 and _row[atom_id_1_col] == bonded_atom_id_1)
                                    or (int(_row[chain_id_2_col]) == chain_id_1 and int(_row[seq_id_2_col]) == seq_id_1 and _row[atom_id_2_col] == bonded_atom_id_1)):
                                 continue
-                    if atom_id_2[0] == 'H':
+                    if atom_id_2[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_2_col]):
                             bonded_atom_id_2 = next((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_2 else b[self.__ccU.ccbAtomId2])
                                                     for b in self.__ccU.lastBonds if atom_id_2 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]))

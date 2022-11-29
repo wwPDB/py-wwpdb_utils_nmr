@@ -203,6 +203,11 @@ class CnsMRReader:
 if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-7969/dna2_used.tbl',
+                 '../../tests-nmr/mock-data-daother-7969/D_800478_model_P1.cif.V3')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6ijw/D_1300008256_mr_P1.cyana.V1-corrected',
                  '../../tests-nmr/mock-data-remediation/6ijw/6ijw.cif')
 

@@ -429,21 +429,54 @@ class CifToNmrStar:
         """
 
         for sf in strData.frame_list:
+            filled = False
+
             for tag in sf.tags:
-                fqtn = (sf.tag_prefix + "." + tag[0]).lower()
+                fqtn = (sf.tag_prefix + '.' + tag[0]).lower()
 
                 try:
                     if self.schema[fqtn]['entryIdFlg'] == 'Y':
                         tag[1] = entryId
+                        filled = True
+                        break
+                except KeyError:
+                    pass
+
+            if not filled:
+                entry_id_tag = 'ID' if sf.category == 'entry_information' else 'Entry_ID'
+
+                fqtn = (sf.tag_prefix + '.' + entry_id_tag).lower()
+
+                try:
+                    if self.schema[fqtn]['entryIdFlg'] == 'Y':
+                        sf.add_tag(entry_id_tag, entryId)
                 except KeyError:
                     pass
 
             for lp in sf.loops:
+                filled = False
+
                 for tag in lp.tags:
-                    fqtn = (lp.category + "." + tag).lower()
+                    fqtn = (lp.category + '.' + tag).lower()
+
                     try:
                         if self.schema[fqtn]['entryIdFlg'] == 'Y':
                             lp[tag] = [entryId] * len(lp[tag])
+                            filled = True
+                            break
+                    except KeyError:
+                        pass
+
+                if not filled:
+                    entry_id_tag = lp.category + '.Entry_ID'
+
+                    try:
+                        if self.schema[entry_id_tag.lower()]['entryIdFlg'] == 'Y':
+                            lp.add_tag(entry_id_tag)
+
+                            for row in lp:
+                                row.append(entryId)
+
                     except KeyError:
                         pass
 

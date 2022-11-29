@@ -28451,6 +28451,8 @@ class NmrDpUtility:
                     if has_key_value(i, lower_limit_name)\
                             and has_key_value(i, upper_limit_name):
                         target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
+                        upper_limit = i[lower_limit_name]
+                        lower_limit = i[upper_limit_name]
 
                     elif has_key_value(i, lower_linear_limit_name)\
                             and has_key_value(i, upper_linear_limit_name):
@@ -28784,6 +28786,8 @@ class NmrDpUtility:
                         if has_key_value(i, lower_limit_name)\
                                 and has_key_value(i, upper_limit_name):
                             target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
+                            upper_limit = i[lower_limit_name]
+                            lower_limit = i[upper_limit_name]
 
                         elif has_key_value(i, lower_linear_limit_name)\
                                 and has_key_value(i, upper_linear_limit_name):
@@ -29049,6 +29053,8 @@ class NmrDpUtility:
                                         if has_key_value(row_1, lower_limit_name)\
                                                 and has_key_value(row_1, upper_limit_name):
                                             target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
+                                            upper_limit = row_1[lower_limit_name]
+                                            lower_limit = row_1[upper_limit_name]
 
                                         elif has_key_value(row_1, lower_linear_limit_name)\
                                                 and has_key_value(row_1, upper_linear_limit_name):
@@ -29099,6 +29105,8 @@ class NmrDpUtility:
                                     if has_key_value(row_1, lower_limit_name)\
                                             and has_key_value(row_1, upper_limit_name):
                                         target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
+                                        upper_limit = row_1[lower_limit_name]
+                                        lower_limit = row_1[upper_limit_name]
 
                                     elif has_key_value(row_1, lower_linear_limit_name)\
                                             and has_key_value(row_1, upper_linear_limit_name):

@@ -72,7 +72,9 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
         if 'only' in cs_type:
-            self.assertEqual(report['information']['status'], 'Error')
+            # DAOTHER-8108
+            # self.assertEqual(report['information']['status'], 'Error')
+            self.assertNotEqual(report['information']['status'], 'Error')
         else:
             self.assertNotEqual(report['information']['status'], 'Error')
 

@@ -16,7 +16,7 @@ try:
     from wwpdb.utils.nmr.mr.RosettaMRLexer import RosettaMRLexer
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.RosettaMRParserListener import RosettaMRParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
@@ -29,7 +29,7 @@ except ImportError:
     from nmr.mr.RosettaMRLexer import RosettaMRLexer
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.RosettaMRParserListener import RosettaMRParserListener
-    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
@@ -45,7 +45,7 @@ class RosettaMRReader:
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
-                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -58,11 +58,11 @@ class RosettaMRReader:
         self.__representativeModelId = representativeModelId
         self.__mrAtomNameMapping = mrAtomNameMapping
 
-        if cR is not None and cC is None:
-            cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
+        if cR is not None and caC is None:
+            caC = coordAssemblyChecker(verbose, log, representativeModelId, cR, None, fullCheck=False)
 
         self.__cR = cR
-        self.__cC = cC
+        self.__caC = caC
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -158,7 +158,7 @@ class RosettaMRReader:
             listener = RosettaMRParserListener(self.__verbose, self.__lfh,
                                                self.__representativeModelId,
                                                self.__mrAtomNameMapping,
-                                               self.__cR, self.__cC,
+                                               self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                self.__reasons)
             listener.setDebugMode(self.__debug)
@@ -194,12 +194,12 @@ class RosettaMRReader:
             if self.__verbose:
                 self.__lfh.write(f"+RosettaMRReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
-
+            """
         except Exception as e:
             if self.__verbose and isFilePath:
                 self.__lfh.write(f"+RosettaMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
-
+            """
         finally:
             if isFilePath and ifp is not None:
                 ifp.close()

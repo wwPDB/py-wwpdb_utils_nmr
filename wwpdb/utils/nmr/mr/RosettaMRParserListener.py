@@ -19,19 +19,24 @@ try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
-                                                       checkCoordinates,
-                                                       extendCoordinatesForExactNoes,
+                                                       coordAssemblyChecker,
+                                                       extendCoordChainsForExactNoes,
                                                        isLongRangeRestraint,
-                                                       hasIntraChainResraint,
+                                                       hasIntraChainRestraint,
+                                                       hasInterChainRestraint,
+                                                       isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
+                                                       getRdcCode,
                                                        translateToStdAtomName,
                                                        isCyclicPolymer,
                                                        getRestraintName,
-                                                       getValidSubType,
+                                                       contentSubtypeOf,
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getDistConstraintType,
+                                                       getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -41,7 +46,9 @@ try:
                                                        ANGLE_RESTRAINT_RANGE,
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_ERROR)
+                                                       RDC_RESTRAINT_ERROR,
+                                                       DIST_AMBIG_LOW,
+                                                       DIST_AMBIG_UP)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -60,25 +67,30 @@ try:
                                            retrieveRemappedChainId,
                                            splitPolySeqRstForNonPoly,
                                            retrieveRemappedNonPoly,
-                                           splitPolySeqRstForBranch,
+                                           splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.ParserListenerUtil import (toNpArray,
-                                           checkCoordinates,
-                                           extendCoordinatesForExactNoes,
+                                           coordAssemblyChecker,
+                                           extendCoordChainsForExactNoes,
                                            isLongRangeRestraint,
-                                           hasIntraChainResraint,
+                                           hasIntraChainRestraint,
+                                           hasInterChainRestraint,
+                                           isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
+                                           getRdcCode,
                                            translateToStdAtomName,
                                            isCyclicPolymer,
                                            getRestraintName,
-                                           getValidSubType,
+                                           contentSubtypeOf,
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getDistConstraintType,
+                                           getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -88,7 +100,9 @@ except ImportError:
                                            ANGLE_RESTRAINT_RANGE,
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_ERROR)
+                                           RDC_RESTRAINT_ERROR,
+                                           DIST_AMBIG_LOW,
+                                           DIST_AMBIG_UP)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -107,7 +121,7 @@ except ImportError:
                                retrieveRemappedChainId,
                                splitPolySeqRstForNonPoly,
                                retrieveRemappedNonPoly,
-                               splitPolySeqRstForBranch,
+                               splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
 
 
@@ -134,6 +148,8 @@ RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
 
 # This class defines a complete listener for a parse tree produced by RosettaMRParser.
 class RosettaMRParserListener(ParseTreeListener):
+
+    __file_type = 'nm-res-ros'
 
     __verbose = None
     __lfh = None
@@ -176,21 +192,22 @@ class RosettaMRParserListener(ParseTreeListener):
     __authAtomId = None
     # __altAuthAtomId = None
 
-    # coordinates information generated by ParserListenerUtil.checkCoordinates()
+    # coordinates information generated by ParserListenerUtil.coordAssemblyChecker()
     __polySeq = None
     __altPolySeq = None
     __nonPoly = None
-    __branch = None
+    __branched = None
     __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
+    __authToStarSeq = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __hasPolySeq = False
     __hasNonPoly = False
-    __hasBranch = False
+    __hasBranched = False
     __hasNonPolySeq = False
     __preferAuthSeq = True
     __gapInAuthSeq = False
@@ -242,7 +259,7 @@ class RosettaMRParserListener(ParseTreeListener):
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
-                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -254,7 +271,7 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            ret = checkCoordinates(verbose, log, representativeModelId, cR, cC)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -263,24 +280,25 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__polySeq = ret['polymer_sequence']
             self.__altPolySeq = ret['alt_polymer_sequence']
             self.__nonPoly = ret['non_polymer']
-            self.__branch = ret['branch']
+            self.__branched = ret['branched']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
+            self.__authToStarSeq = ret['auth_to_star_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
-        self.__hasBranch = self.__branch is not None and len(self.__branch) > 0
-        if self.__hasNonPoly or self.__hasBranch:
+        self.__hasBranched = self.__branched is not None and len(self.__branched) > 0
+        if self.__hasNonPoly or self.__hasBranched:
             self.__hasNonPolySeq = True
-            if self.__hasNonPoly and self.__hasBranch:
+            if self.__hasNonPoly and self.__hasBranched:
                 self.__nonPolySeq = self.__nonPoly
-                self.__nonPolySeq.extend(self.__branch)
+                self.__nonPolySeq.extend(self.__branched)
             elif self.__hasNonPoly:
                 self.__nonPolySeq = self.__nonPoly
             else:
-                self.__nonPolySeq = self.__branch
+                self.__nonPolySeq = self.__branched
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
@@ -300,11 +318,12 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__pA.setVerbose(verbose)
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
-            self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, self.__labelToAuthSeq, self.__authToLabelSeq =\
-                extendCoordinatesForExactNoes(reasons['model_chain_id_ext'],
+            self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes,\
+                self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq =\
+                extendCoordChainsForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__labelToAuthSeq, self.__authToLabelSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -325,6 +344,8 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__dist_ub_always_positive = True
 
         self.__atom_sel_comment_pattern = re.compile(r'([A-Za-z]+)(\d+)(\S+)$')
+
+        self.sfDict = {}
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -354,11 +375,9 @@ class RosettaMRParserListener(ParseTreeListener):
             sortPolySeqRst(self.__polySeqRst,
                            None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
 
-            file_type = 'nm-res-ros'
-
             self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
                                                       resolvedMultimer=(self.__reasons is not None))
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
                 self.warningMessage += message
@@ -384,7 +403,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
                         self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
                                                                   resolvedMultimer=(self.__reasons is not None))
-                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
@@ -478,14 +497,14 @@ class RosettaMRParserListener(ParseTreeListener):
                             if 'non_poly_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
 
-                    if self.__hasBranch:
-                        polySeqRst, branchMapping = splitPolySeqRstForBranch(self.__pA, self.__polySeq, self.__branch, self.__polySeqRst,
-                                                                             self.__chainAssign)
+                    if self.__hasBranched:
+                        polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.__polySeq, self.__branched, self.__polySeqRst,
+                                                                                 self.__chainAssign)
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if 'branch_remap' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['branch_remap'] = branchMapping
+                            if 'branched_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['branched_remap'] = branchedMapping
 
         # """
         # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
@@ -495,7 +514,7 @@ class RosettaMRParserListener(ParseTreeListener):
         #         del self.reasonsForReParsing['seq_id_remap']
         # """
         if 'local_seq_scheme' in self.reasonsForReParsing:
-            if 'non_poly_remap' in self.reasonsForReParsing or 'branch_remap' in self.reasonsForReParsing:
+            if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
             if 'seq_id_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
@@ -615,37 +634,53 @@ class RosettaMRParserListener(ParseTreeListener):
                    and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
                         or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(1.0)
-
-            self.__allowZeroUpperLimit = False
 
             if dstFunc is None:
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
+                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
             if self.__cur_nest is not None:
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
 
-            has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
+            has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
+
+            if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                memberLogicCode = '.'
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
+                if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
-                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
-                    getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                           '.', memberLogicCode,
-                           sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', memberLogicCode,
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                    sf['loop'].add_data(row)
+
+                    if sf['constraint_subsubtype'] == 'ambi':
+                        continue
+
+                    if memberLogicCode == 'OR'\
+                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        sf['constraint_subsubtype'] = 'ambi'
+                    if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                        upperLimit = float(dstFunc['upper_limit'])
+                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                            sf['constraint_subsubtype'] = 'ambi'
 
         finally:
             self.atomSelectionInComment.clear()
@@ -896,7 +931,7 @@ class RosettaMRParserListener(ParseTreeListener):
         """ Assign polymer sequences of the coordinates.
         """
 
-        chainAssign = []
+        chainAssign = set()
         _seqId = seqId
 
         fixedSeqId = None
@@ -904,8 +939,8 @@ class RosettaMRParserListener(ParseTreeListener):
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId)
             if self.__reasons is not None:
-                if 'branch_remap' in self.__reasons and seqId in self.__reasons['branch_remap']:
-                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branch_remap'], seqId)
+                if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                 if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                 elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
@@ -934,7 +969,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if atomId is None\
                    or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                    chainAssign.append((chainId, seqId, cifCompId, True))
+                    chainAssign.add((chainId, seqId, cifCompId, True))
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
@@ -962,7 +997,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if atomId is None\
                                or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                                chainAssign.append((chainId, seqId_, cifCompId, True))
+                                chainAssign.add((chainId, seqId_, cifCompId, True))
                         except IndexError:
                             pass
 
@@ -970,8 +1005,8 @@ class RosettaMRParserListener(ParseTreeListener):
             for np in self.__nonPolySeq:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, False)
                 if self.__reasons is not None:
-                    if 'branch_remap' in self.__reasons and seqId in self.__reasons['branch_remap']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branch_remap'], seqId)
+                    if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
+                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                     if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                         fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                     elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
@@ -994,7 +1029,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if atomId is None\
                        or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                        chainAssign.append((chainId, seqId, cifCompId, False))
+                        chainAssign.add((chainId, seqId, cifCompId, False))
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
@@ -1014,7 +1049,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if atomId is None\
                            or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId, True))
+                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             # if 'label_seq_scheme' not in self.reasonsForReParsing:
                             #     self.reasonsForReParsing['label_seq_scheme'] = True
 
@@ -1036,7 +1071,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if atomId is None\
                                or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
-                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId, False))
+                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                                 # if 'label_seq_scheme' not in self.reasonsForReParsing:
                                 #     self.reasonsForReParsing['label_seq_scheme'] = True
 
@@ -1048,7 +1083,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                    chainAssign.append((chainId, _seqId, cifCompId, True))
+                    chainAssign.add((chainId, _seqId, cifCompId, True))
 
         if len(chainAssign) == 0:
             if atomId is not None:
@@ -1071,7 +1106,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                         f"The residue number '{_seqId}' is not present in the coordinates.\n"
 
-        return chainAssign
+        return list(chainAssign)
 
     def selectCoordAtoms(self, chainAssign, seqId, atomId, allowAmbig=True, subtype_name=None):
         """ Select atoms of the coordinates.
@@ -1088,14 +1123,16 @@ class RosettaMRParserListener(ParseTreeListener):
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
                 if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
                     atomId = _atomId
-                elif self.__reasons is not None and 'branch_remap' in self.__reasons:
-                    _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branch_remap'], chainId, cifSeqId)
+                elif self.__reasons is not None and 'branched_remap' in self.__reasons:
+                    _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, coordAtomSite)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
             if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                    _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None:
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
@@ -1372,7 +1409,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('angle restraint')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -1638,7 +1675,7 @@ class RosettaMRParserListener(ParseTreeListener):
             return
 
         if self.__createSfDict:
-            sf = self.__getSf()
+            sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
             sf['id'] += 1
 
         compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1663,7 +1700,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              '.', angleName,
-                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
     # Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
@@ -1742,7 +1779,7 @@ class RosettaMRParserListener(ParseTreeListener):
             return
 
         if self.__createSfDict:
-            sf = self.__getSf()
+            sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
             sf['id'] += 1
 
         compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1767,7 +1804,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              1, angleName,
-                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
         compId = self.atomSelectionSet[4][0]['comp_id']
@@ -1788,7 +1825,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              2, angleName,
-                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
     # Enter a parse tree produced by RosettaMRParser#coordinate_restraints.
@@ -1858,6 +1895,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__allowZeroUpperLimit = False
             if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) > 0\
                and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
@@ -1871,10 +1909,9 @@ class RosettaMRParserListener(ParseTreeListener):
                    and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
                         or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(1.0)
-
-            self.__allowZeroUpperLimit = False
 
             if dstFunc is None:
                 return
@@ -1882,7 +1919,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('harmonic coordinate restraint, ROSETTA CoordinateConstraint')
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                           'ref_auth_asym_id', 'ref_auth_seq_id', 'ref_auth_comp_id', 'ref_auth_atom_id',
@@ -1893,11 +1930,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"NESTED: {self.__cur_nest}")
 
-            has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
+            has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
+                if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (Coordinate) id={self.geoRestraints} "
@@ -1979,7 +2016,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('local harmonic coordinate restraint, ROSETTA LocalCoordinateConstraint')
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                           'origin_auth_asym_id_1', 'origin_auth_seq_id_1', 'origin_auth_comp_id_1', 'origin_auth_atom_id_1',
@@ -2077,7 +2114,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('ambiguous site restraint (atom to other chain), ROSETTA SiteConstraint')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                       'opposing_auth_asym_id',
@@ -2162,7 +2199,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('ambiguous site restraint (atom to other residue), ROSETTA SiteConstraintResidues')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                       'interacting_auth_asym_id_1', 'interacting_auth_seq_id_1', 'interacting_auth_comp_id_1',
@@ -2261,7 +2298,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('ambiguous site restraint (residue to other residue), ROSETTA MinResidueAtomicDistance')
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'interacting_auth_asym_id_1', 'interacting_auth_seq_id_1', 'interacting_auth_comp_id_1',
                                           'interacting_auth_asym_id_2', 'interacting_auth_seq_id_2', 'interacting_auth_comp_id_2',
@@ -2366,7 +2403,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf = self.__getSf("dihedral angle restraint, ROSETTA BigBin "
                                   "('O' for cis-like OMEGA, 'G' for PHI,PSI in 100,100, 'E' for 100,-90, 'A' for -50,30, 'B' for 100,175)")
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1',
                                           'bin_code', 'standard_deviation',
@@ -3393,7 +3430,8 @@ class RosettaMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]))
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
@@ -3407,7 +3445,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -3547,22 +3585,25 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf()
                 sf['id'] += 1
+                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-            has_intra_chain = hasIntraChainResraint(self.atomSelectionSet)
+            has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
+
+            if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                memberLogicCode = '.'
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if has_intra_chain and atom1['chain_id'] != atom2['chain_id']:
+                if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CS-ROSETTA: disulfide bond linkage) id={self.ssbondRestraints} "
                           f"atom1={atom1} atom2={atom2}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
-                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberLogicCode,
-                                 sf['list_id'], self.__entryId, None, atom1, atom2)
+                                 sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:
@@ -3658,25 +3699,27 @@ class RosettaMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None):
-        _subtype = getValidSubType(self.__cur_subtype)
+    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None):
+        content_subtype = contentSubtypeOf(self.__cur_subtype)
 
-        if _subtype is None:
+        if content_subtype is None:
             return
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, constraintType, None)
+        key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
             self.sfDict[key] = []
 
-        list_id = self.__listIdCounter[self.__cur_subtype]
+        list_id = self.__listIdCounter[content_subtype]
 
-        sf_framecode = 'ROSETTA_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
+        restraint_name = getRestraintName(self.__cur_subtype)
+
+        sf_framecode = 'ROSETTA_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
-                          constraintType)
+                          constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         not_valid = True
 
@@ -3685,19 +3728,47 @@ class RosettaMRParserListener(ParseTreeListener):
             sf.add_loop(lp)
             not_valid = False
 
-        item = {'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                'id': 0, 'index_id': 0}
+        _restraint_name = restraint_name.split()
+
+        item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                'id': 0, 'index_id': 0,
+                'constraint_type': ' '.join(_restraint_name[:-1])}
 
         if not_valid:
             item['tags'] = []
 
+        if self.__cur_subtype == 'dist':
+            item['constraint_subsubtype'] = 'simple'
+
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None):
-        key = (self.__cur_subtype, constraintType, None)
+    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None):
+        key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
-            self.__addSf(constraintType)
+            replaced = False
+            if potentialType is not None or rdcCode is not None:
+                old_key = (self.__cur_subtype, constraintType, None, None, None)
+                if old_key in self.sfDict:
+                    replaced = True
+                    self.sfDict[key] = [self.sfDict[old_key][-1]]
+                    del self.sfDict[old_key][-1]
+                    if len(self.sfDict[old_key]) == 0:
+                        del self.sfDict[old_key]
+                    sf = self.sfDict[key][-1]['saveframe']
+                    idx = next((idx for idx, t in enumerate(sf.tags) if t[0] == 'Potential_type'), -1)
+                    if idx != -1:
+                        sf.tags[idx][1] = potentialType
+                    else:
+                        sf.add_tag('Potential_type', potentialType)
+                    if rdcCode is not None:
+                        idx = next((idx for idx, t in enumerate(sf.tags) if t[0] == 'Details'), -1)
+                        if idx != -1:
+                            sf.tags[idx][1] = rdcCode
+                        else:
+                            sf.add_tag('Details', rdcCode)
+            if not replaced:
+                self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         return self.sfDict[key][-1]
 
@@ -3749,7 +3820,7 @@ class RosettaMRParserListener(ParseTreeListener):
     def getListIdCounter(self):
         """ Return updated list id counter.
         """
-        return None if len(self.__listIdCounter) == 0 else self.__listIdCounter
+        return self.__listIdCounter
 
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.

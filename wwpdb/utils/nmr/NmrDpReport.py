@@ -1696,7 +1696,7 @@ class NmrDpReportInputSource:
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')
-        self.content_subtypes = ('coordinate', 'non_poly', 'branch',
+        self.content_subtypes = ('coordinate', 'non_poly', 'branched',
                                  'entry_info', 'poly_seq', 'entity', 'chem_shift',
                                  'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint',
                                  'plane_restraint', 'adist_restraint', 'jcoup_restraint', 'hvycs_restraint',

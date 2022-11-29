@@ -4,6 +4,7 @@
 #
 # Updates:
 # 27-Apr-2022  M. Yokochi - enable to use cached data for standard residues
+# 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
 ##
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
@@ -16,12 +17,14 @@ try:
     from wwpdb.utils.config.ConfigInfo import getSiteId
     from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
     from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
-    from wwpdb.utils.nmr.AlignUtil import monDict3
+    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+                                           protonBeginCode)
     cICommon = ConfigInfoAppCommon(getSiteId())
     CC_CVS_PATH = cICommon.get_site_cc_cvs_path()
 except ImportError:
     from nmr.io.ChemCompIo import ChemCompReader
-    from nmr.AlignUtil import monDict3
+    from nmr.AlignUtil import (monDict3,
+                               protonBeginCode)
     CC_CVS_PATH = os.path.dirname(__file__) + '/ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
 
 
@@ -178,8 +181,8 @@ class ChemCompUtil:
         for carbon in carbons:
             protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != carbon else b[self.ccbAtomId2])
                        for b in self.lastBonds
-                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] == 'H')
-                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] == 'H')]
+                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in protonBeginCode)
+                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in protonBeginCode)]
             if len(protons) != 3:
                 continue
             atmList.append(carbon)
@@ -193,6 +196,7 @@ class ChemCompUtil:
 
         ends_w_num = [a for a in self.getMethylAtoms(compId) if a.startswith('H') and a[-1].isdigit()]
         ends_w_alp = [a for a in self.getMethylAtoms(compId) if a.startswith('H') and not a[-1].isdigit()]
+        starts_w_num = [a for a in self.getMethylAtoms(compId) if len(a) > 1 and a[0] in ('1', '2', '3') and a[1] == 'H']
 
         atmList = []
 
@@ -203,6 +207,9 @@ class ChemCompUtil:
             min_len = min(len(a) for a in ends_w_alp)
             atmList.extend([a for a in ends_w_alp if len(a) == min_len])
 
+        if len(starts_w_num) > 0:
+            atmList.extend([a for a in starts_w_num if a.startswith('1')])
+
         return atmList
 
     def getNonRepresentativeMethylProtons(self, compId):
@@ -211,7 +218,27 @@ class ChemCompUtil:
 
         repList = self.getRepresentativeMethylProtons(compId)
 
-        return [a for a in self.getMethylAtoms(compId) if a.startswith('H') and a not in repList]
+        return [a for a in self.getMethylAtoms(compId) if a[0] in ('H', '2', '3') and a not in repList]
+
+    def getProtonsInSameGroup(self, compId, atomId, exclSelf=False):
+        """ Return protons in the same group of a given comp_id and atom_id.
+        """
+
+        if not self.updateChemCompDict(compId):
+            return []
+
+        allProtons = [a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'H']
+
+        if atomId not in allProtons:
+            return []
+
+        bondedTo = next((b[self.ccbAtomId1] if b[self.ccbAtomId1] != atomId else b[self.ccbAtomId2])
+                        for b in self.lastBonds if atomId in (b[self.ccbAtomId1], b[self.ccbAtomId2]))
+
+        attached = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != bondedTo else b[self.ccbAtomId2])
+                    for b in self.lastBonds if bondedTo in (b[self.ccbAtomId1], b[self.ccbAtomId2])]
+
+        return [p for p in attached if p in allProtons and ((exclSelf and p != atomId) or not exclSelf)]
 
     def write_std_dict_as_pickle(self):
         """ Write dictionary for standard residues as pickle file.

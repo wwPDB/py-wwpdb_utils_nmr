@@ -1,4 +1,4 @@
-data_NEED_ACC_NO_nmr-data-nef
+data_nef_need_acc_no
 
 save_nef_nmr_meta_data
    _nef_nmr_meta_data.sf_category           nef_nmr_meta_data
@@ -2029,7 +2029,7 @@ save_nef_distance_restraint_list_distance_constraint_list
    _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
    _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_distance_constraint_list
    _nef_distance_restraint_list.potential_type    unknown
-   _nef_distance_restraint_list.restraint_origin  undefined
+   _nef_distance_restraint_list.restraint_origin  .
 
    loop_
       _nef_distance_restraint.index
@@ -7610,7 +7610,7 @@ save_nef_dihedral_restraint_list_dihedral_constraint_list
    _nef_dihedral_restraint_list.sf_category       nef_dihedral_restraint_list
    _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dihedral_constraint_list
    _nef_dihedral_restraint_list.potential_type    unknown
-   _nef_dihedral_restraint_list.restraint_origin  chemical_shift
+   _nef_dihedral_restraint_list.restraint_origin  .
 
    loop_
       _nef_dihedral_restraint.index
@@ -7870,7 +7870,7 @@ save_nef_rdc_restraint_list_cya-1
    _nef_rdc_restraint_list.sf_category           nef_rdc_restraint_list
    _nef_rdc_restraint_list.sf_framecode          nef_rdc_restraint_list_cya-1
    _nef_rdc_restraint_list.potential_type        unknown
-   _nef_rdc_restraint_list.restraint_origin      measured
+   _nef_rdc_restraint_list.restraint_origin      .
    _nef_rdc_restraint_list.tensor_magnitude      10.834
    _nef_rdc_restraint_list.tensor_rhombicity     0.487
    _nef_rdc_restraint_list.tensor_chain_code     .

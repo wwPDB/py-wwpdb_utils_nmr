@@ -1279,6 +1279,11 @@ class CnsMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            if len(self.atomSelectionSet[0]) == 0 or len(self.atomSelectionSet[1]) == 0:
+                if len(self.__warningInAtomSelection) > 0:
+                    self.warningMessage += self.__warningInAtomSelection
+                return
+
             combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
@@ -4373,6 +4378,7 @@ class CnsMRParserListener(ParseTreeListener):
                         _atomIdSelect.add(realAtomId)
 
             _factor['atom_id'] = list(_atomIdSelect)
+
             if len(_factor['atom_id']) == 0:
                 self.__preferAuthSeq = not self.__preferAuthSeq
 
@@ -4481,16 +4487,20 @@ class CnsMRParserListener(ParseTreeListener):
             del __factor['atom_selection']
             if self.__cur_subtype != 'plane':
                 if cifCheck:
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        f"The {clauseName} has no effect for a factor {__factor}.\n"
-                    self.__preferAuthSeq = not self.__preferAuthSeq
-                    self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
-                    self.__setLocalSeqScheme()
-                    # """
-                    # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
-                    #     if 'label_seq_scheme' not in self.reasonsForReParsing:
-                    #         self.reasonsForReParsing['label_seq_scheme'] = True
-                    # """
+                    if self.__cur_union_expr:
+                        self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                            f"The {clauseName} has no effect for a factor {__factor}.\n"
+                    else:
+                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                            f"The {clauseName} has no effect for a factor {__factor}.\n"
+                        self.__preferAuthSeq = not self.__preferAuthSeq
+                        self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
+                        self.__setLocalSeqScheme()
+                        # """
+                        # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
+                        #     if 'label_seq_scheme' not in self.reasonsForReParsing:
+                        #         self.reasonsForReParsing['label_seq_scheme'] = True
+                        # """
                 else:
                     self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}. "\

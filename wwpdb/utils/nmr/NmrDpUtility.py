@@ -41321,11 +41321,23 @@ class NmrDpUtility:
                     comp_id = None
 
             elif entity_type == 'non-polymer':
-                np = next(np for np in self.__caC['non_polymer'] if np['auth_chain_id'] == auth_asym_id and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
-                try:
-                    comp_id = np['comp_id'][0]
-                except IndexError:
-                    comp_id = None
+                np = next((np for np in self.__caC['non_polymer'] if np['auth_chain_id'] == auth_asym_id), None)
+                if np is not None:
+                    try:
+                        comp_id = np['comp_id'][0]
+                    except IndexError:
+                        comp_id = None
+                else:
+                    np = next((np for np in self.__caC['non_polymer']
+                               if np['auth_chain_id'] == auth_asym_id
+                               and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0])), None)
+                    if np is None:
+                        comp_id = None
+                    else:
+                        try:
+                            comp_id = np['comp_id'][0]
+                        except IndexError:
+                            comp_id = None
 
             row[4], row[5], row[6], row[7] = comp_id, auth_asym_id, auth_seq_id, comp_id
             row[11], row[12], row[13] = nef_index, 1, self.__entry_id

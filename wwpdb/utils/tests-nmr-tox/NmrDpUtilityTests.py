@@ -76,7 +76,7 @@ class TestNmrDpUtility(unittest.TestCase):
                 "ssbond_restraint",
                 "geo_restraint",
                 "coordinate",
-                "branch",
+                "branched",
                 "non_poly",
                 "topology",
             },

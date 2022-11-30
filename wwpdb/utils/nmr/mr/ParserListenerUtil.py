@@ -3770,9 +3770,9 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
             val = row[idx]
             if '.' in val and val[-1] == '0':
                 p = val.index('.')
-                l = len(val) - 1
+                l = len(val) - 1  # noqa: E741
                 while val[l] == '0':
-                    l -= 1
+                    l -= 1  # noqa: E741
                 e = l - p
                 if e > 0 and e > max_e:
                     max_e = e

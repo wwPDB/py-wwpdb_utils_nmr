@@ -2383,6 +2383,7 @@ class NmrDpUtility:
                                                         'enforce-enum': True},
                                                        {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False,
                                                         'enforce-non-zero': True},
+                                                       {'name': 'Seq_ID', 'type': 'int', 'mandatory': False},
                                                        {'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
                                                        {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                        {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
@@ -2474,6 +2475,8 @@ class NmrDpUtility:
                                                            # 'enforce-non-zero': True},
                                                            {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
                                                                     'range': DIST_RESTRAINT_RANGE},
+                                                           {'name': 'Seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                           {'name': 'Seq_ID_2', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -2536,6 +2539,10 @@ class NmrDpUtility:
                                                             {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
                                                              'range': WEIGHT_RANGE},
                                                             # 'enforce-non-zero': True},
+                                                            {'name': 'Seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Seq_ID_3', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Seq_ID_4', 'type': 'int', 'mandatory': False},
                                                             {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -2601,6 +2608,8 @@ class NmrDpUtility:
                                                            'range': SCALE_RANGE,
                                                            'enforce-non-zero': True},
                                                           {'name': 'RDC_distant_dependent', 'type': 'bool', 'mandatory': False},
+                                                          {'name': 'Seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Seq_ID_2', 'type': 'int', 'mandatory': False},
                                                           {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                           {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                           {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -3417,6 +3426,7 @@ class NmrDpUtility:
                                            {'name': 'Atom_ID_%s', 'type': 'str', 'mandatory': False,
                                             'relax-key-if-exist': True,
                                             'clear-bad-pattern': True},
+                                           {'name': 'Seq_ID_%s', 'type': 'int', 'mandatory': False},
                                            {'name': 'Auth_asym_ID_%s', 'type': 'str', 'mandatory': False},
                                            {'name': 'Auth_seq_ID_%s', 'type': 'int', 'mandatory': False},
                                            {'name': 'Auth_comp_ID_%s', 'type': 'str', 'mandatory': False},
@@ -5009,7 +5019,8 @@ class NmrDpUtility:
                                                    'value': 'Val',
                                                    'error': 'Val_err',
                                                    'atom_type': 'Atom_type',
-                                                   'isotope_number': 'Atom_isotope_number'
+                                                   'isotope_number': 'Atom_isotope_number',
+                                                   'alt_seq_id': 'Seq_ID'
                                                    }
                                       }
 
@@ -5024,7 +5035,8 @@ class NmrDpUtility:
                                                    'seq_id': 'Comp_index_ID_%s',
                                                    'comp_id': 'Comp_ID_%s',
                                                    'atom_id': 'Atom_ID_%s',
-                                                   'position': 'Position_%s'
+                                                   'position': 'Position_%s',
+                                                   'alt_seq_id': 'Seq_ID_%s'
                                                    }
                                       }
 
@@ -5058,7 +5070,9 @@ class NmrDpUtility:
                                                    'lower_linear_limit': 'Lower_linear_limit',
                                                    'upper_linear_limit': 'Upper_linear_limit',
                                                    'lower_limit': 'Distance_lower_bound_val',
-                                                   'upper_limit': 'Distance_upper_bound_val'
+                                                   'upper_limit': 'Distance_upper_bound_val',
+                                                   'alt_seq_id_1': 'Seq_ID_1',
+                                                   'alt_seq_id_2': 'Seq_ID_2'
                                                    }
                                       }
 
@@ -5100,6 +5114,10 @@ class NmrDpUtility:
                                                    'comp_id_4': 'Comp_ID_4',
                                                    'atom_id_4': 'Atom_ID_4',
                                                    'angle_type': 'Torsion_angle_name',
+                                                   'alt_seq_id_1': 'Seq_ID_1',
+                                                   'alt_seq_id_2': 'Seq_ID_2',
+                                                   'alt_seq_id_3': 'Seq_ID_3',
+                                                   'alt_seq_id_4': 'Seq_ID_4'
                                                    }
                                       }
 
@@ -5122,7 +5140,9 @@ class NmrDpUtility:
                                                     'chain_id_2': 'Entity_assembly_ID_2',
                                                     'seq_id_2': 'Comp_index_ID_2',
                                                     'comp_id_2': 'Comp_ID_2',
-                                                    'atom_id_2': 'Atom_ID_2'
+                                                    'atom_id_2': 'Atom_ID_2',
+                                                    'alt_seq_id_1': 'Seq_ID_1',
+                                                    'alt_seq_id_2': 'Seq_ID_2'
                                                     }
                                        }
 
@@ -34644,12 +34664,16 @@ class NmrDpUtility:
         seq_id_names = []
         comp_id_names = []
         atom_id_names = []
+        if file_type == 'nmr-star':
+            alt_seq_id_names = []
 
         for j in range(num_dim):
             chain_id_names.append(item_names[j]['chain_id'])
             seq_id_names.append(item_names[j]['seq_id'])
             comp_id_names.append(item_names[j]['comp_id'])
             atom_id_names.append(item_names[j]['atom_id'])
+            if file_type == 'nmr-star':
+                alt_seq_id_names.append(item_names[j]['alt_seq_id'])
 
         if file_type == 'nmr-star':
 
@@ -34667,6 +34691,8 @@ class NmrDpUtility:
                 seq_id = i[seq_id_names[j]]
                 comp_id = i[comp_id_names[j]]
                 atom_id = i[atom_id_names[j]]
+                if file_type == 'nmr-star':
+                    alt_seq_id = i[alt_seq_id_names[j]] if alt_seq_id_names[j] in i else seq_id
 
                 if content_subtype.startswith('spectral_peak')\
                    and (chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue):
@@ -34735,6 +34761,36 @@ class NmrDpUtility:
                     continue
 
                 coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
+
+                if file_type == 'nmr-star' and seq_id != alt_seq_id:
+
+                    if coord_atom_site_ is None or coord_atom_site_['comp_id'] != cif_comp_id\
+                       or (atom_id_ not in coord_atom_site_['atom_id']
+                           and (('auth_atom_id' in coord_atom_site_ and atom_id_ not in coord_atom_site_['auth_atom_id'])
+                                or 'auth_atom_id' not in coord_atom_site_)):
+
+                        cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id
+                                           in zip(ca['ref_seq_id'], ca['test_seq_id'])
+                                           if ref_seq_id == alt_seq_id), None)
+
+                        if cif_seq_id is None:
+                            continue
+
+                        cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
+
+                        cif_comp_id = next((_comp_id for _seq_id, _comp_id
+                                            in zip(cif_ps['seq_id'], cif_ps['comp_id'])
+                                            if _seq_id == cif_seq_id), None)
+
+                        if cif_comp_id is None:
+                            continue
+
+                        seq_key = (cif_chain_id, cif_seq_id)
+
+                        if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
+                            continue
+
+                        coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
 
                 if coord_atom_site_ is None or coord_atom_site_['comp_id'] != cif_comp_id\
                    or (atom_id_ not in coord_atom_site_['atom_id']

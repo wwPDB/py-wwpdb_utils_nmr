@@ -4405,7 +4405,7 @@ class NEFTranslator:
                 atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', details, leave_unmatched)
                 return (atom_list, ambiguity_code, details)
 
-            if atom_id.startswith('QR'):
+            if atom_id.startswith('QR') or atom_id.startswith('QX'):
                 qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
                                       if atom_id[0] in protonBeginCode and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
                 if len(qr_atoms) == 0:
@@ -4697,7 +4697,7 @@ class NEFTranslator:
                             _atom_id = 'H'
                         elif atom_id.startswith('QQ'):
                             _atom_id = 'H' + atom_id[2:] + '%'
-                        elif atom_id.startswith('QR'):
+                        elif atom_id.startswith('QR') or atom_id.startswith('QX'):
                             qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
                                                   if atom_id[0] in protonBeginCode and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
                             if len(qr_atoms) > 0:

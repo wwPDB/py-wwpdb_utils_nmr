@@ -202,8 +202,7 @@ try:
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
     from wwpdb.utils.nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                            MIN_SEQ_COVERAGE_W_CONFLICT,
-                                           MAJOR_ASYM_ID_SET,
-                                           LEN_MAJOR_ASYM_ID_SET,
+                                           LARGE_ASYM_ID,
                                            emptyValue, trueValue,
                                            monDict3,
                                            protonBeginCode, pseProBeginCode,
@@ -220,7 +219,7 @@ try:
                                            trimSequenceAlignment)
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.io.CifReader import (CifReader, LEN_MAJOR_ASYM_ID)
     from wwpdb.utils.nmr.rci.RCI import RCI
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
     from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
@@ -283,8 +282,7 @@ except ImportError:
     from nmr.NmrDpReport import NmrDpReport
     from nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                MIN_SEQ_COVERAGE_W_CONFLICT,
-                               MAJOR_ASYM_ID_SET,
-                               LEN_MAJOR_ASYM_ID_SET,
+                               LARGE_ASYM_ID,
                                emptyValue, trueValue,
                                monDict3,
                                protonBeginCode, pseProBeginCode,
@@ -301,7 +299,7 @@ except ImportError:
                                trimSequenceAlignment)
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.io.CifReader import CifReader
+    from nmr.io.CifReader import (CifReader, LEN_MAJOR_ASYM_ID)
     from nmr.rci.RCI import RCI
     from nmr.CifToNmrStar import CifToNmrStar
     from nmr.NmrStarToCif import NmrStarToCif
@@ -2423,6 +2421,8 @@ class NmrDpUtility:
                                                            ],
                                         'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                            {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                                                            'enforce-non-zero': True},
+                                                           {'name': 'Member_ID', 'type': 'positive-int', 'mandatory': False,
                                                             'enforce-non-zero': True},
                                                            {'name': 'Member_logic_code', 'type': 'enum', 'mandatory': False,
                                                             'enum': ('OR', 'AND'),
@@ -5072,7 +5072,8 @@ class NmrDpUtility:
                                                    'lower_limit': 'Distance_lower_bound_val',
                                                    'upper_limit': 'Distance_upper_bound_val',
                                                    'alt_seq_id_1': 'Seq_ID_1',
-                                                   'alt_seq_id_2': 'Seq_ID_2'
+                                                   'alt_seq_id_2': 'Seq_ID_2',
+                                                   'member_id': 'Member_ID'
                                                    }
                                       }
 
@@ -14937,8 +14938,8 @@ class NmrDpUtility:
                     if chain_id not in common_poly_seq:
                         common_poly_seq[chain_id] = set()
 
-            chains = common_poly_seq.keys()
-            offset_seq_ids = {c: 0 for c in chains}
+            chain_ids = common_poly_seq.keys()
+            offset_seq_ids = {c: 0 for c in chain_ids}
 
             # for content_subtype in polymer_sequence_in_loop.keys():
 
@@ -16371,7 +16372,7 @@ class NmrDpUtility:
         """ Fix sequence ID of interesting loop.
         """
 
-        uniq_chains = self.report.getChainIdsForSameEntity() is None
+        uniq_chain_ids = self.report.getChainIdsForSameEntity() is None
 
         chain_id_name = 'chain_code' if file_type == 'nef' else 'Entity_assembly_ID'
         entity_id_name = None if file_type == 'nef' else 'Entity_ID'
@@ -16421,7 +16422,7 @@ class NmrDpUtility:
 
                 row[chain_id_col] = _chain_id
 
-                if uniq_chains and entity_id_col != -1:
+                if uniq_chain_ids and entity_id_col != -1:
                     row[entity_id_col] = _chain_id
 
         else:
@@ -16446,7 +16447,7 @@ class NmrDpUtility:
 
                     row[chain_id_col] = _chain_id
 
-                    if uniq_chains and entity_id_col != -1:
+                    if uniq_chain_ids and entity_id_col != -1:
                         row[entity_id_col] = _chain_id
 
     def __fixSeqIdInLoop(self, file_list_id, file_type, content_subtype, sf_framecode, chain_id, seq_id_conv_dict):
@@ -28398,6 +28399,8 @@ class NmrDpUtility:
         comp_id_2_name = item_names['comp_id_2']
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
+        if file_type == 'nmr-star':
+            member_id_name = item_names['member_id']
         target_value_name = item_names['target_value']
         if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
             target_value_name = item_names['target_value_alt']
@@ -28449,6 +28452,7 @@ class NmrDpUtility:
             for l, i in enumerate(lp_data):  # noqa: E741
                 index = i[index_tag] if index_tag in i else None
                 comb_id = i[comb_id_name] if comb_id_name in i else None
+                member_id = i[member_id_name] if file_type == 'nmr-star' and member_id_name in i else None
 
                 chain_id_1 = i[chain_id_1_name]
                 chain_id_2 = i[chain_id_2_name]
@@ -28504,7 +28508,8 @@ class NmrDpUtility:
                     min_val = target_value
 
                 data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, l, target_value, upper_limit, lower_limit,
-                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                              member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
+                                                              chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                 if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
@@ -28787,6 +28792,8 @@ class NmrDpUtility:
                     _count[k] = 0
 
                 for l, i in enumerate(lp_data):  # noqa: E741
+                    member_id = i[member_id_name] if file_type == 'nmr-star' and member_id_name in i else None
+
                     chain_id_1 = i[chain_id_1_name]
                     chain_id_2 = i[chain_id_2_name]
                     seq_id_1 = i[seq_id_1_name]
@@ -28836,7 +28843,8 @@ class NmrDpUtility:
                         continue
 
                     data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, l, target_value, upper_limit, lower_limit,
-                                                                  chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                                  member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
+                                                                  chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                     _count[data_type] += 1
 
@@ -29099,6 +29107,8 @@ class NmrDpUtility:
                                         else:
                                             continue
 
+                                    member_id = row_1[member_id_name] if file_type == 'nmr-star' and member_id_name in row_1 else None
+
                                     chain_id_1 = row_1[chain_id_1_name]
                                     chain_id_2 = row_1[chain_id_2_name]
                                     seq_id_1 = row_1[seq_id_1_name]
@@ -29109,7 +29119,8 @@ class NmrDpUtility:
                                     atom_id_2 = row_1[atom_id_2_name]
 
                                     data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit, lower_limit,
-                                                                                  chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                                                  member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
+                                                                                  chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                     _count[data_type] += 1
 
@@ -29151,6 +29162,8 @@ class NmrDpUtility:
                                     else:
                                         continue
 
+                                member_id = row_1[member_id_name] if file_type == 'nmr-star' and member_id_name in row_1 else None
+
                                 chain_id_1 = row_1[chain_id_1_name]
                                 chain_id_2 = row_1[chain_id_2_name]
                                 seq_id_1 = row_1[seq_id_1_name]
@@ -29161,7 +29174,8 @@ class NmrDpUtility:
                                 atom_id_2 = row_1[atom_id_2_name]
 
                                 data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit, lower_limit,
-                                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                                              member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
+                                                                              chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 _count[data_type] += 1
 
@@ -29376,7 +29390,8 @@ class NmrDpUtility:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Error  - {str(e)}\n")
 
     def __getTypeOfDistanceRestraint(self, file_type, lp_data, row_id, target_value, upper_limit, lower_limit,
-                                     chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2):
+                                     member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
+                                     chain_id_2, seq_id_2, comp_id_2, atom_id_2):
         """ Return type of distance restraint.
         """
 
@@ -29416,7 +29431,7 @@ class NmrDpUtility:
 
             delta_minus = 0.1 if upper_limit is not None and lower_limit is not None else 0.0
 
-            ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
+            ambig = member_id is not None or (upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP))
 
             if not ambig:
 
@@ -32612,7 +32627,7 @@ class NmrDpUtility:
             model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
             has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
 
-            if len(polymer_sequence) > LEN_MAJOR_ASYM_ID_SET:
+            if len(polymer_sequence) > LEN_MAJOR_ASYM_ID:
 
                 if has_pdbx_auth_atom_name:
                     coord = self.__cR.getDictListWithFilter('atom_site',
@@ -32626,7 +32641,7 @@ class NmrDpUtility:
                                                              ],
                                                             [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
                                                              {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
-                                                             {'name': 'auth_asym_id', 'type': 'enum', 'enum': MAJOR_ASYM_ID_SET, 'alt_name': 'chain_id'}
+                                                             {'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID, 'alt_name': 'chain_id'}
                                                              ])
                 else:
                     coord = self.__cR.getDictListWithFilter('atom_site',
@@ -32639,7 +32654,7 @@ class NmrDpUtility:
                                                              ],
                                                             [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
                                                              {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
-                                                             {'name': 'auth_asym_id', 'type': 'enum', 'enum': MAJOR_ASYM_ID_SET, 'alt_name': 'chain_id'}
+                                                             {'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID, 'alt_name': 'chain_id'}
                                                              ])
 
             else:
@@ -32919,7 +32934,7 @@ class NmrDpUtility:
 
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-        chains = set()
+        chain_ids = set()
 
         for content_subtype in polymer_sequence_in_loop.keys():
 
@@ -32928,12 +32943,12 @@ class NmrDpUtility:
 
                 for s in ps:
                     chain_id = s['chain_id']
-                    chains.add(chain_id)
+                    chain_ids.add(chain_id)
 
                     if chain_id not in common_poly_seq:
                         common_poly_seq[chain_id] = set()
 
-        _offset_seq_ids = {c: 0 for c in chains}
+        _offset_seq_ids = {c: 0 for c in chain_ids}
 
         for content_subtype in polymer_sequence_in_loop.keys():
 
@@ -33078,7 +33093,7 @@ class NmrDpUtility:
                 for i1, s1 in enumerate(polymer_sequence):
                     chain_id = s1['chain_id']
 
-                    if i1 >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
+                    if i1 >= LEN_MAJOR_ASYM_ID:  # save computing resource for large model
                         continue
 
                     for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
@@ -33149,7 +33164,7 @@ class NmrDpUtility:
         for i1, s1 in enumerate(polymer_sequence):
             chain_id = s1['chain_id']
 
-            if i1 >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
+            if i1 >= LEN_MAJOR_ASYM_ID:  # save computing resource for large model
                 continue
 
             for s2 in nmr_polymer_sequence:
@@ -33285,7 +33300,7 @@ class NmrDpUtility:
             for i2, s2 in enumerate(polymer_sequence):
                 chain_id2 = s2['chain_id']
 
-                if i2 >= LEN_MAJOR_ASYM_ID_SET:  # save computing resource for large model
+                if i2 >= LEN_MAJOR_ASYM_ID:  # save computing resource for large model
                     continue
 
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
@@ -33538,14 +33553,14 @@ class NmrDpUtility:
                         if self.__combined_mode:
                             continue
 
-                        _cif_chains = []
+                        _cif_chain_ids = []
                         for _row, _column in indices:
                             if column == _column:
-                                _cif_chains.append(cif_polymer_sequence[_row]['chain_id'])
+                                _cif_chain_ids.append(cif_polymer_sequence[_row]['chain_id'])
 
-                        if len(_cif_chains) > 1:
+                        if len(_cif_chain_ids) > 1:
                             chain_id2 = nmr_polymer_sequence[column]['chain_id']
-                            concatenated_nmr_chain[chain_id2] = _cif_chains
+                            concatenated_nmr_chain[chain_id2] = _cif_chain_ids
 
                     chain_id = cif_polymer_sequence[row]['chain_id']
                     chain_id2 = nmr_polymer_sequence[column]['chain_id']
@@ -34092,17 +34107,17 @@ class NmrDpUtility:
                         if self.__combined_mode:
                             continue
 
-                        _cif_chains = []
+                        _cif_chain_ids = []
                         for _row, _column in indices:
                             if column == _column:
-                                _cif_chains.append(cif_polymer_sequence[_row]['chain_id'])
+                                _cif_chain_ids.append(cif_polymer_sequence[_row]['chain_id'])
 
-                        if len(_cif_chains) > 1:
+                        if len(_cif_chain_ids) > 1:
                             chain_id2 = nmr_polymer_sequence[column]['chain_id']
-                            concatenated_nmr_chain[chain_id2] = _cif_chains
+                            concatenated_nmr_chain[chain_id2] = _cif_chain_ids
 
                             warn = f"The chain ID {chain_id2!r} of the sequences in the NMR data "\
-                                f"will be re-assigned to the chain IDs {_cif_chains} in the coordinates during biocuration."
+                                f"will be re-assigned to the chain IDs {_cif_chain_ids} in the coordinates during biocuration."
 
                             self.report.warning.appendDescription('concatenated_sequence',
                                                                   {'file_name': nmr_file_name, 'description': warn})
@@ -35551,10 +35566,10 @@ class NmrDpUtility:
 
             cid_offset = 0
 
-            chains = []
+            chain_ids = []
 
             for s in polymer_sequence:
-                chains.append(s['chain_id'])
+                chain_ids.append(s['chain_id'])
 
             row_id = 1
 
@@ -35629,7 +35644,7 @@ class NmrDpUtility:
 
                     else:
 
-                        cid = chains.index(chain_id) + 1
+                        cid = chain_ids.index(chain_id) + 1
 
                         row.append(cid + cid_offset)  # Entity_assembly_ID
                         row.append(seq_id)  # Comp_index_ID
@@ -35803,7 +35818,7 @@ class NmrDpUtility:
 
                                     else:
 
-                                        cid = chains.index(chain_id) + 1
+                                        cid = chain_ids.index(chain_id) + 1
 
                                         row.append(cid + cid_offset)  # Entity_assembly_ID
                                         row.append(seq_id)  # Comp_index_ID
@@ -39544,9 +39559,9 @@ class NmrDpUtility:
         atom_id_4_name = item_names['atom_id_4']
         angle_type_name = item_names['angle_type']
 
-        dh_chains = set()
+        dh_chain_ids = set()
         dh_seq_ids = {}
-        cs_chains = set()
+        cs_chain_ids = set()
         cs_seq_ids = {}
 
         try:
@@ -39598,7 +39613,7 @@ class NmrDpUtility:
                 if data_type is None or data_type.lower() not in ('phi', 'psi'):
                     return False
 
-                dh_chains.add(chain_id_1)
+                dh_chain_ids.add(chain_id_1)
 
                 seq_ids = [seq_id_1, seq_id_2, seq_id_3, seq_id_4]
                 seq_id_common = collections.Counter(seq_ids).most_common()
@@ -39658,15 +39673,15 @@ class NmrDpUtility:
                         seq_id = i[seq_id_name]
                         atom_id = i[atom_id_name]
 
-                        if chain_id in dh_chains and seq_id in dh_seq_ids[chain_id] and atom_id == 'CA':
-                            cs_chains.add(chain_id)
+                        if chain_id in dh_chain_ids and seq_id in dh_seq_ids[chain_id] and atom_id == 'CA':
+                            cs_chain_ids.add(chain_id)
 
                             if chain_id not in cs_seq_ids:
                                 cs_seq_ids[chain_id] = set()
 
                             cs_seq_ids[chain_id].add(seq_id)
 
-            if cs_chains != dh_chains:
+            if cs_chain_ids != dh_chain_ids:
                 return False
 
             for k, v in dh_seq_ids.items():
@@ -40612,12 +40627,12 @@ class NmrDpUtility:
 
                 atoms = []
 
-                chains = set()
+                chain_ids = set()
 
                 for i in lp_data:
-                    chains.add(i[chain_id_name])
+                    chain_ids.add(i[chain_id_name])
 
-                min_seq_ids = {c: 0 for c in chains}
+                min_seq_ids = {c: 0 for c in chain_ids}
 
                 for i in lp_data:
                     chain_id = i[chain_id_name]
@@ -41321,23 +41336,13 @@ class NmrDpUtility:
                     comp_id = None
 
             elif entity_type == 'non-polymer':
-                np = next((np for np in self.__caC['non_polymer'] if np['auth_chain_id'] == auth_asym_id), None)
-                if np is not None:
-                    try:
-                        comp_id = np['comp_id'][0]
-                    except IndexError:
-                        comp_id = None
-                else:
-                    np = next((np for np in self.__caC['non_polymer']
-                               if np['auth_chain_id'] == auth_asym_id
-                               and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0])), None)
-                    if np is None:
-                        comp_id = None
-                    else:
-                        try:
-                            comp_id = np['comp_id'][0]
-                        except IndexError:
-                            comp_id = None
+                np = next(np for np in self.__caC['non_polymer']
+                          if np['auth_chain_id'] == auth_asym_id
+                          and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
+                try:
+                    comp_id = np['comp_id'][0]
+                except IndexError:
+                    comp_id = None
 
             row[4], row[5], row[6], row[7] = comp_id, auth_asym_id, auth_seq_id, comp_id
             row[11], row[12], row[13] = nef_index, 1, self.__entry_id

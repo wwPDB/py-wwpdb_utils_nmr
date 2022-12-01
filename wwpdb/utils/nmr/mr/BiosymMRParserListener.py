@@ -44,7 +44,7 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+    from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
@@ -92,7 +92,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+    from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
                                updatePolySeqRst,
                                sortPolySeqRst,
@@ -554,10 +554,19 @@ class BiosymMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                       self.__csStat, self.__originalFileName),
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
+
+                memberId = '.'
+                if memberLogicCode == 'OR':
+                    if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        memberId = 0
+                        _atom1 = _atom2 = None
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -565,9 +574,14 @@ class BiosymMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if isinstance(memberId, int):
+                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                           or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            memberId += 1
+                            _atom1, _atom2 = atom1, atom2
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', memberLogicCode,
+                                 '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -659,10 +673,19 @@ class BiosymMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                       self.__csStat, self.__originalFileName),
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
+
+                memberId = '.'
+                if memberLogicCode == 'OR':
+                    if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        memberId = 0
+                        _atom1 = _atom2 = None
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -670,9 +693,14 @@ class BiosymMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if isinstance(memberId, int):
+                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                           or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            memberId += 1
+                            _atom1, _atom2 = atom1, atom2
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', memberLogicCode,
+                                 '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -1291,7 +1319,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file.\n"
                             return
-                if chainId in MAJOR_ASYM_ID_SET:
+                if chainId in LARGE_ASYM_ID:
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                         f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
@@ -1433,25 +1461,25 @@ class BiosymMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.' if dstFunc2 is None else 1, angleName,
+                                 '.' if dstFunc2 is None else 1, None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     if dstFunc2 is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     2, angleName,
+                                     2, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc2, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
                     if dstFunc3 is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     3, angleName,
+                                     3, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc3, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
                     if dstFunc4 is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     4, angleName,
+                                     4, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc4, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
@@ -1551,7 +1579,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', angleName,
+                                 '.', None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 

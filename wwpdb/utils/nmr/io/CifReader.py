@@ -58,6 +58,8 @@ USE_REFLECTIONS = False
 USE_REFLECTIONS_KEEP_STEREO = False
 REORDER = False
 
+LEN_MAJOR_ASYM_ID = 26
+
 
 def M(axis, theta):
     """ Return the rotation matrix associated with counterclockwise rotation about the given axis by theta radians.
@@ -376,11 +378,15 @@ class CifReader:
             auth_seq_id_col = -1 if 'auth_seq_id' not in altDict else altDict['auth_seq_id']
             auth_comp_id_col = -1 if 'auth_comp_id' not in altDict else altDict['auth_comp_id']
 
-            chains = sorted(set(row[chain_id_col] for row in rowList))
+            chainSet = set(row[chain_id_col] for row in rowList)
 
             if ins_code_col == -1 or label_seq_col == -1:
-                sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList),
-                                   key=lambda x: (x[0], x[1]))
+                if catName == 'pdbx_nonpoly_scheme':
+                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList),
+                                       key=lambda x: x[1])
+                else:
+                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList),
+                                       key=lambda x: (len(x[0]), x[0], x[1]))
 
                 keyDict = {(row[chain_id_col], int(row[seq_id_col])): row[comp_id_col] for row in rowList}
 
@@ -391,18 +397,22 @@ class CifReader:
                                        f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
                                        f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
-                if len(chains) > 1:
-                    for c in chains:
+                if len(chainSet) > 1:
+                    for c in chainSet:
                         compDict[c] = [x[2] for x in sortedSeq if x[0] == c]
                         seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
                 else:
-                    c = list(chains)[0]
+                    c = list(chainSet)[0]
                     compDict[c] = [x[2] for x in sortedSeq]
                     seqDict[c] = [x[1] for x in sortedSeq]
 
             else:
-                sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList),
-                                   key=lambda x: (x[0], x[1]))
+                if catName == 'pdbx_nonpoly_scheme':
+                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList),
+                                       key=lambda x: x[1])
+                else:
+                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList),
+                                       key=lambda x: (len(x[0]), x[0], x[1]))
 
                 keyDict = {(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col]): row[comp_id_col] for row in rowList}
 
@@ -415,18 +425,23 @@ class CifReader:
                                        f"{itNameList[label_seq_col]} {row[label_seq_col]}, "
                                        f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
-                if len(chains) > 1:
-                    for c in chains:
+                if len(chainSet) > 1:
+                    for c in chainSet:
                         compDict[c] = [x[4] for x in sortedSeq if x[0] == c]
                         seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
                         insCodeDict[c] = [x[2] for x in sortedSeq if x[0] == c]
                         labelSeqDict[c] = [x[3] for x in sortedSeq if x[0] == c]
                 else:
-                    c = list(chains)[0]
+                    c = list(chainSet)[0]
                     compDict[c] = [x[4] for x in sortedSeq]
                     seqDict[c] = [x[1] for x in sortedSeq]
                     insCodeDict[c] = [x[2] for x in sortedSeq]
                     labelSeqDict[c] = [x[3] for x in sortedSeq]
+
+            chainIds = []
+            for x in sortedSeq:
+                if x[0] not in chainIds:
+                    chainIds.append(x[0])
 
             if auth_chain_id_col != -1:
                 for row in rowList:
@@ -434,9 +449,9 @@ class CifReader:
                     if c not in authChainDict:
                         authChainDict[c] = row[auth_chain_id_col]
 
-            large_model = len(chains) > 26
+            large_model = catName == 'pdbx_poly_seq_scheme' and len(chainIds) > LEN_MAJOR_ASYM_ID
 
-            for i, c in enumerate(chains):
+            for i, c in enumerate(chainIds):
                 ent = {}  # entity
 
                 ident = False
@@ -497,14 +512,14 @@ class CifReader:
                                 else:
                                     ent['auth_comp_id'].append('.')
 
-                    if withStructConf and i < 26:  # save computing resource for large model
+                    if withStructConf and i < LEN_MAJOR_ASYM_ID:  # save computing resource for large model
                         ent['struct_conf'] = self.__extractStructConf(c, seqDict[c])
 
                     entity_poly = self.getDictList('entity_poly')
 
                     etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
-                    if withRmsd and etype is not None and total_models > 1 and i < 26:  # save computing resource for large model
+                    if withRmsd and etype is not None and total_models > 1 and i < LEN_MAJOR_ASYM_ID:  # save computing resource for large model
                         ent['type'] = etype
 
                         randomM = None
@@ -564,9 +579,9 @@ class CifReader:
                             if well_defined_region is not None:
                                 ent['well_defined_region'] = well_defined_region
 
-                if len(chains) > 1:
+                if len(chainIds) > 1:
                     identity = []
-                    for _c in chains:
+                    for _c in chainIds:
                         if _c == c:
                             continue
                         if compDict[_c] == compDict[c]:

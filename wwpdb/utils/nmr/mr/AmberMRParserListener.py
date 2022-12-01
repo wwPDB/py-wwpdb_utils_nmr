@@ -55,7 +55,7 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+    from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
                                            updatePolySeqRstFromAtomSelectionSet,
                                            sortPolySeqRst,
@@ -103,7 +103,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+    from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
                                updatePolySeqRstFromAtomSelectionSet,
                                sortPolySeqRst,
@@ -1120,10 +1120,19 @@ class AmberMRParserListener(ParseTreeListener):
                         if lenIat == COL_DIST:
 
                             if self.__createSfDict:
-                                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet,
+                                                                                       self.__csStat, dstFunc, self.__originalFileName),
                                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                                 sf['id'] += 1
                                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
+
+                                memberId = '.'
+                                if memberLogicCode == 'OR':
+                                    if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                                        memberId = 0
+                                        _atom1 = _atom2 = None
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
@@ -1131,9 +1140,14 @@ class AmberMRParserListener(ParseTreeListener):
                                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                                 if self.__createSfDict and sf is not None:
+                                    if isinstance(memberId, int):
+                                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                           or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                            memberId += 1
+                                            _atom1, _atom2 = atom1, atom2
                                     sf['index_id'] += 1
                                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                                 '.', memberLogicCode,
+                                                 '.', memberId, memberLogicCode,
                                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                                     sf['loop'].add_data(row)
 
@@ -1390,7 +1404,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__createSfDict and sf is not None:
                                 sf['index_id'] += 1
                                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                             '.', angleName,
+                                             '.', None, angleName,
                                              sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                                 sf['loop'].add_data(row)
 
@@ -1954,10 +1968,19 @@ class AmberMRParserListener(ParseTreeListener):
                         if not self.inGenDist:
 
                             if self.__createSfDict:
-                                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet,
+                                                                                       self.__csStat, dstFunc, self.__originalFileName),
                                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                                 sf['id'] += 1
                                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
+
+                                memberId = '.'
+                                if memberLogicCode == 'OR':
+                                    if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                                        memberId = 0
+                                        _atom1 = _atom2 = None
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
@@ -1965,9 +1988,14 @@ class AmberMRParserListener(ParseTreeListener):
                                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                                 if self.__createSfDict and sf is not None:
+                                    if isinstance(memberId, int):
+                                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                           or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                            memberId += 1
+                                            _atom1, _atom2 = atom1, atom2
                                     sf['index_id'] += 1
                                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                                 '.', memberLogicCode,
+                                                 '.', memberId, memberLogicCode,
                                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                                     sf['loop'].add_data(row)
 
@@ -2270,7 +2298,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__createSfDict and sf is not None:
                                 sf['index_id'] += 1
                                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                             '.', angleName,
+                                             '.', None, angleName,
                                              sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                                 sf['loop'].add_data(row)
 
@@ -3185,13 +3213,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                     "Please re-upload the model file.\n"
                                     if not checked:
-                                        if chainId in MAJOR_ASYM_ID_SET:
+                                        if chainId in LARGE_ASYM_ID:
                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                             if 'auth_seq_scheme' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['auth_seq_scheme'] = True
                                 return factor
-                            if chainId in MAJOR_ASYM_ID_SET:
+                            if chainId in LARGE_ASYM_ID:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                 if 'auth_seq_scheme' not in self.reasonsForReParsing:
@@ -3331,13 +3359,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                             "Please re-upload the model file.\n"
                                             if not checked:
-                                                if chainId in MAJOR_ASYM_ID_SET:
+                                                if chainId in LARGE_ASYM_ID:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                                     if 'auth_seq_scheme' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['auth_seq_scheme'] = True
                                         return factor
-                                    if chainId in MAJOR_ASYM_ID_SET:
+                                    if chainId in LARGE_ASYM_ID:
                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         if 'auth_seq_scheme' not in self.reasonsForReParsing:
@@ -3535,7 +3563,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                             "Please re-upload the model file.\n"
                                             if not checked:
-                                                if chainId in MAJOR_ASYM_ID_SET:
+                                                if chainId in LARGE_ASYM_ID:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return True
@@ -3619,7 +3647,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                             "Please re-upload the model file.\n"
                                             if not checked:
-                                                if chainId in MAJOR_ASYM_ID_SET:
+                                                if chainId in LARGE_ASYM_ID:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 
@@ -3743,7 +3771,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                             "Please re-upload the model file.\n"
                                             if not checked:
-                                                if chainId in MAJOR_ASYM_ID_SET:
+                                                if chainId in LARGE_ASYM_ID:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                         return True
@@ -3827,7 +3855,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                             "Please re-upload the model file.\n"
                                             if not checked:
-                                                if chainId in MAJOR_ASYM_ID_SET:
+                                                if chainId in LARGE_ASYM_ID:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 
@@ -4009,7 +4037,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                                 "Please re-upload the model file.\n"
                                                 if not checked:
-                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                    if chainId in LARGE_ASYM_ID:
                                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                             break
@@ -4093,7 +4121,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                                 "Please re-upload the model file.\n"
                                                 if not checked:
-                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                    if chainId in LARGE_ASYM_ID:
                                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 
@@ -4200,7 +4228,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                                 "Please re-upload the model file.\n"
                                                 if not checked:
-                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                    if chainId in LARGE_ASYM_ID:
                                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
                                             break
@@ -4284,7 +4312,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
                                                                 "Please re-upload the model file.\n"
                                                 if not checked:
-                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                    if chainId in LARGE_ASYM_ID:
                                                         self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
 
@@ -5072,7 +5100,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__createSfDict and sf is not None:
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', None,
+                                         '.', None, None,
                                          sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                             sf['loop'].add_data(row)
 
@@ -5381,7 +5409,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None,
+                                     '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom)
                         sf['loop'].add_data(row)
 
@@ -5873,7 +5901,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None,
+                                     '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom)
                         sf['loop'].add_data(row)
 
@@ -6362,7 +6390,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None,
+                                     '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -7006,7 +7034,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None,
+                                     '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom2)
                         sf['loop'].add_data(row)
 
@@ -7806,7 +7834,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     "Please re-upload the model file.\n"
                                 return
                 if enableWarning:
-                    if chainId in MAJOR_ASYM_ID_SET:
+                    if chainId in LARGE_ASYM_ID:
                         self.warningMessage += f"[Atom not found] "\
                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 

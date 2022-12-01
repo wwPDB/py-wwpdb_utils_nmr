@@ -1339,9 +1339,9 @@ class NEFTranslator:
 
             try:
 
-                chains = sorted(set(i[2] for i in seq_data))
+                chain_ids = sorted(set(i[2] for i in seq_data))
                 offset_seq_ids = {i[2]: 0 for i in seq_data}
-                for c in chains:
+                for c in chain_ids:
                     min_seq_id = min(int(i[0]) for i in seq_data if i[2] == c)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
@@ -1357,27 +1357,27 @@ class NEFTranslator:
                                        f"with the same {chain_id} {i[2]}, {seq_id} {i[0]}.")
 
                 if len(sorted_seq[0][2]) > 1:
-                    if len(chains) > 1:
-                        for c in chains:
+                    if len(chain_ids) > 1:
+                        for c in chain_ids:
                             cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
                             seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
-                        c = list(chains)[0]
+                        c = list(chain_ids)[0]
                         cmp_dict[c] = [x[2] for x in sorted_seq]
                         seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
                 else:
-                    if len(chains) > 1:
-                        for c in chains:
+                    if len(chain_ids) > 1:
+                        for c in chain_ids:
                             cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
                             seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
-                        c = list(chains)[0]
+                        c = list(chain_ids)[0]
                         cmp_dict[c] = [x[2] for x in sorted_seq]
                         seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
 
                 asm = []  # assembly of a loop
 
-                for c in chains:
+                for c in chain_ids:
                     ent = {}  # entity
 
                     ent['chain_id'] = str(c)
@@ -1403,9 +1403,9 @@ class NEFTranslator:
                         ent['seq_id'] = seq_dict[c]
                         ent['comp_id'] = cmp_dict[c]
 
-                    if len(chains) > 1:
+                    if len(chain_ids) > 1:
                         identity = []
-                        for _c in chains:
+                        for _c in chain_ids:
                             if _c == c:
                                 continue
                             if seq_dict[_c] == seq_dict[c]:
@@ -1551,9 +1551,9 @@ class NEFTranslator:
 
             try:
 
-                chains = sorted(set(i[2] for i in seq_data))
+                chain_ids = sorted(set(i[2] for i in seq_data))
                 offset_seq_ids = {i[2]: 0 for i in seq_data}
-                for c in chains:
+                for c in chain_ids:
                     min_seq_id = min(int(i[0]) for i in seq_data if i[2] == c)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
@@ -1588,27 +1588,27 @@ class NEFTranslator:
                                        f"with the same {chain_id} {i[2]}, {seq_id} {i[0]}.")
 
                 if len(sorted_seq[0][2]) > 1:
-                    if len(chains) > 1:
-                        for c in chains:
+                    if len(chain_ids) > 1:
+                        for c in chain_ids:
                             cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
                             seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
-                        c = list(chains)[0]
+                        c = list(chain_ids)[0]
                         cmp_dict[c] = [x[2] for x in sorted_seq]
                         seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
                 else:
-                    if len(chains) > 1:
-                        for c in chains:
+                    if len(chain_ids) > 1:
+                        for c in chain_ids:
                             cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
                             seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
-                        c = list(chains)[0]
+                        c = list(chain_ids)[0]
                         cmp_dict[c] = [x[2] for x in sorted_seq]
                         seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
 
                 asm = []  # assembly of a loop
 
-                for c in chains:
+                for c in chain_ids:
                     ent = {}  # entity
 
                     str_c = str(c)
@@ -1635,9 +1635,9 @@ class NEFTranslator:
                         ent['seq_id'] = seq_dict[c]
                         ent['comp_id'] = cmp_dict[c]
 
-                    if len(chains) > 1:
+                    if len(chain_ids) > 1:
                         identity = []
-                        for _c in chains:
+                        for _c in chain_ids:
                             if _c == c:
                                 continue
                             if seq_dict[_c] == seq_dict[c]:
@@ -1764,9 +1764,9 @@ class NEFTranslator:
 
             try:
 
-                chains = sorted(set(i[4] for i in seq_data))
+                chain_ids = sorted(set(i[4] for i in seq_data))
                 offset_seq_ids = {i[4]: 0 for i in seq_data}
-                for c in chains:
+                for c in chain_ids:
                     min_seq_id = min(int(i[3]) for i in seq_data if i[4] == c)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
@@ -1783,27 +1783,27 @@ class NEFTranslator:
                                        f"{acomp_id} {i[1]} vs {chk_dict[chk_key]}.")
 
                 if len(sorted_seq[0][4]) > 1:
-                    if len(chains) > 1:
-                        for c in chains:
+                    if len(chain_ids) > 1:
+                        for c in chain_ids:
                             acmp_dict[c] = [x[4] for x in sorted_seq if x[0] == c]
                             aseq_dict[c] = [x[3] for x in sorted_seq if x[0] == c]
                             asym_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
                             seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
-                        c = list(chains)[0]
+                        c = list(chain_ids)[0]
                         acmp_dict[c] = [x[4] for x in sorted_seq]
                         aseq_dict[c] = [x[3] for x in sorted_seq]
                         asym_dict[c] = [x[2] for x in sorted_seq]
                         seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
                 else:
-                    if len(chains) > 1:
-                        for c in chains:
+                    if len(chain_ids) > 1:
+                        for c in chain_ids:
                             acmp_dict[c] = [x[4] for x in sorted_seq if x[0] == c]
                             aseq_dict[c] = [x[3] for x in sorted_seq if x[0] == c]
                             asym_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
                             seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
                     else:
-                        c = list(chains)[0]
+                        c = list(chain_ids)[0]
                         acmp_dict[c] = [x[4] for x in sorted_seq]
                         aseq_dict[c] = [x[3] for x in sorted_seq]
                         asym_dict[c] = [x[2] for x in sorted_seq]
@@ -1811,7 +1811,7 @@ class NEFTranslator:
 
                 asm = []  # assembly of a loop
 
-                for c in chains:
+                for c in chain_ids:
                     ent = {}  # entity
 
                     ent['chain_id'] = str(c)

@@ -19,14 +19,14 @@ import pynmrstar
 try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
-                                           MAJOR_ASYM_ID_SET,
-                                           LEN_MAJOR_ASYM_ID_SET,
+                                           LARGE_ASYM_ID,
+                                           LEN_LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID)
 except ImportError:
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
-                               MAJOR_ASYM_ID_SET,
-                               LEN_MAJOR_ASYM_ID_SET,
+                               LARGE_ASYM_ID,
+                               LEN_LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID)
 
 
@@ -679,6 +679,8 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
 
 NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                              {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                                              'enforce-non-zero': True},
+                                             {'name': 'Member_ID', 'type': 'positive-int', 'mandatory': False,
                                               'enforce-non-zero': True},
                                              {'name': 'Member_logic_code', 'type': 'enum', 'mandatory': False,
                                               'enum': ('OR', 'AND'),
@@ -1803,7 +1805,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None:
             changed = True
 
-            if len(polySeq) > LEN_MAJOR_ASYM_ID_SET:
+            if len(polySeq) > LEN_LARGE_ASYM_ID:
 
                 if altAuthAtomId is not None:
                     coord = cR.getDictListWithFilter('atom_site',
@@ -1819,7 +1821,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                      [{'name': modelNumName, 'type': 'int',
                                                        'value': representativeModelId},
                                                       {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
-                                                      {'name': authAsymId, 'type': 'enum', 'enum': MAJOR_ASYM_ID_SET}
+                                                      {'name': authAsymId, 'type': 'enum', 'enum': LARGE_ASYM_ID}
                                                       ])
                 else:
                     coord = cR.getDictListWithFilter('atom_site',
@@ -1834,7 +1836,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                      [{'name': modelNumName, 'type': 'int',
                                                        'value': representativeModelId},
                                                       {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
-                                                      {'name': authAsymId, 'type': 'enum', 'enum': MAJOR_ASYM_ID_SET}
+                                                      {'name': authAsymId, 'type': 'enum', 'enum': LARGE_ASYM_ID}
                                                       ])
 
             else:
@@ -2527,7 +2529,7 @@ def getRepresentativeIntraChainIds(atomSelectionSet):
             intraChainIds.add(atom1['chain_id'])
 
     if len(intraChainIds) > MAX_MAG_IDENT_ASYM_ID:
-        for chainId in MAJOR_ASYM_ID_SET:
+        for chainId in LARGE_ASYM_ID:
             if chainId in intraChainIds:
                 return {chainId}
 
@@ -3388,7 +3390,7 @@ def getStarAtom(authToStarSeq, atom):
     return None
 
 
-def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc, authToStarSeq,
+def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryId, dstFunc, authToStarSeq,
            atom1, atom2=None, atom3=None, atom4=None, atom5=None):
     """ Return row data for a given internal restraint subtype.
         @return: data array
@@ -3448,37 +3450,38 @@ def getRow(mrSubtype, id, indexId, combinationId, code, listId, entryId, dstFunc
 
     if mrSubtype in ('dist', 'hbond', 'ssbond'):
         row[key_size + 1] = combinationId
-        row[key_size + 2] = code
+        row[key_size + 2] = memberId
+        row[key_size + 3] = code
         if hasKeyValue(dstFunc, 'target_value'):
-            row[key_size + 3] = dstFunc['target_value']
-            float_row_idx.append(key_size + 3)
-        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
-            row[key_size + 4] = dstFunc['target_value_uncertainty']
+            row[key_size + 4] = dstFunc['target_value']
             float_row_idx.append(key_size + 4)
-        if hasKeyValue(dstFunc, 'lower_linear_limit'):
-            row[key_size + 5] = dstFunc['lower_linear_limit']
+        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+            row[key_size + 5] = dstFunc['target_value_uncertainty']
             float_row_idx.append(key_size + 5)
-        if hasKeyValue(dstFunc, 'lower_limit'):
-            row[key_size + 6] = dstFunc['lower_limit']
+        if hasKeyValue(dstFunc, 'lower_linear_limit'):
+            row[key_size + 6] = dstFunc['lower_linear_limit']
             float_row_idx.append(key_size + 6)
-        if hasKeyValue(dstFunc, 'upper_limit'):
-            row[key_size + 7] = dstFunc['upper_limit']
+        if hasKeyValue(dstFunc, 'lower_limit'):
+            row[key_size + 7] = dstFunc['lower_limit']
             float_row_idx.append(key_size + 7)
-        if hasKeyValue(dstFunc, 'upper_linear_limit'):
-            row[key_size + 8] = dstFunc['upper_linear_limit']
+        if hasKeyValue(dstFunc, 'upper_limit'):
+            row[key_size + 8] = dstFunc['upper_limit']
             float_row_idx.append(key_size + 8)
+        if hasKeyValue(dstFunc, 'upper_linear_limit'):
+            row[key_size + 9] = dstFunc['upper_linear_limit']
+            float_row_idx.append(key_size + 9)
         if hasKeyValue(dstFunc, 'weight'):
-            row[key_size + 9] = dstFunc['weight']
+            row[key_size + 10] = dstFunc['weight']
         # Distance val
 
-        row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
+        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         if hasKeyValue(atom1, 'auth_atom_id'):
-            row[key_size + 15] = atom1['auth_atom_id']
-        row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
+            row[key_size + 16] = atom1['auth_atom_id']
+        row[key_size + 17], row[key_size + 18], row[key_size + 19], row[key_size + 20] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
-            row[key_size + 20] = atom2['auth_atom_id']
+            row[key_size + 21] = atom2['auth_atom_id']
 
     elif mrSubtype == 'dihed':
         if atom1 is not None:
@@ -3822,7 +3825,7 @@ def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
     return row
 
 
-def getDistConstraintType(atomSelectionSet, dstFunc, fileName):
+def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
     """ Return distance constraint type for _Constraint_file.Constraint_type tag value.
         @return 'hydrogen bond', 'disulfide bond', None for others
     """
@@ -3851,16 +3854,20 @@ def getDistConstraintType(atomSelectionSet, dstFunc, fileName):
 
     _fileName = fileName.lower()
 
-    if atom1['chain_id'] != atom2['chain_id']:
-        if upperLimit >= DIST_AMBIG_UP and ('pre' in _fileName or 'paramag' in _fileName):
+    ambig = len(atomSelectionSet[0]) * len(atomSelectionSet[1]) > 1\
+        and (isAmbigAtomSelection(atomSelectionSet[0], csStat)
+             or isAmbigAtomSelection(atomSelectionSet[1], csStat))
+
+    if atom1['chain_id'] != atom2['chain_id'] or ambig:
+        if (upperLimit >= DIST_AMBIG_UP or ambig) and ('pre' in _fileName or 'paramag' in _fileName):
             return 'paramagnetic relaxation'
-        if upperLimit >= DIST_AMBIG_UP and ('cidnp' in _fileName):
+        if (upperLimit >= DIST_AMBIG_UP or ambig) and ('cidnp' in _fileName):
             return 'photo cidnp'
-        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED) and ('csp' in _fileName or 'perturb' in _fileName):
+        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig) and ('csp' in _fileName or 'perturb' in _fileName):
             return 'chemical shift perturbation'
-        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED) and 'mutat' in _fileName:
+        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig) and 'mutat' in _fileName:
             return 'mutation'
-        if 'symm' in _fileName:
+        if atom1['chain_id'] != atom2['chain_id'] and 'symm' in _fileName:
             return 'symmetry'
 
     if 'build' in _fileName and 'up' in _fileName:
@@ -3875,7 +3882,7 @@ def getDistConstraintType(atomSelectionSet, dstFunc, fileName):
     if 'roe' in _fileName:
         return 'ROE'
 
-    if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED:
+    if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig:
         return None
 
     if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _fileName:

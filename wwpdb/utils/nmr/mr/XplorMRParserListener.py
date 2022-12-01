@@ -76,8 +76,8 @@ try:
                                                              PARAMAGNETIC_ELEMENTS,
                                                              FERROMAGNETIC_ELEMENTS,
                                                              LANTHANOID_ELEMENTS)
-    from wwpdb.utils.nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
-                                           MAJOR_ASYM_ID_SET,
+    from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
+                                           LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID,
                                            monDict3,
                                            updatePolySeqRst,
@@ -155,8 +155,8 @@ except ImportError:
                                                  PARAMAGNETIC_ELEMENTS,
                                                  FERROMAGNETIC_ELEMENTS,
                                                  LANTHANOID_ELEMENTS)
-    from nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
-                               MAJOR_ASYM_ID_SET,
+    from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
+                               LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID,
                                monDict3,
                                updatePolySeqRst,
@@ -541,9 +541,9 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
 
-        self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_MAJOR_ASYM_ID_SET
+        self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_LARGE_ASYM_ID
         if self.__largeModel:
-            self.__representativeAsymId = next(c for c in MAJOR_ASYM_ID_SET if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == c))
+            self.__representativeAsymId = next(c for c in LARGE_ASYM_ID if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == c))
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -1646,17 +1646,25 @@ class XplorMRParserListener(ParseTreeListener):
                     self.warningMessage += self.__warningInAtomSelection
                 return
 
-            combinationId = '.'
+            combinationId = memberId = '.'
             if self.__createSfDict:
-                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                       self.__csStat, self.__originalFileName),
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
                 if len(self.atomSelectionSet) > 2:
                     combinationId = 0
+                if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                   and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                        or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                    memberId = 0
 
             for i in range(0, len(self.atomSelectionSet), 2):
                 if isinstance(combinationId, int):
                     combinationId += 1
+                if isinstance(memberId, int):
+                    memberId = 0
+                    _atom1 = _atom2 = None
                 if self.__createSfDict:
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
@@ -1665,9 +1673,14 @@ class XplorMRParserListener(ParseTreeListener):
                         print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
+                        if isinstance(memberId, int):
+                            if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                               or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                memberId += 1
+                                _atom1, _atom2 = atom1, atom2
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     combinationId, memberLogicCode,
+                                     combinationId, memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -1999,7 +2012,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', angleName,
+                                 '.', None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
@@ -2402,7 +2415,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None,
+                                 '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -2780,7 +2793,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None,
+                                 '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -3057,12 +3070,12 @@ class XplorMRParserListener(ParseTreeListener):
                     self.__cur_subtype = 'dihed'
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 1, 'VEANgle',
+                                 1, None, 'VEANgle',
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 2, 'VEANgle',
+                                 2, None, 'VEANgle',
                                  sf['list_id'], self.__entryId, dstFunc2, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     self.__cur_subtype = 'rdc'
@@ -3317,7 +3330,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None,
+                                 '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -3488,7 +3501,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.__cur_subtype = 'dihed'
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', 'ANISotropy',
+                                 '.', None, 'ANISotropy',
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     self.__cur_subtype = 'rdc'
@@ -3954,7 +3967,7 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None,
+                                     '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
@@ -3971,7 +3984,7 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None,
+                                     '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
@@ -3991,7 +4004,7 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None,
+                                     '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc if dstFunc2 is None else dstFunc2, self.__authToStarSeq,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
@@ -4130,7 +4143,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None,
+                                 '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4, atom5)
                     sf['loop'].add_data(row)
 
@@ -4278,7 +4291,7 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None,
+                                     '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1)
                         sf['loop'].add_data(row)
 
@@ -4291,13 +4304,13 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     1, '.',
+                                     1, None, '.',
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1)
                         sf['loop'].add_data(row)
                         #
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     2, '.',
+                                     2, None, '.',
                                      sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, None, atom2)
                         sf['loop'].add_data(row)
 
@@ -5672,7 +5685,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None,
+                                 '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom2)
                     sf['loop'].add_data(row)
 
@@ -6046,7 +6059,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None,
+                                 '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1)
                     sf['loop'].add_data(row)
 
@@ -6325,7 +6338,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None,
+                                 '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1)
                     sf['loop'].add_data(row)
 
@@ -6630,7 +6643,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None,
+                                 '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -6936,7 +6949,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None,
+                                 '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom_id_0, None, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -7275,14 +7288,14 @@ class XplorMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 memberLogicCode = 'AND'
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             1, memberLogicCode,
+                             1, None, memberLogicCode,
                              sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom3)
                 sf['loop'].add_data(row)
                 #
                 sf['index_id'] += 1
                 memberLogicCode = 'AND'
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             2, memberLogicCode,
+                             2, None, memberLogicCode,
                              sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom2, atom3)
                 sf['loop'].add_data(row)
 
@@ -7407,7 +7420,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__createSfDict and sf is not None:
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             '.', None,
+                             '.', None, None,
                              sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
                 sf['loop'].add_data(row)
 
@@ -8664,7 +8677,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "\
                                                                     "Please re-upload the model file.\n"
                                                 if not checked and not self.__cur_union_expr:
-                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                    if chainId in LARGE_ASYM_ID:
                                                         if isPolySeq and not self.__preferAuthSeq\
                                                            and ('label_seq_offset' not in self.reasonsForReParsing
                                                                 or chainId not in self.reasonsForReParsing['label_seq_offset']):
@@ -8698,7 +8711,7 @@ class XplorMRParserListener(ParseTreeListener):
                                            and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
                                            and (self.__reasons is None or 'non_poly_remap' not in self.__reasons)\
                                            and not self.__cur_union_expr:
-                                            if chainId in MAJOR_ASYM_ID_SET:
+                                            if chainId in LARGE_ASYM_ID:
                                                 if seqId < 1 and len(self.__polySeq) == 1:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\

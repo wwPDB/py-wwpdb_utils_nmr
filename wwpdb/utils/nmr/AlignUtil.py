@@ -66,9 +66,9 @@ monDict3 = {'ALA': 'A',
 protonBeginCode = ('H', '1', '2', '3')
 pseProBeginCode = ('H', 'Q', 'M', '1', '2', '3')
 
-MAJOR_ASYM_ID_SET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-LEN_MAJOR_ASYM_ID_SET = len(MAJOR_ASYM_ID_SET)
+LARGE_ASYM_ID = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+LEN_LARGE_ASYM_ID = len(LARGE_ASYM_ID)
 
 # maximum number of magnetically identifiable chain IDs
 MAX_MAG_IDENT_ASYM_ID = 2
@@ -650,7 +650,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
     for i1, s1 in enumerate(polySeqModel):
         chain_id = s1['auth_chain_id']
 
-        if i1 >= LEN_MAJOR_ASYM_ID_SET:
+        if i1 >= LEN_LARGE_ASYM_ID:
             continue
 
         seq_id_name = 'auth_seq_id' if 'auth_seq_id' in s1 else 'seq_id'
@@ -658,7 +658,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
         for i2, s2 in enumerate(polySeqRst):
             chain_id2 = s2['chain_id']
 
-            if i2 >= LEN_MAJOR_ASYM_ID_SET:
+            if i2 >= LEN_LARGE_ASYM_ID:
                 continue
 
             pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
@@ -996,7 +996,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
         _mr_format_name = 'MR'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
 
-    mr_chains = len(polySeqRst) if len(polySeqRst) < LEN_MAJOR_ASYM_ID_SET else LEN_MAJOR_ASYM_ID_SET
+    mr_chains = len(polySeqRst) if len(polySeqRst) < LEN_LARGE_ASYM_ID else LEN_LARGE_ASYM_ID
 
     mat = []
     indices = []
@@ -1004,7 +1004,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
     for i1, s1 in enumerate(polySeqModel):
         chain_id = s1['auth_chain_id']
 
-        if i1 >= LEN_MAJOR_ASYM_ID_SET:
+        if i1 >= LEN_LARGE_ASYM_ID:
             continue
 
         seq_id_name = 'auth_seq_id' if 'auth_seq_id' in s1 else 'seq_id'
@@ -1014,7 +1014,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
         for i2, s2 in enumerate(polySeqRst):
             chain_id2 = s2['chain_id']
 
-            if i2 >= LEN_MAJOR_ASYM_ID_SET:
+            if i2 >= LEN_LARGE_ASYM_ID:
                 continue
 
             result = next((seq_align for seq_align in seqAlign

@@ -57,6 +57,7 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
+                                           protonBeginCode,
                                            updatePolySeqRstFromAtomSelectionSet,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -105,6 +106,7 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
+                               protonBeginCode,
                                updatePolySeqRstFromAtomSelectionSet,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -3202,7 +3204,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                         if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                             checked = True
-                                    if _atomId[0] == 'H':
+                                    if _atomId[0] in protonBeginCode:
                                         ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                     if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                         if ccb is not None:
@@ -3348,7 +3350,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                 if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
-                                            if _atomId[0] == 'H':
+                                            if _atomId[0] in protonBeginCode:
                                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
@@ -3552,7 +3554,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                 if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
-                                            if _atomId[0] == 'H':
+                                            if _atomId[0] in protonBeginCode:
                                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
@@ -3636,7 +3638,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                 if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
-                                            if _atomId[0] == 'H':
+                                            if _atomId[0] in protonBeginCode:
                                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
@@ -3760,7 +3762,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                 if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
-                                            if _atomId[0] == 'H':
+                                            if _atomId[0] in protonBeginCode:
                                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
@@ -3844,7 +3846,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                 if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
-                                            if _atomId[0] == 'H':
+                                            if _atomId[0] in protonBeginCode:
                                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                             if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                 if ccb is not None:
@@ -4026,7 +4028,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
-                                                if _atomId[0] == 'H':
+                                                if _atomId[0] in protonBeginCode:
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
@@ -4110,7 +4112,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
-                                                if _atomId[0] == 'H':
+                                                if _atomId[0] in protonBeginCode:
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
@@ -4217,7 +4219,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
-                                                if _atomId[0] == 'H':
+                                                if _atomId[0] in protonBeginCode:
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
@@ -4301,7 +4303,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
-                                                if _atomId[0] == 'H':
+                                                if _atomId[0] in protonBeginCode:
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
@@ -5058,7 +5060,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     self.atomSelectionSet.append(atomSelection)
 
-                    if atom_id[0] != 'H':
+                    if atom_id[0] not in protonBeginCode:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
                             f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from ihp) is not a proton.\n"
                         continue
@@ -5079,7 +5081,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     self.atomSelectionSet.append(atomSelection)
 
-                    if atom_id[0] != 'H':
+                    if atom_id[0] not in protonBeginCode:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
                             f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from jhp) is not a proton.\n"
                         continue
@@ -5388,7 +5390,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 self.atomSelectionSet.append(atomSelection)
 
-                if atom_id[0] != 'H':
+                if atom_id[0] not in protonBeginCode:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
                         f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.\n"
                     continue
@@ -5878,7 +5880,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 self.atomSelectionSet.append(atomSelection)
 
-                if atom_id[0] != 'H':
+                if atom_id[0] not in protonBeginCode:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
                         f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.\n"
                     continue
@@ -6245,13 +6247,13 @@ class AmberMRParserListener(ParseTreeListener):
                         comp_id_j = atom_sel_j['comp_id']
                         atom_id_j = atom_sel_j['atom_id']
                         if self.__ccU.updateChemCompDict(comp_id_j):  # matches with comp_id in CCD
-                            if atom_id_j[0] == 'H':
+                            if atom_id_j[0] in protonBeginCode:
                                 b = next((b for b in self.__ccU.lastBonds
                                           if atom_id_j in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
                             else:
                                 b = next((b for b in self.__ccU.lastBonds
-                                          if (b[self.__ccU.ccbAtomId1] == atom_id_j and b[self.__ccU.ccbAtomId2][0] != 'H')
-                                          or (b[self.__ccU.ccbAtomId2] == atom_id_j and b[self.__ccU.ccbAtomId1][0] != 'H')), None)
+                                          if (b[self.__ccU.ccbAtomId1] == atom_id_j and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode)
+                                          or (b[self.__ccU.ccbAtomId2] == atom_id_j and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)), None)
                             if b is not None:
                                 atom_id_i = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_j else b[self.__ccU.ccbAtomId2]
                                 atom_sel_i = copy.copy(atom_sel_j)
@@ -6281,13 +6283,13 @@ class AmberMRParserListener(ParseTreeListener):
                         comp_id_i = atom_sel_i['comp_id']
                         atom_id_i = atom_sel_i['atom_id']
                         if self.__ccU.updateChemCompDict(comp_id_i):  # matches with comp_id in CCD
-                            if atom_id_i[0] == 'H':
+                            if atom_id_i[0] in protonBeginCode:
                                 b = next((b for b in self.__ccU.lastBonds
                                           if atom_id_i in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
                             else:
                                 b = next((b for b in self.__ccU.lastBonds
-                                          if (b[self.__ccU.ccbAtomId1] == atom_id_i and b[self.__ccU.ccbAtomId2][0] != 'H')
-                                          or (b[self.__ccU.ccbAtomId2] == atom_id_i and b[self.__ccU.ccbAtomId1][0] != 'H')), None)
+                                          if (b[self.__ccU.ccbAtomId1] == atom_id_i and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode)
+                                          or (b[self.__ccU.ccbAtomId2] == atom_id_i and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)), None)
                             if b is not None:
                                 atom_id_j = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_i else b[self.__ccU.ccbAtomId2]
                                 atom_sel_j = copy.copy(atom_sel_i)
@@ -7822,7 +7824,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if seqId == 1 and atomId in ('H', 'HN'):
                     self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return
-                if atomId[0] == 'H':
+                if atomId[0] in protonBeginCode:
                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                 if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                     if ccb is not None:

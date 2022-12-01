@@ -52,6 +52,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
                                            LARGE_ASYM_ID,
                                            monDict3,
+                                           protonBeginCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -103,6 +104,7 @@ except ImportError:
     from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
                                LARGE_ASYM_ID,
                                monDict3,
+                               protonBeginCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -2762,6 +2764,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                         if len(typeSymbols) > 1:
                                             continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                    if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y' and not atomSpecified:
+                                        continue
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
                                         if len(self.__cur_auth_atom_id) > 0:
@@ -2773,7 +2777,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 if seqId == 1 and _atomId in ('H', 'HN'):
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
-                                                if _atomId[0] == 'H':
+                                                if _atomId[0] in protonBeginCode:
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:

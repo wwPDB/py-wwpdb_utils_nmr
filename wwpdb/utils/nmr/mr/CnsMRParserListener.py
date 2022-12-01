@@ -68,6 +68,7 @@ try:
                                            LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID,
                                            monDict3,
+                                           protonBeginCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -135,6 +136,7 @@ except ImportError:
                                LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID,
                                monDict3,
+                               protonBeginCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -2163,7 +2165,7 @@ class CnsMRParserListener(ParseTreeListener):
                                or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        if atom_id_1[0] == 'H' and atom_id_2[0] == 'H':
+                        if atom_id_1[0] in protonBeginCode and atom_id_2[0] in protonBeginCode:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}). "\
@@ -2852,7 +2854,7 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             for atom1 in self.atomSelectionSet[0]:
-                if atom1['atom_id'][0] != 'H':
+                if atom1['atom_id'][0] not in protonBeginCode:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"Not a proton; {atom1}.\n"
                 return
@@ -2920,7 +2922,7 @@ class CnsMRParserListener(ParseTreeListener):
             dstFunc = {'rcoil': rcoil}
 
             for atom1 in self.atomSelectionSet[0]:
-                if atom1['atom_id'][0] != 'H':
+                if atom1['atom_id'][0] not in protonBeginCode:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"Not a proton; {atom1}.\n"
                     return
@@ -2992,7 +2994,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#proton_shift_amides.
     def exitProton_shift_amides(self, ctx: CnsMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
         for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'] != 'H':
+            if atom1['atom_id'] not in protonBeginCode:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Not a backbone amide proton; {atom1}.\n"
                 return
@@ -3771,7 +3773,7 @@ class CnsMRParserListener(ParseTreeListener):
                 sf['tags'].append(['weight', self.ncsWeight])
 
         for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'] == 'H':
+            if atom1['atom_id'] in protonBeginCode:
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (NCS/GROUP) id={self.geoRestraints} "
@@ -4895,6 +4897,8 @@ class CnsMRParserListener(ParseTreeListener):
                                         if len(typeSymbols) > 1:
                                             continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                    if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y' and not atomSpecified:
+                                        continue
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
                                         if len(self.__cur_auth_atom_id) > 0:
@@ -4906,7 +4910,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                 if seqId == 1 and _atomId in ('H', 'HN'):
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
-                                                if _atomId[0] == 'H':
+                                                if _atomId[0] in protonBeginCode:
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:

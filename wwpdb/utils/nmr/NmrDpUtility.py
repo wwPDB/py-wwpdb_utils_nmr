@@ -5274,6 +5274,8 @@ class NmrDpUtility:
         # bond length in model
         self.__coord_bond_length = {}
 
+        self.__is_cyclic_polymer = {}
+
         # CIF reader
         self.__cR = CifReader(self.__verbose, self.__lfh)
 
@@ -34842,7 +34844,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
 
-                        if file_type == 'nmr-star' and details_col != -1:
+                        if cyclic and file_type == 'nmr-star' and details_col != -1:
                             _details = loop.data[l][details_col]
                             details = f"{chain_id}:{seq_id}:{comp_id}:{atom_name} is not present in the coordinate. "\
                                 "However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n"
@@ -36151,6 +36153,23 @@ class NmrDpUtility:
             @return: True for cyclic polymer, False otherwise
         """
 
+        if nmr_chain_id in self.__is_cyclic_polymer:
+            return self.__is_cyclic_polymer[nmr_chain_id]
+
+        try:
+
+            is_cyclic = self.__isCyclicPolymer__(nmr_chain_id)
+
+            return is_cyclic
+
+        finally:
+            self.__is_cyclic_polymer[nmr_chain_id] = is_cyclic
+
+    def __isCyclicPolymer__(self, nmr_chain_id):
+        """ Return whether a given chain is cyclic polymer based on coordinate annotation.
+            @return: True for cyclic polymer, False otherwise
+        """
+
         cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
         if cif_ps is None:
@@ -36184,11 +36203,11 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer__() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__isCyclicPolymer() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+NmrDpUtility.__isCyclicPolymer__() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -36218,11 +36237,11 @@ class NmrDpUtility:
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer() ++ Error  - " + str(e))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer__() ++ Error  - " + str(e))
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__isCyclicPolymer() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+NmrDpUtility.__isCyclicPolymer__() ++ Error  - {str(e)}\n")
 
                     return False
 

@@ -62,6 +62,7 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
+                                           protonBeginCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -124,6 +125,7 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
+                               protonBeginCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -2882,7 +2884,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if seqId == 1 and atomId in ('H', 'HN'):
                     self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return
-                if atomId[0] == 'H':
+                if atomId[0] in protonBeginCode:
                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                 if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                     if ccb is not None:
@@ -6765,7 +6767,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if len(_head) == 1 and len(_tail) == 1:
                     distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
-                    if distance > (3.4 if atom_id_1[0] != 'H' and atom_id_2[0] != 'H' else 2.4):
+                    if distance > (3.4 if atom_id_1[0] not in protonBeginCode and atom_id_2[0] not in protonBeginCode else 2.4):
                         self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                             f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                             f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
@@ -6878,7 +6880,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if len(_head) == 1 and len(_tail) == 1:
                     distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
-                    if distance > (3.5 if atom_id_1[0] != 'H' and atom_id_2[0] != 'H' else 2.5):
+                    if distance > (3.5 if atom_id_1[0] not in protonBeginCode and atom_id_2[0] not in protonBeginCode else 2.5):
                         self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
                             f"The distance of the covalent bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
                             f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"

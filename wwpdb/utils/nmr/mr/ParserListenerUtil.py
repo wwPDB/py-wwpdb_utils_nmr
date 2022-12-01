@@ -2940,7 +2940,7 @@ def getRdcCode(atoms):
         if vector == {'CA', 'N'} and offset == 0:
             return 'RDC_CAN'
         if atom_id_1[0] == atom_id_2[0]:
-            if atom_id_1[0] == 'H':
+            if atom_id_1[0] in protonBeginCode:
                 return 'RDC_HH'
             if atom_id_1[0] == 'C':
                 return 'RDC_CC'
@@ -3894,13 +3894,13 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
     atom_id_1_ = atom_id_1[0]
     atom_id_2_ = atom_id_2[0]
 
-    if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
+    if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
         return 'hydrogen bond'
 
     if (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
         return 'hydrogen bond'
 
-    if (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+    if (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
         return 'hydrogen bond'
 
     if (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
@@ -3909,7 +3909,7 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
     if (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
         return 'hydrogen bond'
 
-    if (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+    if (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
         return 'hydrogen bond'
 
     if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):

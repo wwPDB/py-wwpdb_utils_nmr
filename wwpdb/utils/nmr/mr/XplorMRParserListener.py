@@ -80,6 +80,7 @@ try:
                                            LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID,
                                            monDict3,
+                                           protonBeginCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -159,6 +160,7 @@ except ImportError:
                                LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID,
                                monDict3,
+                               protonBeginCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -1470,7 +1472,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     try:
                         atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
-                        if atom_id_2[0] == 'H':
+                        if atom_id_2[0] in protonBeginCode:
                             self.distRestraints -= 1
                             self.preRestraints += 1
                             if self.__cur_subtype_altered:
@@ -2378,7 +2380,7 @@ class XplorMRParserListener(ParseTreeListener):
                                or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        if atom_id_1[0] == 'H' and atom_id_2[0] == 'H':
+                        if atom_id_1[0] in protonBeginCode and atom_id_2[0] in protonBeginCode:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                                 "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}). "\
@@ -2773,7 +2775,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             else:
-                if atom_id_1[0] != 'H' or atom_id_2[0] != 'H':
+                if atom_id_1[0] not in protonBeginCode or atom_id_2[0] not in protonBeginCode:
                     self.warningMessage += f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"\
                         f"Found {spin_system} dipolar coupling vector in the 'XDIPolar' statement, which usually accepts 1H-1H dipolar coupling; "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
@@ -4274,7 +4276,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             for atom1 in self.atomSelectionSet[0]:
-                if atom1['atom_id'][0] != 'H':
+                if atom1['atom_id'][0] not in protonBeginCode:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"Not a proton; {atom1}.\n"
                 return
@@ -4342,7 +4344,7 @@ class XplorMRParserListener(ParseTreeListener):
             dstFunc = {'rcoil': rcoil}
 
             for atom1 in self.atomSelectionSet[0]:
-                if atom1['atom_id'][0] != 'H':
+                if atom1['atom_id'][0] not in protonBeginCode:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                         f"Not a proton; {atom1}.\n"
                     return
@@ -6043,7 +6045,7 @@ class XplorMRParserListener(ParseTreeListener):
             comp_id = self.atomSelectionSet[1][0]['comp_id']
             atom_id = self.atomSelectionSet[1][0]['atom_id']
 
-            if atom_id[0] != 'H':
+            if atom_id[0] not in protonBeginCode:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Not a proton;  {chain_id}:{seq_id}:{comp_id}:{atom_id}.\n"
                 return
@@ -7171,7 +7173,7 @@ class XplorMRParserListener(ParseTreeListener):
                 "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.\n"
             return
 
-        if hydrogen['atom_id'][0] != 'H':
+        if hydrogen['atom_id'][0] not in protonBeginCode:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "Not a hydrogen; "\
                 f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "\
@@ -7351,7 +7353,7 @@ class XplorMRParserListener(ParseTreeListener):
                 f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}.\n"
             return
 
-        if acceptor['atom_id'][0] != 'H':
+        if acceptor['atom_id'][0] not in protonBeginCode:
             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                 "The acceptor atom type should be Hydrogen; "\
                 f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}.\n"
@@ -8653,6 +8655,8 @@ class XplorMRParserListener(ParseTreeListener):
                                         if len(typeSymbols) > 1:
                                             continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                    if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y' and not atomSpecified:
+                                        continue
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
                                         if len(self.__cur_auth_atom_id) > 0:
@@ -8664,7 +8668,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                 if seqId == 1 and _atomId in ('H', 'HN'):
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
-                                                if _atomId[0] == 'H':
+                                                if _atomId[0] in protonBeginCode:
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:

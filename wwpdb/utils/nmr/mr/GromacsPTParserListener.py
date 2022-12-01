@@ -25,6 +25,7 @@ try:
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
+                                           protonBeginCode,
                                            letterToDigit, indexToLetter,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -41,6 +42,7 @@ except ImportError:
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
+                               protonBeginCode,
                                letterToDigit, indexToLetter,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -244,7 +246,7 @@ class GromacsPTParserListener(ParseTreeListener):
                 authAtomIds = [atomNum['auth_atom_id'] for atomNum in self.__atomNumberDict.values()
                                if atomNum['chain_id'] == chainId
                                and atomNum['seq_id'] == seqId
-                               and atomNum['auth_atom_id'][0] != 'H']
+                               and atomNum['auth_atom_id'][0] not in protonBeginCode]
                 authCompId = translateToStdResName(authCompId, self.__ccU)
                 if self.__ccU.updateChemCompDict(authCompId):
                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]

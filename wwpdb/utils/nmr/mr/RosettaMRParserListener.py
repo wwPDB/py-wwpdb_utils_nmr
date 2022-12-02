@@ -52,8 +52,9 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+    from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
+                                           protonBeginCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -106,8 +107,9 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (MAJOR_ASYM_ID_SET,
+    from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
+                               protonBeginCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -642,7 +644,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                       self.__csStat, self.__originalFileName),
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -653,8 +656,17 @@ class RosettaMRParserListener(ParseTreeListener):
 
             has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
-            if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
-                memberLogicCode = '.'
+            if self.__createSfDict:
+                if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
+                    memberLogicCode = '.'
+
+                memberId = '.'
+                if memberLogicCode == 'OR':
+                    if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        memberId = 0
+                        _atom1 = _atom2 = None
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -664,9 +676,14 @@ class RosettaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if isinstance(memberId, int):
+                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                           or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            memberId += 1
+                            _atom1, _atom2 = atom1, atom2
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', memberLogicCode,
+                                 '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -1326,7 +1343,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if seqId == 1 and atomId in ('H', 'HN'):
                     self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return
-                if atomId[0] == 'H':
+                if atomId[0] in protonBeginCode:
                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                 if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                     if ccb is not None:
@@ -1336,7 +1353,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file.\n"
                             return
-                if chainId in MAJOR_ASYM_ID_SET:
+                if chainId in LARGE_ASYM_ID:
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                         f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
@@ -1699,7 +1716,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict and sf is not None:
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             '.', angleName,
+                             '.', None, angleName,
                              sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
@@ -1803,7 +1820,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict and sf is not None:
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             1, angleName,
+                             1, None, angleName,
                              sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
@@ -1824,7 +1841,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict and sf is not None:
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             2, angleName,
+                             2, None, angleName,
                              sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
@@ -3444,7 +3461,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None,
+                                 '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -3592,6 +3609,14 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict and memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
                 memberLogicCode = '.'
 
+            memberId = '.'
+            if memberLogicCode == 'OR':
+                if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                   and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                        or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                    memberId = 0
+                    _atom1 = _atom2 = None
+
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -3600,9 +3625,14 @@ class RosettaMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} (CS-ROSETTA: disulfide bond linkage) id={self.ssbondRestraints} "
                           f"atom1={atom1} atom2={atom2}")
                 if self.__createSfDict and sf is not None:
+                    if isinstance(memberId, int):
+                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                           or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            memberId += 1
+                            _atom1, _atom2 = atom1, atom2
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', memberLogicCode,
+                                 '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 

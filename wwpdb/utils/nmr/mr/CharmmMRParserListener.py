@@ -49,9 +49,10 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
-                                           MAJOR_ASYM_ID_SET,
+    from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
+                                           LARGE_ASYM_ID,
                                            monDict3,
+                                           protonBeginCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -100,9 +101,10 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
-                               MAJOR_ASYM_ID_SET,
+    from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
+                               LARGE_ASYM_ID,
                                monDict3,
+                               protonBeginCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -234,6 +236,9 @@ class CharmmMRParserListener(ParseTreeListener):
     __cur_symbol_name = ''
     __cur_vflc_op_code = ''
 
+    # union expression
+    __cur_union_expr = False
+
     depth = 0
 
     stackSelections = None  # stack of selection
@@ -342,9 +347,9 @@ class CharmmMRParserListener(ParseTreeListener):
             else:
                 self.__nonPolySeq = self.__branched
 
-        self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_MAJOR_ASYM_ID_SET
+        self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_LARGE_ASYM_ID
         if self.__largeModel:
-            self.__representativeAsymId = next(c for c in MAJOR_ASYM_ID_SET if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == c))
+            self.__representativeAsymId = next(c for c in LARGE_ASYM_ID if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == c))
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -651,11 +656,23 @@ class CharmmMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            if len(self.atomSelectionSet[0]) == 0 or len(self.atomSelectionSet[1]) == 0:
+                if len(self.__warningInAtomSelection) > 0:
+                    self.warningMessage += self.__warningInAtomSelection
+                return
+
+            memberId = '.'
             if self.__createSfDict:
-                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                       self.__csStat, self.__originalFileName),
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
+                if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                   and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                        or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                    memberId = 0
+                    _atom1 = _atom2 = None
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -663,9 +680,14 @@ class CharmmMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if isinstance(memberId, int):
+                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                           or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            memberId += 1
+                            _atom1, _atom2 = atom1, atom2
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', memberLogicCode,
+                                 '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -749,7 +771,7 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', angleName,
+                                 '.', None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
@@ -1634,7 +1656,7 @@ class CharmmMRParserListener(ParseTreeListener):
             while self.stackSelections:
                 _selection = self.stackSelections.pop()
                 if _selection is not None:
-                    if self.depth > 0:
+                    if self.__cur_union_expr:
                         for _atom in _selection:
                             if _atom not in atomSelection:
                                 atomSelection.append(_atom)
@@ -1692,8 +1714,10 @@ class CharmmMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CharmmMRParser#selection_expression.
     def enterSelection_expression(self, ctx: CharmmMRParser.Selection_expressionContext):
+        self.__cur_union_expr = bool(ctx.Or_op(0))
+
         if self.__sel_expr_debug:
-            print("  " * self.depth + f"enter_sel_expr, union: {bool(ctx.Or_op(0))}")
+            print("  " * self.depth + f"enter_sel_expr, union: {self.__cur_union_expr}")
 
         if self.depth > 0 and len(self.factor) > 0:
             if 'atom_selection' not in self.factor:
@@ -1724,6 +1748,8 @@ class CharmmMRParserListener(ParseTreeListener):
             self.stackSelections.append(atomSelection)
 
         self.factor = {}
+
+        self.__cur_union_expr = bool(ctx.Or_op(0))
 
     # Enter a parse tree produced by CharmmMRParser#term.
     def enterTerm(self, ctx: CharmmMRParser.TermContext):
@@ -2260,6 +2286,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         _atomIdSelect.add(realAtomId)
 
             _factor['atom_id'] = list(_atomIdSelect)
+
             if len(_factor['atom_id']) == 0:
                 self.__preferAuthSeq = not self.__preferAuthSeq
 
@@ -2363,16 +2390,20 @@ class CharmmMRParserListener(ParseTreeListener):
             error_type = "Insufficient atom selection" if 'atom_num' not in __factor else 'Atom not found'
             if self.__cur_subtype != 'plane':
                 if cifCheck:
-                    self.warningMessage += f"[{error_type}] {self.__getCurrentRestraint()}"\
-                        f"The {clauseName} has no effect for a factor {__factor}.\n"
-                    self.__preferAuthSeq = not self.__preferAuthSeq
-                    self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
-                    self.__setLocalSeqScheme()
-                    # """
-                    # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
-                    #     if 'label_seq_scheme' not in self.reasonsForReParsing:
-                    #         self.reasonsForReParsing['label_seq_scheme'] = True
-                    # """
+                    if self.__cur_union_expr:
+                        self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                            f"The {clauseName} has no effect for a factor {__factor}.\n"
+                    else:
+                        self.warningMessage += f"[{error_type}] {self.__getCurrentRestraint()}"\
+                            f"The {clauseName} has no effect for a factor {__factor}.\n"
+                        self.__preferAuthSeq = not self.__preferAuthSeq
+                        self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
+                        self.__setLocalSeqScheme()
+                        # """
+                        # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
+                        #     if 'label_seq_scheme' not in self.reasonsForReParsing:
+                        #         self.reasonsForReParsing['label_seq_scheme'] = True
+                        # """
                 else:
                     self.__warningInAtomSelection += f"[{error_type}] {self.__getCurrentRestraint()}"\
                         f"The {clauseName} has no effect for a factor {__factor}. "\
@@ -2733,6 +2764,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                         if len(typeSymbols) > 1:
                                             continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                    if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y' and not atomSpecified:
+                                        continue
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
                                         if len(self.__cur_auth_atom_id) > 0:
@@ -2744,7 +2777,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 if seqId == 1 and _atomId in ('H', 'HN'):
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
-                                                if _atomId[0] == 'H':
+                                                if _atomId[0] in protonBeginCode:
                                                     ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                                 if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
                                                     if ccb is not None:
@@ -2756,8 +2789,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                 self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "\
                                                                     "Please re-upload the model file.\n"
-                                                if not checked:
-                                                    if chainId in MAJOR_ASYM_ID_SET:
+                                                if not checked and not self.__cur_union_expr:
+                                                    if chainId in LARGE_ASYM_ID:
                                                         if isPolySeq and not self.__preferAuthSeq\
                                                            and ('label_seq_offset' not in self.reasonsForReParsing
                                                                 or chainId not in self.reasonsForReParsing['label_seq_offset']):
@@ -2789,8 +2822,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                         # """
                                         if cifCheck and self.__cur_subtype != 'plane'\
                                            and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
-                                           and (self.__reasons is None or 'non_poly_remap' not in self.__reasons):
-                                            if chainId in MAJOR_ASYM_ID_SET:
+                                           and (self.__reasons is None or 'non_poly_remap' not in self.__reasons)\
+                                           and not self.__cur_union_expr:
+                                            if chainId in LARGE_ASYM_ID:
                                                 if seqId < 1 and len(self.__polySeq) == 1:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\
@@ -2986,7 +3020,8 @@ class CharmmMRParserListener(ParseTreeListener):
         elif hasAuthSeqId1 and not hasAuthSeqId2:
             __selection1 = copy.deepcopy(_selection1)
             for _atom in __selection1:
-                _atom.pop('auth_atom_id')
+                if 'auth_atom_id' in _atom:
+                    _atom.pop('auth_atom_id')
             for idx, _atom in enumerate(__selection1):
                 if isinstance(_atom, str) and _atom == '*':
                     return _selection2
@@ -3001,7 +3036,8 @@ class CharmmMRParserListener(ParseTreeListener):
         elif not hasAuthSeqId1 and hasAuthSeqId2:
             __selection2 = copy.deepcopy(_selection2)
             for idx, _atom in enumerate(__selection2):
-                _atom.pop('auth_atom_id')
+                if 'auth_atom_id' in _atom:
+                    _atom.pop('auth_atom_id')
             for idx, _atom in enumerate(__selection2):
                 if isinstance(_atom, str) and _atom == '*':
                     return _selection1
@@ -3016,10 +3052,12 @@ class CharmmMRParserListener(ParseTreeListener):
         else:
             __selection1 = copy.deepcopy(_selection1)
             for _atom in __selection1:
-                _atom.pop('auth_atom_id')
+                if 'auth_atom_id' in _atom:
+                    _atom.pop('auth_atom_id')
             __selection2 = copy.deepcopy(_selection2)
             for _atom in __selection2:
-                _atom.pop('auth_atom_id')
+                if 'auth_atom_id' in _atom:
+                    _atom.pop('auth_atom_id')
             for idx, _atom in enumerate(__selection1):
                 if isinstance(_atom, str) and _atom == '*':
                     return _selection2

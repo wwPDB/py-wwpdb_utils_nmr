@@ -211,7 +211,7 @@ try:
                                            beautifyPolySeq,
                                            getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
                                            getOneLetterCode, getOneLetterCodeSequence,
-                                           letterToDigit, indexToLetter,
+                                           letterToDigit,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -291,7 +291,7 @@ except ImportError:
                                beautifyPolySeq,
                                getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
                                getOneLetterCode, getOneLetterCodeSequence,
-                               letterToDigit, indexToLetter,
+                               letterToDigit,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -2354,7 +2354,9 @@ class NmrDpUtility:
                                    'fchiral_restraint': None,
                                    'other_restraint': None
                                    },
-                           'nmr-star': {'poly_seq': [{'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
+                           'nmr-star': {'poly_seq': [{'name': 'Entity_ID', 'type': 'positive-int', 'mandatory': False},
+                                                     {'name': 'Seq_ID', 'type': 'int', 'mandatory': False},
+                                                     {'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
                                                      {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                      {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                                      {'name': 'Auth_variant_ID', 'type': 'str', 'mandatory': False},
@@ -3502,8 +3504,7 @@ class NmrDpUtility:
                                      },
                              'nmr-star': {'entry_info': ['Software_ID', 'Software_label', 'Methods_ID', 'Methods_label', 'Software_name',
                                                          'Script_name', 'Script', 'Software_specific_info', 'Sf_ID', 'Entry_ID', 'Software_applied_list_ID'],
-                                          'poly_seq': ['Assembly_chem_comp_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
-                                                       'Comp_ID', 'Seq_ID',
+                                          'poly_seq': ['Assembly_chem_comp_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Comp_ID', 'Seq_ID',
                                                        'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID',
                                                        'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
                                           'entity': None,
@@ -8459,7 +8460,7 @@ class NmrDpUtility:
                                     has_rdc_restraint = True
 
                                 elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like or rdc_range_like or has_hbond_restraint)\
-                                        and names[0][0] in hbond_da_atom_types and names[1][0] == 'H' and names[2][0] in hbond_da_atom_types:
+                                        and names[0][0] in hbond_da_atom_types and names[1][0] in protonBeginCode and names[2][0] in hbond_da_atom_types:
                                     has_hbond_restraint = True
 
                                 atom_likes = 0
@@ -14730,7 +14731,7 @@ class NmrDpUtility:
             @return: True for representative comp IDs are matched, False otherwise
         """
 
-        if comp_id is emptyValue or ref_comp_id in emptyValue:
+        if comp_id in emptyValue or ref_comp_id in emptyValue:
             return False
 
         if '_' in comp_id:
@@ -18639,13 +18640,13 @@ class NmrDpUtility:
 
                                 # hydrogen bond begins
 
-                                elif (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
+                                elif (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
                                     pass
 
                                 elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
                                     pass
 
-                                elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+                                elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
                                     pass
 
                                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
@@ -18654,7 +18655,7 @@ class NmrDpUtility:
                                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
                                     pass
 
-                                elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+                                elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
                                     pass
 
                                 elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
@@ -24163,7 +24164,7 @@ class NmrDpUtility:
                                         + f") which is a {variant_name} {_variant_!r} is not present in the coordinate."
 
                                     checked = False
-                                    if atom_id_[0] == 'H':
+                                    if atom_id_[0] in protonBeginCode:
                                         cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id_), None)
                                         ccb = next((ccb for ccb in self.__ccU.lastBonds
                                                     if atom_id_ in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
@@ -29437,7 +29438,7 @@ class NmrDpUtility:
 
             if not ambig:
 
-                if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
+                if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
 
                     if 1.2 - delta_minus <= target_value <= 1.5:
                         hydrogen_bond_type = 'F...H-x'
@@ -29461,7 +29462,7 @@ class NmrDpUtility:
                         hydrogen_bond_type = 'F...h-F (too far!)'
                         hydrogen_bond = True
 
-                elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+                elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
 
                     if 1.5 - delta_minus <= target_value <= 2.5:
                         hydrogen_bond_type = 'O...H-x'
@@ -29497,7 +29498,7 @@ class NmrDpUtility:
                         hydrogen_bond_type = 'O...h-O (too far!)'
                         hydrogen_bond = True
 
-                elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+                elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
 
                     if 1.5 - delta_minus <= target_value <= 2.5:
                         hydrogen_bond_type = 'N...H-x'
@@ -29779,7 +29780,7 @@ class NmrDpUtility:
             atom_id_1_ = atom_id_1[0]
             atom_id_2_ = atom_id_2[0]
 
-            if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
+            if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
 
                 if 1.2 <= target_value <= 1.5:
                     hydrogen_bond_type = 'F...H-x'
@@ -29803,7 +29804,7 @@ class NmrDpUtility:
                     hydrogen_bond_type = 'F...h-F (too far!)'
                     hydrogen_bond = True
 
-            elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+            elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
 
                 if 1.5 <= target_value <= 2.5:
                     hydrogen_bond_type = 'O...H-x'
@@ -29839,7 +29840,7 @@ class NmrDpUtility:
                     hydrogen_bond_type = 'O...h-O (too far!)'
                     hydrogen_bond = True
 
-            elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+            elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
 
                 if 1.5 <= target_value <= 2.5:
                     hydrogen_bond_type = 'N...H-x'
@@ -33555,10 +33556,7 @@ class NmrDpUtility:
                         if self.__combined_mode:
                             continue
 
-                        _cif_chain_ids = []
-                        for _row, _column in indices:
-                            if column == _column:
-                                _cif_chain_ids.append(cif_polymer_sequence[_row]['chain_id'])
+                        _cif_chain_ids = [cif_polymer_sequence[_row]['chain_id'] for _row, _column in indices if column == _column]
 
                         if len(_cif_chain_ids) > 1:
                             chain_id2 = nmr_polymer_sequence[column]['chain_id']
@@ -34109,10 +34107,7 @@ class NmrDpUtility:
                         if self.__combined_mode:
                             continue
 
-                        _cif_chain_ids = []
-                        for _row, _column in indices:
-                            if column == _column:
-                                _cif_chain_ids.append(cif_polymer_sequence[_row]['chain_id'])
+                        _cif_chain_ids = [cif_polymer_sequence[_row]['chain_id'] for _row, _column in indices if column == _column]
 
                         if len(_cif_chain_ids) > 1:
                             chain_id2 = nmr_polymer_sequence[column]['chain_id']
@@ -34819,13 +34814,17 @@ class NmrDpUtility:
                         idx_msg = f"[Check row of {index_tag} {i[index_tag]}] "
 
                     err = idx_msg + "Atom ("\
-                        + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
+                        + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
+                                                        comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
                         + ") is not present in the coordinate."
 
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
 
-                    if self.__nonblk_bad_nterm and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__coord_unobs_res) and atom_id_ in ('H', 'H1')\
-                       and (cyclic or comp_id == 'PRO' or (atom_id_ == 'H' or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
+                    if self.__nonblk_bad_nterm\
+                       and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__coord_unobs_res)\
+                       and atom_id_ in ('H', 'H1') and (cyclic or comp_id == 'PRO'
+                                                        or (atom_id_ in protonBeginCode
+                                                            or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
 
                         err += " However, it is acceptable if corresponding atom name, H1, is given during biocuration "
 
@@ -34844,7 +34843,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
 
-                        if cyclic and file_type == 'nmr-star' and details_col != -1:
+                        if cyclic and file_type == 'nmr-star' and seq_id == 1 and details_col != -1:
                             _details = loop.data[l][details_col]
                             details = f"{chain_id}:{seq_id}:{comp_id}:{atom_name} is not present in the coordinate. "\
                                 "However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n"
@@ -34860,7 +34859,7 @@ class NmrDpUtility:
                         if comp_id in monDict3:
 
                             checked = False
-                            if atom_id_[0] == 'H':
+                            if atom_id_[0] in protonBeginCode:
                                 self.__ccU.updateChemCompDict(comp_id)
                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id_), None)
                                 ccb = next((ccb for ccb in self.__ccU.lastBonds
@@ -34874,7 +34873,7 @@ class NmrDpUtility:
                                                                             comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
                                             + ") is not properly instantiated in the coordinates. Please re-upload the model file."
 
-                            if self.__remediation_mode and checked:
+                            if (self.__remediation_mode or self.__combined_mode) and checked:
                                 continue
 
                             self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
@@ -35445,11 +35444,7 @@ class NmrDpUtility:
 
         has_res_var_dat = False
 
-        has_auth_asym_id = False
-        has_auth_seq_id = False
-        has_auth_comp_id = False
         has_nef_index = False
-        has_assembly_id = False
         has_entry_id = False
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
@@ -35479,24 +35474,9 @@ class NmrDpUtility:
                         if any(i for i in orig_lp_data if i['Auth_variant_ID'] not in emptyValue):
                             has_res_var_dat = True
 
-                    if 'Auth_asym_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if i['Auth_asym_ID'] not in emptyValue):
-                            has_auth_asym_id = True
-
-                    if 'Auth_seq_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if i['Auth_seq_ID'] not in emptyValue):
-                            has_auth_seq_id = True
-
-                    if 'Auth_comp_ID' in orig_lp_data[0]:
-                        if any(i for i in orig_lp_data if i['Auth_comp_ID'] not in emptyValue):
-                            has_auth_comp_id = True
-
                     if 'NEF_index' in orig_lp_data[0]:
                         if any(i for i in orig_lp_data if i['NEF_index'] not in emptyValue):
                             has_nef_index = True
-
-                    if 'Assembly_ID' in orig_lp_data[0]:
-                        has_assembly_id = True
 
                     if 'Entry_ID' in orig_lp_data[0]:
                         has_entry_id = True
@@ -35562,366 +35542,234 @@ class NmrDpUtility:
         if has_entry_id:
             loop.add_tag(lp_cat_name + '.Entry_ID')
 
+        if self.__caC is None:
+            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__cR, None)
+
+        entity_type_of = {item['entity_id']: item['entity_type'] for item in self.__caC['entity_assembly']}
+
         polymer_sequence = input_source_dic['polymer_sequence']
 
         if polymer_sequence is not None:
 
-            cid_offset = 0
+            seq_keys = set()
 
-            chain_ids = []
+            nef_index = 1
 
-            for s in polymer_sequence:
-                chain_ids.append(s['chain_id'])
+            if file_type == 'nef':
 
-            row_id = 1
+                idx_col = loop.tags.index('index')
+                chain_id_col = loop.tags.index('chain_code')
+                seq_id_col = loop.tags.index('sequence_code')
+                comp_id_col = loop.tags.index('residue_name')
+                seq_link_col = loop.tags.index('linking')
+                auth_var_id_col = loop.tags.index('residue_variant')
+                cis_res_col = loop.tags.index('cis_peptide')
 
-            for s in polymer_sequence:
+                for k, v in self.__caC['auth_to_star_seq'].items():
+                    auth_asym_id, auth_seq_id = k
+                    entity_assembly_id, seq_id, entity_id, genuine = v
 
-                chain_id = s['chain_id']
-                seq_id_offset = 1 - s['seq_id'][0]
+                    if not genuine:
+                        continue
 
-                length = len(s['seq_id'])
+                    seq_key = (entity_assembly_id, seq_id)
 
-                cyclic = self.__isCyclicPolymer(chain_id)
+                    if seq_key in seq_keys:
+                        continue
 
-                if cyclic:
-                    self.report.setCyclicPolymer(cyclic)
+                    seq_keys.add(seq_key)
 
-                for j in range(length):
+                    row = [None] * len(loop.tags)
 
-                    row = []
+                    row[chain_id_col], row[seq_id_col] = auth_asym_id, auth_seq_id
 
-                    if has_index_tag:
-                        row.append(row_id)
+                    entity_type = entity_type_of[entity_id]
 
-                    auth_seq_id = s['seq_id'][j]
-                    auth_comp_id = s['comp_id'][j]
+                    if entity_type == 'polymer':
+                        ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                        try:
+                            idx = ps['auth_seq_id'].index(auth_seq_id)
+                            comp_id = ps['comp_id'][idx]
+                        except IndexError:
+                            comp_id = None
+                        except ValueError:
+                            comp_id = None
 
-                    seq_id = auth_seq_id  # + seq_id_offset
-                    _seq_id_ = auth_seq_id + seq_id_offset
-                    comp_id = auth_comp_id.upper()
+                    elif entity_type == 'branched':
+                        br = next(br for br in self.__caC['branched'] if br['auth_chain_id'] == auth_asym_id)
+                        try:
+                            comp_id = br['comp_id'][seq_id - 1]
+                        except IndexError:
+                            comp_id = None
 
-                    if file_type == 'nef':
+                    elif entity_type == 'non-polymer':
+                        np = next(np for np in self.__caC['non_polymer']
+                                  if np['auth_chain_id'] == auth_asym_id
+                                  and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
+                        try:
+                            comp_id = np['comp_id'][0]
+                        except IndexError:
+                            comp_id = None
 
-                        row.append(indexToLetter(letterToDigit(chain_id) - 1 + cid_offset))  # chain_code
-                        row.append(seq_id)  # sequence_code
-                        row.append(comp_id)  # residue_name
+                    row[comp_id_col] = comp_id
 
-                        # linking
+                    if entity_type == 'polymer':
+                        ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                        nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
 
-                        if cyclic and _seq_id_ in (1, length):
-                            row.append('cyclic')
-                        elif _seq_id_ == 1 and length == 1:
-                            row.append('single')
-                        elif _seq_id_ == 1:
-                            row.append('start')
-                        elif _seq_id_ == length:
-                            row.append('end')
-                        elif auth_seq_id - 1 == s['seq_id'][j - 1] and auth_seq_id + 1 == s['seq_id'][j + 1]:
-                            row.append('middle')
-                        else:
-                            row.append('break')
-
-                        # residue_variant
-
-                        if has_res_var_dat:
-                            orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data
-                                                                               if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id
-                                                                               and i['residue_name'] == auth_comp_id), None)
-                            if orig_row is not None:
-                                row.append(orig_row['residue_variant'])
+                        if nmr_ps is not None:
+                            j = ps['auth_seq_id'].index(auth_seq_id)
+                            label_seq_id = ps['seq_id'][j]
+                            length = len(ps['seq_id'])
+                            cyclic = self.__isCyclicPolymer(nmr_ps['chain_id'])
+                            if cyclic and label_seq_id in (1, length):
+                                row[seq_link_col] = 'cyclic'
+                            elif label_seq_id == 1 and length == 1:
+                                row[seq_link_col] = 'single'
+                            elif label_seq_id == 1:
+                                row[seq_link_col] = 'start'
+                            elif label_seq_id == length:
+                                row[seq_link_col] = 'end'
+                            elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
+                                row[seq_link_col] = 'middle'
                             else:
-                                row.append('.')
-                        else:
-                            row.append('.')
+                                row[seq_link_col] = 'break'
 
-                        # cis_peptide
+                            entity_poly_type = next((item['entity_poly_type'] for item in self.__caC['entity_assembly']
+                                                     if item['entity_id'] == entity_id and item['entity_type'] == 'polymer'), None)
+                            if entity_poly_type is not None and entity_poly_type.startswith('polypeptide'):
+                                if self.__isProtCis(nmr_ps['chain_id'], seq_id):
+                                    row[cis_res_col] = 'true'
+                                elif comp_id in ('PRO', 'GLY'):
+                                    row[cis_res_col] = 'false'
+                                else:
+                                    row[cis_res_col] = '.'
 
-                        if self.__isProtCis(chain_id, seq_id):
-                            row.append('true')
-                        elif comp_id in ('PRO', 'GLY'):
-                            row.append('false')
-                        else:
-                            row.append('.')
+                    row[idx_col] = nef_index
 
-                    else:
-
-                        cid = chain_ids.index(chain_id) + 1
-
-                        row.append(cid + cid_offset)  # Entity_assembly_ID
-                        row.append(seq_id)  # Comp_index_ID
-                        row.append(comp_id)  # Comp_ID
-
+                    if auth_var_id_col != -1 and has_res_var_dat:
                         orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data
-                                                                           if i['Entity_assembly_ID'] == str(cid) and i['Comp_index_ID'] == auth_seq_id
-                                                                           and i['Comp_ID'] == auth_comp_id), None)
-
-                        # Auth_asym_ID
-
-                        if has_auth_asym_id:
-                            if orig_row is not None:
-                                row.append(orig_row['Auth_asym_ID'])
-                            else:
-                                row.append(chain_id)
-                        else:
-                            row.append(chain_id)
-
-                        # Auth_seq_ID
-
-                        if has_auth_seq_id:
-                            if orig_row is not None:
-                                row.append(orig_row['Auth_seq_ID'])
-                            else:
-                                row.append(auth_seq_id)
-                        else:
-                            row.append(auth_seq_id)
-
-                        # Auth_comp_ID
-
-                        if has_auth_comp_id:
-                            if orig_row is not None:
-                                row.append(orig_row['Auth_comp_ID'])
-                            else:
-                                row.append(auth_comp_id)
-                        else:
-                            row.append(auth_comp_id)
-
-                        # Auth_variant_ID
-
-                        if has_res_var_dat:
-                            if orig_row is not None:
-                                row.append(orig_row['Auth_variant_ID'])
-                            else:
-                                row.append('.')
-                        else:
-                            row.append('.')
-
-                        # Sequence_linking
-
-                        if cyclic and seq_id in (1, length):
-                            row.append('cyclic')
-                        elif seq_id == 1 and length == 1:
-                            row.append('single')
-                        elif seq_id == 1:
-                            row.append('start')
-                        elif _seq_id_ == length:
-                            row.append('end')
-                        elif auth_seq_id - 1 == s['seq_id'][j - 1] and auth_seq_id + 1 == s['seq_id'][j + 1]:
-                            row.append('middle')
-                        else:
-                            row.append('break')
-
-                        # Cis_residue
-
-                        if self.__isProtCis(chain_id, seq_id):
-                            row.append('yes')
-                        elif comp_id in ('PRO', 'GLY'):
-                            row.append('no')
-                        else:
-                            row.append('.')
-
-                        # NEF_index
-
-                        if has_nef_index:
-                            if orig_row is not None:
-                                row.append(orig_row['NEF_index'])
-                            else:
-                                row.append('.')
-
-                        # Assembly_ID
-
-                        if has_assembly_id:
-                            if orig_row is not None:
-                                row.append(orig_row['Assembly_ID'])
-                            else:
-                                row.append(1)
-
-                        else:
-                            row.append(1)
-
-                        if has_entry_id:
-                            if orig_row is not None:
-                                row.append(orig_row['Entry_ID'])
-                            else:
-                                row.append('.')
+                                                                           if i['chain_code'] == auth_asym_id and i['sequence_code'] == auth_seq_id
+                                                                           and i['residue_name'] == comp_id), None)
+                        row[auth_var_id_col] = orig_row['residue_variant']
 
                     loop.add_data(row)
 
-                    row_id += 1
+                    nef_index += 1
 
-                asym_ids_for_same_entity = self.report.getAsymIdsForSameEntity()
-                chain_ids_for_same_entity = self.report.getChainIdsForSameEntity()
+            else:
 
-                if asym_ids_for_same_entity is not None and chain_ids_for_same_entity is None:
-                    for asym_id in asym_ids_for_same_entity:
-                        nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(asym_id)
-                        if nmr_ps is not None and nmr_ps['chain_id'] == chain_id:
-                            cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(chain_id)
-                            if cif_ps is not None and cif_ps['chain_id'] != asym_id:
+                chain_id_col = loop.tags.index('Entity_assembly_ID')
+                ent_id_col = loop.tags.index('Entity_ID')
+                seq_id_col = loop.tags.index('Comp_index_ID')
+                alt_seq_id_col = loop.tags.index('Seq_ID')
+                comp_id_col = loop.tags.index('Comp_ID')
+                auth_asym_id_col = loop.tags.index('Auth_asym_ID')
+                auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+                auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+                seq_link_col = loop.tags.index('Sequence_linking')
+                cis_res_col = loop.tags.index('Cis_residue')
+                idx_col = loop.tags.index('NEF_index')
+                asm_id_col = loop.tags.index('Assembly_ID')
+                auth_var_id_col = loop.tags.index('Auth_variant_ID') if 'Auth_variant_ID' in loop.tags else -1
+                entry_id_col = loop.tags.index('Entry_ID') if 'Entry_ID' in loop.tags else -1
 
-                                cid_offset += 1
+                for k, v in self.__caC['auth_to_star_seq'].items():
+                    auth_asym_id, auth_seq_id = k
+                    entity_assembly_id, seq_id, entity_id, genuine = v
 
-                                for j in range(length):
+                    if not genuine:
+                        continue
 
-                                    row = []
+                    seq_key = (entity_assembly_id, seq_id)
 
-                                    if has_index_tag:
-                                        row.append(row_id)
+                    if seq_key in seq_keys:
+                        continue
 
-                                    auth_seq_id = s['seq_id'][j]
-                                    auth_comp_id = s['comp_id'][j]
+                    seq_keys.add(seq_key)
 
-                                    seq_id = auth_seq_id  # + seq_id_offset
-                                    _seq_id_ = auth_seq_id + seq_id_offset
-                                    comp_id = auth_comp_id.upper()
+                    row = [None] * len(loop.tags)
 
-                                    if file_type == 'nef':
+                    row[chain_id_col], row[ent_id_col], row[seq_id_col], row[alt_seq_id_col] = entity_assembly_id, entity_id, seq_id, seq_id
 
-                                        row.append(indexToLetter(letterToDigit(chain_id) - 1 + cid_offset))  # chain_code
-                                        row.append(seq_id)  # sequence_code
-                                        row.append(comp_id)  # residue_name
+                    entity_type = entity_type_of[entity_id]
 
-                                        # linking
+                    if entity_type == 'polymer':
+                        ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                        try:
+                            idx = ps['auth_seq_id'].index(auth_seq_id)
+                            comp_id = ps['comp_id'][idx]
+                        except IndexError:
+                            comp_id = None
+                        except ValueError:
+                            comp_id = None
 
-                                        if cyclic and _seq_id_ in (1, length):
-                                            row.append('cyclic')
-                                        elif _seq_id_ == 1 and length == 1:
-                                            row.append('single')
-                                        elif _seq_id_ == 1:
-                                            row.append('start')
-                                        elif _seq_id_ == length:
-                                            row.append('end')
-                                        elif auth_seq_id - 1 == s['seq_id'][j - 1] and auth_seq_id + 1 == s['seq_id'][j + 1]:
-                                            row.append('middle')
-                                        else:
-                                            row.append('break')
+                    elif entity_type == 'branched':
+                        br = next(br for br in self.__caC['branched'] if br['auth_chain_id'] == auth_asym_id)
+                        try:
+                            comp_id = br['comp_id'][seq_id - 1]
+                        except IndexError:
+                            comp_id = None
 
-                                        # residue_variant
+                    elif entity_type == 'non-polymer':
+                        np = next(np for np in self.__caC['non_polymer']
+                                  if np['auth_chain_id'] == auth_asym_id
+                                  and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
+                        try:
+                            comp_id = np['comp_id'][0]
+                        except IndexError:
+                            comp_id = None
 
-                                        if has_res_var_dat:
-                                            orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data
-                                                                                               if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id
-                                                                                               and i['residue_name'] == auth_comp_id), None)
-                                            if orig_row is not None:
-                                                row.append(orig_row['residue_variant'])
-                                            else:
-                                                row.append('.')
-                                        else:
-                                            row.append('.')
+                    row[comp_id_col], row[auth_asym_id_col], row[auth_seq_id_col], row[auth_comp_id_col] = comp_id, auth_asym_id, auth_seq_id, comp_id
 
-                                        # cis_peptide
+                    if entity_type == 'polymer':
+                        ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                        nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
 
-                                        if self.__isProtCis(chain_id, seq_id):
-                                            row.append('true')
-                                        elif comp_id in ('PRO', 'GLY'):
-                                            row.append('false')
-                                        else:
-                                            row.append('.')
+                        if nmr_ps is not None:
+                            j = ps['auth_seq_id'].index(auth_seq_id)
+                            label_seq_id = ps['seq_id'][j]
+                            length = len(ps['seq_id'])
+                            cyclic = self.__isCyclicPolymer(nmr_ps['chain_id'])
+                            if cyclic and label_seq_id in (1, length):
+                                row[seq_link_col] = 'cyclic'
+                            elif label_seq_id == 1 and length == 1:
+                                row[seq_link_col] = 'single'
+                            elif label_seq_id == 1:
+                                row[seq_link_col] = 'start'
+                            elif label_seq_id == length:
+                                row[seq_link_col] = 'end'
+                            elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
+                                row[seq_link_col] = 'middle'
+                            else:
+                                row[seq_link_col] = 'break'
 
-                                    else:
+                            entity_poly_type = next((item['entity_poly_type'] for item in self.__caC['entity_assembly']
+                                                     if item['entity_id'] == entity_id and item['entity_type'] == 'polymer'), None)
+                            if entity_poly_type is not None and entity_poly_type.startswith('polypeptide'):
+                                if self.__isProtCis(nmr_ps['chain_id'], seq_id):
+                                    row[cis_res_col] = 'yes'
+                                elif comp_id in ('PRO', 'GLY'):
+                                    row[cis_res_col] = 'no'
+                                else:
+                                    row[cis_res_col] = '.'
 
-                                        cid = chain_ids.index(chain_id) + 1
+                    row[idx_col], row[asm_id_col] = nef_index, 1
 
-                                        row.append(cid + cid_offset)  # Entity_assembly_ID
-                                        row.append(seq_id)  # Comp_index_ID
-                                        row.append(comp_id)  # Comp_ID
+                    if auth_var_id_col != -1 and has_res_var_dat:
+                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data
+                                                                           if i['Entity_assembly_ID'] == str(entity_assembly_id) and i['Comp_index_ID'] == seq_id
+                                                                           and i['Comp_ID'] == comp_id), None)
+                        row[auth_var_id_col] = orig_row['Auth_variant_ID']
 
-                                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data
-                                                                                           if i['Entity_assembly_ID'] == str(cid) and i['Comp_index_ID'] == auth_seq_id
-                                                                                           and i['Comp_ID'] == auth_comp_id), None)
+                    if entry_id_col != -1:
+                        row[entry_id_col] = self.__entry_id
 
-                                        # Auth_asym_ID
+                    loop.add_data(row)
 
-                                        if has_auth_asym_id:
-                                            if orig_row is not None:
-                                                row.append(orig_row['Auth_asym_ID'])
-                                            else:
-                                                row.append(chain_id)
-                                        else:
-                                            row.append(chain_id)
-
-                                        # Auth_seq_ID
-
-                                        if has_auth_seq_id:
-                                            if orig_row is not None:
-                                                row.append(orig_row['Auth_seq_ID'])
-                                            else:
-                                                row.append(auth_seq_id)
-                                        else:
-                                            row.append(auth_seq_id)
-
-                                        # Auth_comp_ID
-
-                                        if has_auth_comp_id:
-                                            if orig_row is not None:
-                                                row.append(orig_row['Auth_comp_ID'])
-                                            else:
-                                                row.append(auth_comp_id)
-                                        else:
-                                            row.append(auth_comp_id)
-
-                                        # Auth_variant_ID
-
-                                        if has_res_var_dat:
-                                            if orig_row is not None:
-                                                row.append(orig_row['Auth_variant_ID'])
-                                            else:
-                                                row.append('.')
-                                        else:
-                                            row.append('.')
-
-                                        # Sequence_linking
-
-                                        if cyclic and seq_id in (1, length):
-                                            row.append('cyclic')
-                                        elif seq_id == 1 and length == 1:
-                                            row.append('single')
-                                        elif seq_id == 1:
-                                            row.append('start')
-                                        elif _seq_id_ == length:
-                                            row.append('end')
-                                        elif auth_seq_id - 1 == s['seq_id'][j - 1] and auth_seq_id + 1 == s['seq_id'][j + 1]:
-                                            row.append('middle')
-                                        else:
-                                            row.append('break')
-
-                                        # Cis_residue
-
-                                        if self.__isProtCis(chain_id, seq_id):
-                                            row.append('yes')
-                                        elif comp_id in ('PRO', 'GLY'):
-                                            row.append('no')
-                                        else:
-                                            row.append('.')
-
-                                        # NEF_index
-
-                                        if has_nef_index:
-                                            if orig_row is not None:
-                                                row.append(orig_row['NEF_index'])
-                                            else:
-                                                row.append('.')
-
-                                        # Assembly_ID
-
-                                        if has_assembly_id:
-                                            if orig_row is not None:
-                                                row.append(orig_row['Assembly_ID'])
-                                            else:
-                                                row.append(1)
-
-                                        else:
-                                            row.append(1)
-
-                                        if has_entry_id:
-                                            if orig_row is not None:
-                                                row.append(orig_row['Entry_ID'])
-                                            else:
-                                                row.append('.')
-
-                                    loop.add_data(row)
-
-                                    row_id += 1
+                    nef_index += 1
 
             poly_seq_sf_data.add_loop(loop)
 
@@ -37668,7 +37516,7 @@ class NmrDpUtility:
 
             neighbor = [n for n in _neighbor
                         if n['seq_id'] != cif_seq_id
-                        and n['type_symbol'] != 'H'
+                        and n['type_symbol'] not in protonBeginCode
                         and numpy.linalg.norm(to_np_array(n) - o) < cutoff
                         and n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
 
@@ -37730,10 +37578,10 @@ class NmrDpUtility:
                 if b1[self.__ccU.ccbAromaticFlag] != 'Y':
                     continue
 
-                if b1[self.__ccU.ccbAtomId1] == na_atom_id and b1[self.__ccU.ccbAtomId2][0] != 'H':
+                if b1[self.__ccU.ccbAtomId1] == na_atom_id and b1[self.__ccU.ccbAtomId2][0] not in protonBeginCode:
                     na_ = b1[self.__ccU.ccbAtomId2]
 
-                elif b1[self.__ccU.ccbAtomId2] == na_atom_id and b1[self.__ccU.ccbAtomId1][0] != 'H':
+                elif b1[self.__ccU.ccbAtomId2] == na_atom_id and b1[self.__ccU.ccbAtomId1][0] not in protonBeginCode:
                     na_ = b1[self.__ccU.ccbAtomId1]
 
                 else:
@@ -37744,10 +37592,10 @@ class NmrDpUtility:
                     if b2[self.__ccU.ccbAromaticFlag] != 'Y':
                         continue
 
-                    if b2[self.__ccU.ccbAtomId1] == na_ and b2[self.__ccU.ccbAtomId2][0] != 'H' and b2[self.__ccU.ccbAtomId2] != na_atom_id:
+                    if b2[self.__ccU.ccbAtomId1] == na_ and b2[self.__ccU.ccbAtomId2][0] not in protonBeginCode and b2[self.__ccU.ccbAtomId2] != na_atom_id:
                         na__ = b2[self.__ccU.ccbAtomId2]
 
-                    elif b2[self.__ccU.ccbAtomId2] == na_ and b2[self.__ccU.ccbAtomId1][0] != 'H' and b2[self.__ccU.ccbAtomId1] != na_atom_id:
+                    elif b2[self.__ccU.ccbAtomId2] == na_ and b2[self.__ccU.ccbAtomId1][0] not in protonBeginCode and b2[self.__ccU.ccbAtomId1] != na_atom_id:
                         na__ = b2[self.__ccU.ccbAtomId1]
 
                     else:
@@ -37758,10 +37606,10 @@ class NmrDpUtility:
                         if b3[self.__ccU.ccbAromaticFlag] != 'Y':
                             continue
 
-                        if b3[self.__ccU.ccbAtomId1] == na__ and b3[self.__ccU.ccbAtomId2][0] != 'H' and b3[self.__ccU.ccbAtomId2] != na_:
+                        if b3[self.__ccU.ccbAtomId1] == na__ and b3[self.__ccU.ccbAtomId2][0] not in protonBeginCode and b3[self.__ccU.ccbAtomId2] != na_:
                             na___ = b3[self.__ccU.ccbAtomId2]
 
-                        elif b3[self.__ccU.ccbAtomId2] == na__ and b3[self.__ccU.ccbAtomId1][0] != 'H' and b3[self.__ccU.ccbAtomId1] != na_:
+                        elif b3[self.__ccU.ccbAtomId2] == na__ and b3[self.__ccU.ccbAtomId1][0] not in protonBeginCode and b3[self.__ccU.ccbAtomId1] != na_:
                             na___ = b3[self.__ccU.ccbAtomId1]
 
                         else:
@@ -38129,7 +37977,7 @@ class NmrDpUtility:
                             if row[atomTypeCol] in emptyValue:
                                 row[atomTypeCol] = atom_id[0]
 
-                            if row[isoNumCol] is emptyValue:
+                            if row[isoNumCol] in emptyValue:
 
                                 try:
                                     row[isoNumCol] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
@@ -38163,7 +38011,7 @@ class NmrDpUtility:
 
                             atom_id = row[atomIdCol]
 
-                            if row[isoNumCol] is emptyValue:
+                            if row[isoNumCol] in emptyValue:
 
                                 try:
                                     row[isoNumCol] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id[0]][0]
@@ -38752,7 +38600,7 @@ class NmrDpUtility:
 
                                 val = row[itCol]
 
-                                if val is emptyValue:
+                                if val in emptyValue:
                                     continue
 
                                 try:
@@ -38864,7 +38712,7 @@ class NmrDpUtility:
 
                                 val = row[itCol]
 
-                                if val is emptyValue:
+                                if val in emptyValue:
                                     continue
 
                                 try:
@@ -39187,7 +39035,7 @@ class NmrDpUtility:
 
                                 val = row[itCol]
 
-                                if val is emptyValue:
+                                if val in emptyValue:
                                     continue
 
                                 if val == itValue:
@@ -39315,7 +39163,7 @@ class NmrDpUtility:
                 if lower_limit is not None:
                     target_value += 0.4
 
-                if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
+                if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
 
                     if target_value < 1.2 or target_value > 1.5:
                         return False
@@ -39325,7 +39173,7 @@ class NmrDpUtility:
                     if target_value < 2.2 or target_value > 2.5:
                         return False
 
-                elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+                elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
 
                     if target_value < 1.5 or target_value > 2.5:
                         return False
@@ -39340,7 +39188,7 @@ class NmrDpUtility:
                     if target_value < 2.5 or target_value > 3.5:
                         return False
 
-                elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+                elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
 
                     if target_value < 1.5 or target_value > 2.5:
                         return False
@@ -40158,7 +40006,7 @@ class NmrDpUtility:
 
                             val = row[itCol]
 
-                            if val is emptyValue:
+                            if val in emptyValue:
                                 continue
 
                             if (file_type == 'nef' and itName.startswith('atom_name'))\
@@ -40185,7 +40033,7 @@ class NmrDpUtility:
 
                             val = row[itCol]
 
-                            if val is emptyValue:
+                            if val in emptyValue:
                                 continue
 
                             if (file_type == 'nef' and itName.startswith('atom_name'))\
@@ -40304,7 +40152,7 @@ class NmrDpUtility:
 
                                     val = row[itCol]
 
-                                    if val is emptyValue:
+                                    if val in emptyValue:
                                         continue
 
                                     if val.lower() in trueValue:
@@ -40324,7 +40172,7 @@ class NmrDpUtility:
 
                                     val = row[itCol]
 
-                                    if val is emptyValue:
+                                    if val in emptyValue:
                                         continue
 
                                     if val.lower() in trueValue:
@@ -40412,7 +40260,7 @@ class NmrDpUtility:
 
                                             val = row[itCol]
 
-                                            if val is emptyValue:
+                                            if val in emptyValue:
                                                 continue
 
                                             if val.lower() in trueValue:
@@ -40432,7 +40280,7 @@ class NmrDpUtility:
 
                                             val = row[itCol]
 
-                                            if val is emptyValue:
+                                            if val in emptyValue:
                                                 continue
 
                                             if val.lower() in trueValue:
@@ -40509,7 +40357,7 @@ class NmrDpUtility:
 
                                 val = row[itCol]
 
-                                if val is emptyValue:
+                                if val in emptyValue:
                                     continue
 
                                 list_ids.append(val)
@@ -41364,6 +41212,39 @@ class NmrDpUtility:
                     comp_id = None
 
             row[4], row[5], row[6], row[7] = comp_id, auth_asym_id, auth_seq_id, comp_id
+
+            if entity_type == 'polymer':
+                ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
+
+                if nmr_ps is not None:
+                    j = ps['auth_seq_id'].index(auth_seq_id)
+                    label_seq_id = ps['seq_id'][j]
+                    length = len(ps['seq_id'])
+                    cyclic = self.__isCyclicPolymer(nmr_ps['chain_id'])
+                    if cyclic and label_seq_id in (1, length):
+                        row[9] = 'cyclic'
+                    elif label_seq_id == 1 and length == 1:
+                        row[9] = 'single'
+                    elif label_seq_id == 1:
+                        row[9] = 'start'
+                    elif label_seq_id == length:
+                        row[9] = 'end'
+                    elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
+                        row[9] = 'middle'
+                    else:
+                        row[9] = 'break'
+
+                    entity_poly_type = next((item['entity_poly_type'] for item in self.__caC['entity_assembly']
+                                             if item['entity_id'] == entity_id and item['entity_type'] == 'polymer'), None)
+                    if entity_poly_type is not None and entity_poly_type.startswith('polypeptide'):
+                        if self.__isProtCis(nmr_ps['chain_id'], seq_id):
+                            row[10] = 'yes'
+                        elif comp_id in ('PRO', 'GLY'):
+                            row[10] = 'no'
+                        else:
+                            row[10] = '.'
+
             row[11], row[12], row[13] = nef_index, 1, self.__entry_id
 
             cca_loop.add_data(row)
@@ -42734,7 +42615,7 @@ class NmrDpUtility:
                         elif vector == {'CA', 'N'} and offset == 0:
                             RDC_CAN_tot_num += 1
                         elif atom_id_1[0] == atom_id_2[0]:
-                            if atom_id_1[0] == 'H':
+                            if atom_id_1[0] in protonBeginCode:
                                 RDC_HH_tot_num += 1
                             elif atom_id_1[0] == 'C':
                                 RDC_CC_tot_num += 1

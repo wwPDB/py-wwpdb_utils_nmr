@@ -2014,35 +2014,46 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     nstdChirality = None
                     if cR.hasCategory('entity_poly'):
 
-                        if cR.hasItem('entity_poly', 'nstd_chirality'):
-                            polyTypes = cR.getDictListWithFilter('entity_poly',
-                                                                 [{'name': 'type', 'type': 'str'},
-                                                                  {'name': 'pdbx_seq_one_letter_code_can', 'type': 'str'},
-                                                                  {'name': 'pdbx_seq_one_letter_code', 'type': 'str'},
-                                                                  {'name': 'pdbx_target_identifier', 'type': 'str'},
-                                                                  {'name': 'nstd_monomer', 'type': 'str'},
-                                                                  {'name': 'nstd_linkage', 'type': 'str'},
-                                                                  {'name': 'nstd_chirality', 'type': 'str'}],
-                                                                 [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
-                        else:
-                            polyTypes = cR.getDictListWithFilter('entity_poly',
-                                                                 [{'name': 'type', 'type': 'str'},
-                                                                  {'name': 'pdbx_seq_one_letter_code_can', 'type': 'str'},
-                                                                  {'name': 'pdbx_seq_one_letter_code', 'type': 'str'},
-                                                                  {'name': 'pdbx_target_identifier', 'type': 'str'},
-                                                                  {'name': 'nstd_monomer', 'type': 'str'},
-                                                                  {'name': 'nstd_linkage', 'type': 'str'}],
-                                                                 [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        hasSeqOneLetterCodeCan = cR.hasItem('entity_poly', 'pdbx_seq_one_letter_code_can')
+                        hasPdbxTargetIdentifier = cR.hasItem('entity_poly', 'pdbx_target_identifier')
+                        hasNstdMonomer = cR.hasItem('entity_poly', 'nstd_monomer')
+                        hasNstdLinkage = cR.hasItem('entity_poly', 'nstd_linkage')
+                        hasNstdChirality = cR.hasItem('entity_poly', 'nstd_chirality')
+
+                        dataItems = [{'name': 'type', 'type': 'str'},
+                                     {'name': 'pdbx_seq_one_letter_code', 'type': 'str'}]
+
+                        if hasSeqOneLetterCodeCan:
+                            dataItems.append({'name': 'pdbx_seq_one_letter_code_can', 'type': 'str'})
+
+                        if hasPdbxTargetIdentifier:
+                            dataItems.append({'name': 'pdbx_target_identifier', 'type': 'str'})
+
+                        if hasNstdMonomer:
+                            dataItems.append({'name': 'nstd_monomer', 'type': 'str'})
+
+                        if hasNstdLinkage:
+                            dataItems.append({'name': 'nstd_linkage', 'type': 'str'})
+
+                        if hasNstdChirality:
+                            dataItems.append({'name': 'nstd_chirality', 'type': 'str'})
+
+                        polyTypes = cR.getDictListWithFilter('entity_poly', dataItems,
+                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         if len(polyTypes) > 0:
                             polyType = polyTypes[0]
                             entityPolyType = polyType['type']
-                            oneLetterCodeCan = polyType['pdbx_seq_one_letter_code_can']
                             oneLetterCode = polyType['pdbx_seq_one_letter_code']
-                            targetIdentifier = polyType['pdbx_target_identifier']
-                            nstdMonomer = polyType['nstd_monomer']
-                            nstdLinkage = polyType['nstd_linkage']
-                            if 'nstd_chirality' in polyType:
+                            if hasSeqOneLetterCodeCan:
+                                oneLetterCodeCan = polyType['pdbx_seq_one_letter_code_can']
+                            if hasPdbxTargetIdentifier:
+                                targetIdentifier = polyType['pdbx_target_identifier']
+                            if hasNstdMonomer:
+                                nstdMonomer = polyType['nstd_monomer']
+                            if hasNstdLinkage:
+                                nstdLinkage = polyType['nstd_linkage']
+                            if hasNstdChirality:
                                 nstdChirality = polyType['nstd_chirality']
 
                     if cR.hasCategory('pdbx_poly_seq_scheme'):
@@ -3768,26 +3779,26 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     if len(float_row_idx) > 0:
-        max_e = 0
+        max_eff_digits = 0
         for idx in float_row_idx:
             val = row[idx]
             if '.' in val and val[-1] == '0':
-                p = val.index('.')
-                l = len(val) - 1  # noqa: E741
-                while val[l] == '0':
-                    l -= 1  # noqa: E741
-                e = l - p
-                if e > 0 and e > max_e:
-                    max_e = e
+                period = val.index('.')
+                last = len(val) - 1
+                while val[last] == '0':
+                    last -= 1
+                eff_digits = last - period
+                if eff_digits > 0 and eff_digits > max_eff_digits:
+                    max_eff_digits = eff_digits
         for idx in float_row_idx:
             val = row[idx]
             if '.' in val and val[-1] == '0':
-                q = val.index('.') + 1
-                e = len(val) - q
-                if 0 < max_e < e:
-                    row[idx] = row[idx][0:q + max_e]
+                first_digit = val.index('.') + 1
+                eff_digits = len(val) - first_digit
+                if 0 < max_eff_digits < eff_digits:
+                    row[idx] = row[idx][0:first_digit + max_eff_digits]
                 else:
-                    row[idx] = row[idx][0:q + 1]
+                    row[idx] = row[idx][0:first_digit + 1]
 
     return row
 
@@ -3867,6 +3878,8 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
             return 'chemical shift perturbation'
         if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig) and 'mutat' in _fileName:
             return 'mutation'
+        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig) and 'protect' in _fileName:
+            return 'hydrogen exchange protection'
         if atom1['chain_id'] != atom2['chain_id'] and 'symm' in _fileName:
             return 'symmetry'
 

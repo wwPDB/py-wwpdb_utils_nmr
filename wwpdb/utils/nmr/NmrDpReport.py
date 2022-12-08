@@ -199,9 +199,9 @@ class NmrDpReport:
             @return: index of input source of NMR data file, -1 otherwise
         """
 
-        for i in self.input_sources:
-            if i.get()['content_type'] in ('nmr-data-nef', 'nmr-data-str'):
-                return self.input_sources.index(i)
+        for in_src in self.input_sources:
+            if in_src.get()['content_type'] in ('nmr-data-nef', 'nmr-data-str'):
+                return self.input_sources.index(in_src)
 
         return -1
 
@@ -210,16 +210,17 @@ class NmrDpReport:
             @return: array of index of input source of NMR legacy data file, [] otherwise
         """
 
-        return [self.input_sources.index(i) for i in self.input_sources if i.get()['content_type'] in ('nmr-chemical-shifts', 'nmr-restraints')]
+        return [self.input_sources.index(in_src) for in_src in self.input_sources
+                if in_src.get()['content_type'] in ('nmr-chemical-shifts', 'nmr-restraints')]
 
     def getInputSourceIdOfCoord(self):
         """ Return input_source_id of coordinate file.
             @return: index of input source of coordinate file, -1 otherwise
         """
 
-        for i in self.input_sources:
-            if i.get()['content_type'] == 'model':
-                return self.input_sources.index(i)
+        for in_src in self.input_sources:
+            if in_src.get()['content_type'] == 'model':
+                return self.input_sources.index(in_src)
 
         return -1
 
@@ -1914,10 +1915,10 @@ class NmrDpReportError:
                     g = self.chk_row_pat.search(d).groups()
 
                     loc = {}
-                    for i in g[0].split(','):
-                        p = i.lstrip()
+                    for k in g[0].split(','):
+                        p = k.lstrip()
                         s = p.index(' ')
-                        loc[p[0: s]] = p[s:].lstrip()
+                        loc[p[0:s]] = p[s:].lstrip()
 
                     value['row_location'] = loc
                     value['description'] = g[1]
@@ -1926,8 +1927,8 @@ class NmrDpReportError:
                     g = self.chk_rows_pat.search(d).groups()
 
                     locs = {}
-                    for i in g[0].split(','):
-                        p = i.lstrip()
+                    for k in g[0].split(','):
+                        p = k.lstrip()
                         q = p.split(' ', 1)
                         locs[q[0]] = re.sub(' vs ', ',', q[1]).split(',')
 
@@ -2168,10 +2169,10 @@ class NmrDpReportWarning:
                     g = self.chk_row_pat.search(d).groups()
 
                     loc = {}
-                    for i in g[0].split(','):
-                        p = i.lstrip()
+                    for k in g[0].split(','):
+                        p = k.lstrip()
                         s = p.index(' ')
-                        loc[p[0: s]] = p[s:].lstrip()
+                        loc[p[0:s]] = p[s:].lstrip()
 
                     value['row_location'] = loc
                     value['description'] = g[1]
@@ -2180,8 +2181,8 @@ class NmrDpReportWarning:
                     g = self.chk_rows_pat.search(d).groups()
 
                     locs = {}
-                    for i in g[0].split(','):
-                        p = i.lstrip()
+                    for k in g[0].split(','):
+                        p = k.lstrip()
                         q = p.split(' ', 1)
                         locs[q[0]] = re.sub(' vs ', ',', q[1]).split(',')
 

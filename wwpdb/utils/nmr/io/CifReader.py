@@ -285,7 +285,7 @@ class CifReader:
 
         len_catName = len(catName) + 2
 
-        return itName in [j[len_catName:] for j in catObj.getItemNameList()]
+        return itName in [name[len_catName:] for name in catObj.getItemNameList()]
 
     def getDictList(self, catName):
         """ Return a list of dictionaries of a given category.
@@ -342,7 +342,7 @@ class CifReader:
             itDict = {}
             altDict = {}
 
-            itNameList = [j[len_catName:] for j in catObj.getItemNameList()]
+            itNameList = [name[len_catName:] for name in catObj.getItemNameList()]
 
             for idxIt, itName in enumerate(itNameList):
                 itDict[itName] = idxIt
@@ -378,7 +378,7 @@ class CifReader:
             auth_seq_id_col = -1 if 'auth_seq_id' not in altDict else altDict['auth_seq_id']
             auth_comp_id_col = -1 if 'auth_comp_id' not in altDict else altDict['auth_comp_id']
 
-            chainSet = set(row[chain_id_col] for row in rowList)
+            chainIds = sorted(set(row[chain_id_col] for row in rowList), key=lambda x: (len(x), x))
 
             if ins_code_col == -1 or label_seq_col == -1:
                 if catName == 'pdbx_nonpoly_scheme':
@@ -397,12 +397,12 @@ class CifReader:
                                        f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
                                        f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
-                if len(chainSet) > 1:
-                    for c in chainSet:
+                if len(chainIds) > 1:
+                    for c in chainIds:
                         compDict[c] = [x[2] for x in sortedSeq if x[0] == c]
                         seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
                 else:
-                    c = list(chainSet)[0]
+                    c = list(chainIds)[0]
                     compDict[c] = [x[2] for x in sortedSeq]
                     seqDict[c] = [x[1] for x in sortedSeq]
 
@@ -425,14 +425,14 @@ class CifReader:
                                        f"{itNameList[label_seq_col]} {row[label_seq_col]}, "
                                        f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
-                if len(chainSet) > 1:
-                    for c in chainSet:
+                if len(chainIds) > 1:
+                    for c in chainIds:
                         compDict[c] = [x[4] for x in sortedSeq if x[0] == c]
                         seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
                         insCodeDict[c] = [x[2] for x in sortedSeq if x[0] == c]
                         labelSeqDict[c] = [x[3] for x in sortedSeq if x[0] == c]
                 else:
-                    c = list(chainSet)[0]
+                    c = list(chainIds)[0]
                     compDict[c] = [x[4] for x in sortedSeq]
                     seqDict[c] = [x[1] for x in sortedSeq]
                     insCodeDict[c] = [x[2] for x in sortedSeq]
@@ -789,10 +789,10 @@ class CifReader:
                         _rmsd = []
 
                         _atom_site_ref = _atom_site_dict[1]
-                        _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]  # noqa: E741
+                        _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
 
                         if label != -1:
-                            seq_ids = sorted(list(set(a['seq_id'] for a in _atom_site_p)))
+                            seq_ids = sorted(set(a['seq_id'] for a in _atom_site_p))
                             gaps = seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids)
 
                             if gaps > monomers:
@@ -806,7 +806,7 @@ class CifReader:
                             if len(_atom_site_test) == 0:
                                 continue
 
-                            _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]  # noqa: E741
+                            _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
 
                             _rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
 
@@ -888,7 +888,7 @@ class CifReader:
 
                 _label = int(label)
 
-                _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]  # noqa: E741
+                _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
 
                 core_rmsd = []
                 align_rmsd = []
@@ -900,7 +900,7 @@ class CifReader:
                         continue
 
                     _atom_site_test = _atom_site_dict[test_model_id]
-                    _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]  # noqa: E741
+                    _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
 
                     _core_rmsd = []
 
@@ -952,7 +952,7 @@ class CifReader:
             count = list_labels.count(label)
 
             item = {'domain_id': eff_domain_id[_label], 'number_of_monomers': count}
-            seq_ids = sorted(list(set(a['seq_id'] for a, l in zip(_atom_site_ref, list_labels) if l == label)))
+            seq_ids = sorted(set(a['seq_id'] for a, l in zip(_atom_site_ref, list_labels) if l == label))
             item['seq_id'] = seq_ids
             gaps = seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids)
             item['number_of_gaps'] = gaps
@@ -984,7 +984,7 @@ class CifReader:
             for ref_model_id in range(1, _total_models):
 
                 _atom_site_ref = _atom_site_dict[ref_model_id]
-                _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]  # noqa: E741
+                _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
 
                 for test_model_id in range(2, _total_models + 1):
 
@@ -992,7 +992,7 @@ class CifReader:
                         continue
 
                     _atom_site_test = _atom_site_dict[test_model_id]
-                    _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]  # noqa: E741
+                    _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
 
                     _rmsd_ = calculate_rmsd(_atom_site_p, _atom_site_q)
 
@@ -1010,7 +1010,7 @@ class CifReader:
             item['medoid_model_id'] = ref_model_id
 
             _atom_site_ref = _atom_site_dict[ref_model_id]
-            _atom_site_p = [a for a, l in zip(_atom_site_ref, list_labels) if l == label]  # noqa: E741
+            _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
 
             _rmsd = []
 
@@ -1020,7 +1020,7 @@ class CifReader:
                     continue
 
                 _atom_site_test = _atom_site_dict[test_model_id]
-                _atom_site_q = [a for a, l in zip(_atom_site_test, list_labels) if l == label]  # noqa: E741
+                _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
 
                 _rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
 
@@ -1062,7 +1062,7 @@ class CifReader:
             colDict = {}
             fcolDict = {}
 
-            itNameList = [j[len_catName:] for j in catObj.getItemNameList()]
+            itNameList = [name[len_catName:] for name in catObj.getItemNameList()]
 
             for idxIt, itName in enumerate(itNameList):
                 if itName in dataNames:

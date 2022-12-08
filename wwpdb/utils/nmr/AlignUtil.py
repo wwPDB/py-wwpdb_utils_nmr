@@ -648,7 +648,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
     truncated = None
 
     for i1, s1 in enumerate(polySeqModel):
-        chain_id = s1['auth_chain_id']
+        chain_id_name = 'auth_chain_id' if 'auth_chain_id' in s1 else 'chain_id'
+        chain_id = s1[chain_id_name]
 
         if i1 >= LEN_LARGE_ASYM_ID:
             continue
@@ -716,7 +717,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
 
             _seq_id_name = 'auth_seq_id' if 'auth_seq_id' in _s1 else 'seq_id'
 
-            if s1['gap_in_auth_seq']:
+            if 'gap_in_auth_seq' in s1 and s1['gap_in_auth_seq']:
 
                 for p in range(len(s1[seq_id_name]) - 1):
                     s_p = s1[seq_id_name][p]
@@ -745,7 +746,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             if conflict > 0 and hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
                 __s1, __s2 = beautifyPolySeq(_s1, _s2, seqIdName1=_seq_id_name)
 
-                if s1['gap_in_auth_seq']:
+                if 'gap_in_auth_seq' in s1 and s1['gap_in_auth_seq']:
 
                     for p in range(len(s1[seq_id_name]) - 1):
                         s_p = s1[seq_id_name][p]
@@ -783,7 +784,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                     _s1 = __s1
                     _s2 = __s2
 
-            if conflict == 0 and _matched > 0 and unmapped > 0 and s1['gap_in_auth_seq']:
+            if conflict == 0 and _matched > 0 and unmapped > 0 and 'gap_in_auth_seq' in s1 and s1['gap_in_auth_seq']:
                 for p in range(len(s1[seq_id_name]) - 1):
                     s_p = s1[seq_id_name][p]
                     s_q = s1[seq_id_name][p + 1]
@@ -1002,7 +1003,8 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
     indices = []
 
     for i1, s1 in enumerate(polySeqModel):
-        chain_id = s1['auth_chain_id']
+        chain_id_name = 'auth_chain_id' if 'auth_chain_id' in s1 else 'chain_id'
+        chain_id = s1[chain_id_name]
 
         if i1 >= LEN_LARGE_ASYM_ID:
             continue
@@ -1036,7 +1038,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
             _cif_chains = []
             for _row, _column in indices:
                 if column == _column:
-                    _cif_chains.append(polySeqModel[_row]['auth_chain_id'])
+                    _cif_chains.append(polySeqModel[_row][chain_id_name])
 
             if len(_cif_chains) > 1:
                 chain_id2 = polySeqRst[column]['chain_id']
@@ -1044,7 +1046,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                 warningMessage += f"[Concatenated sequence] The chain ID {chain_id2!r} of the sequences in {_a_mr_format_name} file "\
                     f"will be re-assigned to the chain IDs {_cif_chains} in the coordinates during biocuration.\n"
 
-        chain_id = polySeqModel[row]['auth_chain_id']
+        chain_id = polySeqModel[row][chain_id_name]
         chain_id2 = polySeqRst[column]['chain_id']
 
         result = next(seq_align for seq_align in seqAlign
@@ -1054,7 +1056,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
               'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
               'sequence_coverage': result['sequence_coverage']}
 
-        s1 = next(s for s in polySeqModel if s['auth_chain_id'] == chain_id)
+        s1 = next(s for s in polySeqModel if s[chain_id_name] == chain_id)
         s2 = next(s for s in polySeqRst if s['chain_id'] == chain_id2)
 
         pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)

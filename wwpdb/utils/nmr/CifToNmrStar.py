@@ -85,6 +85,16 @@ class CifToNmrStar:
             self.schema = schema.schema
             self.category_order = schema.category_order
 
+        # NEF category order
+        self.category_order_nef = ['_nef_nmr_meta_data',
+                                   '_nef_molecular_system',
+                                   '_nef_chemical_shift_list',
+                                   '_nef_distance_restraint_list',
+                                   '_nef_dihedral_restraint_list',
+                                   '_nef_rdc_restraint_list',
+                                   '_nef_nmr_spectrum',
+                                   '_nef_peak_restraint_links']
+
     def write_schema_as_pickles(self):
         """ Retrieve NMR-STAR schema from pynmrstar.Schema, then write schema objects as each pickle file.
         """
@@ -476,6 +486,18 @@ class CifToNmrStar:
                         row.append(entryId)
 
     def normalize(self, strData):
+        """ Wrapper function of normalize_str() and normalize_nef().
+        """
+
+        try:
+            sf = strData.frame_list[0]
+            if sf.category.startswith('nef'):
+                return self.normalize_nef(strData)
+            return self.normalize_str(strData)
+        except IndexError:
+            return strData
+
+    def normalize_str(self, strData):
         """ Sort saveframes, loops, and tags according to NMR-STAR schema.
             @see: pynmrstar.entry.normalize
         """
@@ -515,5 +537,30 @@ class CifToNmrStar:
             # Iterate through the loops
             for lp in sf:
                 lp.sort_tags()
+
+        return strData
+
+    def normalize_nef(self, strData):
+        """ Sort saveframes of NEF.
+        """
+
+        def sf_key(sf):
+            """ Helper function to sort the saveframes.
+            Returns (saveframe order) """
+
+            try:
+                category_order = self.category_order_nef.index(sf.tag_prefix)
+            except (ValueError, KeyError):
+                if sf.category is None:
+                    category_order = float('infinity')
+                else:
+                    category_order = len(self.category_order_nef) + abs(int(hashlib.sha1(str(sf.category).encode()).hexdigest(), 16))
+
+            return category_order
+
+        try:
+            strData.frame_list.sort(key=sf_key)
+        except Exception as e:
+            self.__lfh.write(f"+ERROR- CifToNmrStar.normalize_nef() {str(e)}\n")
 
         return strData

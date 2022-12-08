@@ -35,69 +35,69 @@ save_nef_molecular_system
       _nef_sequence.residue_variant
       _nef_sequence.cis_peptide
 
-     1    A   1    MET   start    .   false    
-     2    A   2    SER   middle   .   false    
-     3    A   3    ARG   middle   .   false    
-     4    A   4    MET   middle   .   false    
-     5    A   5    ASP   middle   .   false    
-     6    A   6    ASN   middle   .   false    
-     7    A   7    THR   middle   .   false    
-     8    A   8    GLU   middle   .   false    
-     9    A   9    LEU   middle   .   false    
+     1    A   1    MET   start    .   .        
+     2    A   2    SER   middle   .   .        
+     3    A   3    ARG   middle   .   .        
+     4    A   4    MET   middle   .   .        
+     5    A   5    ASP   middle   .   .        
+     6    A   6    ASN   middle   .   .        
+     7    A   7    THR   middle   .   .        
+     8    A   8    GLU   middle   .   .        
+     9    A   9    LEU   middle   .   .        
      10   A   10   PRO   middle   .   false    
-     11   A   11   HIS   middle   .   false    
+     11   A   11   HIS   middle   .   .        
      12   A   12   PRO   middle   .   false    
-     13   A   13   LYS   middle   .   false    
-     14   A   14   GLU   middle   .   false    
-     15   A   15   ILE   middle   .   false    
-     16   A   16   ASP   middle   .   false    
-     17   A   17   ASN   middle   .   false    
-     18   A   18   GLU   middle   .   false    
-     19   A   19   THR   middle   .   false    
-     20   A   20   LEU   middle   .   false    
-     21   A   21   LEU   middle   .   false    
+     13   A   13   LYS   middle   .   .        
+     14   A   14   GLU   middle   .   .        
+     15   A   15   ILE   middle   .   .        
+     16   A   16   ASP   middle   .   .        
+     17   A   17   ASN   middle   .   .        
+     18   A   18   GLU   middle   .   .        
+     19   A   19   THR   middle   .   .        
+     20   A   20   LEU   middle   .   .        
+     21   A   21   LEU   middle   .   .        
      22   A   22   PRO   middle   .   false    
-     23   A   23   ALA   middle   .   false    
-     24   A   24   ALA   middle   .   false    
-     25   A   25   GLU   middle   .   false    
-     26   A   26   ARG   middle   .   false    
-     27   A   27   ARG   middle   .   false    
-     28   A   28   VAL   middle   .   false    
-     29   A   29   ASN   middle   .   false    
-     30   A   30   SER   middle   .   false    
-     31   A   31   GLN   middle   .   false    
-     32   A   32   ALA   middle   .   false    
-     33   A   33   LEU   middle   .   false    
-     34   A   34   LEU   middle   .   false    
+     23   A   23   ALA   middle   .   .        
+     24   A   24   ALA   middle   .   .        
+     25   A   25   GLU   middle   .   .        
+     26   A   26   ARG   middle   .   .        
+     27   A   27   ARG   middle   .   .        
+     28   A   28   VAL   middle   .   .        
+     29   A   29   ASN   middle   .   .        
+     30   A   30   SER   middle   .   .        
+     31   A   31   GLN   middle   .   .        
+     32   A   32   ALA   middle   .   .        
+     33   A   33   LEU   middle   .   .        
+     34   A   34   LEU   middle   .   .        
      35   A   35   GLY   middle   .   false    
      36   A   36   PRO   middle   .   false    
-     37   A   37   ASP   middle   .   false    
+     37   A   37   ASP   middle   .   .        
      38   A   38   GLY   middle   .   false    
-     39   A   39   LYS   middle   .   false    
-     40   A   40   VAL   middle   .   false    
-     41   A   41   ILE   middle   .   false    
-     42   A   42   ILE   middle   .   false    
-     43   A   43   ASP   middle   .   false    
-     44   A   44   HIS   middle   .   false    
-     45   A   45   ASN   middle   .   false    
+     39   A   39   LYS   middle   .   .        
+     40   A   40   VAL   middle   .   .        
+     41   A   41   ILE   middle   .   .        
+     42   A   42   ILE   middle   .   .        
+     43   A   43   ASP   middle   .   .        
+     44   A   44   HIS   middle   .   .        
+     45   A   45   ASN   middle   .   .        
      46   A   46   GLY   middle   .   false    
-     47   A   47   GLN   middle   .   false    
-     48   A   48   GLU   middle   .   false    
-     49   A   49   TYR   middle   .   false    
-     50   A   50   LEU   middle   .   false    
-     51   A   51   LEU   middle   .   false    
-     52   A   52   ARG   middle   .   false    
-     53   A   53   LYS   middle   .   false    
-     54   A   54   THR   middle   .   false    
-     55   A   55   GLN   middle   .   false    
-     56   A   56   ALA   middle   .   false    
+     47   A   47   GLN   middle   .   .        
+     48   A   48   GLU   middle   .   .        
+     49   A   49   TYR   middle   .   .        
+     50   A   50   LEU   middle   .   .        
+     51   A   51   LEU   middle   .   .        
+     52   A   52   ARG   middle   .   .        
+     53   A   53   LYS   middle   .   .        
+     54   A   54   THR   middle   .   .        
+     55   A   55   GLN   middle   .   .        
+     56   A   56   ALA   middle   .   .        
      57   A   57   GLY   middle   .   false    
-     58   A   58   LYS   middle   .   false    
-     59   A   59   LEU   middle   .   false    
-     60   A   60   LEU   middle   .   false    
-     61   A   61   LEU   middle   .   false    
-     62   A   62   THR   middle   .   false    
-     63   A   63   LYS   end      .   false    
+     58   A   58   LYS   middle   .   .        
+     59   A   59   LEU   middle   .   .        
+     60   A   60   LEU   middle   .   .        
+     61   A   61   LEU   middle   .   .        
+     62   A   62   THR   middle   .   .        
+     63   A   63   LYS   end      .   .        
 
    stop_
 

@@ -1,285 +1,5 @@
 data_nef_need_acc_no
 
-save_ccpn_substance_Molecule_1.None
-   _ccpn_substance.sf_category                ccpn_substance
-   _ccpn_substance.sf_framecode               ccpn_substance_Molecule_1.None
-   _ccpn_substance.name                       Molecule_1
-   _ccpn_substance.labelling                  .
-   _ccpn_substance.substance_type             Molecule
-   _ccpn_substance.user_code                  .
-   _ccpn_substance.smiles                     .
-   _ccpn_substance.inchi                      .
-   _ccpn_substance.cas_number                 .
-   _ccpn_substance.empirical_formula          C26H51N6O7S1
-   _ccpn_substance.sequence_string            MKIIS
-   _ccpn_substance.mol_type                   protein
-   _ccpn_substance.start_number               1
-   _ccpn_substance.is_cyclic                  false
-   _ccpn_substance.molecular_mass             591.7849
-   _ccpn_substance.atom_count                 0
-   _ccpn_substance.bond_count                 0
-   _ccpn_substance.ring_count                 0
-   _ccpn_substance.h_bond_donor_count         0
-   _ccpn_substance.h_bond_acceptor_count      0
-   _ccpn_substance.polar_surface_area         .
-   _ccpn_substance.log_partition_coefficient  .
-   _ccpn_substance.comment                    .
-
-save_
-
-save_ccpn_assignment
-   _ccpn_assignment.sf_category   ccpn_assignment
-   _ccpn_assignment.sf_framecode  ccpn_assignment
-
-   loop_
-      _nmr_chain.short_name
-      _nmr_chain.serial
-      _nmr_chain.label
-      _nmr_chain.is_connected
-      _nmr_chain.comment
-
-     @-   1   @-   false   'Default NmrChain, used for ResonanceGroups not in other chains. Cannot be deleted or renamed.'    
-     A    2   @2   false   .                                                                                                  
-
-   stop_
-
-   loop_
-      _nmr_residue.chain_code
-      _nmr_residue.sequence_code
-      _nmr_residue.residue_name
-      _nmr_residue.serial
-      _nmr_residue.comment
-
-     A   1   MET   1   .    
-     A   2   LYS   2   .    
-     A   3   ILE   3   .    
-     A   4   ILE   4   .    
-     A   5   SER   5   .    
-
-   stop_
-
-   loop_
-      _nmr_atom.chain_code
-      _nmr_atom.sequence_code
-      _nmr_atom.serial
-      _nmr_atom.name
-      _nmr_atom.isotope_code
-      _nmr_atom.comment
-
-     A   1   1    HA     1H    HA      
-     A   1   2    HBx    1H    HBx     
-     A   1   3    HBy    1H    HBy     
-     A   1   4    HGx    1H    HGx     
-     A   1   5    HGy    1H    HGy     
-     A   1   6    C      13C   C       
-     A   1   7    CA     13C   CA      
-     A   1   8    CB     13C   CB      
-     A   1   9    CG     13C   CG      
-     A   2   10   H      1H    H       
-     A   2   11   HA     1H    HA      
-     A   2   12   HBx    1H    HBx     
-     A   2   13   HBy    1H    HBy     
-     A   2   14   HGx    1H    HGx     
-     A   2   15   HGy    1H    HGy     
-     A   2   16   HDx    1H    HDx     
-     A   2   17   HDy    1H    HDy     
-     A   2   18   HEx    1H    HEx     
-     A   2   19   C      13C   C       
-     A   2   20   CA     13C   CA      
-     A   2   21   CB     13C   CB      
-     A   2   22   CG     13C   CG      
-     A   2   23   CD     13C   CD      
-     A   2   24   CE     13C   CE      
-     A   2   25   N      15N   N       
-     A   3   26   H      1H    H       
-     A   3   27   HA     1H    HA      
-     A   3   28   HB     1H    HB      
-     A   3   29   HG1x   1H    HG1x    
-     A   3   30   HG1y   1H    HG1y    
-     A   3   31   HG2%   1H    HG2%    
-     A   3   32   HD1%   1H    HD1%    
-     A   3   33   C      13C   C       
-     A   3   34   CA     13C   CA      
-     A   3   35   CB     13C   CB      
-     A   3   36   CG1    13C   CG1     
-     A   3   37   CG2    13C   CG2     
-     A   3   38   CD1    13C   CD1     
-     A   3   39   N      15N   N       
-     A   4   40   H      1H    H       
-     A   4   41   HA     1H    HA      
-     A   4   42   HB     1H    HB      
-     A   4   43   HG1x   1H    HG1x    
-     A   4   44   HG1y   1H    HG1y    
-     A   4   45   HG2%   1H    HG2%    
-     A   4   46   HD1%   1H    HD1%    
-     A   4   47   C      13C   C       
-     A   4   48   CA     13C   CA      
-     A   4   49   CB     13C   CB      
-     A   4   50   CG1    13C   CG1     
-     A   4   51   CG2    13C   CG2     
-     A   4   52   CD1    13C   CD1     
-     A   4   53   N      15N   N       
-     A   5   54   H      1H    H       
-     A   5   55   HA     1H    HA      
-     A   5   56   HB%    1H    HB%     
-     A   5   57   C      13C   C       
-     A   5   58   CA     13C   CA      
-     A   5   59   CB     13C   CB      
-     A   5   60   N      15N   N       
-
-   stop_
-
-save_
-
-save_ccpn_notes
-   _ccpn_notes.sf_category   ccpn_notes
-   _ccpn_notes.sf_framecode  ccpn_notes
-
-   loop_
-      _ccpn_note.serial
-      _ccpn_note.name
-      _ccpn_note.created
-      _ccpn_note.last_modified
-      _ccpn_note.text
-
-     1   source   2020-06-29T%H:M:02.492177   2020-06-29T%H:M:53.598462   'This project is purly for testing nef, spectra added have nothing to do with the sequence.'    
-
-   stop_
-
-save_
-
-save_ccpn_additional_data
-   _ccpn_additional_data.sf_category   ccpn_additional_data
-   _ccpn_additional_data.sf_framecode  ccpn_additional_data
-
-   loop_
-      _ccpn_internal_data.ccpn_object_pid
-      _ccpn_internal_data.internal_data_string
-
-     Note:source      
-;
-{
-  "note": {
-    "noteComment": ""
-  }
-}
-;
- 
-     PeakList:173.1   
-;
-{
-  "meritSettings": {
-    "meritEnabled": false
-  }
-}
-;
- 
-     PeakList:182.1   
-;
-{
-  "meritSettings": {
-    "meritEnabled": false
-  }
-}
-;
- 
-     Spectrum:173     
-;
-{
-  "spectrumAxesOrdering": {
-    "spectrumPreferredAxisOrdering": [
-      0,
-      1,
-      2
-    ]
-  },
-  "spectrumAliasing": {
-    "visibleAliasingRange": [
-      [
-        0,
-        0
-      ],
-      [
-        0,
-        0
-      ],
-      [
-        0,
-        0
-      ]
-    ],
-    "displayFoldedContours": true,
-    "aliasingRange": [
-      [
-        0,
-        0
-      ],
-      [
-        0,
-        0
-      ],
-      [
-        0,
-        0
-      ]
-    ]
-  },
-  "includePositiveContours": true,
-  "includeNegativeContours": false
-}
-;
- 
-     Spectrum:182     
-;
-{
-  "spectrumAxesOrdering": {
-    "spectrumPreferredAxisOrdering": [
-      0,
-      1,
-      2
-    ]
-  },
-  "includePositiveContours": true,
-  "includeNegativeContours": false,
-  "spectrumAliasing": {
-    "displayFoldedContours": true,
-    "visibleAliasingRange": [
-      [
-        0,
-        0
-      ],
-      [
-        0,
-        0
-      ],
-      [
-        0,
-        0
-      ]
-    ],
-    "aliasingRange": [
-      [
-        0,
-        0
-      ],
-      [
-        0,
-        0
-      ],
-      [
-        0,
-        0
-      ]
-    ]
-  }
-}
-;
- 
-
-   stop_
-
-save_
-
 save_nef_nmr_meta_data
    _nef_nmr_meta_data.sf_category           nef_nmr_meta_data
    _nef_nmr_meta_data.sf_framecode          nef_nmr_meta_data
@@ -290,7 +10,6 @@ save_nef_nmr_meta_data
    _nef_nmr_meta_data.creation_date         2020-06-29T12:36:47.067993
    _nef_nmr_meta_data.uuid                  AnalysisAssign-2020-06-29T12:36:47.067993-749824897
    _nef_nmr_meta_data.coordinate_file_name  .
-   _nef_nmr_meta_data.ccpn_dataset_serial   .
 
    loop_
       _nef_program_script.program_name
@@ -316,23 +35,19 @@ save_nef_molecular_system
       _nef_sequence.residue_variant
       _nef_sequence.cis_peptide
 
-     1   A   1   MET   start    .   false    
-     2   A   2   LYS   middle   .   false    
-     3   A   3   ILE   middle   .   false    
-     4   A   4   ILE   middle   .   false    
-     5   A   5   SER   end      .   false    
+     1   A   1   MET   start    .   .    
+     2   A   2   LYS   middle   .   .    
+     3   A   3   ILE   middle   .   .    
+     4   A   4   ILE   middle   .   .    
+     5   A   5   SER   end      .   .    
 
    stop_
 
 save_
 
 save_nef_chemical_shift_list_cs1
-   _nef_chemical_shift_list.sf_category        nef_chemical_shift_list
-   _nef_chemical_shift_list.sf_framecode       nef_chemical_shift_list_cs1
-   _nef_chemical_shift_list.ccpn_serial        1
-   _nef_chemical_shift_list.ccpn_auto_update   true
-   _nef_chemical_shift_list.ccpn_is_simulated  false
-   _nef_chemical_shift_list.ccpn_comment       .
+   _nef_chemical_shift_list.sf_category   nef_chemical_shift_list
+   _nef_chemical_shift_list.sf_framecode  nef_chemical_shift_list_cs1
 
    loop_
       _nef_chemical_shift.chain_code
@@ -343,89 +58,77 @@ save_nef_chemical_shift_list_cs1
       _nef_chemical_shift.value_uncertainty
       _nef_chemical_shift.element
       _nef_chemical_shift.isotope_number
-      _nef_chemical_shift.ccpn_figure_of_merit
-      _nef_chemical_shift.ccpn_comment
 
-     A   1   MET   C      170.978        0                 C   13   1   .    
-     A   1   MET   CA     55.193         0                 C   13   1   .    
-     A   1   MET   CB     34.019         0                 C   13   1   .    
-     A   1   MET   CG     31.136         0                 C   13   1   .    
-     A   1   MET   HA     3.823          0                 H   1    1   .    
-     A   1   MET   HBx    1.956          0                 H   1    1   .    
-     A   1   MET   HBy    1.976          0                 H   1    1   .    
-     A   1   MET   HGx    2.151          0                 H   1    1   .    
-     A   1   MET   HGy    2.036          0                 H   1    1   .    
-     A   2   LYS   C      174.608        0                 C   13   1   .    
-     A   2   LYS   CA     54.206         0                 C   13   1   .    
-     A   2   LYS   CB     35.916         0                 C   13   1   .    
-     A   2   LYS   CD     29.373         0                 C   13   1   .    
-     A   2   LYS   CE     42.086         0                 C   13   1   .    
-     A   2   LYS   CG     24.011         0                 C   13   1   .    
-     A   2   LYS   H      8.56           0                 H   1    1   .    
-     A   2   LYS   HA     4.62           0                 H   1    1   .    
-     A   2   LYS   HBx    1.494          0                 H   1    1   .    
-     A   2   LYS   HBy    1.329          0                 H   1    1   .    
-     A   2   LYS   HDx    1.604          0                 H   1    1   .    
-     A   2   LYS   HDy    1.651          0                 H   1    1   .    
-     A   2   LYS   HEx    2.909          0                 H   1    1   .    
-     A   2   LYS   HGx    1.384          0                 H   1    1   .    
-     A   2   LYS   HGy    1.223          0                 H   1    1   .    
-     A   2   LYS   N      122.783        0                 N   15   1   .    
-     A   3   ILE   C      176.569        0                 C   13   1   .    
-     A   3   ILE   CA     62.565         0                 C   13   1   .    
-     A   3   ILE   CB     38.792         0                 C   13   1   .    
-     A   3   ILE   CD1    14.332         0                 C   13   1   .    
-     A   3   ILE   CG1    27.255         0                 C   13   1   .    
-     A   3   ILE   CG2    17.2           0                 C   13   1   .    
-     A   3   ILE   H      8.376307844    0.0001791922224   H   1    1   .    
-     A   3   ILE   HA     3.619032945    0                 H   1    1   .    
-     A   3   ILE   HB     1.486          0                 H   1    1   .    
-     A   3   ILE   HD1%   0.7444814145   0                 H   1    1   .    
-     A   3   ILE   HG1x   0.781          0                 H   1    1   .    
-     A   3   ILE   HG1y   0.06           0                 H   1    1   .    
-     A   3   ILE   HG2%   0.595          0                 H   1    1   .    
-     A   3   ILE   N      119.9906405    0.00327219903     N   15   1   .    
-     A   4   ILE   C      176.194        0                 C   13   1   .    
-     A   4   ILE   CA     60.586         0                 C   13   1   .    
-     A   4   ILE   CB     37.466         0                 C   13   1   .    
-     A   4   ILE   CD1    10.304         0                 C   13   1   .    
-     A   4   ILE   CG1    26.368         0                 C   13   1   .    
-     A   4   ILE   CG2    16.57          0                 C   13   1   .    
-     A   4   ILE   H      9.159          0                 H   1    1   .    
-     A   4   ILE   HA     4.135          0                 H   1    1   .    
-     A   4   ILE   HB     1.613          0                 H   1    1   .    
-     A   4   ILE   HD1%   0.64           0                 H   1    1   .    
-     A   4   ILE   HG1x   1.164          0                 H   1    1   .    
-     A   4   ILE   HG1y   1.025          0                 H   1    1   .    
-     A   4   ILE   HG2%   0.802          0                 H   1    1   .    
-     A   4   ILE   N      127.239        0                 N   15   1   .    
-     A   5   SER   C      171.58         0                 C   13   1   .    
-     A   5   SER   CA     57.655         0                 C   13   1   .    
-     A   5   SER   CB     65.178         0                 C   13   1   .    
-     A   5   SER   H      7.482          0                 H   1    1   .    
-     A   5   SER   HA     4.545          0                 H   1    1   .    
-     A   5   SER   HB%    3.784          0                 H   1    1   .    
-     A   5   SER   N      112.465        0                 N   15   1   .    
+     A   1   MET   C      170.978        0                 C   13    
+     A   1   MET   CA     55.193         0                 C   13    
+     A   1   MET   CB     34.019         0                 C   13    
+     A   1   MET   CG     31.136         0                 C   13    
+     A   1   MET   HA     3.823          0                 H   1     
+     A   1   MET   HBx    1.956          0                 H   1     
+     A   1   MET   HBy    1.976          0                 H   1     
+     A   1   MET   HGx    2.151          0                 H   1     
+     A   1   MET   HGy    2.036          0                 H   1     
+     A   2   LYS   C      174.608        0                 C   13    
+     A   2   LYS   CA     54.206         0                 C   13    
+     A   2   LYS   CB     35.916         0                 C   13    
+     A   2   LYS   CD     29.373         0                 C   13    
+     A   2   LYS   CE     42.086         0                 C   13    
+     A   2   LYS   CG     24.011         0                 C   13    
+     A   2   LYS   H      8.56           0                 H   1     
+     A   2   LYS   HA     4.62           0                 H   1     
+     A   2   LYS   HBx    1.494          0                 H   1     
+     A   2   LYS   HBy    1.329          0                 H   1     
+     A   2   LYS   HDx    1.604          0                 H   1     
+     A   2   LYS   HDy    1.651          0                 H   1     
+     A   2   LYS   HEx    2.909          0                 H   1     
+     A   2   LYS   HGx    1.384          0                 H   1     
+     A   2   LYS   HGy    1.223          0                 H   1     
+     A   2   LYS   N      122.783        0                 N   15    
+     A   3   ILE   C      176.569        0                 C   13    
+     A   3   ILE   CA     62.565         0                 C   13    
+     A   3   ILE   CB     38.792         0                 C   13    
+     A   3   ILE   CD1    14.332         0                 C   13    
+     A   3   ILE   CG1    27.255         0                 C   13    
+     A   3   ILE   CG2    17.2           0                 C   13    
+     A   3   ILE   H      8.376307844    0.0001791922224   H   1     
+     A   3   ILE   HA     3.619032945    0                 H   1     
+     A   3   ILE   HB     1.486          0                 H   1     
+     A   3   ILE   HD1%   0.7444814145   0                 H   1     
+     A   3   ILE   HG1x   0.781          0                 H   1     
+     A   3   ILE   HG1y   0.06           0                 H   1     
+     A   3   ILE   HG2%   0.595          0                 H   1     
+     A   3   ILE   N      119.9906405    0.00327219903     N   15    
+     A   4   ILE   C      176.194        0                 C   13    
+     A   4   ILE   CA     60.586         0                 C   13    
+     A   4   ILE   CB     37.466         0                 C   13    
+     A   4   ILE   CD1    10.304         0                 C   13    
+     A   4   ILE   CG1    26.368         0                 C   13    
+     A   4   ILE   CG2    16.57          0                 C   13    
+     A   4   ILE   H      9.159          0                 H   1     
+     A   4   ILE   HA     4.135          0                 H   1     
+     A   4   ILE   HB     1.613          0                 H   1     
+     A   4   ILE   HD1%   0.64           0                 H   1     
+     A   4   ILE   HG1x   1.164          0                 H   1     
+     A   4   ILE   HG1y   1.025          0                 H   1     
+     A   4   ILE   HG2%   0.802          0                 H   1     
+     A   4   ILE   N      127.239        0                 N   15    
+     A   5   SER   C      171.58         0                 C   13    
+     A   5   SER   CA     57.655         0                 C   13    
+     A   5   SER   CB     65.178         0                 C   13    
+     A   5   SER   H      7.482          0                 H   1     
+     A   5   SER   HA     4.545          0                 H   1     
+     A   5   SER   HB%    3.784          0                 H   1     
+     A   5   SER   N      112.465        0                 N   15    
 
    stop_
 
 save_
 
 save_nef_distance_restraint_list_dis1
-   _nef_distance_restraint_list.sf_category                  nef_distance_restraint_list
-   _nef_distance_restraint_list.sf_framecode                 nef_distance_restraint_list_dis1
-   _nef_distance_restraint_list.potential_type               undefined
-   _nef_distance_restraint_list.restraint_origin             .
-   _nef_distance_restraint_list.ccpn_tensor_chain_code       .
-   _nef_distance_restraint_list.ccpn_tensor_sequence_code    .
-   _nef_distance_restraint_list.ccpn_tensor_residue_name     .
-   _nef_distance_restraint_list.ccpn_tensor_magnitude        0
-   _nef_distance_restraint_list.ccpn_tensor_rhombicity       0
-   _nef_distance_restraint_list.ccpn_tensor_isotropic_value  0
-   _nef_distance_restraint_list.ccpn_serial                  1
-   _nef_distance_restraint_list.ccpn_dataset_serial          1
-   _nef_distance_restraint_list.ccpn_unit                    .
-   _nef_distance_restraint_list.ccpn_comment                 .
+   _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
+   _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_dis1
+   _nef_distance_restraint_list.potential_type    undefined
+   _nef_distance_restraint_list.restraint_origin  .
 
    loop_
       _nef_distance_restraint.index
@@ -510,20 +213,10 @@ save_nef_distance_restraint_list_dis1
 save_
 
 save_nef_dihedral_restraint_list_dih1
-   _nef_dihedral_restraint_list.sf_category                  nef_dihedral_restraint_list
-   _nef_dihedral_restraint_list.sf_framecode                 nef_dihedral_restraint_list_dih1
-   _nef_dihedral_restraint_list.potential_type               undefined
-   _nef_dihedral_restraint_list.restraint_origin             .
-   _nef_dihedral_restraint_list.ccpn_tensor_chain_code       .
-   _nef_dihedral_restraint_list.ccpn_tensor_sequence_code    .
-   _nef_dihedral_restraint_list.ccpn_tensor_residue_name     .
-   _nef_dihedral_restraint_list.ccpn_tensor_magnitude        0
-   _nef_dihedral_restraint_list.ccpn_tensor_rhombicity       0
-   _nef_dihedral_restraint_list.ccpn_tensor_isotropic_value  0
-   _nef_dihedral_restraint_list.ccpn_serial                  2
-   _nef_dihedral_restraint_list.ccpn_dataset_serial          1
-   _nef_dihedral_restraint_list.ccpn_unit                    .
-   _nef_dihedral_restraint_list.ccpn_comment                 .
+   _nef_dihedral_restraint_list.sf_category       nef_dihedral_restraint_list
+   _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dih1
+   _nef_dihedral_restraint_list.potential_type    undefined
+   _nef_dihedral_restraint_list.restraint_origin  .
 
    loop_
       _nef_dihedral_restraint.index
@@ -565,42 +258,12 @@ save_nef_dihedral_restraint_list_dih1
 save_
 
 save_nef_nmr_spectrum_173
-   _nef_nmr_spectrum.sf_category                   nef_nmr_spectrum
-   _nef_nmr_spectrum.sf_framecode                  nef_nmr_spectrum_173
-   _nef_nmr_spectrum.num_dimensions                3
-   _nef_nmr_spectrum.chemical_shift_list           nef_chemical_shift_list_cs1
-   _nef_nmr_spectrum.experiment_classification     H[C]_H.through-space
-   _nef_nmr_spectrum.experiment_type               '13C HSQC-NOESY'
-   _nef_nmr_spectrum.ccpn_positive_contour_count   10
-   _nef_nmr_spectrum.ccpn_positive_contour_base    479297.6777
-   _nef_nmr_spectrum.ccpn_positive_contour_factor  1.414214
-   _nef_nmr_spectrum.ccpn_positive_contour_colour  '#008080'
-   _nef_nmr_spectrum.ccpn_negative_contour_count   10
-   _nef_nmr_spectrum.ccpn_negative_contour_base    -479297.6777
-   _nef_nmr_spectrum.ccpn_negative_contour_factor  1.414214
-   _nef_nmr_spectrum.ccpn_negative_contour_colour  '#DA70D6'
-   _nef_nmr_spectrum.ccpn_slice_colour             '#008080'
-   _nef_nmr_spectrum.ccpn_spectrum_scale           1
-   _nef_nmr_spectrum.ccpn_spinning_rate            .
-   _nef_nmr_spectrum.ccpn_spectrum_comment         .
-   _nef_nmr_spectrum.ccpn_spectrum_file_path       /Users/eliza/Documents/tutorials_v2/spectra/173.spc
-   _nef_nmr_spectrum.ccpn_sample                   .
-   _nef_nmr_spectrum.ccpn_file_header_size         0
-   _nef_nmr_spectrum.ccpn_file_number_type         float
-   _nef_nmr_spectrum.ccpn_file_complex_stored_by   dimension
-   _nef_nmr_spectrum.ccpn_file_scale_factor        1
-   _nef_nmr_spectrum.ccpn_file_is_big_endian       false
-   _nef_nmr_spectrum.ccpn_file_byte_number         4
-   _nef_nmr_spectrum.ccpn_file_has_block_padding   true
-   _nef_nmr_spectrum.ccpn_file_block_header_size   0
-   _nef_nmr_spectrum.ccpn_file_type                Azara
-   _nef_nmr_spectrum.ccpn_peaklist_serial          1
-   _nef_nmr_spectrum.ccpn_peaklist_comment         .
-   _nef_nmr_spectrum.ccpn_peaklist_name            .
-   _nef_nmr_spectrum.ccpn_peaklist_is_simulated    false
-   _nef_nmr_spectrum.ccpn_peaklist_symbol_colour   '#7a7a7a'
-   _nef_nmr_spectrum.ccpn_peaklist_symbol_style    cross
-   _nef_nmr_spectrum.ccpn_peaklist_text_colour     '#7a7a7a'
+   _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
+   _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_173
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_cs1
+   _nef_nmr_spectrum.experiment_classification  H[C]_H.through-space
+   _nef_nmr_spectrum.experiment_type            '13C HSQC-NOESY'
 
    loop_
       _nef_spectrum_dimension.dimension_id
@@ -614,9 +277,9 @@ save_nef_nmr_spectrum_173
       _nef_spectrum_dimension.is_acquisition
       _nef_spectrum_dimension.ccpn_axis_code
 
-     1   ppm   1H    500.13    19.99480135   14.89740068   circular   true   false   H     
-     2   ppm   1H    500.13    10.29280387   10.04640194   circular   true   false   H1    
-     3   ppm   13C   125.757   31.8175529    47.20877645   circular   true   false   C     
+     1   ppm   1H    500.13    19.99480135   14.89740068   circular   true   .   H     
+     2   ppm   1H    500.13    10.29280387   10.04640194   circular   true   .   H1    
+     3   ppm   13C   125.757   31.8175529    47.20877645   circular   true   .   C     
 
    stop_
 
@@ -701,42 +364,12 @@ save_nef_nmr_spectrum_173
 save_
 
 save_nef_nmr_spectrum_182
-   _nef_nmr_spectrum.sf_category                   nef_nmr_spectrum
-   _nef_nmr_spectrum.sf_framecode                  nef_nmr_spectrum_182
-   _nef_nmr_spectrum.num_dimensions                3
-   _nef_nmr_spectrum.chemical_shift_list           nef_chemical_shift_list_cs1
-   _nef_nmr_spectrum.experiment_classification     H[N]_H.through-space
-   _nef_nmr_spectrum.experiment_type               '15N HSQC-NOESY'
-   _nef_nmr_spectrum.ccpn_positive_contour_count   10
-   _nef_nmr_spectrum.ccpn_positive_contour_base    609165.046
-   _nef_nmr_spectrum.ccpn_positive_contour_factor  1.414214
-   _nef_nmr_spectrum.ccpn_positive_contour_colour  '#800080'
-   _nef_nmr_spectrum.ccpn_negative_contour_count   10
-   _nef_nmr_spectrum.ccpn_negative_contour_base    -609165.046
-   _nef_nmr_spectrum.ccpn_negative_contour_factor  1.414214
-   _nef_nmr_spectrum.ccpn_negative_contour_colour  '#808000'
-   _nef_nmr_spectrum.ccpn_slice_colour             '#800080'
-   _nef_nmr_spectrum.ccpn_spectrum_scale           1
-   _nef_nmr_spectrum.ccpn_spinning_rate            .
-   _nef_nmr_spectrum.ccpn_spectrum_comment         .
-   _nef_nmr_spectrum.ccpn_spectrum_file_path       /Users/eliza/Documents/tutorials_v2/spectra/182.spc
-   _nef_nmr_spectrum.ccpn_sample                   .
-   _nef_nmr_spectrum.ccpn_file_header_size         0
-   _nef_nmr_spectrum.ccpn_file_number_type         float
-   _nef_nmr_spectrum.ccpn_file_complex_stored_by   dimension
-   _nef_nmr_spectrum.ccpn_file_scale_factor        1
-   _nef_nmr_spectrum.ccpn_file_is_big_endian       false
-   _nef_nmr_spectrum.ccpn_file_byte_number         4
-   _nef_nmr_spectrum.ccpn_file_has_block_padding   true
-   _nef_nmr_spectrum.ccpn_file_block_header_size   0
-   _nef_nmr_spectrum.ccpn_file_type                Azara
-   _nef_nmr_spectrum.ccpn_peaklist_serial          1
-   _nef_nmr_spectrum.ccpn_peaklist_comment         .
-   _nef_nmr_spectrum.ccpn_peaklist_name            .
-   _nef_nmr_spectrum.ccpn_peaklist_is_simulated    false
-   _nef_nmr_spectrum.ccpn_peaklist_symbol_colour   '#7a7a7a'
-   _nef_nmr_spectrum.ccpn_peaklist_symbol_style    cross
-   _nef_nmr_spectrum.ccpn_peaklist_text_colour     '#7a7a7a'
+   _nef_nmr_spectrum.sf_category                nef_nmr_spectrum
+   _nef_nmr_spectrum.sf_framecode               nef_nmr_spectrum_182
+   _nef_nmr_spectrum.num_dimensions             3
+   _nef_nmr_spectrum.chemical_shift_list        nef_chemical_shift_list_cs1
+   _nef_nmr_spectrum.experiment_classification  H[N]_H.through-space
+   _nef_nmr_spectrum.experiment_type            '15N HSQC-NOESY'
 
    loop_
       _nef_spectrum_dimension.dimension_id
@@ -750,9 +383,9 @@ save_nef_nmr_spectrum_182
       _nef_spectrum_dimension.is_acquisition
       _nef_spectrum_dimension.ccpn_axis_code
 
-     1   ppm   1H    500.13   4.998700338   9.898700338   circular   true   false   H     
-     2   ppm   1H    500.13   10.9861536    10.3930768    circular   true   false   H1    
-     3   ppm   15N   50.666   24.00290135   128.0014507   circular   true   false   N     
+     1   ppm   1H    500.13   4.998700338   9.898700338   circular   true   .   H     
+     2   ppm   1H    500.13   10.9861536    10.3930768    circular   true   .   H1    
+     3   ppm   15N   50.666   24.00290135   128.0014507   circular   true   .   N     
 
    stop_
 

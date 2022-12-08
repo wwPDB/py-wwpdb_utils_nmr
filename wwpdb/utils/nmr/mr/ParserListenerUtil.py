@@ -1065,7 +1065,7 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                'range': CS_RESTRAINT_RANGE},
                                               {'name': 'CA_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                'range': CS_UNCERTAINTY_RANGE},
-                                              {'name': 'CB_chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                              {'name': 'CB_chem_shift_val', 'type': 'range-float', 'mandatory': False,
                                                'range': CS_RESTRAINT_RANGE},
                                               {'name': 'CB_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                'range': CS_UNCERTAINTY_RANGE},

@@ -2895,7 +2895,7 @@ class NmrDpUtility:
                                                              'range': CS_RESTRAINT_RANGE},
                                                             {'name': 'CA_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                              'range': CS_UNCERTAINTY_RANGE},
-                                                            {'name': 'CB_chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                                            {'name': 'CB_chem_shift_val', 'type': 'range-float', 'mandatory': False,
                                                              'range': CS_RESTRAINT_RANGE},
                                                             {'name': 'CB_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                              'range': CS_UNCERTAINTY_RANGE},
@@ -5449,9 +5449,15 @@ class NmrDpUtility:
             if 'remove-bad-pattern' in key:
                 key['remove-bad-pattern'] = self.__combined_mode
 
-        self.__remediation_mode = (op == 'nmr-cs-mr-merge')
+        if has_key_value(self.__inputParamDict, 'remediation'):
+            if isinstance(self.__inputParamDict['remediation'], bool):
+                self.__remediation_mode = self.__inputParamDict['remediation']
+            else:
+                self.__remediation_mode = self.__inputParamDict['remediation'] in trueValue
 
-        if self.__remediation_mode:
+        if op == 'nmr-cs-mr-merge':
+
+            self.__remediation_mode = True
 
             if self.__inputParamDictCopy is None:
                 self.__inputParamDictCopy = copy.deepcopy(self.__inputParamDict)
@@ -5506,6 +5512,8 @@ class NmrDpUtility:
                             d['default'] = 'A'
                             if 'default-from' in d:
                                 del d['default-from']
+
+        if self.__remediation_mode:
 
             self.__nefT.set_remediation_mode(True)
             self.__nefT.allow_missing_dist_restraint(True)
@@ -22709,7 +22717,7 @@ class NmrDpUtility:
                                         else:
                                             subtype_name = "RDC restraint"
 
-                                        if _atom_id_ in self.__csStat.getMethylAtoms(comp_id):
+                                        if _atom_id_ in self.__csStat.getMethylAtoms(comp_id) and not self.__remediation_mode:
 
                                             cs_atom_id_map = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id,
                                                               'src_atom_id': gem_atom_id_w_cs, 'dst_atom_id': atom_id,

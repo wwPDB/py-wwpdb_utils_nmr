@@ -112,13 +112,17 @@ class TestNmrDpUtility(unittest.TestCase):
         pass
 
     def __test_nmr_cs_str_consistency(self, cs_type):
-        self.utility.addInput(name='chem_shift_file_path_list', value=[self.data_dir_path + cs_file_path for cs_file_path in self.cs_file_path[cs_type]], type='file_list')
+        self.utility.addInput(name='chem_shift_file_path_list', value=[{'file_name': self.data_dir_path + cs_file_path,
+                                                                        'file_type': 'nmr-star',
+                                                                        'original_file_name': 'original_' + cs_file_path}
+                                                                       for cs_file_path in self.cs_file_path[cs_type]], type='file_dict_list')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.model_file_path[cs_type], type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=False, type='param')
-        self.utility.setDestination(self.data_dir_path + self.cs_file_path[cs_type][0] + '-daother-7402-next.str')
+        self.utility.setDestination(self.data_dir_path + self.cs_file_path[cs_type][0] + '-daother-7407-next.str')
+        self.utility.addOutput(name='nmr_cif_file_path', value=self.data_dir_path + self.cs_file_path[cs_type][0] + '-daother-7407-next.cif', type='file')
         self.utility.setLog(self.data_dir_path + cs_type + '-cs-str-consistency-log.json')
         self.utility.setVerbose(False)
 

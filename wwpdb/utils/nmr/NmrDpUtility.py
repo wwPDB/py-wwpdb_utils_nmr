@@ -187,6 +187,7 @@ import json
 from packaging import version
 from munkres import Munkres
 import numpy
+from mmcif.io.IoAdapterPy import IoAdapterPy
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -1161,6 +1162,7 @@ class NmrDpUtility:
                           self.__deleteSkippedSf,
                           self.__deleteSkippedLoop,
                           self.__deleteUnparsedEntryLoop,
+                          self.__updateEntryInformtion,
                           self.__updatePolymerSequence,
                           self.__updateAuthSequence,
                           self.__updateDihedralAngleType,
@@ -6167,7 +6169,12 @@ class NmrDpUtility:
 
             cs_file_path_list = 'chem_shift_file_path_list'
 
-            for csListId, csPath in enumerate(self.__inputParamDict[cs_file_path_list]):
+            for csListId, cs in enumerate(self.__inputParamDict[cs_file_path_list]):
+
+                if isinstance(cs, str):
+                    csPath = cs
+                else:
+                    csPath = cs['file_name']
 
                 if csListId == 0:
                     self.__dirPath = os.path.dirname(csPath)
@@ -6298,7 +6305,12 @@ class NmrDpUtility:
 
             if mr_file_path_list in self.__inputParamDict:
 
-                for mrPath in self.__inputParamDict[mr_file_path_list]:
+                for mr in self.__inputParamDict[mr_file_path_list]:
+
+                    if isinstance(mr, str):
+                        mrPath = mr
+                    else:
+                        mrPath = mr['file_name']
 
                     codec = detect_bom(mrPath, 'utf-8')
 
@@ -6337,7 +6349,12 @@ class NmrDpUtility:
 
                 file_path_list_len = self.__cs_file_path_list_len
 
-                for mrPath in self.__inputParamDict[mr_file_path_list]:
+                for mr in self.__inputParamDict[mr_file_path_list]:
+
+                    if isinstance(mr, str):
+                        mrPath = mr
+                    else:
+                        mrPath = mr['file_name']
 
                     codec = detect_bom(mrPath, 'utf-8')
 
@@ -36067,14 +36084,58 @@ class NmrDpUtility:
 
         return True
 
+    def __updateEntryInformtion(self):
+        """ Update entry information.
+        """
+
+        if not self.__combined_mode:
+            return False
+
+        if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
+            return False
+
+        master_entry = self.__star_data[0]
+
+        file_type = 'nmr-star'
+        content_subtype = 'entry_info'
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+
+        try:
+
+            orig_ent_sf = master_entry.get_saveframes_by_category(sf_category)[0]
+
+            tagNames = [t[0] for t in orig_ent_sf.tags]
+
+            if 'Sf_category' not in tagNames:
+                orig_ent_sf.add_tag('Sf_category', sf_category)
+            if 'Sf_framecode' not in tagNames:
+                orig_ent_sf.add_tag('Sf_framecode', orig_ent_sf.name)
+            if 'ID' not in tagNames:
+                orig_ent_sf.add_tag('ID', self.__entry_id)
+            else:
+                orig_ent_sf.tags[tagNames.index('ID')][1] = self.__entry_id
+
+        except IndexError:
+
+            ent_sf = pynmrstar.Saveframe.from_scratch('entry_information', self.sf_tag_prefixes[file_type][content_subtype])
+            ent_sf.add_tag('Sf_category', sf_category)
+            ent_sf.add_tag('Sf_framecode', ent_sf.name)
+            ent_sf.add_tag('ID', self.__entry_id)
+
+            master_entry.add_saveframe(ent_sf)
+
+        return True
+
     def __updatePolymerSequence(self):
         """ Update polymer sequence.
         """
 
-        if not self.__combined_mode and not self.__remediation_mode:
-            return False
+        # DAOTHER-7407
+        # if not self.__combined_mode and not self.__remediation_mode:
+        #     return False
 
-        if len(self.__star_data) == 0 or self.__star_data[0] is None:
+        if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
 
         # resolve
@@ -42445,14 +42506,14 @@ class NmrDpUtility:
         else:
             master_entry.write_to_file(self.__dstPath)
 
-        if 'nef' not in self.__op and 'deposit' in self.__op and 'nmr-cif_file_path' in self.__outputParamDict:
+        if 'nef' not in self.__op and 'deposit' in self.__op and 'nmr_cif_file_path' in self.__outputParamDict:
             star_to_cif = NmrStarToCif()
 
             original_file_name = ''
             if 'original_file_name' in self.__inputParamDict:
                 original_file_name = self.__inputParamDict['original_file_name']
 
-            star_to_cif.convert(self.__dstPath, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-uni-str')
+            star_to_cif.convert(self.__dstPath, self.__outputParamDict['nmr_cif_file_path'], original_file_name, 'nm-uni-str')
 
         return not self.report.isError()
 
@@ -42460,95 +42521,49 @@ class NmrDpUtility:
         """ Deposit next NMR legacy data files.
         """
 
-        if self.__combined_mode:
+        if self.__combined_mode or self.__dstPath is None:
             return False
 
-        cs_file_path_list = 'chem_shift_file_path_list'
+        if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
+            return False
 
-        if cs_file_path_list in self.__outputParamDict:
+        master_entry = self.__star_data[0]
 
-            for fileListId, dstPath in enumerate(self.__outputParamDict[cs_file_path_list]):
+        master_entry.entry_id = f'cs_{self.__entry_id.lower()}'
 
-                if dstPath is None:
+        self.__c2S.set_entry_id(master_entry, self.__entry_id)
+        self.__c2S.normalize(master_entry)
 
-                    err = "Not found destination file path."
+        master_entry = self.__c2S.normalize_str(master_entry)
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__depositLegacyNmrData() ++ Error  - " + err)
-                    self.report.setError()
+        if __pynmrstar_v3__:
+            master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+        else:
+            master_entry.write_to_file(self.__dstPath)
+
+        if 'nmr_cif_file_path' in self.__outputParamDict:
+
+            try:
+
+                myIo = IoAdapterPy(False, sys.stderr)
+                containerList = myIo.readFile(self.__dstPath)
+
+                if containerList is not None and len(containerList) > 1:
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__depositLegacyNmrData() ++ Error  - {err}\n")
+                        self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
-                    return False
+                    for c in containerList:
+                        c.setType('data')
 
-                if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
-                    return False
-                # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
-                # if self.__star_data_type[fileListId] == 'Loop':  # copied already
-                #     continue
-                # """
-                if dstPath in self.__inputParamDict[cs_file_path_list]:
-                    return False
-                # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
-                # if __pynmrstar_v3__:
-                #     self.__star_data[fileListId].write_to_file(dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
-                # else:
-                #     self.__star_data[fileListId].write_to_file(dstPath)
-                # """
-                if self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId],
-                                                    self.__star_data[fileListId],
-                                                    dstPath, fileListId,
-                                                    report=self.report,
-                                                    leave_unmatched=self.__leave_intl_note)[0]:
+                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
 
-                    if 'nmr-cif_file_path' in self.__outputParamDict:
-                        star_to_cif = NmrStarToCif()
+                    return True
 
-                        original_file_name = ''
-                        if 'original_file_name' in self.__inputParamDict:
-                            original_file_name = self.__inputParamDict['original_file_name']
+            except Exception as e:
+                self.__lfh.write(f"+NmrDpUtility.__depositNmrData() ++ Error  - {str(e)}\n")
 
-                        star_to_cif.convert(dstPath, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-shi')
-
-            mr_file_path_list = 'restraint_file_path_list'
-
-            if mr_file_path_list in self.__outputParamDict:
-
-                fileListId = len(self.__outputParamDict[cs_file_path_list])
-
-                for dstPath in self.__outputParamDict[mr_file_path_list]:
-
-                    if dstPath is None:
-
-                        err = "Not found destination file path."
-
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__depositLegacyNmrData() ++ Error  - " + err)
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__depositLegacyNmrData() ++ Error  - {err}\n")
-
-                        return False
-
-                    if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
-                        return False
-                    # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
-                    # if self.__star_data_type[fileListId] == 'Loop':  # copied already
-                    #     continue
-                    # """
-                    if dstPath in self.__inputParamDict[mr_file_path_list]:
-                        return False
-                    # """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
-                    # if __pynmrstar_v3__:
-                    #     self.__star_data[fileListId].write_to_file(dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
-                    # else:
-                    #     self.__star_data[fileListId].write_to_file(dstPath)
-                    # """
-                    self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId], self.__star_data[fileListId], dstPath, fileListId, self.report)
-
-                    fileListId += 1
-
-        return not self.report.isError()
+        return False
 
     def __mergeLegacyCsAndMr(self):
         """ Merge CS+MR into next NMR unifed data files.
@@ -43788,14 +43803,14 @@ class NmrDpUtility:
 
         if is_valid:
 
-            if 'deposit' in self.__op and 'nmr-cif_file_path' in self.__outputParamDict:
+            if 'deposit' in self.__op and 'nmr_cif_file_path' in self.__outputParamDict:
                 star_to_cif = NmrStarToCif()
 
                 original_file_name = ''
                 if 'original_file_name' in self.__inputParamDict:
                     original_file_name = self.__inputParamDict['original_file_name']
 
-                star_to_cif.convert(fPath, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-uni-nef')
+                star_to_cif.convert(fPath, self.__outputParamDict['nmr_cif_file_path'], original_file_name, 'nm-uni-nef')
 
             return True
 

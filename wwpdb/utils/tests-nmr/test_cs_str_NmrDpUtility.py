@@ -118,6 +118,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=False, type='param')
+        self.utility.setDestination(self.data_dir_path + self.cs_file_path[cs_type][0] + '-daother-7402-next.str')
         self.utility.setLog(self.data_dir_path + cs_type + '-cs-str-consistency-log.json')
         self.utility.setVerbose(False)
 

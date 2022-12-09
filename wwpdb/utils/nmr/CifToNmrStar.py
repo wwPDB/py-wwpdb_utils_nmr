@@ -127,7 +127,7 @@ class CifToNmrStar:
             ofp.write(schema.version)
         print(f"version: {schema.version}")
 
-    def convert(self, cifPath=None, strPath=None, datablockName=None):
+    def convert(self, cifPath=None, strPath=None, datablockName=None, maxRepeat=1):
         """ Convert CIF formatted NMR data file to normalized NMR-STAR file.
         """
 
@@ -145,7 +145,7 @@ class CifToNmrStar:
 
             entry_id = None
 
-            strData = pynmrstar.Entry.from_scratch(datablockName)
+            strData = pynmrstar.Entry.from_scratch(datablockName if datablockName is not None else os.path.basename(cifPath))
 
             # check category order in CIF
             category_order = []
@@ -402,6 +402,7 @@ class CifToNmrStar:
             return True
 
         except ValueError as e:
+
             sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
             save_pattern = re.compile(r'\s*save_\s*')
 
@@ -419,8 +420,8 @@ class CifToNmrStar:
                     else:
                         ofp.write(line)
 
-            if changed:
-                return self.convert(_cifPath, strPath)
+            if changed and maxRepeat > 0:
+                return self.convert(_cifPath, strPath, datablockName, maxRepeat=maxRepeat - 1)
 
             os.remove(_cifPath)
 

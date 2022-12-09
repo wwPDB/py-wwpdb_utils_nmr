@@ -502,6 +502,61 @@ def uncompress_gzip_file(inPath, outPath):
             ofp.write(line)
 
 
+def get_type_of_star_file(fPath):
+    """ Return type of a STAR file.
+        @return: 'str' for STAR, 'cif' for CIF, 'other' otherwise
+    """
+
+    codec = detect_bom(fPath, 'utf-8')
+
+    _fPath = None
+
+    if codec != 'utf-8':
+        _fPath = fPath + '~'
+        convert_codec(fPath, _fPath, codec, 'utf-8')
+        fPath = _fPath
+
+    try:
+
+        is_cif = False
+
+        has_datablock = False
+        has_anonymous_saveframe = False
+        has_save = False
+        has_loop = False
+        has_stop = False
+
+        with open(fPath, 'r', encoding='utf-8') as ifp:
+            for line in ifp:
+                str_syntax = False
+                if datablock_pattern.match(line):
+                    str_syntax = has_datablock = True
+                elif sf_anonymous_pattern.match(line):
+                    str_syntax = has_anonymous_saveframe = True
+                elif save_pattern.match(line):
+                    str_syntax = has_save = True
+                elif loop_pattern.match(line):
+                    str_syntax = has_loop = True
+                elif stop_pattern.match(line):
+                    str_syntax = has_stop = True
+
+                if str_syntax:
+                    if (has_anonymous_saveframe and has_save) or (has_loop and has_stop):
+                        return 'str'
+                    if has_datablock and has_loop and not has_stop:
+                        is_cif = True
+
+        return 'cif' if is_cif else 'other'
+
+    finally:
+
+        if _fPath is not None:
+            try:
+                os.remove(_fPath)
+            except:  # noqa: E722 pylint: disable=bare-except
+                pass
+
+
 def has_key_value(d=None, key=None):
     """ Return whether a given dictionary has effective value for a key.
         @return: True if d[key] has effective value, False otherwise
@@ -990,6 +1045,7 @@ class NmrDpUtility:
 
         # source, destination, and log file paths
         self.__srcPath = None
+        self.__srcName = None
         self.__dstPath = None
         self.__logPath = None
 
@@ -5350,12 +5406,16 @@ class NmrDpUtility:
 
         self.__mr_debug = debug
 
-    def setSource(self, fPath):
+    def setSource(self, fPath, originalName=None):
         """ Set primary source file path.
         """
 
         if os.access(fPath, os.F_OK):
             self.__srcPath = os.path.abspath(fPath)
+            if originalName is not None:
+                self.__srcName = originalName
+            else:
+                self.__srcName = os.path.basename(self.__srcPath)
 
         else:
             raise IOError(f"+NmrDpUtility.setSource() ++ Error  - Could not access to file path {fPath}.")
@@ -5745,8 +5805,11 @@ class NmrDpUtility:
         """ Initialize NMR data processing report.
         """
 
+        srcName = None
         if srcPath is None:
             srcPath = self.__srcPath
+            if self.__srcName is not None:
+                srcName = self.__srcName
 
         self.report = NmrDpReport(self.__verbose, self.__lfh)
 
@@ -5763,12 +5826,14 @@ class NmrDpUtility:
             input_source.setItemValue('file_name', os.path.basename(srcPath))
             input_source.setItemValue('file_type', file_type)
             input_source.setItemValue('content_type', content_type)
+            if srcName is not None:
+                input_source.setItemValue('original_file_name', srcName)
 
         else:
 
             cs_file_path_list = 'chem_shift_file_path_list'
 
-            for csListId, csPath in enumerate(self.__inputParamDict[cs_file_path_list]):
+            for csListId, cs in enumerate(self.__inputParamDict[cs_file_path_list]):
 
                 if csListId > 0:
                     self.report.appendInputSource()
@@ -5777,48 +5842,102 @@ class NmrDpUtility:
 
                 file_type = 'nmr-star'  # 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
 
-                if csPath.endswith('.gz'):
+                if isinstance(cs, str):
 
-                    _csPath = os.path.splitext(csPath)[0]
+                    if cs.endswith('.gz'):
 
-                    if not os.path.exists(_csPath):
+                        _cs = os.path.splitext(cs)[0]
 
-                        try:
+                        if not os.path.exists(_cs):
 
-                            uncompress_gzip_file(csPath, _csPath)
+                            try:
 
-                        except Exception as e:
+                                uncompress_gzip_file(cs, _cs)
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__initializeDpReport() ++ Error  - " + str(e))
-                            self.report.setError()
+                            except Exception as e:
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__initializeDpReport() ++ Error  - {str(e)}\n")
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__initializeDpReport() ++ Error  - " + str(e))
+                                self.report.setError()
 
-                            return False
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__initializeDpReport() ++ Error  - {str(e)}\n")
 
-                    csPath = _csPath
+                                return False
 
-                if self.__op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
+                        cs = _cs
 
-                    _csPath = csPath + '.cif2str'
+                    if not os.path.basename(cs).startswith('bmr') and\
+                            (self.__op == 'nmr-cs-mr-merge'
+                             or get_type_of_star_file(cs) == 'cif'
+                             or self.__nefT.read_input_file(cs)[1] in ('Loop', 'Saveframe')):
 
-                    if not os.path.exists(_csPath):
+                        input_source.setItemValue('original_file_name', os.path.basename(cs))
 
-                        if not self.__c2S.convert(csPath, _csPath):
-                            _csPath = csPath
+                        _cs = cs + '.cif2str'
 
-                    csPath = _csPath
+                        if not os.path.exists(_cs):
 
-                input_source.setItemValue('file_name', os.path.basename(csPath))
-                input_source.setItemValue('file_type', file_type)
-                input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                            if not self.__c2S.convert(cs, _cs):
+                                _cs = cs
+
+                        cs = _cs
+
+                    input_source.setItemValue('file_name', os.path.basename(cs))
+                    input_source.setItemValue('file_type', file_type)
+                    input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+
+                else:
+
+                    if cs['file_name'].endswith('.gz'):
+
+                        _cs = os.path.splitext(cs['file_name'])[0]
+
+                        if not os.path.exists(_cs):
+
+                            try:
+
+                                uncompress_gzip_file(cs['file_name'], _cs)
+
+                            except Exception as e:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__initializeDpReport() ++ Error  - " + str(e))
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__initializeDpReport() ++ Error  - {str(e)}\n")
+
+                                return False
+
+                        cs['file_name'] = _cs
+
+                    if not os.path.basename(cs['file_name']).startswith('bmr') and\
+                            (self.__op == 'nmr-cs-mr-merge'
+                             or get_type_of_star_file(cs['file_name']) == 'cif'
+                             or self.__nefT.read_input_file(cs['file_name'])[1] in ('Loop', 'Saveframe')):
+
+                        if 'original_file_name' not in cs:
+                            input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
+
+                        _cs = cs['file_name'] + '.cif2str'
+
+                        if not os.path.exists(_cs):
+
+                            if not self.__c2S.convert(cs['file_name'], _cs):
+                                _cs = cs['file_name']
+
+                        cs['file_name'] = _cs
+
+                    input_source.setItemValue('file_name', os.path.basename(cs['file_name']))
+                    input_source.setItemValue('file_type', file_type)
+                    input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                    if 'original_file_name' in cs:
+                        input_source.setItemValue('original_file_name', cs['original_file_name'])
 
             mr_file_path_list = 'restraint_file_path_list'
 
             if mr_file_path_list in self.__inputParamDict:
 
-                for mrPath in self.__inputParamDict[mr_file_path_list]:
+                for mr in self.__inputParamDict[mr_file_path_list]:
 
                     self.report.appendInputSource()
 
@@ -5826,9 +5945,48 @@ class NmrDpUtility:
 
                     file_type = 'nmr-star'  # 'nef' if 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
 
-                    input_source.setItemValue('file_name', os.path.basename(mrPath))
-                    input_source.setItemValue('file_type', file_type)
-                    input_source.setItemValue('content_type', 'nmr-restraints')
+                    if isinstance(mr, str):
+
+                        if get_type_of_star_file(mr) == 'cif'\
+                           or self.__nefT.read_input_file(mr)[1] in ('Loop', 'Saveframe'):
+
+                            input_source.setItemValue('original_file_name', os.path.basename(mr))
+
+                            _mr = mr + '.cif2str'
+
+                            if not os.path.exists(_mr):
+
+                                if not self.__c2S.convert(mr, _mr):
+                                    _mr = mr
+
+                            mr = _mr
+
+                        input_source.setItemValue('file_name', os.path.basename(mr))
+                        input_source.setItemValue('file_type', file_type)
+                        input_source.setItemValue('content_type', 'nmr-restraints')
+
+                    else:
+
+                        if get_type_of_star_file(mr['file_name']) == 'cif'\
+                           or self.__nefT.read_input_file(mr['file_name'])[1] in ('Loop', 'Saveframe'):
+
+                            if 'original_file_name' not in mr:
+                                input_source.setItemValue('original_file_name', os.path.basename(mr['file_name']))
+
+                            _mr = mr['file_name'] + '.cif2str'
+
+                            if not os.path.exists(_mr):
+
+                                if not self.__c2S.convert(mr['file_name'], _mr):
+                                    _mr = mr['file_name']
+
+                            mr['file_name'] = _mr
+
+                        input_source.setItemValue('file_name', os.path.basename(mr['file_name']))
+                        input_source.setItemValue('file_type', file_type)
+                        input_source.setItemValue('content_type', 'nmr-restraints')
+                        if 'original_file_name' in mr:
+                            input_source.setItemValue('original_file_name', mr['original_file_name'])
 
             ar_file_path_list = 'atypical_restraint_file_path_list'
 
@@ -5925,12 +6083,12 @@ class NmrDpUtility:
 
             codec = detect_bom(srcPath, 'utf-8')
 
-            srcPath_ = None
+            _srcPath = None
 
             if codec != 'utf-8':
-                srcPath_ = srcPath + '~'
-                convert_codec(srcPath, srcPath_, codec, 'utf-8')
-                srcPath = srcPath_
+                _srcPath = srcPath + '~'
+                convert_codec(srcPath, _srcPath, codec, 'utf-8')
+                srcPath = _srcPath
 
             is_valid, message = self.__nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
 
@@ -5999,9 +6157,9 @@ class NmrDpUtility:
 
                 is_done = False
 
-            if srcPath_ is not None:
+            if _srcPath is not None:
                 try:
-                    os.remove(srcPath_)
+                    os.remove(_srcPath)
                 except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
@@ -6049,12 +6207,12 @@ class NmrDpUtility:
 
                 codec = detect_bom(csPath, 'utf-8')
 
-                csPath_ = None
+                _csPath = None
 
                 if codec != 'utf-8':
-                    csPath_ = csPath + '~'
-                    convert_codec(csPath, csPath_, codec, 'utf-8')
-                    csPath = csPath_
+                    _csPath = csPath + '~'
+                    convert_codec(csPath, _csPath, codec, 'utf-8')
+                    csPath = _csPath
 
                 is_valid, message = self.__nefT.validate_file(csPath, 'S')  # 'S' for assigned chemical shifts
 
@@ -6127,9 +6285,9 @@ class NmrDpUtility:
                 elif not self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message):
                     is_done = False
 
-                if csPath_ is not None:
+                if _csPath is not None:
                     try:
-                        os.remove(csPath_)
+                        os.remove(_csPath)
                     except:  # noqa: E722 pylint: disable=bare-except
                         pass
 
@@ -6144,21 +6302,21 @@ class NmrDpUtility:
 
                     codec = detect_bom(mrPath, 'utf-8')
 
-                    mrPath_ = None
+                    _mrPath = None
 
                     if codec != 'utf-8':
-                        mrPath_ = mrPath + '~'
-                        convert_codec(mrPath, mrPath_, codec, 'utf-8')
-                        mrPath = mrPath_
+                        _mrPath = mrPath + '~'
+                        convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                        mrPath = _mrPath
 
                     is_valid, message = self.__nefT.validate_file(mrPath, 'R')  # 'R' for restraints
 
                     if is_valid:
                         self.__legacy_dist_restraint_uploaded = True
 
-                    if mrPath_ is not None:
+                    if _mrPath is not None:
                         try:
-                            os.remove(mrPath_)
+                            os.remove(_mrPath)
                         except:  # noqa: E722 pylint: disable=bare-except
                             pass
 
@@ -6183,12 +6341,12 @@ class NmrDpUtility:
 
                     codec = detect_bom(mrPath, 'utf-8')
 
-                    mrPath_ = None
+                    _mrPath = None
 
                     if codec != 'utf-8':
-                        mrPath_ = mrPath + '~'
-                        convert_codec(mrPath, mrPath_, codec, 'utf-8')
-                        mrPath = mrPath_
+                        _mrPath = mrPath + '~'
+                        convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                        mrPath = _mrPath
 
                     is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
 
@@ -6266,9 +6424,9 @@ class NmrDpUtility:
 
                     file_path_list_len += 1
 
-                    if mrPath_ is not None:
+                    if _mrPath is not None:
                         try:
-                            os.remove(mrPath_)
+                            os.remove(_mrPath)
                         except:  # noqa: E722 pylint: disable=bare-except
                             pass
 
@@ -12639,12 +12797,12 @@ class NmrDpUtility:
 
                         codec = detect_bom(mrPath, 'utf-8')
 
-                        mrPath_ = None
+                        _mrPath = None
 
                         if codec != 'utf-8':
-                            mrPath_ = mrPath + '~'
-                            convert_codec(mrPath, mrPath_, codec, 'utf-8')
-                            mrPath = mrPath_
+                            _mrPath = mrPath + '~'
+                            convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                            mrPath = _mrPath
 
                         file_subtype = 'O'
 
@@ -12718,9 +12876,9 @@ class NmrDpUtility:
                         elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                             pass
 
-                        if mrPath_ is not None:
+                        if _mrPath is not None:
                             try:
-                                os.remove(mrPath_)
+                                os.remove(_mrPath)
                             except:  # noqa: E722 pylint: disable=bare-except
                                 pass
 
@@ -12809,12 +12967,12 @@ class NmrDpUtility:
 
                         codec = detect_bom(mrPath, 'utf-8')
 
-                        mrPath_ = None
+                        _mrPath = None
 
                         if codec != 'utf-8':
-                            mrPath_ = mrPath + '~'
-                            convert_codec(mrPath, mrPath_, codec, 'utf-8')
-                            mrPath = mrPath_
+                            _mrPath = mrPath + '~'
+                            convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                            mrPath = _mrPath
 
                         file_subtype = 'O'
 
@@ -12883,9 +13041,9 @@ class NmrDpUtility:
                         elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                             pass
 
-                        if mrPath_ is not None:
+                        if _mrPath is not None:
                             try:
-                                os.remove(mrPath_)
+                                os.remove(_mrPath)
                             except:  # noqa: E722 pylint: disable=bare-except
                                 pass
 
@@ -13301,36 +13459,9 @@ class NmrDpUtility:
 
                     if has_str_format or has_cif_format:
 
-                        is_str = is_cif = False
+                        dst_file_type = get_type_of_star_file(dst_file)
 
-                        has_datablock = False
-                        has_anonymous_saveframe = False
-                        has_save = False
-                        has_loop = False
-                        has_stop = False
-
-                        with open(dst_file, 'r') as ifp:
-                            for line in ifp:
-                                # check STAR
-                                str_syntax = False
-                                if datablock_pattern.match(line):
-                                    str_syntax = has_datablock = True
-                                elif sf_anonymous_pattern.match(line):
-                                    str_syntax = has_anonymous_saveframe = True
-                                elif save_pattern.match(line):
-                                    str_syntax = has_save = True
-                                elif loop_pattern.match(line):
-                                    str_syntax = has_loop = True
-                                elif stop_pattern.match(line):
-                                    str_syntax = has_stop = True
-
-                                if str_syntax:
-                                    if (has_anonymous_saveframe and has_save) or (has_loop and has_stop):
-                                        is_str = True
-                                    elif has_datablock and has_loop and not has_stop:
-                                        is_cif = True
-
-                        if is_str:
+                        if dst_file_type == 'str':
 
                             mrPath = dst_file
 
@@ -13362,12 +13493,12 @@ class NmrDpUtility:
 
                             codec = detect_bom(mrPath, 'utf-8')
 
-                            mrPath_ = None
+                            _mrPath = None
 
                             if codec != 'utf-8':
-                                mrPath_ = mrPath + '~'
-                                convert_codec(mrPath, mrPath_, codec, 'utf-8')
-                                mrPath = mrPath_
+                                _mrPath = mrPath + '~'
+                                convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                                mrPath = _mrPath
 
                             file_subtype = 'O'
 
@@ -13436,15 +13567,15 @@ class NmrDpUtility:
                             elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                                 pass
 
-                            if mrPath_ is not None:
+                            if _mrPath is not None:
                                 try:
-                                    os.remove(mrPath_)
+                                    os.remove(_mrPath)
                                 except:  # noqa: E722 pylint: disable=bare-except
                                     pass
 
                             continue
 
-                        if is_cif:
+                        if dst_file_type == 'cif':
 
                             mrPath = dst_file
 
@@ -13483,12 +13614,12 @@ class NmrDpUtility:
 
                             codec = detect_bom(mrPath, 'utf-8')
 
-                            mrPath_ = None
+                            _mrPath = None
 
                             if codec != 'utf-8':
-                                mrPath_ = mrPath + '~'
-                                convert_codec(mrPath, mrPath_, codec, 'utf-8')
-                                mrPath = mrPath_
+                                _mrPath = mrPath + '~'
+                                convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                                mrPath = _mrPath
 
                             file_subtype = 'O'
 
@@ -13557,9 +13688,9 @@ class NmrDpUtility:
                             elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                                 pass
 
-                            if mrPath_ is not None:
+                            if _mrPath is not None:
                                 try:
-                                    os.remove(mrPath_)
+                                    os.remove(_mrPath)
                                 except:  # noqa: E722 pylint: disable=bare-except
                                     pass
 
@@ -21573,6 +21704,12 @@ class NmrDpUtility:
                 new_loop.add_data(new_row)
 
         else:
+
+            if 'original_file_name' in input_source_dic:
+                tagNames = [t[0] for t in sf_data.tags]
+                if 'Data_file_name' not in tagNames:
+                    sf_data.add_tag('Data_file_name', input_source_dic['original_file_name'])
+
             items = ['ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
                      'Val', 'Val_err', 'Assign_fig_of_merit', 'Ambiguity_code', 'Ambiguity_set_ID', 'Occupancy', 'Resonance_ID',
                      'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
@@ -35934,10 +36071,10 @@ class NmrDpUtility:
         """ Update polymer sequence.
         """
 
-        if len(self.__star_data) == 0 or self.__star_data[0] is None:
+        if not self.__combined_mode and not self.__remediation_mode:
             return False
 
-        if not self.__combined_mode and not self.__remediation_mode:
+        if len(self.__star_data) == 0 or self.__star_data[0] is None:
             return False
 
         # resolve
@@ -35979,6 +36116,8 @@ class NmrDpUtility:
         has_nef_index = False
         has_entry_id = False
 
+        sf_framecode = 'assembly'
+
         for sf_data in master_entry.get_saveframes_by_category(sf_category):
 
             sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
@@ -36016,10 +36155,12 @@ class NmrDpUtility:
             elif not self.__has_star_entity and not self.__update_poly_seq:  # DAOTHER-6694
                 return False
 
+        orig_asm_sf = None
+
         try:
             orig_asm_sf = master_entry.get_saveframes_by_category(sf_category)[0]
         except IndexError:
-            return False
+            pass
 
         if self.__caC is None:
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
@@ -36809,21 +36950,24 @@ class NmrDpUtility:
 
                     asm_sf.add_loop(eda_loop)
 
-        # append extra categories
+        if orig_asm_sf is not None:
 
-        if self.__retain_original and file_type == 'nmr-star':
+            # append extra categories
 
-            for loop in orig_asm_sf.loops:
+            if self.__retain_original and file_type == 'nmr-star':
 
-                if loop.category == self.lp_categories[file_type][content_subtype]:
-                    continue
+                for loop in orig_asm_sf.loops:
 
-                if loop.category in self.aux_lp_categories[file_type][content_subtype]:
-                    continue
+                    if loop.category == self.lp_categories[file_type][content_subtype]:
+                        continue
 
-                asm_sf.add_loop(loop)
+                    if loop.category in self.aux_lp_categories[file_type][content_subtype]:
+                        continue
 
-        del master_entry[orig_asm_sf]
+                    asm_sf.add_loop(loop)
+
+            del master_entry[orig_asm_sf]
+
         master_entry.add_saveframe(asm_sf)
 
         poly_seq = self.__getPolymerSequence(0, asm_sf, content_subtype)[0]
@@ -41904,10 +42048,10 @@ class NmrDpUtility:
         """ Add UNNAMED entry id.
         """
 
-        if len(self.__star_data) == 0 or self.__star_data[0] is None:
+        if not self.__combined_mode:
             return False
 
-        if not self.__combined_mode:
+        if len(self.__star_data) == 0 or self.__star_data[0] is None:
             return False
 
         input_source = self.report.input_sources[0]
@@ -42283,11 +42427,11 @@ class NmrDpUtility:
 
             return False
 
-        if len(self.__star_data) == 0 or self.__star_data[0] is None:
-            return False
-
         if self.__dstPath == self.__srcPath and self.__release_mode:
             return True
+
+        if len(self.__star_data) == 0 or self.__star_data[0] is None:
+            return False
 
         master_entry = self.__star_data[0]
 
@@ -42414,6 +42558,9 @@ class NmrDpUtility:
             return False
 
         if len(self.__mr_sf_dict_holder) == 0:
+            return False
+
+        if len(self.__star_data) == 0 or self.__star_data[0] is None:
             return False
 
         master_entry = self.__star_data[0]

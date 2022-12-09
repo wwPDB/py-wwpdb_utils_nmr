@@ -42507,13 +42507,36 @@ class NmrDpUtility:
             master_entry.write_to_file(self.__dstPath)
 
         if 'nef' not in self.__op and 'deposit' in self.__op and 'nmr_cif_file_path' in self.__outputParamDict:
-            star_to_cif = NmrStarToCif()
 
-            original_file_name = ''
-            if 'original_file_name' in self.__inputParamDict:
-                original_file_name = self.__inputParamDict['original_file_name']
+            if self.__remediation_mode:
 
-            star_to_cif.convert(self.__dstPath, self.__outputParamDict['nmr_cif_file_path'], original_file_name, 'nm-uni-str')
+                try:
+
+                    myIo = IoAdapterPy(False, sys.stderr)
+                    containerList = myIo.readFile(self.__dstPath)
+
+                    if containerList is not None and len(containerList) > 1:
+
+                        if self.__verbose:
+                            self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+
+                        for c in containerList:
+                            c.setType('data')
+
+                        myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+
+                except Exception as e:
+                    self.__lfh.write(f"+NmrDpUtility.__depositNmrData() ++ Error  - {str(e)}\n")
+
+            else:
+
+                star_to_cif = NmrStarToCif()
+
+                original_file_name = ''
+                if 'original_file_name' in self.__inputParamDict:
+                    original_file_name = self.__inputParamDict['original_file_name']
+
+                star_to_cif.convert(self.__dstPath, self.__outputParamDict['nmr_cif_file_path'], original_file_name, 'nm-uni-str')
 
         return not self.report.isError()
 
@@ -42561,7 +42584,7 @@ class NmrDpUtility:
                     return True
 
             except Exception as e:
-                self.__lfh.write(f"+NmrDpUtility.__depositNmrData() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+NmrDpUtility.__depositLegacyNmrData() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -43804,13 +43827,36 @@ class NmrDpUtility:
         if is_valid:
 
             if 'deposit' in self.__op and 'nmr_cif_file_path' in self.__outputParamDict:
-                star_to_cif = NmrStarToCif()
 
-                original_file_name = ''
-                if 'original_file_name' in self.__inputParamDict:
-                    original_file_name = self.__inputParamDict['original_file_name']
+                if self.__remediation_mode:
 
-                star_to_cif.convert(fPath, self.__outputParamDict['nmr_cif_file_path'], original_file_name, 'nm-uni-nef')
+                    try:
+
+                        myIo = IoAdapterPy(False, sys.stderr)
+                        containerList = myIo.readFile(fPath)
+
+                        if containerList is not None and len(containerList) > 1:
+
+                            if self.__verbose:
+                                self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+
+                            for c in containerList:
+                                c.setType('data')
+
+                            myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+
+                    except Exception as e:
+                        self.__lfh.write(f"+NmrDpUtility.__translateNef2Str() ++ Error  - {str(e)}\n")
+
+                else:
+
+                    star_to_cif = NmrStarToCif()
+
+                    original_file_name = ''
+                    if 'original_file_name' in self.__inputParamDict:
+                        original_file_name = self.__inputParamDict['original_file_name']
+
+                    star_to_cif.convert(fPath, self.__outputParamDict['nmr_cif_file_path'], original_file_name, 'nm-uni-nef')
 
             return True
 

@@ -227,12 +227,14 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
                                                        coordAssemblyChecker,
+                                                       isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
                                                        startsWithPdbRecord,
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
                                                        getSaveframe,
+                                                       getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        HALF_SPIN_NUCLEUS,
                                                        ALLOWED_AMBIGUITY_CODES,
@@ -307,12 +309,14 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
                                            coordAssemblyChecker,
+                                           isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
                                            startsWithPdbRecord,
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
                                            getSaveframe,
+                                           getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            HALF_SPIN_NUCLEUS,
                                            ALLOWED_AMBIGUITY_CODES,
@@ -593,6 +597,22 @@ def get_first_sf_tag(sf_data=None, tag=None):
         return ''
 
     return array[0]
+
+
+def set_sf_tag(sf_data, tag, value):
+    """ Set saveframe tag.
+    """
+
+    tagNames = [t[0] for t in sf_data.tags]
+
+    if isinstance(value, str) and len(value) == 0:
+        value = None
+
+    if tag not in tagNames:
+        sf_data.add_tag(tag, value)
+        return
+
+    sf_data.tags[tagNames.index(tag)][1] = value
 
 
 def is_non_metal_element(comp_id, atom_id):
@@ -1131,7 +1151,8 @@ class NmrDpUtility:
                              self.__extractCoordDisulfideBond,
                              self.__extractCoordOtherBond,
                              self.__validateLegacyMr,
-                             self.__calculateStatsOfExptlData
+                             self.__calculateStatsOfExptlData,
+                             self.__updateConstraintStats
                              ]
 
         # nmr-*-consistency-check tasks
@@ -5181,7 +5202,12 @@ class NmrDpUtility:
                                               'seq_id_4': 'sequence_code_4',
                                               'comp_id_4': 'residue_name_4',
                                               'atom_id_4': 'atom_name_4',
-                                              'angle_type': 'name'
+                                              'angle_type': 'name',
+                                              'target_value': 'target_value',
+                                              'lower_linear_limit': 'lower_linear_limit',
+                                              'upper_linear_limit': 'upper_linear_limit',
+                                              'lower_limit': 'lower_limit',
+                                              'upper_limit': 'upper_limit'
                                               },
                                       'nmr-star': {'combination_id': 'Combination_ID',
                                                    'chain_id_1': 'Entity_assembly_ID_1',
@@ -5204,7 +5230,12 @@ class NmrDpUtility:
                                                    'alt_seq_id_1': 'Seq_ID_1',
                                                    'alt_seq_id_2': 'Seq_ID_2',
                                                    'alt_seq_id_3': 'Seq_ID_3',
-                                                   'alt_seq_id_4': 'Seq_ID_4'
+                                                   'alt_seq_id_4': 'Seq_ID_4',
+                                                   'target_value': 'Angle_target_val',
+                                                   'lower_linear_limit': 'Angle_lower_linear_limit',
+                                                   'upper_linear_limit': 'Angle_upper_linear_limit',
+                                                   'lower_limit': 'Angle_lower_bound_val',
+                                                   'upper_limit': 'Angle_upper_bound_val'
                                                    }
                                       }
 
@@ -5217,7 +5248,12 @@ class NmrDpUtility:
                                                'chain_id_2': 'chain_code_2',
                                                'seq_id_2': 'sequence_code_2',
                                                'comp_id_2': 'residue_name_2',
-                                               'atom_id_2': 'atom_name_2'
+                                               'atom_id_2': 'atom_name_2',
+                                               'target_value': 'target_value',
+                                               'lower_linear_limit': 'lower_linear_limit',
+                                               'upper_linear_limit': 'upper_linear_limit',
+                                               'lower_limit': 'lower_limit',
+                                               'upper_limit': 'upper_limit'
                                                },
                                        'nmr-star': {'combination_id': 'Combination_ID',
                                                     'chain_id_1': 'Entity_assembly_ID_1',
@@ -5229,7 +5265,12 @@ class NmrDpUtility:
                                                     'comp_id_2': 'Comp_ID_2',
                                                     'atom_id_2': 'Atom_ID_2',
                                                     'alt_seq_id_1': 'Seq_ID_1',
-                                                    'alt_seq_id_2': 'Seq_ID_2'
+                                                    'alt_seq_id_2': 'Seq_ID_2',
+                                                    'target_value': 'Target_value',
+                                                    'lower_linear_limit': 'RDC_lower_linear_limit',
+                                                    'upper_linear_limit': 'RDC_upper_linear_limit',
+                                                    'lower_limit': 'RDC_lower_bound',
+                                                    'upper_limit': 'RDC_upper_bound'
                                                     }
                                        }
 
@@ -7487,7 +7528,7 @@ class NmrDpUtility:
         file_type = input_source_dic['file_type']
 
         if file_type != 'nef' or file_list_id >= len(self.__star_data) or self.__star_data[file_list_id] is None:
-            return False
+            return True
 
         if self.__combined_mode or self.__star_data_type[file_list_id] == 'Entry':
 
@@ -7499,7 +7540,6 @@ class NmrDpUtility:
                     continue
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if self.__getSaveframeByName(file_list_id, sf_framecode) is None:
@@ -7517,11 +7557,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__rescueFormerNef() ++ Warning  - {warn}\n")
 
-                            tagNames = [t[0] for t in sf_data.tags]
-
-                            sf_framecode = sf_data.name
-
-                            sf_data.tags[tagNames.index('sf_framecode')][1] = sf_framecode
+                            set_sf_tag(sf_data, 'sf_framecode', sf_data.name)
 
                         else:
                             err = f"{itName} {sf_framecode!r} must be matched with saveframe name {sf_data.name!r}."
@@ -7544,7 +7580,6 @@ class NmrDpUtility:
             sf_category = self.sf_categories[file_type][content_subtype]
 
             for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-
                 format_version = get_first_sf_tag(sf_data, 'format_version')
 
                 if not format_version.startswith('0.'):
@@ -7595,7 +7630,6 @@ class NmrDpUtility:
             else:
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -7853,7 +7887,7 @@ class NmrDpUtility:
         file_type = input_source_dic['file_type']
 
         if file_type != 'nmr-star' or file_list_id >= len(self.__star_data) or self.__star_data[file_list_id] is None:
-            return False
+            return True
 
         if self.__combined_mode or self.__star_data_type[file_list_id] == 'Entry':
 
@@ -7868,7 +7902,6 @@ class NmrDpUtility:
                     continue
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if self.__getSaveframeByName(file_list_id, sf_framecode) is None:
@@ -7888,12 +7921,10 @@ class NmrDpUtility:
 
                             tagNames = [t[0] for t in sf_data.tags]
 
-                            sf_framecode = sf_data.name
-
                             if 'Sf_framecode' in tagNames:
-                                sf_data.tags[tagNames.index('Sf_framecode')][1] = sf_data.name
+                                set_sf_tag(sf_data, 'Sf_framecode', sf_data.name)
                             elif 'sf_framecode' in tagNames:
-                                sf_data.tags[tagNames.index('sf_framecode')][1] = sf_data.name
+                                set_sf_tag(sf_data, 'sf_framecode', sf_data.name)
 
                         else:
                             err = f"{itName} {sf_framecode!r} must be matched with saveframe name {sf_data.name!r}."
@@ -7955,7 +7986,6 @@ class NmrDpUtility:
             else:
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -10194,9 +10224,6 @@ class NmrDpUtility:
         """ Divive legacy NMR restraint file if necessary.
         """
 
-        # if not self.__remediation_mode:
-        #    return False
-
         src_basename = os.path.splitext(file_path)[0]
         div_src = 'div_dst' in src_basename
         div_src_file = src_basename + '-div_src.mr'
@@ -11146,9 +11173,6 @@ class NmrDpUtility:
         """ Peel uninterpretable restraints from the legacy NMR file if necessary.
         """
 
-        # if not self.__remediation_mode:
-        #    return False
-
         src_basename = os.path.splitext(file_path)[0]
         div_src = 'div_dst' in src_basename
         div_src_file = src_basename + '-div_src.mr'
@@ -11540,9 +11564,6 @@ class NmrDpUtility:
     def __divideLegacyMr(self, file_path, file_type, err_desc, src_path, offset):
         """ Divive legacy NMR restraint file.
         """
-
-        # if not self.__remediation_mode:
-        #    return False
 
         src_basename = os.path.splitext(file_path)[0]
         div_src = 'div_dst' in src_basename
@@ -14030,7 +14051,6 @@ class NmrDpUtility:
             lp_category = self.lp_categories[file_type][content_subtype]
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                 try:
@@ -14264,7 +14284,6 @@ class NmrDpUtility:
                 list_id = 1
 
                 if self.__star_data_type[fileListId] == 'Loop':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
@@ -14272,7 +14291,6 @@ class NmrDpUtility:
                                                                           list_id, sf_framecode, lp_category, poly_seq_list_set)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -14282,7 +14300,6 @@ class NmrDpUtility:
                 else:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -14967,7 +14984,6 @@ class NmrDpUtility:
                 self.__fixCompIdInLoop__(file_list_id, file_type, content_subtype, sf_data, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
         elif self.__star_data_type[file_list_id] == 'Saveframe':
-
             sf_data = self.__star_data[file_list_id]
 
             if get_first_sf_tag(sf_data, 'sf_framecode') == sf_framecode:
@@ -15414,7 +15430,7 @@ class NmrDpUtility:
         file_type = input_source_dic['file_type']
 
         if file_type != 'nmr-star' or (not self.__has_star_entity):
-            return False
+            return True
 
         star_data = self.__star_data[file_list_id]
 
@@ -15507,14 +15523,12 @@ class NmrDpUtility:
             lp_category = self.lp_categories[file_type][content_subtype]
 
             if self.__star_data_type[fileListId] == 'Loop':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
                 self.__extractNonStandardResidue__(file_name, sf_framecode, lp_category, input_source)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -15523,7 +15537,6 @@ class NmrDpUtility:
             else:
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -16542,7 +16555,6 @@ class NmrDpUtility:
                 self.__fixChainIdInLoop__(file_list_id, file_type, content_subtype, sf_data, lp_category, chain_id, _chain_id)
 
         elif self.__star_data_type[file_list_id] == 'Saveframe':
-
             sf_data = self.__star_data[file_list_id]
 
             if get_first_sf_tag(sf_data, 'sf_framecode') == sf_framecode:
@@ -16660,7 +16672,6 @@ class NmrDpUtility:
                 self.__fixSeqIdInLoop__(file_list_id, file_type, content_subtype, sf_data, lp_category, chain_id, seq_id_conv_dict)
 
         elif self.__star_data_type[file_list_id] == 'Saveframe':
-
             sf_data = self.__star_data[file_list_id]
 
             if get_first_sf_tag(sf_data, 'sf_framecode') == sf_framecode:
@@ -16834,14 +16845,12 @@ class NmrDpUtility:
                     lp_category = '_Assigned_peak_chem_shift'
 
                 if self.__star_data_type[fileListId] == 'Loop':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
                     self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, first_comp_ids)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -16850,7 +16859,6 @@ class NmrDpUtility:
                 else:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -17365,14 +17373,12 @@ class NmrDpUtility:
                     lp_category = '_Assigned_peak_chem_shift'
 
                 if self.__star_data_type[fileListId] == 'Loop':
-
                     sf_data = self.__star_data[fileListId]
                     # sf_framecode = ''
 
                     self.__fixAtomNomenclature__(fileListId, file_type, content_subtype, sf_data, lp_category, comp_id, atom_id_conv_dict)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
-
                     sf_data = self.__star_data[fileListId]
                     # sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -17381,7 +17387,6 @@ class NmrDpUtility:
                 else:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         # sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -17496,14 +17501,12 @@ class NmrDpUtility:
             lp_category = self.lp_categories[file_type][content_subtype]
 
             if self.__star_data_type[fileListId] == 'Loop':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
                 self.__validateAtomTypeOfCsLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -17512,7 +17515,6 @@ class NmrDpUtility:
             else:
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -17679,14 +17681,12 @@ class NmrDpUtility:
             lp_category = self.lp_categories[file_type][content_subtype]
 
             if self.__star_data_type[fileListId] == 'Loop':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
                 self.__validateAmbigCodeOfCsLoop__(fileListId, file_name, sf_data, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -17695,7 +17695,6 @@ class NmrDpUtility:
             else:
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -17906,14 +17905,12 @@ class NmrDpUtility:
                     continue
 
                 if self.__star_data_type[fileListId] == 'Loop':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
                     self.__testIndexConsistency__(file_name, sf_data, sf_framecode, lp_category, index_tag)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -17922,7 +17919,6 @@ class NmrDpUtility:
                 else:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -18049,14 +18045,12 @@ class NmrDpUtility:
                 lp_category = self.lp_categories[file_type][content_subtype]
 
                 if self.__star_data_type[fileListId] == 'Loop':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
                     self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, 1)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -18067,10 +18061,8 @@ class NmrDpUtility:
                     parent_pointer = 0
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
-                        parent_pointer += 1
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                        parent_pointer += 1
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
@@ -18328,14 +18320,12 @@ class NmrDpUtility:
                     lp_category = self.lp_categories[file_type][content_subtype]
 
                     if self.__star_data_type[fileListId] == 'Loop':
-
                         sf_data = self.__star_data[fileListId]
                         sf_framecode = ''
 
                         self.__detectConflictDataInLoop__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
                     elif self.__star_data_type[fileListId] == 'Saveframe':
-
                         sf_data = self.__star_data[fileListId]
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -18344,7 +18334,6 @@ class NmrDpUtility:
                     else:
 
                         for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                             sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                             if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -18624,7 +18613,6 @@ class NmrDpUtility:
             cs_lp_data = None
 
             for cs_sf_data in self.__star_data[fileListId].get_saveframes_by_category(cs_sf_category):
-
                 cs_sf_framecode = get_first_sf_tag(cs_sf_data, 'sf_framecode')
 
                 if not any(loop for loop in cs_sf_data.loops if loop.category == cs_lp_category):
@@ -18643,10 +18631,8 @@ class NmrDpUtility:
             parent_pointer = 0
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
-                parent_pointer += 1
-
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                parent_pointer += 1
 
                 for loop in sf_data.loops:
 
@@ -19068,10 +19054,8 @@ class NmrDpUtility:
                 parent_pointer = 0
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
-                    parent_pointer += 1
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+                    parent_pointer += 1
 
                     if content_subtype.startswith('spectral_peak'):
 
@@ -19728,7 +19712,6 @@ class NmrDpUtility:
                 list_id = 1  # tentative parent key if not exists
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if self.__combined_mode and sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
@@ -19998,14 +19981,12 @@ class NmrDpUtility:
             modified = False
 
             if self.__star_data_type[fileListId] == 'Loop':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
                 modified |= self.__validateCsValue__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -20014,7 +19995,6 @@ class NmrDpUtility:
             else:
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -21533,7 +21513,7 @@ class NmrDpUtility:
         tags_to_be_removed = [t[0] for t in sf_data.tags if t[0] not in self.sf_allowed_tags[file_type][content_subtype]]
 
         if len(tags_to_be_removed) == 0:
-            return False
+            return True
 
         sf_data.remove_tag(tags_to_be_removed)
 
@@ -21568,14 +21548,12 @@ class NmrDpUtility:
             list_id = 1
 
             if self.__star_data_type[fileListId] == 'Loop':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
                 modified |= self.__remediateCsLoop__(fileListId, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -21584,7 +21562,6 @@ class NmrDpUtility:
             else:
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -22751,7 +22728,6 @@ class NmrDpUtility:
                     lp_category = self.lp_categories[file_type][content_subtype]
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         try:
@@ -22935,7 +22911,6 @@ class NmrDpUtility:
                 star_data = copy.copy(self.__star_data[fileListId])
 
                 for sf_data in star_data.get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if __pynmrstar_v3_2__:
@@ -23077,7 +23052,6 @@ class NmrDpUtility:
             cs_iso_number = cs_item_names['isotope_number']
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                 try:
@@ -23555,7 +23529,6 @@ class NmrDpUtility:
             cs_iso_number = cs_item_names['isotope_number']
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                 cs_data = None
@@ -24059,14 +24032,12 @@ class NmrDpUtility:
             lp_category = self.lp_categories[file_type][content_subtype]
 
             if self.__star_data_type[fileListId] == 'Loop':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
                 self.__testRdcVector__(file_name, file_type, content_subtype, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -24075,7 +24046,6 @@ class NmrDpUtility:
             else:
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -24305,14 +24275,12 @@ class NmrDpUtility:
             lp_category = self.aux_lp_categories[file_type][content_subtype][0]
 
             if self.__star_data_type[fileListId] == 'Loop':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
                 self.__testCoordCovalentBond__(file_name, file_type, content_subtype, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -24321,7 +24289,6 @@ class NmrDpUtility:
             else:
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -24602,14 +24569,12 @@ class NmrDpUtility:
                 nmr2ca[ref_chain_id].append(complex)
 
             if self.__star_data_type[fileListId] == 'Loop':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
                 self.__testResidueVariant__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, cif_polymer_sequence, nmr2ca)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
-
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -24618,7 +24583,6 @@ class NmrDpUtility:
             else:
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -27081,14 +27045,12 @@ class NmrDpUtility:
                 list_id = 1
 
                 if self.__star_data_type[fileListId] == 'Loop':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
                     self.__calculateStatsOfExptlData__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, seq_align_dic, asm)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -27097,7 +27059,6 @@ class NmrDpUtility:
                 else:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -35153,7 +35114,6 @@ class NmrDpUtility:
                 list_id = 1
 
                 if self.__star_data_type[fileListId] == 'Loop':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
@@ -35162,7 +35122,6 @@ class NmrDpUtility:
                                                                     seq_align_dic, nmr2ca, ref_chain_id)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -35173,7 +35132,6 @@ class NmrDpUtility:
                 else:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -35553,7 +35511,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         # retrieve sf_category_list which is required to resolve minor issues
         if len(self.__sf_category_list) == 0:
@@ -35606,7 +35564,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -35730,7 +35688,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -35837,7 +35795,6 @@ class NmrDpUtility:
                     continue
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     try:
@@ -35883,10 +35840,10 @@ class NmrDpUtility:
         """ Delete skipped saveframes.
         """
 
-        if len(self.__star_data) == 0:
-            return False
-
         if not self.__combined_mode:
+            return True
+
+        if len(self.__star_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -35952,10 +35909,10 @@ class NmrDpUtility:
         """ Delete skipped loops.
         """
 
-        if len(self.__star_data) == 0:
-            return False
-
         if not self.__combined_mode:
+            return True
+
+        if len(self.__star_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -36034,10 +35991,10 @@ class NmrDpUtility:
         """ Delete unparsed entry loops.
         """
 
-        if len(self.__star_data) == 0:
-            return False
-
         if not self.__combined_mode:
+            return True
+
+        if len(self.__star_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -36088,8 +36045,8 @@ class NmrDpUtility:
         """ Update entry information.
         """
 
-        if not self.__combined_mode:
-            return False
+        if self.__combined_mode:
+            return True
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
@@ -36111,10 +36068,7 @@ class NmrDpUtility:
                 orig_ent_sf.add_tag('Sf_category', sf_category)
             if 'Sf_framecode' not in tagNames:
                 orig_ent_sf.add_tag('Sf_framecode', orig_ent_sf.name)
-            if 'ID' not in tagNames:
-                orig_ent_sf.add_tag('ID', self.__entry_id)
-            else:
-                orig_ent_sf.tags[tagNames.index('ID')][1] = self.__entry_id
+            set_sf_tag(orig_ent_sf, 'ID', self.__entry_id)
 
         except IndexError:
 
@@ -36153,8 +36107,8 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
-        if self.__srcPath == self.__dstPath:
-            return True
+        # if self.__srcPath == self.__dstPath:
+        #     return True
 
         self.__cleanUpSf()
 
@@ -36180,7 +36134,6 @@ class NmrDpUtility:
         sf_framecode = 'assembly'
 
         for sf_data in master_entry.get_saveframes_by_category(sf_category):
-
             sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
             orig_lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
@@ -36817,11 +36770,11 @@ class NmrDpUtility:
                 for bond in bonds:
                     bond_type = bond['conn_type_id']
                     auth_asym_id_1 = bond['ptnr1_auth_asym_id']
-                    auth_seq_id_1 = bond['ptnr1_auth_seq_id']
+                    auth_seq_id_1 = int(bond['ptnr1_auth_seq_id'])
                     auth_comp_id_1 = bond['ptnr1_auth_comp_id']
                     atom_id_1 = bond['ptnr1_label_atom_id']
                     auth_asym_id_2 = bond['ptnr2_auth_asym_id']
-                    auth_seq_id_2 = bond['ptnr2_auth_seq_id']
+                    auth_seq_id_2 = int(bond['ptnr2_auth_seq_id'])
                     auth_comp_id_2 = bond['ptnr2_auth_comp_id']
                     atom_id_2 = bond['ptnr2_label_atom_id']
 
@@ -36850,7 +36803,7 @@ class NmrDpUtility:
                         row[1] = 'na'
                         continue
 
-                    seq_key_1 = (auth_asym_id_1, int(auth_seq_id_1))
+                    seq_key_1 = (auth_asym_id_1, auth_seq_id_1)
 
                     entity_id_1 = entity_id_2 = None
 
@@ -36864,7 +36817,7 @@ class NmrDpUtility:
                         row[17], row[18], row[19], row[20] =\
                             auth_asym_id_1, auth_seq_id_1, auth_comp_id_1, atom_id_1
 
-                    seq_key_2 = (auth_asym_id_2, int(auth_seq_id_2))
+                    seq_key_2 = (auth_asym_id_2, auth_seq_id_2)
 
                     if seq_key_2 in self.__caC['auth_to_star_seq']:
                         entity_assembly_id_2, seq_id_2, entity_id_2, _ = self.__caC['auth_to_star_seq'][seq_key_2]
@@ -36995,7 +36948,7 @@ class NmrDpUtility:
 
                                             row[0] = index
 
-                                            entity_assembly_id, seq_id, _ = self.__caC['auth_to_star_seq'][seq_key]
+                                            entity_assembly_id, seq_id, _, _ = self.__caC['auth_to_star_seq'][seq_key]
 
                                             row[1], row[2], row[3], row[4], row[5] =\
                                                 entity_assembly_id, seq_id, seq_id, comp_id, leaving_atom_id
@@ -37200,10 +37153,10 @@ class NmrDpUtility:
 
                         for bond in bonds:
                             auth_asym_id_1 = bond['ptnr1_auth_asym_id']
-                            auth_seq_id_1 = bond['ptnr1_auth_seq_id']
+                            auth_seq_id_1 = int(bond['ptnr1_auth_seq_id'])
                             atom_id_1 = bond['ptnr1_label_atom_id']
                             auth_asym_id_2 = bond['ptnr2_auth_asym_id']
-                            auth_seq_id_2 = bond['ptnr2_auth_seq_id']
+                            auth_seq_id_2 = int(bond['ptnr2_auth_seq_id'])
                             atom_id_2 = bond['ptnr2_label_atom_id']
 
                             if auth_asym_id_1 == auth_asym_id_2 and auth_asym_id_1 in auth_asym_ids\
@@ -37526,10 +37479,10 @@ class NmrDpUtility:
         """ Update auth sequence in NMR-STAR.
         """
 
-        if len(self.__star_data) == 0:
-            return False
-
         if not self.__combined_mode:
+            return True
+
+        if len(self.__star_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -38522,7 +38475,6 @@ class NmrDpUtility:
                 disulf['warning_description_2'] = None
 
                 if self.__star_data_type[fileListId] == 'Loop':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
@@ -38533,7 +38485,6 @@ class NmrDpUtility:
                                                            nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -38545,7 +38496,6 @@ class NmrDpUtility:
                 else:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -38915,7 +38865,6 @@ class NmrDpUtility:
                 other['warning_description_2'] = None
 
                 if self.__star_data_type[fileListId] == 'Loop':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
@@ -38926,7 +38875,6 @@ class NmrDpUtility:
                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
-
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
@@ -38939,7 +38887,6 @@ class NmrDpUtility:
                 else:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -39626,7 +39573,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         try:
 
@@ -39759,7 +39706,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         try:
 
@@ -39791,7 +39738,6 @@ class NmrDpUtility:
                         continue
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         try:
@@ -39841,7 +39787,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         try:
 
@@ -39897,7 +39843,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         try:
 
@@ -39926,7 +39872,6 @@ class NmrDpUtility:
                         continue
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         tagNames = [t[0] for t in sf_data.tags]
@@ -39969,7 +39914,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         for fileListId in range(self.__file_path_list_len):
 
@@ -40005,7 +39950,6 @@ class NmrDpUtility:
             lp_category = self.lp_categories[file_type][content_subtype]
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                 lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
@@ -40118,10 +40062,10 @@ class NmrDpUtility:
         """ Fix disordered indices.
         """
 
-        if len(self.__star_data) == 0:
-            return False
-
         if not self.__combined_mode:
+            return True
+
+        if len(self.__star_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -40216,10 +40160,10 @@ class NmrDpUtility:
         """ Remove non-sense zero values.
         """
 
-        if len(self.__star_data) == 0:
-            return False
-
         if not self.__combined_mode:
+            return True
+
+        if len(self.__star_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -40328,10 +40272,10 @@ class NmrDpUtility:
         """ Fix non-sense negative values.
         """
 
-        if len(self.__star_data) == 0:
-            return False
-
         if not self.__combined_mode:
+            return True
+
+        if len(self.__star_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -40441,7 +40385,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -40461,7 +40405,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -40480,10 +40424,10 @@ class NmrDpUtility:
         """ Fix enumeration failures if possible.
         """
 
-        if len(self.__star_data) == 0:
-            return False
-
         if not self.__combined_mode:
+            return True
+
+        if len(self.__star_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -40787,7 +40731,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None or len(lp_data) == 0:
             return False
@@ -40921,7 +40865,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None or len(lp_data) == 0:
             return False
@@ -41025,7 +40969,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None:
             return False
@@ -41102,7 +41046,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None:
             return False
@@ -41214,7 +41158,6 @@ class NmrDpUtility:
             atom_id_name = item_names['atom_id']
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
-
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                 if self.report.error.exists(file_name, sf_framecode):
@@ -41276,7 +41219,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None:
             return False
@@ -41320,7 +41263,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None:
             return False
@@ -41364,7 +41307,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None:
             return False
@@ -41408,7 +41351,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None:
             return False
@@ -41452,7 +41395,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None:
             return False
@@ -41496,7 +41439,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None:
             return False
@@ -41540,7 +41483,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if lp_data is None or len(lp_data) == 0:
             return False
@@ -41615,7 +41558,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -41752,7 +41695,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -41890,7 +41833,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -41912,7 +41855,6 @@ class NmrDpUtility:
             sf_category = self.sf_categories[file_type][content_subtype]
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
-
                 # sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                 for loop in sf_data.loops:
@@ -41998,7 +41940,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -42032,7 +41974,6 @@ class NmrDpUtility:
                 if list_id_tag_in_lp is not None:
 
                     for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
-
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
@@ -42110,7 +42051,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None:
             return False
@@ -42142,7 +42083,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -42171,7 +42112,6 @@ class NmrDpUtility:
         atom_id_name = item_names['atom_id']
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
-
             sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
             if self.report.error.exists(file_name, sf_framecode):
@@ -42252,7 +42192,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -42275,7 +42215,6 @@ class NmrDpUtility:
         lp_category = self.lp_categories[file_type][content_subtype]
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
-
             sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
             if self.report.error.exists(file_name, sf_framecode):
@@ -42370,7 +42309,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -42396,7 +42335,6 @@ class NmrDpUtility:
         data_items = self.data_items[file_type][content_subtype]
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
-
             sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
             if self.report.error.exists(file_name, sf_framecode):
@@ -42472,7 +42410,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         if self.__dstPath is None:
 
@@ -42545,7 +42483,7 @@ class NmrDpUtility:
         """
 
         if self.__combined_mode or self.__dstPath is None:
-            return False
+            return True
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
@@ -42593,13 +42531,18 @@ class NmrDpUtility:
         """
 
         if self.__combined_mode or not self.__remediation_mode or self.__dstPath is None:
-            return False
+            return True
 
         if len(self.__mr_sf_dict_holder) == 0:
             return False
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None:
             return False
+
+        if self.__caC is None:
+            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__cR, None)
 
         master_entry = self.__star_data[0]
 
@@ -42710,7 +42653,7 @@ class NmrDpUtility:
                 if 'lower' in potential_type:
                     continue
                 constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type is not None and 'NOE' in constraint_type:
+                if 'NOE' in constraint_type:
                     NOE_tot_num += sf_item['id']
 
                     lp = sf_item['loop']
@@ -42723,8 +42666,14 @@ class NmrDpUtility:
                     seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
                     atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                     atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                    comb_id_col = lp.tags.index(item_names['combination_id'])
-                    upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                    try:
+                        comb_id_col = lp.tags.index(item_names['combination_id'])
+                    except ValueError:
+                        comb_id_col = -1
+                    try:
+                        upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                    except ValueError:
+                        upper_limit_col = -1
 
                     prev_id = -1
                     for row in lp:
@@ -42738,8 +42687,8 @@ class NmrDpUtility:
                         seq_id_2 = int(row[seq_id_2_col])
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
-                        comb_id = row[comb_id_col]
-                        upper_limit = float(row[upper_limit_col]) if row[upper_limit_col] not in emptyValue else None
+                        comb_id = row[comb_id_col] if comb_id_col != -1 else None
+                        upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
                         offset = abs(seq_id_1 - seq_id_2)
                         ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
@@ -42782,11 +42731,11 @@ class NmrDpUtility:
                 if 'lower' in potential_type:
                     continue
                 constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type is not None and constraint_type in ('paramagnetic relaxation',
-                                                                       'photo cidnp',
-                                                                       'chemical shift perturbation',
-                                                                       'mutation',
-                                                                       'symmetry'):
+                if constraint_type in ('paramagnetic relaxation',
+                                       'photo cidnp',
+                                       'chemical shift perturbation',
+                                       'mutation',
+                                       'symmetry'):
                     NOE_other_tot_num += sf_item['id']
 
             if NOE_tot_num > 0:
@@ -42829,7 +42778,7 @@ class NmrDpUtility:
                 if 'lower' in potential_type:
                     continue
                 constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type is not None and 'ROE' in constraint_type:
+                if 'ROE' in constraint_type:
                     ROE_tot_num += sf_item['id']
 
                     lp = sf_item['loop']
@@ -42842,8 +42791,14 @@ class NmrDpUtility:
                     seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
                     atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                     atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                    comb_id_col = lp.tags.index(item_names['combination_id'])
-                    upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                    try:
+                        comb_id_col = lp.tags.index(item_names['combination_id'])
+                    except ValueError:
+                        comb_id_col = -1
+                    try:
+                        upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                    except ValueError:
+                        upper_limit_col = -1
 
                     prev_id = -1
                     for row in lp:
@@ -42857,8 +42812,8 @@ class NmrDpUtility:
                         seq_id_2 = int(row[seq_id_2_col])
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
-                        comb_id = row[comb_id_col]
-                        upper_limit = float(row[upper_limit_col]) if row[upper_limit_col] not in emptyValue else None
+                        comb_id = row[comb_id_col] if comb_id_col != -1 else None
+                        upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
                         offset = abs(seq_id_1 - seq_id_2)
                         ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
@@ -42967,10 +42922,9 @@ class NmrDpUtility:
                     sf_item['constraint_type'] = 'protein dihedral angle'
 
                     sf = sf_item['saveframe']
-                    tagNames = [t[0] for t in sf.tags]
 
                     if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
-                        sf.tags[tagNames.index('Constraint_type')][1] = 'backbone chemical shifts'
+                        set_sf_tag(sf, 'Constraint_type', 'backbone chemical shifts')
 
                     else:
 
@@ -43008,13 +42962,13 @@ class NmrDpUtility:
                         if (_protein_bb_angles > 0 and _protein_oth_angles == 0 and _protein_bb_jcoups > 0 and _protein_oth_jcoups == 0)\
                            or (_protein_bb_angles > 0 and _protein_oth_angles > 0 and _protein_bb_jcoups > 0 and _protein_oth_jcoups > 0)\
                            or (_protein_bb_angles == 0 and _protein_oth_angles > 0 and _protein_bb_jcoups == 0 and _protein_oth_jcoups > 0):
-                            sf.tags[tagNames.index('Constraint_type')][1] = 'J-couplings'
+                            set_sf_tag(sf, 'Constraint_type', 'J-couplings')
 
                         elif _protein_jcoups == 0:
-                            sf.tags[tagNames.index('Constraint_type')][1] = 'backbone chemical shifts'
+                            set_sf_tag(sf, 'Constraint_type', 'backbone chemical shifts')
 
                         else:
-                            sf.tags[tagNames.index('Constraint_type')][1] = 'unknown'
+                            set_sf_tag(sf, 'Constraint_type', 'unknown')
 
         if Protein_dihedral_angle_tot_num > 0:
             cst_sf.add_tag('Protein_dihedral_angle_tot_num', Protein_dihedral_angle_tot_num)
@@ -43087,10 +43041,9 @@ class NmrDpUtility:
                     sf_item['constraint_type'] = 'nucleic acid dihedral angle'
 
                     sf = sf_item['saveframe']
-                    tagNames = [t[0] for t in sf.tags]
 
                     if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
-                        sf.tags[tagNames.index('Constraint_type')][1] = 'unknown'
+                        set_sf_tag(sf, 'Constraint_type', 'unknown')
 
                     else:
 
@@ -43115,11 +43068,7 @@ class NmrDpUtility:
                                     if 'nucleotide' in entity_type:
                                         _na_jcoups += 1
 
-                        if _na_jcoups > 0:
-                            sf.tags[tagNames.index('Constraint_type')][1] = 'J-couplings'
-
-                        else:
-                            sf.tags[tagNames.index('Constraint_type')][1] = 'unknown'
+                        set_sf_tag(sf, 'Constraint_type', 'J-couplings' if _na_jcoups > 0 else 'unknown')
 
         if NA_dihedral_angle_tot_num > 0:
             cst_sf.add_tag('NA_dihedral_angle_tot_num', NA_dihedral_angle_tot_num)
@@ -43169,10 +43118,9 @@ class NmrDpUtility:
                     sf_item['constraint_type'] = 'saccaride dihedral angle'
 
                     sf = sf_item['saveframe']
-                    tagNames = [t[0] for t in sf.tags]
 
                     if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
-                        sf.tags[tagNames.index('Constraint_type')][1] = 'unknown'
+                        set_sf_tag(sf, 'Constraint_type', 'unknown')
 
                     else:
 
@@ -43197,11 +43145,7 @@ class NmrDpUtility:
                                     if 'saccharide' in entity_type:
                                         _br_jcoups += 1
 
-                        if _br_jcoups > 0:
-                            sf.tags[tagNames.index('Constraint_type')][1] = 'J-couplings'
-
-                        else:
-                            sf.tags[tagNames.index('Constraint_type')][1] = 'unknown'
+                        set_sf_tag(sf, 'Constraint_type', 'J-couplings' if _br_jcoups > 0 else 'unknown')
 
         content_subtype = 'rdc_restraint'
 
@@ -43244,7 +43188,10 @@ class NmrDpUtility:
                 seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
                 atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                 atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                comb_id_col = lp.tags.index(item_names['combination_id'])
+                try:
+                    comb_id_col = lp.tags.index(item_names['combination_id'])
+                except ValueError:
+                    comb_id_col = -1
 
                 prev_id = -1
                 for row in lp:
@@ -43258,7 +43205,7 @@ class NmrDpUtility:
                     seq_id_2 = int(row[seq_id_2_col])
                     atom_id_1 = row[atom_id_1_col]
                     atom_id_2 = row[atom_id_2_col]
-                    comb_id = row[comb_id_col]
+                    comb_id = row[comb_id_col] if comb_id_col != -1 else None
 
                     vector = {atom_id_1, atom_id_2}
                     offset = abs(seq_id_1 - seq_id_2)
@@ -43344,7 +43291,7 @@ class NmrDpUtility:
                 if 'lower' in potential_type:
                     continue
                 constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type is None or constraint_type != 'hydrogen bond':
+                if constraint_type != 'hydrogen bond':
                     continue
 
                 lp = sf_item['loop']
@@ -43399,7 +43346,7 @@ class NmrDpUtility:
                 if 'lower' in potential_type:
                     continue
                 constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type is None or constraint_type != 'disulfide bond':
+                if constraint_type != 'disulfide bond':
                     continue
 
                 lp = sf_item['loop']
@@ -43486,7 +43433,7 @@ class NmrDpUtility:
                 if 'lower' in potential_type:
                     continue
                 constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type is None or constraint_type != 'photo cidnp':
+                if constraint_type != 'photo cidnp':
                     continue
                 Derived_photo_cidnps_tot_num += sf_item['id']
 
@@ -43501,7 +43448,7 @@ class NmrDpUtility:
                 if 'lower' in potential_type:
                     continue
                 constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type is None or constraint_type != 'paramagnetic relaxation':
+                if constraint_type != 'paramagnetic relaxation':
                     continue
                 Derived_paramag_relax_tot_num += sf_item['id']
 
@@ -43621,7 +43568,7 @@ class NmrDpUtility:
                         row[5] = block_id
                     constraint_type = sf_item['constraint_type']
                     constraint_subtype = get_first_sf_tag(sf, 'Constraint_type')
-                    if constraint_subtype is not None and len(constraint_subtype) == 0:
+                    if len(constraint_subtype) == 0:
                         constraint_subtype = None
                     constraint_subsubtype = sf_item['constraint_subsubtype'] if 'constraint_subsubtype' in sf_item else None
                     row[6], row[7], row[8], row[9] =\
@@ -43762,6 +43709,1126 @@ class NmrDpUtility:
 
         return True
 
+    def __updateConstraintStats(self):
+        """ Update _Constraint_stat_list saveframe.
+        """
+
+        if not self.__combined_mode or self.__dstPath is None:
+            return True
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return True
+
+        if len(self.__star_data) == 0 or self.__star_data[0] is None:
+            return False
+
+        master_entry = self.__star_data[0]
+
+        master_entry.entry_id = f'nef_{self.__entry_id.lower()}'
+
+        self.__c2S.set_entry_id(master_entry, self.__entry_id)
+
+        # Refresh _Constraint_stat_list saveframe
+
+        content_subtype_order = ['dist_restraint',
+                                 'dihed_restraint',
+                                 'rdc_restraint',
+                                 'noepk_restraint',
+                                 'jcoup_restraint',
+                                 'csa_restraint',
+                                 'ddc_restraint',
+                                 'hvycs_restraint',
+                                 'procs_restraint',
+                                 'csp_restraint',
+                                 'auto_relax_restraint',
+                                 'ccr_d_csa_restraint',
+                                 'ccr_dd_restraint',
+                                 'fchiral_restraint',
+                                 'other_restraint']
+
+        def sf_key(content_subtype):
+            return self.__c2S.category_order.index(self.sf_tag_prefixes[file_type][content_subtype])
+
+        content_subtype_order.sort(key=sf_key)
+
+        sf_framecode = 'constraint_statistics'
+
+        if len(master_entry.get_saveframes_by_category(sf_framecode)) > 0:
+            return True
+
+        if self.__caC is None:
+            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__cR, None)
+
+        sf_item = {}
+
+        cst_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
+        cst_sf.set_tag_prefix('_Constraint_stat_list')
+        cst_sf.add_tag('Sf_category', sf_framecode)
+        cst_sf.add_tag('Sf_framecode', sf_framecode)
+        cst_sf.add_tag('Entry_ID', self.__entry_id)
+        cst_sf.add_tag('ID', 1)
+        if self.__srcName is not None:
+            cst_sf.add_tag('Data_file_name', self.__srcName)
+
+        for content_subtype in input_source_dic['content_subtype']:
+
+            if content_subtype == 'dist_restraint':
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    avr_method = get_first_sf_tag(sf, 'NOE_dist_averaging_method')
+                    if len(avr_method) > 0 and avr_method not in emptyValue:
+                        cst_sf.add_tag('NOE_dist_averaging_method', avr_method)
+                        break
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    if sf_framecode not in sf_item:
+                        sf_item[sf_framecode] = {'id': 0, 'constraint_type': 'distance', 'constraint_subsubtype': 'simple'}
+                        constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                        if len(constraint_type) > 0 and constraint_type not in emptyValue:
+                            sf_item[sf_framecode]['constraint_subtype'] = constraint_type
+
+                    if __pynmrstar_v3_2__:
+                        lp = sf.get_loop(lp_category)
+                    else:
+                        lp = sf.get_loop_by_category(lp_category)
+
+                    item_names = self.item_names_in_ds_loop[file_type]
+                    id_col = lp.tags.index('ID')
+                    code_col = lp.tags.index('Member_logic_code')
+                    auth_asym_id_1_col = lp.tags.index('Auth_asym_ID_1')
+                    auth_seq_id_1_col = lp.tags.index('Auth_seq_ID_1')
+                    auth_asym_id_2_col = lp.tags.index('Auth_asym_ID_2')
+                    auth_seq_id_2_col = lp.tags.index('Auth_seq_ID_2')
+                    comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
+                    comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
+                    atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                    atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+
+                    try:
+                        target_value_col = lp.tags.index(item_names['target_value'])
+                    except ValueError:
+                        target_value_col = -1
+                    try:
+                        lower_limit_col = lp.tags.index(item_names['lower_limit'])
+                    except ValueError:
+                        lower_limit_col = -1
+                    try:
+                        upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                    except ValueError:
+                        upper_limit_col = -1
+                    try:
+                        lower_linear_limit_col = lp.tags.index(item_names['lower_linear_limit'])
+                    except ValueError:
+                        lower_linear_limit_col = -1
+                    try:
+                        upper_linear_limit_col = lp.tags.index(item_names['upper_linear_limit'])
+                    except ValueError:
+                        upper_linear_limit_col = -1
+
+                    has_or_code = False
+
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+
+                    _potential_type = None
+                    count = 0
+
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            if row[code_col] == 'OR':
+                                has_or_code = True
+                            continue
+                        prev_id = _id
+                        count += 1
+                        if not has_potential_type:
+                            dst_func = {}
+                            if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                                dst_func['target_value'] = float(row[target_value_col])
+                            if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                                dst_func['lower_limit'] = float(row[lower_limit_col])
+                            if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                                dst_func['upper_limit'] = float(row[upper_limit_col])
+                            if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                                dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
+                            if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                                dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
+                            if _potential_type is None:
+                                _potential_type = getPotentialType(file_type, 'dist', dst_func)
+                            else:
+                                if getPotentialType(file_type, 'dist', dst_func) != _potential_type:
+                                    has_potential_type = True
+
+                    if not has_potential_type and _potential_type is not None:
+                        set_sf_tag(sf, 'Potential_type', _potential_type)
+
+                    sf_item[sf_framecode]['id'] = count
+
+                    if has_or_code:
+
+                        prev_id = -1
+                        for row in lp:
+                            if row[code_col] == 'OR':
+                                _id = int(row[id_col])
+                                if _id != prev_id:
+                                    _atom1 = {'chain_id': row[auth_asym_id_1_col],
+                                              'seq_id': int(row[auth_seq_id_1_col]),
+                                              'comp_id': row[comp_id_1_col],
+                                              'atom_id': row[atom_id_1_col]}
+                                    _atom2 = {'chain_id': row[auth_asym_id_2_col],
+                                              'seq_id': int(row[auth_seq_id_2_col]),
+                                              'comp_id': row[comp_id_2_col],
+                                              'atom_id': row[atom_id_2_col]}
+                                    prev_id = _id
+                                    continue
+                                atom1 = {'chain_id': row[auth_asym_id_1_col],
+                                         'seq_id': int(row[auth_seq_id_1_col]),
+                                         'comp_id': row[comp_id_1_col],
+                                         'atom_id': row[atom_id_1_col]}
+                                atom2 = {'chain_id': row[auth_asym_id_2_col],
+                                         'seq_id': int(row[auth_seq_id_2_col]),
+                                         'comp_id': row[comp_id_2_col],
+                                         'atom_id': row[atom_id_2_col]}
+                                if isAmbigAtomSelection([_atom1, atom1], self.__csStat) or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                    sf_item[sf_framecode]['constraint_subsubtype'] = 'ambi'
+                                    break
+                                _atom1, _atom2 = atom1, atom2
+
+                        if sf_item[sf_framecode]['constraint_subsubtype'] == 'ambi':
+
+                            if 'pre' in sf_framecode or 'paramag' in sf_framecode:
+                                sf_item[sf_framecode]['constraint_subtype'] = 'paramagnetic relaxation'
+                            if 'cidnp' in sf_framecode:
+                                sf_item[sf_framecode]['constraint_subtype'] = 'photo cidnp'
+                            if 'csp' in sf_framecode or 'perturb' in sf_framecode:
+                                sf_item[sf_framecode]['constraint_subtype'] = 'chemical shift perturbation'
+                            if 'mutat' in sf_framecode:
+                                sf_item[sf_framecode]['constraint_subtype'] = 'mutation'
+                            if 'protect' in sf_framecode:
+                                sf_item[sf_framecode]['constraint_subtype'] = 'hydrogen exchange protection'
+                            if 'symm' in sf_framecode:
+                                sf_item[sf_framecode]['constraint_subtype'] = 'symmetry'
+
+                    if sf_item[sf_framecode]['constraint_subsubtype'] == 'simple':
+
+                        metal_coord = False
+                        disele_bond = False
+                        disulf_bond = False
+                        hydrog_bond = False
+
+                        for row in lp:
+                            comp_id_1 = row[comp_id_1_col]
+                            comp_id_2 = row[comp_id_2_col]
+                            atom_id_1 = row[atom_id_1_col]
+                            atom_id_2 = row[atom_id_2_col]
+                            atom_id_1_ = atom_id_1[0]
+                            atom_id_2_ = atom_id_2[0]
+                            if comp_id_1 == atom_id_1 or comp_id_2 == atom_id_2:
+                                metal_coord = True
+                            elif 'SE' in (atom_id_1, atom_id_2):
+                                disele_bond = True
+                            elif 'SG' in (atom_id_1, atom_id_2):
+                                disulf_bond = True
+                            elif (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+                                hydrog_bond = True
+                            elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+                                hydrog_bond = True
+                            elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+                                hydrog_bond = True
+                            elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+                                hydrog_bond = True
+                            elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+                                hydrog_bond = True
+                            elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+                                hydrog_bond = True
+                            elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+                                hydrog_bond = True
+
+                        if not metal_coord and not disele_bond and not disulf_bond and not hydrog_bond:
+                            if 'build' in sf_framecode and 'up' in sf_framecode:
+                                if 'roe' in sf_framecode:
+                                    sf_item[sf_framecode]['constraint_subtype'] = 'ROE build-up'
+                                else:
+                                    sf_item[sf_framecode]['constraint_subtype'] = 'NOE build-up'
+
+                            elif 'not' in sf_framecode and 'seen' in sf_framecode:
+                                sf_item[sf_framecode]['constraint_subtype'] = 'NOE not seen'
+
+                            elif 'roe' in sf_framecode:
+                                sf_item[sf_framecode]['constraint_subtype'] = 'ROE'
+
+                            sf_item[sf_framecode]['constraint_subtype'] = 'NOE'
+
+                        elif metal_coord and not disele_bond and not disulf_bond and not hydrog_bond:
+                            sf_item[sf_framecode]['constraint_subtype'] = 'metal coordination'
+
+                        elif not metal_coord and disele_bond and not disulf_bond and not hydrog_bond:
+                            sf_item[sf_framecode]['constraint_subtype'] = 'diselenide bond'
+
+                        elif not metal_coord and not disele_bond and disulf_bond and not hydrog_bond:
+                            sf_item[sf_framecode]['constraint_subtype'] = 'disulfide bond'
+
+                        elif not metal_coord and not disele_bond and not disulf_bond and hydrog_bond:
+                            sf_item[sf_framecode]['constraint_subtype'] = 'hydrogen bond'
+
+                NOE_tot_num = 0
+
+                NOE_intraresidue_tot_num = 0
+                NOE_sequential_tot_num = 0
+                NOE_medium_range_tot_num = 0
+                NOE_long_range_tot_num = 0
+                NOE_unique_tot_num = 0
+                NOE_intraresidue_unique_tot_num = 0
+                NOE_sequential_unique_tot_num = 0
+                NOE_medium_range_unique_tot_num = 0
+                NOE_long_range_unique_tot_num = 0
+                NOE_unamb_intramol_tot_num = 0
+                NOE_unamb_intermol_tot_num = 0
+                NOE_ambig_intramol_tot_num = 0
+                NOE_ambig_intermol_tot_num = 0
+                NOE_interentity_tot_num = 0
+                NOE_other_tot_num = 0
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    if 'lower' in potential_type:
+                        continue
+                    if 'constraint_subtype' in sf_item[sf_framecode] and 'NOE' in sf_item[sf_framecode]['constraint_subtype']:
+                        NOE_tot_num += sf_item[sf_framecode]['id']
+
+                        if __pynmrstar_v3_2__:
+                            lp = sf.get_loop(lp_category)
+                        else:
+                            lp = sf.get_loop_by_category(lp_category)
+
+                        item_names = self.item_names_in_ds_loop[file_type]
+                        id_col = lp.tags.index('ID')
+                        chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
+                        chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
+                        seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
+                        seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                        atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                        atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+                        try:
+                            comb_id_col = lp.tags.index(item_names['combination_id'])
+                        except ValueError:
+                            comb_id_col = -1
+                        try:
+                            upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                        except ValueError:
+                            upper_limit_col = -1
+
+                        prev_id = -1
+                        for row in lp:
+                            _id = int(row[id_col])
+                            if _id == prev_id:
+                                continue
+                            prev_id = _id
+                            chain_id_1 = row[chain_id_1_col]
+                            chain_id_2 = row[chain_id_2_col]
+                            seq_id_1 = int(row[seq_id_1_col])
+                            seq_id_2 = int(row[seq_id_2_col])
+                            atom_id_1 = row[atom_id_1_col]
+                            atom_id_2 = row[atom_id_2_col]
+                            comb_id = row[comb_id_col] if comb_id_col != -1 else None
+                            upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
+
+                            offset = abs(seq_id_1 - seq_id_2)
+                            ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
+                            uniq = comb_id in emptyValue and not ambig
+
+                            if uniq:
+                                NOE_unique_tot_num += 1
+
+                            if chain_id_1 == chain_id_2:
+                                if uniq:
+                                    NOE_unamb_intramol_tot_num += 1
+                                else:
+                                    NOE_ambig_intramol_tot_num += 1
+                                if offset == 0:
+                                    NOE_intraresidue_tot_num += 1
+                                    if uniq:
+                                        NOE_intraresidue_unique_tot_num += 1
+                                elif offset == 1:
+                                    NOE_sequential_tot_num += 1
+                                    if uniq:
+                                        NOE_sequential_unique_tot_num += 1
+                                elif offset < 5:
+                                    NOE_medium_range_tot_num += 1
+                                    if uniq:
+                                        NOE_medium_range_unique_tot_num += 1
+                                else:
+                                    NOE_long_range_tot_num += 1
+                                    if uniq:
+                                        NOE_long_range_unique_tot_num += 1
+                            else:
+                                NOE_interentity_tot_num += 1
+                                if uniq:
+                                    NOE_unamb_intermol_tot_num += 1
+                                else:
+                                    NOE_ambig_intermol_tot_num += 1
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    if 'lower' in potential_type:
+                        continue
+                    constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                    if constraint_type in ('paramagnetic relaxation',
+                                           'photo cidnp',
+                                           'chemical shift perturbation',
+                                           'mutation',
+                                           'symmetry'):
+                        NOE_other_tot_num += sf_item[sf_framecode]['id']
+
+                if NOE_tot_num > 0:
+                    cst_sf.add_tag('NOE_tot_num', NOE_tot_num)
+                    cst_sf.add_tag('NOE_intraresidue_tot_num', NOE_intraresidue_tot_num)
+                    cst_sf.add_tag('NOE_sequential_tot_num', NOE_sequential_tot_num)
+                    cst_sf.add_tag('NOE_medium_range_tot_num', NOE_medium_range_tot_num)
+                    cst_sf.add_tag('NOE_long_range_tot_num', NOE_long_range_tot_num)
+                    cst_sf.add_tag('NOE_unique_tot_num', NOE_unique_tot_num)
+                    cst_sf.add_tag('NOE_intraresidue_unique_tot_num', NOE_intraresidue_unique_tot_num)
+                    cst_sf.add_tag('NOE_sequential_unique_tot_num', NOE_sequential_unique_tot_num)
+                    cst_sf.add_tag('NOE_medium_range_unique_tot_num', NOE_medium_range_unique_tot_num)
+                    cst_sf.add_tag('NOE_long_range_unique_tot_num', NOE_long_range_unique_tot_num)
+                    cst_sf.add_tag('NOE_unamb_intramol_tot_num', NOE_unamb_intramol_tot_num)
+                    cst_sf.add_tag('NOE_unamb_intermol_tot_num', NOE_unamb_intermol_tot_num)
+                    cst_sf.add_tag('NOE_ambig_intramol_tot_num', NOE_ambig_intramol_tot_num)
+                    cst_sf.add_tag('NOE_ambig_intermol_tot_num', NOE_ambig_intermol_tot_num)
+                    cst_sf.add_tag('NOE_interentity_tot_num', NOE_interentity_tot_num)
+                    cst_sf.add_tag('NOE_other_tot_num', NOE_other_tot_num)
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    avr_method = get_first_sf_tag(sf, 'ROE_dist_averaging_method')
+                    if len(avr_method) > 0 or avr_method not in emptyValue:
+                        cst_sf.add_tag('ROE_dist_averaging_method', avr_method)
+                        break
+
+                ROE_tot_num = 0
+
+                ROE_intraresidue_tot_num = 0
+                ROE_sequential_tot_num = 0
+                ROE_medium_range_tot_num = 0
+                ROE_long_range_tot_num = 0
+                ROE_unambig_intramol_tot_num = 0
+                ROE_unambig_intermol_tot_num = 0
+                ROE_ambig_intramol_tot_num = 0
+                ROE_ambig_intermol_tot_num = 0
+                ROE_other_tot_num = 0
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    if 'lower' in potential_type:
+                        continue
+                    if 'constraint_subtype' in sf_item[sf_framecode] and 'ROE' in sf_item[sf_framecode]['constraint_subtype']:
+                        ROE_tot_num += sf_item[sf_framecode]['id']
+
+                        if __pynmrstar_v3_2__:
+                            lp = sf.get_loop(lp_category)
+                        else:
+                            lp = sf.get_loop_by_category(lp_category)
+
+                        item_names = self.item_names_in_ds_loop[file_type]
+                        id_col = lp.tags.index('ID')
+                        chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
+                        chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
+                        seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
+                        seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                        atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                        atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+                        try:
+                            comb_id_col = lp.tags.index(item_names['combination_id'])
+                        except ValueError:
+                            comb_id_col = -1
+                        try:
+                            upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                        except ValueError:
+                            upper_limit_col = -1
+
+                        prev_id = -1
+                        for row in lp:
+                            _id = int(row[id_col])
+                            if _id == prev_id:
+                                continue
+                            prev_id = _id
+                            chain_id_1 = row[chain_id_1_col]
+                            chain_id_2 = row[chain_id_2_col]
+                            seq_id_1 = int(row[seq_id_1_col])
+                            seq_id_2 = int(row[seq_id_2_col])
+                            atom_id_1 = row[atom_id_1_col]
+                            atom_id_2 = row[atom_id_2_col]
+                            comb_id = row[comb_id_col] if comb_id_col != -1 else None
+                            upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
+
+                            offset = abs(seq_id_1 - seq_id_2)
+                            ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
+                            uniq = comb_id in emptyValue and not ambig
+
+                            if chain_id_1 == chain_id_2:
+                                if uniq:
+                                    ROE_unambig_intramol_tot_num += 1
+                                else:
+                                    ROE_ambig_intramol_tot_num += 1
+                                if offset == 0:
+                                    ROE_intraresidue_tot_num += 1
+                                elif offset == 1:
+                                    ROE_sequential_tot_num += 1
+                                elif offset < 5:
+                                    ROE_medium_range_tot_num += 1
+                                else:
+                                    ROE_long_range_tot_num += 1
+                            else:
+                                ROE_other_tot_num += 1
+                                if uniq:
+                                    ROE_unambig_intermol_tot_num += 1
+                                else:
+                                    ROE_ambig_intermol_tot_num += 1
+
+                if ROE_tot_num > 0:
+                    cst_sf.add_tag('ROE_tot_num', ROE_tot_num)
+                    cst_sf.add_tag('ROE_intraresidue_tot_num', ROE_intraresidue_tot_num)
+                    cst_sf.add_tag('ROE_sequential_tot_num', ROE_sequential_tot_num)
+                    cst_sf.add_tag('ROE_medium_range_tot_num', ROE_medium_range_tot_num)
+                    cst_sf.add_tag('ROE_long_range_tot_num', ROE_long_range_tot_num)
+                    cst_sf.add_tag('ROE_unambig_intramol_tot_num', ROE_unambig_intramol_tot_num)
+                    cst_sf.add_tag('ROE_unambig_intermol_tot_num', ROE_unambig_intermol_tot_num)
+                    cst_sf.add_tag('ROE_ambig_intramol_tot_num', ROE_ambig_intramol_tot_num)
+                    cst_sf.add_tag('ROE_ambig_intermol_tot_num', ROE_ambig_intermol_tot_num)
+                    cst_sf.add_tag('ROE_other_tot_num', ROE_other_tot_num)
+
+            elif content_subtype == 'dihed_restraint':
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                auth_to_entity_type = self.__caC['auth_to_entity_type']
+
+                Dihedral_angle_tot_num = 0
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    if sf_framecode not in sf_item:
+                        sf_item[sf_framecode] = {'id': 0, 'constraint_type': 'dihedral angle'}
+
+                    if __pynmrstar_v3_2__:
+                        lp = sf.get_loop(lp_category)
+                    else:
+                        lp = sf.get_loop_by_category(lp_category)
+
+                    item_names = self.item_names_in_dh_loop[file_type]
+                    id_col = lp.tags.index('ID')
+                    try:
+                        target_value_col = lp.tags.index(item_names['target_value'])
+                    except ValueError:
+                        target_value_col = -1
+                    try:
+                        lower_limit_col = lp.tags.index(item_names['lower_limit'])
+                    except ValueError:
+                        lower_limit_col = -1
+                    try:
+                        upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                    except ValueError:
+                        upper_limit_col = -1
+                    try:
+                        lower_linear_limit_col = lp.tags.index(item_names['lower_linear_limit'])
+                    except ValueError:
+                        lower_linear_limit_col = -1
+                    try:
+                        upper_linear_limit_col = lp.tags.index(item_names['upper_linear_limit'])
+                    except ValueError:
+                        upper_linear_limit_col = -1
+
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+
+                    _potential_type = None
+                    count = 0
+
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        count += 1
+                        if not has_potential_type:
+                            dst_func = {}
+                            if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                                dst_func['target_value'] = float(row[target_value_col])
+                            if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                                dst_func['lower_limit'] = float(row[lower_limit_col])
+                            if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                                dst_func['upper_limit'] = float(row[upper_limit_col])
+                            if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                                dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
+                            if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                                dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
+                            if _potential_type is None:
+                                _potential_type = getPotentialType(file_type, 'dihed', dst_func)
+                            else:
+                                if getPotentialType(file_type, 'dihed', dst_func) != _potential_type:
+                                    has_potential_type = True
+
+                    if not has_potential_type and _potential_type is not None:
+                        set_sf_tag(sf, 'Potential_type', _potential_type)
+
+                    sf_item[sf_framecode]['id'] = count
+                    Dihedral_angle_tot_num += count
+
+                if Dihedral_angle_tot_num > 0:
+                    cst_sf.add_tag('Dihedral_angle_tot_num', Dihedral_angle_tot_num)
+
+                Protein_dihedral_angle_tot_num = 0
+
+                Protein_phi_angle_tot_num = 0
+                Protein_psi_angle_tot_num = 0
+                Protein_chi_one_angle_tot_num = 0
+                Protein_other_angle_tot_num = 0
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+
+                    if __pynmrstar_v3_2__:
+                        lp = sf.get_loop(lp_category)
+                    else:
+                        lp = sf.get_loop_by_category(lp_category)
+
+                    id_col = lp.tags.index('ID')
+                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
+                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                    angle_name_col = lp.tags.index('Torsion_angle_name')
+
+                    _protein_angles = 0
+                    _other_angles = 0
+
+                    _protein_bb_angles = 0
+                    _protein_oth_angles = 0
+
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        auth_asym_id = row[auth_asym_id_col]
+                        auth_seq_id = int(row[auth_seq_id_col])
+                        angle_name = row[angle_name_col]
+
+                        seq_key = (auth_asym_id, auth_seq_id)
+
+                        if seq_key in auth_to_entity_type:
+                            entity_type = auth_to_entity_type[seq_key]
+
+                            if 'peptide' in entity_type:
+                                Protein_dihedral_angle_tot_num += 1
+                                _protein_angles += 1
+                                if angle_name == 'PHI':
+                                    Protein_phi_angle_tot_num += 1
+                                    _protein_bb_angles += 1
+                                elif angle_name == 'PSI':
+                                    Protein_psi_angle_tot_num += 1
+                                    _protein_bb_angles += 1
+                                elif angle_name == 'CHI1':
+                                    Protein_chi_one_angle_tot_num += 1
+                                    _protein_oth_angles += 1
+                                else:
+                                    Protein_other_angle_tot_num += 1
+                                    _protein_oth_angles += 1
+                            else:
+                                _other_angles += 1
+
+                    if _protein_angles > 0 and _other_angles == 0:
+                        sf_item[sf_framecode]['constraint_type'] = 'protein dihedral angle'
+
+                        tagNames = [t[0] for t in sf.tags]
+
+                        if 'Constraint_type' not in tagNames:
+                            sf_item[sf_framecode]['constraint_subtype'] = 'backbone chemical shifts'
+                            sf.add_tag('Constraint_subtype', 'backbone chemical shifts')
+
+                if Protein_dihedral_angle_tot_num > 0:
+                    cst_sf.add_tag('Protein_dihedral_angle_tot_num', Protein_dihedral_angle_tot_num)
+                    cst_sf.add_tag('Protein_phi_angle_tot_num', Protein_phi_angle_tot_num)
+                    cst_sf.add_tag('Protein_psi_angle_tot_num', Protein_psi_angle_tot_num)
+                    cst_sf.add_tag('Protein_chi_one_angle_tot_num', Protein_chi_one_angle_tot_num)
+                    cst_sf.add_tag('Protein_other_angle_tot_num', Protein_other_angle_tot_num)
+
+                NA_dihedral_angle_tot_num = 0
+
+                NA_alpha_angle_tot_num = 0
+                NA_beta_angle_tot_num = 0
+                NA_gamma_angle_tot_num = 0
+                NA_delta_angle_tot_num = 0
+                NA_epsilon_angle_tot_num = 0
+                NA_chi_angle_tot_num = 0
+                NA_other_angle_tot_num = 0
+                NA_amb_dihedral_angle_tot_num = 0
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+
+                    if __pynmrstar_v3_2__:
+                        lp = sf.get_loop(lp_category)
+                    else:
+                        lp = sf.get_loop_by_category(lp_category)
+
+                    id_col = lp.tags.index('ID')
+                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
+                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                    angle_name_col = lp.tags.index('Torsion_angle_name')
+
+                    _na_angles = 0
+                    _other_angles = 0
+
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        auth_asym_id = row[auth_asym_id_col]
+                        auth_seq_id = int(row[auth_seq_id_col])
+                        angle_name = row[angle_name_col]
+
+                        seq_key = (auth_asym_id, auth_seq_id)
+
+                        if seq_key in auth_to_entity_type:
+                            entity_type = auth_to_entity_type[seq_key]
+
+                            if 'nucleotide' in entity_type:
+                                NA_dihedral_angle_tot_num += 1
+                                _na_angles += 1
+                                if angle_name == 'ALPHA':
+                                    NA_alpha_angle_tot_num += 1
+                                elif angle_name == 'BETA':
+                                    NA_beta_angle_tot_num += 1
+                                elif angle_name == 'GAMMA':
+                                    NA_gamma_angle_tot_num += 1
+                                elif angle_name == 'DELTA':
+                                    NA_delta_angle_tot_num += 1
+                                elif angle_name == 'EPSILON':
+                                    NA_epsilon_angle_tot_num += 1
+                                elif angle_name == 'CHI':
+                                    NA_chi_angle_tot_num += 1
+                                elif angle_name == 'PPA':
+                                    NA_amb_dihedral_angle_tot_num += 1
+                                else:
+                                    NA_other_angle_tot_num += 1
+                            else:
+                                _other_angles += 1
+
+                    if _na_angles > 0 and _other_angles == 0:
+                        sf_item[sf_framecode]['constraint_type'] = 'nucleic acid dihedral angle'
+
+                        tagNames = [t[0] for t in sf.tags]
+
+                        if 'Constraint_type' not in tagNames:
+                            sf_item[sf_framecode]['constraint_subtype'] = 'unknown'
+                            sf.add_tag('Constraint_type', 'unknown')
+
+                if NA_dihedral_angle_tot_num > 0:
+                    cst_sf.add_tag('NA_dihedral_angle_tot_num', NA_dihedral_angle_tot_num)
+                    cst_sf.add_tag('NA_alpha_angle_tot_num', NA_alpha_angle_tot_num)
+                    cst_sf.add_tag('NA_beta_angle_tot_num', NA_beta_angle_tot_num)
+                    cst_sf.add_tag('NA_gamma_angle_tot_num', NA_gamma_angle_tot_num)
+                    cst_sf.add_tag('NA_delta_angle_tot_num', NA_delta_angle_tot_num)
+                    cst_sf.add_tag('NA_epsilon_angle_tot_num', NA_epsilon_angle_tot_num)
+                    cst_sf.add_tag('NA_chi_angle_tot_num', NA_chi_angle_tot_num)
+                    cst_sf.add_tag('NA_other_angle_tot_num', NA_other_angle_tot_num)
+                    cst_sf.add_tag('NA_amb_dihedral_angle_tot_num', NA_amb_dihedral_angle_tot_num)
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+
+                    if __pynmrstar_v3_2__:
+                        lp = sf.get_loop(lp_category)
+                    else:
+                        lp = sf.get_loop_by_category(lp_category)
+
+                    id_col = lp.tags.index('ID')
+                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
+                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                    angle_name_col = lp.tags.index('Torsion_angle_name')
+
+                    _br_angles = 0
+                    _other_angles = 0
+
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        auth_asym_id = row[auth_asym_id_col]
+                        auth_seq_id = int(row[auth_seq_id_col])
+                        angle_name = row[angle_name_col]
+
+                        seq_key = (auth_asym_id, auth_seq_id)
+
+                        if seq_key in auth_to_entity_type:
+                            entity_type = auth_to_entity_type[seq_key]
+
+                            if 'saccharide' in entity_type:
+                                _br_angles += 1
+                            else:
+                                _other_angles += 1
+
+                    if _br_angles > 0 and _other_angles == 0:
+                        sf_item[sf_framecode]['constraint_type'] = 'saccaride dihedral angle'
+
+                        tagNames = [t[0] for t in sf.tags]
+
+                        if 'Constraint_type' not in tagNames:
+                            sf_item[sf_framecode]['constraint_subtype'] = 'unknown'
+                            sf.add_tag('Constraint_type', 'unknown')
+
+            elif content_subtype == 'rdc_restraint':
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    if sf_framecode not in sf_item:
+                        sf_item[sf_framecode] = {'id': 0, 'constraint_type': 'residual dipolar coupling', 'constraint_subtype': 'RDC'}
+
+                    if __pynmrstar_v3_2__:
+                        lp = sf.get_loop(lp_category)
+                    else:
+                        lp = sf.get_loop_by_category(lp_category)
+
+                    item_names = self.item_names_in_rdc_loop[file_type]
+                    id_col = lp.tags.index('ID')
+                    try:
+                        target_value_col = lp.tags.index(item_names['target_value'])
+                    except ValueError:
+                        target_value_col = -1
+                    try:
+                        lower_limit_col = lp.tags.index(item_names['lower_limit'])
+                    except ValueError:
+                        lower_limit_col = -1
+                    try:
+                        upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                    except ValueError:
+                        upper_limit_col = -1
+                    try:
+                        lower_linear_limit_col = lp.tags.index(item_names['lower_linear_limit'])
+                    except ValueError:
+                        lower_linear_limit_col = -1
+                    try:
+                        upper_linear_limit_col = lp.tags.index(item_names['upper_linear_limit'])
+                    except ValueError:
+                        upper_linear_limit_col = -1
+
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+
+                    _potential_type = None
+                    count = 0
+
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        count += 1
+                        if not has_potential_type:
+                            dst_func = {}
+                            if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                                dst_func['target_value'] = float(row[target_value_col])
+                            if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                                dst_func['lower_limit'] = float(row[lower_limit_col])
+                            if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                                dst_func['upper_limit'] = float(row[upper_limit_col])
+                            if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                                dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
+                            if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                                dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
+                            if _potential_type is None:
+                                _potential_type = getPotentialType(file_type, 'rdc', dst_func)
+                            else:
+                                if getPotentialType(file_type, 'rdc', dst_func) != _potential_type:
+                                    has_potential_type = True
+
+                    if not has_potential_type and _potential_type is not None:
+                        set_sf_tag(sf, 'Potential_type', _potential_type)
+
+                    sf_item[sf_framecode]['id'] = count
+
+                RDC_tot_num = 0
+
+                RDC_HH_tot_num = 0
+                RDC_HNC_tot_num = 0
+                RDC_NH_tot_num = 0
+                RDC_CC_tot_num = 0
+                RDC_CN_i_1_tot_num = 0
+                RDC_CAHA_tot_num = 0
+                RDC_HNHA_tot_num = 0
+                RDC_HNHA_i_1_tot_num = 0
+                RDC_CAC_tot_num = 0
+                RDC_CAN_tot_num = 0
+                RDC_other_tot_num = 0
+
+                RDC_intraresidue_tot_num = 0
+                RDC_sequential_tot_num = 0
+                RDC_medium_range_tot_num = 0
+                RDC_long_range_tot_num = 0
+
+                RDC_unambig_intramol_tot_num = 0
+                RDC_unambig_intermol_tot_num = 0
+                RDC_ambig_intramol_tot_num = 0
+                RDC_ambig_intermol_tot_num = 0
+                RDC_intermol_tot_num = 0
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+
+                    if __pynmrstar_v3_2__:
+                        lp = sf.get_loop(lp_category)
+                    else:
+                        lp = sf.get_loop_by_category(lp_category)
+
+                    RDC_tot_num += sf_item[sf_framecode]['id']
+
+                    item_names = self.item_names_in_rdc_loop[file_type]
+                    id_col = lp.tags.index('ID')
+                    chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
+                    chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
+                    seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
+                    seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                    atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                    atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+                    try:
+                        comb_id_col = lp.tags.index(item_names['combination_id'])
+                    except ValueError:
+                        comb_id_col = -1
+
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        chain_id_1 = row[chain_id_1_col]
+                        chain_id_2 = row[chain_id_2_col]
+                        seq_id_1 = int(row[seq_id_1_col])
+                        seq_id_2 = int(row[seq_id_2_col])
+                        atom_id_1 = row[atom_id_1_col]
+                        atom_id_2 = row[atom_id_2_col]
+                        comb_id = row[comb_id_col] if comb_id_col != -1 else None
+
+                        vector = {atom_id_1, atom_id_2}
+                        offset = abs(seq_id_1 - seq_id_2)
+
+                        if chain_id_1 == chain_id_2:
+                            if vector == {'H', 'C'} and offset == 1:
+                                RDC_HNC_tot_num += 1
+                            elif vector == {'H', 'N'} and offset == 0:
+                                RDC_NH_tot_num += 1
+                            elif vector == {'C', 'N'} and offset == 1:
+                                RDC_CN_i_1_tot_num += 1
+                            elif vector == {'CA', 'HA'} and offset == 0:
+                                RDC_CAHA_tot_num += 1
+                            elif vector == {'H', 'HA'} and offset == 0:
+                                RDC_HNHA_tot_num += 1
+                            elif vector == {'H', 'HA'} and offset == 1:
+                                RDC_HNHA_i_1_tot_num += 1
+                            elif vector == {'CA', 'C'} and offset == 0:
+                                RDC_CAC_tot_num += 1
+                            elif vector == {'CA', 'N'} and offset == 0:
+                                RDC_CAN_tot_num += 1
+                            elif atom_id_1[0] == atom_id_2[0]:
+                                if atom_id_1[0] in protonBeginCode:
+                                    RDC_HH_tot_num += 1
+                                elif atom_id_1[0] == 'C':
+                                    RDC_CC_tot_num += 1
+                                else:
+                                    RDC_other_tot_num += 1
+                            else:
+                                RDC_other_tot_num += 1
+
+                        if chain_id_1 == chain_id_2:
+                            if offset == 0:
+                                RDC_intraresidue_tot_num += 1
+                            elif offset == 1:
+                                RDC_sequential_tot_num += 1
+                            elif offset < 5:
+                                RDC_medium_range_tot_num += 1
+                            else:
+                                RDC_long_range_tot_num += 1
+                            if comb_id in emptyValue:
+                                RDC_unambig_intramol_tot_num += 1
+                            else:
+                                RDC_ambig_intramol_tot_num += 1
+
+                        else:
+                            RDC_intermol_tot_num += 1
+                            if comb_id in emptyValue:
+                                RDC_unambig_intermol_tot_num += 1
+                            else:
+                                RDC_ambig_intermol_tot_num += 1
+
+                if RDC_tot_num > 0:
+                    cst_sf.add_tag('RDC_tot_num', RDC_tot_num)
+                    cst_sf.add_tag('RDC_HH_tot_num', RDC_HH_tot_num)
+                    cst_sf.add_tag('RDC_HNC_tot_num', RDC_HNC_tot_num)
+                    cst_sf.add_tag('RDC_NH_tot_num', RDC_NH_tot_num)
+                    cst_sf.add_tag('RDC_CC_tot_num', RDC_CC_tot_num)
+                    cst_sf.add_tag('RDC_CN_i_1_tot_num', RDC_CN_i_1_tot_num)
+                    cst_sf.add_tag('RDC_CAHA_tot_num', RDC_CAHA_tot_num)
+                    cst_sf.add_tag('RDC_HNHA_tot_num', RDC_HNHA_tot_num)
+                    cst_sf.add_tag('RDC_HNHA_i_1_tot_num', RDC_HNHA_i_1_tot_num)
+                    cst_sf.add_tag('RDC_CAC_tot_num', RDC_CAC_tot_num)
+                    cst_sf.add_tag('RDC_CAN_tot_num', RDC_CAN_tot_num)
+                    cst_sf.add_tag('RDC_other_tot_num', RDC_other_tot_num)
+                    cst_sf.add_tag('RDC_intraresidue_tot_num', RDC_intraresidue_tot_num)
+                    cst_sf.add_tag('RDC_sequential_tot_num', RDC_sequential_tot_num)
+                    cst_sf.add_tag('RDC_medium_range_tot_num', RDC_medium_range_tot_num)
+                    cst_sf.add_tag('RDC_long_range_tot_num', RDC_long_range_tot_num)
+                    cst_sf.add_tag('RDC_unambig_intramol_tot_num', RDC_unambig_intramol_tot_num)
+                    cst_sf.add_tag('RDC_unambig_intermol_tot_num', RDC_unambig_intermol_tot_num)
+                    cst_sf.add_tag('RDC_ambig_intramol_tot_num', RDC_ambig_intramol_tot_num)
+                    cst_sf.add_tag('RDC_ambig_intermol_tot_num', RDC_ambig_intermol_tot_num)
+                    cst_sf.add_tag('RDC_intermol_tot_num', RDC_intermol_tot_num)
+
+        content_subtype = 'dist_restraint'
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+
+        H_bonds_constrained_tot_num = 0
+        for sf in master_entry.get_saveframes_by_category(sf_category):
+            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'hydrogen bond':
+                H_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
+
+        if H_bonds_constrained_tot_num > 0:
+            cst_sf.add_tag('H_bonds_constrained_tot_num', H_bonds_constrained_tot_num)
+
+        SS_bonds_constrained_tot_num = 0
+        for sf in master_entry.get_saveframes_by_category(sf_category):
+            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'disulfide bond':
+                SS_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
+
+        if SS_bonds_constrained_tot_num > 0:
+            cst_sf.add_tag('SS_bonds_constrained_tot_num', SS_bonds_constrained_tot_num)
+
+        Derived_photo_cidnps_tot_num = 0
+        for sf in master_entry.get_saveframes_by_category(sf_category):
+            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'photo cidnp':
+                Derived_photo_cidnps_tot_num += sf_item[sf_framecode]['id']
+
+        if Derived_photo_cidnps_tot_num > 0:
+            cst_sf.add_tag('Derived_photo_cidnps_tot_num', Derived_photo_cidnps_tot_num)
+
+        Derived_paramag_relax_tot_num = 0
+        for sf in master_entry.get_saveframes_by_category(sf_category):
+            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'paramagnetic relaxation':
+                Derived_paramag_relax_tot_num += sf_item[sf_framecode]['id']
+
+        if Derived_paramag_relax_tot_num > 0:
+            cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)
+
+        lp_category = '_Constraint_file'
+        cf_loop = pynmrstar.Loop.from_scratch(lp_category)
+
+        cf_key_items = [{'name': 'ID', 'type': 'int'},
+                        {'name': 'Constraint_file_name', 'type': 'str'},
+                        # {'name': 'Software_ID', 'type': 'int'},
+                        # {'name': 'Software_label', 'type': 'str'},
+                        # {'name': 'Software_name', 'type': 'str'},
+                        {'name': 'Block_ID', 'type': 'int'},
+                        {'name': 'Constraint_type', 'type': 'enum',
+                         'enum': ('distance', 'dipolar coupling', 'protein dihedral angle', 'nucleic acid dihedral angle',
+                                  'coupling constant', 'chemical shift', 'other angle', 'chemical shift anisotropy',
+                                  'hydrogen exchange', 'line broadening', 'pseudocontact shift', 'intervector projection angle',
+                                  'protein peptide planarity', 'protein other kinds of constraints',
+                                  'nucleic acid base planarity', 'nucleic acid other kinds of constraints')},
+                        {'name': 'Constraint_subtype', 'type': 'enum',
+                         'enum': ('Not applicable', 'NOE', 'NOE buildup', 'NOE not seen', 'general distance',
+                                  'alignment tensor', 'chirality', 'prochirality', 'disulfide bond', 'hydrogen bond',
+                                  'symmetry', 'ROE', 'peptide', 'ring', 'PRE')},
+                        {'name': 'Constraint_subsubtype', 'type': 'enum',
+                         'enum': ('ambi', 'simple')}
+                        ]
+        cf_data_items = [{'name': 'Constraint_number', 'type': 'int'},
+                         {'name': 'Constraint_stat_list_ID', 'type': 'int', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                         {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                         ]
+
+        tags = [lp_category + '.' + _item['name'] for _item in cf_key_items]
+        tags.extend([lp_category + '.' + _item['name'] for _item in cf_data_items])
+
+        for tag in tags:
+            cf_loop.add_tag(tag)
+
+        block_id = 0
+
+        for content_subtype in content_subtype_order:
+
+            if content_subtype in input_source_dic['content_subtype']:
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    tagNames = [t[0] for t in sf.tags]
+
+                    row = [None] * len(tags)
+
+                    row[0], row[1] = 1, self.__srcName
+                    sf_allowed_tags = self.sf_allowed_tags[file_type][content_subtype]
+                    if 'Constraint_file_ID' in sf_allowed_tags:
+                        set_sf_tag(sf, 'Constraint_file_ID', 1)
+                    if 'Block_ID' in sf_allowed_tags:
+                        block_id += 1
+                        set_sf_tag(sf, 'Block_ID', block_id)
+                        row[2] = block_id
+                    constraint_type = sf_item[sf_framecode]['constraint_type']
+                    constraint_subtype = get_first_sf_tag(sf, 'Constraint_type')
+                    if len(constraint_subtype) == 0 or constraint_subtype in emptyValue:
+                        constraint_subtype = sf_item[sf_framecode]['constraint_subtype']\
+                            if 'constraint_subtype' in sf_item[sf_framecode] else None
+                    constraint_subsubtype = sf_item[sf_framecode]['constraint_subsubtype']\
+                        if 'constraint_subsubtype' in sf_item[sf_framecode] else None
+                    row[3], row[4], row[5], row[6] =\
+                        constraint_type, constraint_subtype, constraint_subsubtype, sf_item[sf_framecode]['id']
+                    row[7], row[8] = 1, self.__entry_id
+
+                    cf_loop.add_data(row)
+
+        cst_sf.add_loop(cf_loop)
+
+        master_entry.add_saveframe(cst_sf)
+
+        master_entry = self.__c2S.normalize_str(master_entry)
+
+        if __pynmrstar_v3__:
+            master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+        else:
+            master_entry.write_to_file(self.__dstPath)
+
+        return True
+
     def __initializeDpReportForNext(self):
         """ Initialize NMR data processing report using the next version of NMR unified data.
         """
@@ -43779,7 +44846,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -43920,7 +44987,7 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
-            return False
+            return True
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()

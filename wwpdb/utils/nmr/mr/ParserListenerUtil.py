@@ -3954,7 +3954,7 @@ def getPotentialType(fileType, mrSubtype, dstFunc):
     if 'upper_limit' in dstFunc:
         return 'upper-bound-parabolic'
 
-    if 'target_value' in dstFunc and fileType in ('nm-res-xlp', 'nm-res-cns') and mrSubtype == 'dist':
+    if 'target_value' in dstFunc and fileType in ('nm-res-xpl', 'nm-res-cns', 'nmr-star') and mrSubtype == 'dist':
         return 'log-harmonic'
 
     if 'target_value' in dstFunc and mrSubtype in ('dist', 'dihed', 'rdc'):

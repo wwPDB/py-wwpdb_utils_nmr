@@ -1152,7 +1152,8 @@ class NmrDpUtility:
                              self.__extractCoordOtherBond,
                              self.__validateLegacyMr,
                              self.__calculateStatsOfExptlData,
-                             self.__updateConstraintStats
+                             self.__updateConstraintStats,
+                             self.__detectSimpleDistanceRestraint
                              ]
 
         # nmr-*-consistency-check tasks
@@ -1230,6 +1231,7 @@ class NmrDpUtility:
         __mergeCsAndMrTasks = __checkTasks
         __mergeCsAndMrTasks.append(self.__updatePolymerSequence)
         __mergeCsAndMrTasks.append(self.__mergeLegacyCsAndMr)
+        __mergeCsAndMrTasks.append(self.__detectSimpleDistanceRestraint)
 
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'consistency-check': __checkTasks,
@@ -9957,7 +9959,7 @@ class NmrDpUtility:
                         if self.__allow_missing_legacy_dist_restraint:
 
                             warn = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
-                                "However, distance restraints are missing in the set of uploaded restraint files. "\
+                                "However, distance restraints are missing in the set of uploaded restraint file(s). "\
                                 "The wwPDB NMR Validation Task Force highly recommends the submission of distance restraints "\
                                 "used for the structure determination."
 
@@ -27111,7 +27113,7 @@ class NmrDpUtility:
 
                 try:
 
-                    block_id = int(get_first_sf_tag(sf_data, 'Block_ID'))
+                    block_id = get_first_sf_tag(sf_data, 'Block_ID')
 
                     _sf_data = self.__star_data[file_list_id].get_saveframes_by_category(_sf_category)
 
@@ -27125,7 +27127,7 @@ class NmrDpUtility:
                     _constraint_subtype_col = _loop.tags.index('Constraint_subtype')
                     _constraint_subsubtype_col = _loop.tags.index('Constraint_subsubtype')
 
-                    _row = next((_row for _row in _loop if int(_row[_block_id_col]) == block_id), None)
+                    _row = next((_row for _row in _loop if _row[_block_id_col] == block_id), None)
 
                     if _row is not None:
                         _constraint_type = _row[_constraint_type_col]
@@ -42539,12 +42541,23 @@ class NmrDpUtility:
         if len(self.__star_data) == 0 or self.__star_data[0] is None:
             return False
 
+        master_entry = self.__star_data[0]
+
+        if not isinstance(master_entry, pynmrstar.Entry):
+            return False
+
+        sf_framecode = 'constraint_statistics'
+
+        cst_sfs = master_entry.get_saveframes_by_category(sf_framecode)
+
+        if len(cst_sfs) > 0:
+            for cst_sf in reversed(cst_sfs):
+                del master_entry[cst_sf]
+
         if self.__caC is None:
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
                                               self.__cR, None)
-
-        master_entry = self.__star_data[0]
 
         file_type = 'nmr-star'
 
@@ -42892,7 +42905,7 @@ class NmrDpUtility:
                         continue
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = int(row[auth_seq_id_col])
+                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                     angle_name = row[angle_name_col]
 
                     seq_key = (auth_asym_id, auth_seq_id)
@@ -43007,7 +43020,7 @@ class NmrDpUtility:
                         continue
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = int(row[auth_seq_id_col])
+                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                     angle_name = row[angle_name_col]
 
                     seq_key = (auth_asym_id, auth_seq_id)
@@ -43101,7 +43114,7 @@ class NmrDpUtility:
                         continue
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = int(row[auth_seq_id_col])
+                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                     angle_name = row[angle_name_col]
 
                     seq_key = (auth_asym_id, auth_seq_id)
@@ -43491,7 +43504,7 @@ class NmrDpUtility:
         cf_loop = pynmrstar.Loop.from_scratch(lp_category)
 
         cf_key_items = [{'name': 'ID', 'type': 'int'},
-                        {'name': 'Constraint_file_name', 'type': 'str'},
+                        {'name': 'Constraint_filename', 'type': 'str'},
                         {'name': 'Software_ID', 'type': 'int'},
                         {'name': 'Software_label', 'type': 'str'},
                         {'name': 'Software_name', 'type': 'str'},
@@ -43564,8 +43577,9 @@ class NmrDpUtility:
                         software_dict[_name] = (software_id, _code)
                     if 'Block_ID' in sf_allowed_tags:
                         block_id += 1
-                        sf.add_tag('Block_ID', block_id)
-                        row[5] = block_id
+                        _block_id = str(block_id)
+                        sf.add_tag('Block_ID', _block_id)
+                        row[5] = _block_id
                     constraint_type = sf_item['constraint_type']
                     constraint_subtype = get_first_sf_tag(sf, 'Constraint_type')
                     if len(constraint_subtype) == 0:
@@ -43629,10 +43643,11 @@ class NmrDpUtility:
             sf.add_tag('Constraint_file_ID', file_id)
 
             block_id += 1
-            sf.add_tag('Block_ID', block_id)
+            _block_id = str(block_id)
+            sf.add_tag('Block_ID', _block_id)
 
             row = [None] * len(tags)
-            row[0], row[1], row[5] = file_id, original_file_name, block_id
+            row[0], row[1], row[5] = file_id, original_file_name, _block_id
 
             if data_format is not None and data_format != 'UNKNOWN':
                 if data_format in software_dict:
@@ -43729,6 +43744,9 @@ class NmrDpUtility:
 
         master_entry = self.__star_data[0]
 
+        if not isinstance(master_entry, pynmrstar.Entry):
+            return False
+
         master_entry.entry_id = f'nef_{self.__entry_id.lower()}'
 
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
@@ -43758,8 +43776,42 @@ class NmrDpUtility:
 
         sf_framecode = 'constraint_statistics'
 
-        if len(master_entry.get_saveframes_by_category(sf_framecode)) > 0:
-            return True
+        cst_sfs = master_entry.get_saveframes_by_category(sf_framecode)
+
+        if len(cst_sfs) > 0:
+
+            lp_category = '_Constraint_file'
+
+            key_items = [{'name': 'ID', 'type': 'int'},
+                         {'name': 'Constraint_filename', 'type': 'str'},
+                         {'name': 'Block_ID', 'type': 'int'},
+                         ]
+            data_items = [{'name': 'Constraint_type', 'type': 'str', 'mandatory': True},
+                          {'name': 'Constraint_subtype', 'type': 'str'},
+                          {'name': 'Constraint_subsubtype', 'type': 'str',
+                           'enum': ('ambi', 'simple')},
+                          {'name': 'Constraint_number', 'type': 'int'},
+                          {'name': 'Constraint_stat_list_ID', 'type': 'int', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                          ]
+
+            allowed_tags = ['ID', 'Constraint_filename', 'Software_ID', 'Software_label', 'Software_name',
+                            'Block_ID', 'Constraint_type', 'Constraint_subtype', 'Constraint_subsubtype', 'Constraint_number',
+                            'Sf_ID', 'Entry_ID', 'Constraint_stat_list_ID']
+
+            try:
+
+                for parent_pointer, cst_sf in enumerate(cst_sfs, start=1):
+
+                    self.__nefT.check_data(cst_sf, lp_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                                           enforce_allowed_tags=(file_type == 'nmr-star'),
+                                           excl_missing_data=self.__excl_missing_data)
+
+                return True
+
+            except:  # noqa: E722 pylint: disable=bare-except
+                for cst_sf in reversed(cst_sfs):
+                    del master_entry[cst_sf]
 
         if self.__caC is None:
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
@@ -43884,21 +43936,21 @@ class NmrDpUtility:
                                 _id = int(row[id_col])
                                 if _id != prev_id:
                                     _atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                              'seq_id': int(row[auth_seq_id_1_col]),
+                                              'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in emptyValue else None,
                                               'comp_id': row[comp_id_1_col],
                                               'atom_id': row[atom_id_1_col]}
                                     _atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                              'seq_id': int(row[auth_seq_id_2_col]),
+                                              'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
                                               'comp_id': row[comp_id_2_col],
                                               'atom_id': row[atom_id_2_col]}
                                     prev_id = _id
                                     continue
                                 atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                         'seq_id': int(row[auth_seq_id_1_col]),
+                                         'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in emptyValue else None,
                                          'comp_id': row[comp_id_1_col],
                                          'atom_id': row[atom_id_1_col]}
                                 atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                         'seq_id': int(row[auth_seq_id_2_col]),
+                                         'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
                                          'comp_id': row[comp_id_2_col],
                                          'atom_id': row[atom_id_2_col]}
                                 if isAmbigAtomSelection([_atom1, atom1], self.__csStat) or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
@@ -44003,7 +44055,6 @@ class NmrDpUtility:
 
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
-
                     potential_type = get_first_sf_tag(sf, 'Potential_type')
                     if 'lower' in potential_type:
                         continue
@@ -44326,7 +44377,7 @@ class NmrDpUtility:
                             continue
                         prev_id = _id
                         auth_asym_id = row[auth_asym_id_col]
-                        auth_seq_id = int(row[auth_seq_id_col])
+                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                         angle_name = row[angle_name_col]
 
                         seq_key = (auth_asym_id, auth_seq_id)
@@ -44402,7 +44453,7 @@ class NmrDpUtility:
                             continue
                         prev_id = _id
                         auth_asym_id = row[auth_asym_id_col]
-                        auth_seq_id = int(row[auth_seq_id_col])
+                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                         angle_name = row[angle_name_col]
 
                         seq_key = (auth_asym_id, auth_seq_id)
@@ -44475,7 +44526,7 @@ class NmrDpUtility:
                             continue
                         prev_id = _id
                         auth_asym_id = row[auth_asym_id_col]
-                        auth_seq_id = int(row[auth_seq_id_col])
+                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                         angle_name = row[angle_name_col]
 
                         seq_key = (auth_asym_id, auth_seq_id)
@@ -44627,8 +44678,8 @@ class NmrDpUtility:
                         prev_id = _id
                         chain_id_1 = row[chain_id_1_col]
                         chain_id_2 = row[chain_id_2_col]
-                        seq_id_1 = int(row[seq_id_1_col])
-                        seq_id_2 = int(row[seq_id_2_col])
+                        seq_id_1 = int(row[seq_id_1_col]) if row[seq_id_1_col] not in emptyValue else None
+                        seq_id_2 = int(row[seq_id_2_col]) if row[seq_id_2_col] not in emptyValue else None
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
                         comb_id = row[comb_id_col] if comb_id_col != -1 else None
@@ -44751,7 +44802,7 @@ class NmrDpUtility:
         cf_loop = pynmrstar.Loop.from_scratch(lp_category)
 
         cf_key_items = [{'name': 'ID', 'type': 'int'},
-                        {'name': 'Constraint_file_name', 'type': 'str'},
+                        {'name': 'Constraint_filename', 'type': 'str'},
                         # {'name': 'Software_ID', 'type': 'int'},
                         # {'name': 'Software_label', 'type': 'str'},
                         # {'name': 'Software_name', 'type': 'str'},
@@ -44785,9 +44836,7 @@ class NmrDpUtility:
         for content_subtype in content_subtype_order:
 
             if content_subtype in input_source_dic['content_subtype']:
-
                 sf_category = self.sf_categories[file_type][content_subtype]
-                lp_category = self.lp_categories[file_type][content_subtype]
 
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
@@ -44801,8 +44850,9 @@ class NmrDpUtility:
                         set_sf_tag(sf, 'Constraint_file_ID', 1)
                     if 'Block_ID' in sf_allowed_tags:
                         block_id += 1
-                        set_sf_tag(sf, 'Block_ID', block_id)
-                        row[2] = block_id
+                        _block_id = str(block_id)
+                        set_sf_tag(sf, 'Block_ID', _block_id)
+                        row[2] = _block_id
                     constraint_type = sf_item[sf_framecode]['constraint_type']
                     constraint_subtype = get_first_sf_tag(sf, 'Constraint_type')
                     if len(constraint_subtype) == 0 or constraint_subtype in emptyValue:
@@ -44828,6 +44878,180 @@ class NmrDpUtility:
             master_entry.write_to_file(self.__dstPath)
 
         return True
+
+    def __detectSimpleDistanceRestraint(self):
+        """ Detect simple distance restraints.
+        """
+
+        if self.__dstPath is None:
+            return True
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return True
+
+        if len(self.__star_data) == 0 or self.__star_data[0] is None:
+            return False
+
+        master_entry = self.__star_data[0]
+
+        if not isinstance(master_entry, pynmrstar.Entry):
+            return False
+
+        sf_category = 'constraint_statistics'
+        lp_category = '_Constraint_file'
+
+        try:
+
+            sf = master_entry.get_saveframes_by_category(sf_category)[0]
+
+            data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+            if len(data_file_name) == 0:
+                data_file_name = None
+
+            if __pynmrstar_v3_2__:
+                lp = sf.get_loop(lp_category)
+            else:
+                lp = sf.get_loop_by_category(lp_category)
+
+            try:
+                block_id_col = lp.tags.index('Block_ID')
+            except ValueError:
+                return False
+            try:
+                file_name_col = lp.tags.index('Constraint_filename')
+            except ValueError:
+                return False
+            constraint_type_col = lp.tags.index('Constraint_type')
+            constraint_subtype_col = lp.tags.index('Constraint_subtype')
+            constraint_subsubtype_col = lp.tags.index('Constraint_subsubtype')
+
+            dist_rows = [row for row in lp if row[constraint_type_col] == 'distance']
+
+            subtypes_not_derived_from_noes = ('paramagnetic relaxation',
+                                              'photo cidnp',
+                                              'chemical shift perturbation',
+                                              'mutation',
+                                              'symmetry',
+                                              'metal coordination',
+                                              'diselenide bond',
+                                              'disulfide bond',
+                                              'hydrogen bond')
+
+            if len(dist_rows) == 0\
+               or any(row for row in dist_rows
+                      if row[constraint_subtype_col] not in subtypes_not_derived_from_noes
+                      and row[constraint_subsubtype_col] == 'simple'):
+                return True
+
+            content_subtype = 'dist_restraint'
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            if not any(row for row in dist_rows
+                       if row[constraint_subtype_col] not in subtypes_not_derived_from_noes):
+
+                subtypes = ','.join([row[constraint_subtype_col] for row in dist_rows])
+
+                warn = f"There is no unique distance restraints derived from NOE/ROE experiment, except for {subtypes}. "\
+                       "The wwPDB NMR Validation Task Force highly recommends the submission of unambiguous distance restraints "\
+                       "used for the structure determination."
+
+                desc = {'category': lp_category, 'description': warn}
+                if data_file_name is not None:
+                    desc['file_name'] = data_file_name
+
+                self.report.warning.appendDescription('missing_content', desc)
+
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectSimpleDistanceRestraint() ++ Warning  - {warn}\n")
+
+                return False
+
+            block_ids = {row[block_id_col]: row[file_name_col] for row in dist_rows
+                         if row[constraint_subtype_col] not in subtypes_not_derived_from_noes}
+
+            for block_id in block_ids:
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    if get_first_sf_tag(sf, 'Block_ID') == block_id:
+
+                        if __pynmrstar_v3_2__:
+                            lp = sf.get_loop(lp_category)
+                        else:
+                            lp = sf.get_loop_by_category(lp_category)
+
+                        item_names = self.item_names_in_ds_loop[file_type]
+                        id_col = lp.tags.index('ID')
+                        code_col = lp.tags.index('Member_logic_code')
+                        auth_asym_id_1_col = lp.tags.index('Auth_asym_ID_1')
+                        auth_seq_id_1_col = lp.tags.index('Auth_seq_ID_1')
+                        auth_asym_id_2_col = lp.tags.index('Auth_asym_ID_2')
+                        auth_seq_id_2_col = lp.tags.index('Auth_seq_ID_2')
+                        comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
+                        comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
+                        atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                        atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+
+                        for row in lp:
+                            if row[code_col] != 'OR':
+                                return True
+
+                        prev_id = -1
+                        for row in lp:
+                            if row[code_col] == 'OR':
+                                _id = int(row[id_col])
+                                if _id != prev_id:
+                                    _atom1 = {'chain_id': row[auth_asym_id_1_col],
+                                              'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in emptyValue else None,
+                                              'comp_id': row[comp_id_1_col],
+                                              'atom_id': row[atom_id_1_col]}
+                                    _atom2 = {'chain_id': row[auth_asym_id_2_col],
+                                              'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
+                                              'comp_id': row[comp_id_2_col],
+                                              'atom_id': row[atom_id_2_col]}
+                                    prev_id = _id
+                                    continue
+                                atom1 = {'chain_id': row[auth_asym_id_1_col],
+                                         'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in emptyValue else None,
+                                         'comp_id': row[comp_id_1_col],
+                                         'atom_id': row[atom_id_1_col]}
+                                atom2 = {'chain_id': row[auth_asym_id_2_col],
+                                         'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
+                                         'comp_id': row[comp_id_2_col],
+                                         'atom_id': row[atom_id_2_col]}
+                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                    return True
+                                _atom1, _atom2 = atom1, atom2
+
+            for block_id, file_name in block_ids.items():
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    if block_id == get_first_sf_tag(sf, 'Block_ID'):
+                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+
+                        warn = "There is no unique distance restraints derived from NOE/ROE experiment in the set of uploaded restraint file(s). "\
+                               "The wwPDB NMR Validation Task Force highly recommends the submission of unambiguous distance restraints "\
+                               "used for the structure determination."
+
+                        self.report.warning.appendDescription('missing_content',
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                               'description': warn})
+
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__detectSimpleDistanceRestraint() ++ Warning  - {warn}\n")
+
+            return False
+
+        except IndexError:
+            return True
 
     def __initializeDpReportForNext(self):
         """ Initialize NMR data processing report using the next version of NMR unified data.

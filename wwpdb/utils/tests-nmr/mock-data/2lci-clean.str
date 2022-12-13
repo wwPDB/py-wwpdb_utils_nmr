@@ -11777,6 +11777,7 @@ save_constraint_statistics
 
    loop_
       _Constraint_file.ID
+      _Constraint_file.Constraint_filename
       _Constraint_file.Block_ID
       _Constraint_file.Constraint_type
       _Constraint_file.Constraint_subtype
@@ -11784,13 +11785,12 @@ save_constraint_statistics
       _Constraint_file.Constraint_number
       _Constraint_file.Entry_ID
       _Constraint_file.Constraint_stat_list_ID
-      _Constraint_file.Constraint_file_name
 
-     1   1   distance                      NOE               simple   3685   NEED_ACC_NO   1   2lci.nef    
-     1   2   distance                      'hydrogen bond'   simple   58     NEED_ACC_NO   1   2lci.nef    
-     1   3   'protein dihedral angle'      .                 .        196    NEED_ACC_NO   1   2lci.nef    
-     1   4   'residual dipolar coupling'   RDC               .        78     NEED_ACC_NO   1   2lci.nef    
-     1   5   'residual dipolar coupling'   RDC               .        87     NEED_ACC_NO   1   2lci.nef    
+     1   2lci.nef   1   distance                      NOE               simple   3685   NEED_ACC_NO   1    
+     1   2lci.nef   2   distance                      'hydrogen bond'   simple   58     NEED_ACC_NO   1    
+     1   2lci.nef   3   'protein dihedral angle'      .                 .        196    NEED_ACC_NO   1    
+     1   2lci.nef   4   'residual dipolar coupling'   RDC               .        78     NEED_ACC_NO   1    
+     1   2lci.nef   5   'residual dipolar coupling'   RDC               .        87     NEED_ACC_NO   1    
 
    stop_
 

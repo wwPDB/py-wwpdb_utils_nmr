@@ -480,6 +480,7 @@ class XplorMRParserListener(ParseTreeListener):
     reasonsForReParsing = {}
 
     __cachedDictForAtomIdList = {}
+    __cachedDictForFactor = {}
 
     # original source MR file name
     __originalFileName = '.'
@@ -7733,9 +7734,17 @@ class XplorMRParserListener(ParseTreeListener):
         else:
             self.__cur_auth_atom_id = ''
 
+        ambigAtomSelect = False
         if 'atom_id' not in _factor and 'atom_ids' not in _factor\
            and 'type_symbol' not in _factor and 'type_symbols' not in _factor:
             _factor['atom_not_specified'] = True
+
+        elif 'chain_id' not in _factor and 'seq_id' not in _factor and 'seq_ids' not in _factor:
+            if 'atom_selection' not in _factor:
+                key = str(_factor)
+                if key in self.__cachedDictForFactor:
+                    return self.__cachedDictForFactor[key]
+                ambigAtomSelect = True
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
@@ -8299,6 +8308,9 @@ class XplorMRParserListener(ParseTreeListener):
             del _factor['alt_chain_id']
         if 'alt_atom_id' in _factor:
             del _factor['alt_atom_id']
+
+        if ambigAtomSelect:
+            self.__cachedDictForFactor[key] = _factor
 
         return _factor
 

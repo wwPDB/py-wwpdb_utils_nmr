@@ -1150,6 +1150,7 @@ class NmrDpUtility:
                              self.__testRdcVector,
                              self.__extractCoordDisulfideBond,
                              self.__extractCoordOtherBond,
+                             self.__validateStrMr,
                              self.__validateLegacyMr,
                              self.__calculateStatsOfExptlData,
                              self.__updateConstraintStats,
@@ -1295,6 +1296,14 @@ class NmrDpUtility:
                                      'csp_restraint', 'auto_relax_restraint',
                                      'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                      'fchiral_restraint', 'other_restraint')
+
+        self.mr_content_subtypes = ['dist_restraint', 'dihed_restraint', 'rdc_restraint',
+                                    'noepk_restraint', 'jcoup_restraint',
+                                    'csa_restraint', 'ddc_restraint',
+                                    'hvycs_restraint', 'procs_restraint',
+                                    'csp_restraint', 'auto_relax_restraint',
+                                    'ccr_d_csa_restraint', 'ccr_dd_restraint',
+                                    'fchiral_restraint', 'other_restraint']
 
         self.cif_content_subtypes = ('poly_seq', 'non_poly', 'branched', 'coordinate')
 
@@ -3968,6 +3977,11 @@ class NmrDpUtility:
                                              'other_restraint': '_Other_data_type_list'
                                              }
                                 }
+
+        def sf_key(content_subtype):
+            return self.__c2S.category_order.index(self.sf_tag_prefixes['nmr-star'][content_subtype])
+
+        self.mr_content_subtypes.sort(key=sf_key)
 
         altPotentialType = {'?': 'undefined'}
 
@@ -14046,7 +14060,7 @@ class NmrDpUtility:
 
             content_subtype = 'poly_seq'
 
-            if content_subtype not in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -17360,7 +17374,7 @@ class NmrDpUtility:
             if input_source_dic['content_subtype'] is None:
                 continue
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype == ['entry_info', 'entity', 'chem_shift_ref']:
                     continue
@@ -17496,7 +17510,7 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            if content_subtype not in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -17669,7 +17683,7 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            if content_subtype not in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype']:
                 continue
 
             # NEF file has no ambiguity code
@@ -17893,7 +17907,7 @@ class NmrDpUtility:
             if input_source_dic['content_type'] == 'nmr-restraints' or input_source_dic['content_subtype'] is None:
                 continue
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype == 'entity':
                     continue
@@ -18038,7 +18052,7 @@ class NmrDpUtility:
             if input_source_dic['content_subtype'] is None:
                 continue
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype in ('entry_info', 'entity'):
                     continue
@@ -18314,7 +18328,7 @@ class NmrDpUtility:
             if input_source_dic['content_subtype'] is None:
                 continue
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
@@ -19045,7 +19059,7 @@ class NmrDpUtility:
             if input_source_dic['content_subtype'] is None:
                 continue
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype == 'entity':
                     continue
@@ -19701,7 +19715,7 @@ class NmrDpUtility:
             if self.__star_data_type[fileListId] != 'Entry':
                 continue
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 # if content_subtype == 'entity':
                 #     continue
@@ -19974,7 +19988,7 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            if content_subtype not in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -21487,7 +21501,7 @@ class NmrDpUtility:
             if input_source_dic['content_subtype'] is None:
                 continue
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 sf_category = self.sf_categories[file_type][content_subtype]
 
@@ -21539,7 +21553,7 @@ class NmrDpUtility:
 
             content_subtype = 'chem_shift'
 
-            if content_subtype not in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -22477,7 +22491,7 @@ class NmrDpUtility:
             if input_source_dic['content_subtype'] is None:
                 continue
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref'):
                     continue
@@ -22722,7 +22736,7 @@ class NmrDpUtility:
 
             missing_cs_atoms = []
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
@@ -23037,7 +23051,7 @@ class NmrDpUtility:
 
             content_subtype = 'spectral_peak'
 
-            if content_subtype not in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -23514,7 +23528,7 @@ class NmrDpUtility:
 
             content_subtype = 'spectral_peak_alt'
 
-            if content_subtype not in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -24027,7 +24041,7 @@ class NmrDpUtility:
 
             content_subtype = 'rdc_restraint'
 
-            if content_subtype not in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -24270,7 +24284,7 @@ class NmrDpUtility:
 
             content_subtype = 'poly_seq'
 
-            if content_subtype not in input_source_dic['content_subtype'].keys():
+            if content_subtype not in input_source_dic['content_subtype']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -24520,7 +24534,7 @@ class NmrDpUtility:
 
             content_subtype = 'poly_seq'
 
-            if content_subtype not in nmr_input_source_dic['content_subtype'].keys():
+            if content_subtype not in nmr_input_source_dic['content_subtype']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -24905,6 +24919,607 @@ class NmrDpUtility:
 
         return msg[:-2]
 
+    def __validateStrMr(self):
+        """ Validate data content of NMR-STAR restraint files.
+        """
+
+        if self.__combined_mode:
+            return True
+
+        mr_file_path_list = 'restraint_file_path_list'
+
+        if mr_file_path_list not in self.__inputParamDict:
+            return True
+
+        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+
+        if id < 0:
+            return True
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return True
+
+        if self.__caC is None:
+            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__cR, None)
+
+        if self.__list_id_counter is None:
+            self.__list_id_counter = {}
+        if self.__mr_sf_dict_holder is None:
+            self.__mr_sf_dict_holder = {}
+
+        for fileListId in range(self.__cs_file_path_list_len, self.__file_path_list_len):
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            if file_type != 'nmr-star':
+                continue
+
+            file_name = input_source_dic['file_name']
+
+            original_file_name = file_name
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+
+            if input_source_dic['content_subtype'] is None:
+                continue
+
+            for content_subtype in self.mr_content_subtypes:
+
+                if content_subtype not in input_source_dic['content_subtype']:
+                    continue
+
+                if content_subtype not in self.__mr_sf_dict_holder:
+                    self.__mr_sf_dict_holder[content_subtype] = []
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                if self.__star_data_type[fileListId] == 'Loop':
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = ''
+
+                    self.__validateStrMr__(fileListId, file_type, original_file_name, content_subtype, sf_data, sf_framecode, lp_category)
+
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                    self.__validateStrMr__(fileListId, file_type, original_file_name, content_subtype, sf_data, sf_framecode, lp_category)
+
+                else:
+
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                        sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                        self.__validateStrMr__(fileListId, file_type, original_file_name, content_subtype, sf_data, sf_framecode, lp_category)
+
+        return True
+
+    def __validateStrMr__(self, file_list_id, file_type, original_file_name, content_subtype, sf_data, sf_framecode, lp_category):
+        """ Validate data content of NMR-STAR restraint files.
+        """
+
+        self.__list_id_counter = incListIdCounter(content_subtype, self.__list_id_counter, reducedType=False)
+
+        list_id = self.__list_id_counter[content_subtype]
+
+        restraint_name = getRestraintName(content_subtype)
+
+        is_sf = True
+        if len(sf_framecode) == 0:
+            sf_framecode = restraint_name.replace(' ', '_') + f'_{list_id}'
+            is_sf = False
+
+        # refresh saveframe
+
+        sf = getSaveframe(content_subtype, sf_framecode, list_id, self.__entry_id, original_file_name,
+                          reducedType=False)
+
+        # merge saveframe tags
+
+        if is_sf:
+
+            origTagNames = [t[0] for t in sf_data.tags]
+            tagNames = [t[0] for t in sf]
+
+            for idx, origTagName in enumerate(origTagNames):
+                if origTagName not in tagNames and origTagName in self.sf_allowed_tags[file_type][content_subtype]:
+                    sf.add_tag(origTagName, sf_data.tags[idx][1])
+
+        try:
+
+            if __pynmrstar_v3_2__:
+                lp = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+            else:
+                lp = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+
+            if not isinstance(lp, pynmrstar.Loop):
+                lp = None
+
+        except KeyError:
+            lp = None
+
+        _restraint_name = restraint_name.split()
+
+        sf_item = {'file_type': file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                   'id': 0,
+                   'constraint_type': ' '.join(_restraint_name[:-1])}
+
+        if lp is not None:
+
+            sf.add_loop(lp)
+
+            if content_subtype == 'dist_restraint':
+
+                sf_item['constraint_type'] = 'distance'
+                sf_item['constraint_subsubtype'] = 'simple'
+                constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                if len(constraint_type) > 0 and constraint_type not in emptyValue:
+                    sf_item['constraint_subtype'] = constraint_type
+
+                item_names = self.item_names_in_ds_loop[file_type]
+                id_col = lp.tags.index('ID')
+                code_col = lp.tags.index('Member_logic_code')
+                auth_asym_id_1_col = lp.tags.index('Auth_asym_ID_1')
+                auth_seq_id_1_col = lp.tags.index('Auth_seq_ID_1')
+                auth_asym_id_2_col = lp.tags.index('Auth_asym_ID_2')
+                auth_seq_id_2_col = lp.tags.index('Auth_seq_ID_2')
+                comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
+                comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
+                atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+
+                try:
+                    target_value_col = lp.tags.index(item_names['target_value'])
+                except ValueError:
+                    target_value_col = -1
+                try:
+                    lower_limit_col = lp.tags.index(item_names['lower_limit'])
+                except ValueError:
+                    lower_limit_col = -1
+                try:
+                    upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                except ValueError:
+                    upper_limit_col = -1
+                try:
+                    lower_linear_limit_col = lp.tags.index(item_names['lower_linear_limit'])
+                except ValueError:
+                    lower_linear_limit_col = -1
+                try:
+                    upper_linear_limit_col = lp.tags.index(item_names['upper_linear_limit'])
+                except ValueError:
+                    upper_linear_limit_col = -1
+
+                has_or_code = False
+
+                potential_type = get_first_sf_tag(sf, 'Potential_type')
+                has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+
+                _potential_type = None
+                count = 0
+
+                prev_id = -1
+                for row in lp:
+                    _id = int(row[id_col])
+                    if _id == prev_id:
+                        if row[code_col] == 'OR':
+                            has_or_code = True
+                        continue
+                    prev_id = _id
+                    count += 1
+                    if not has_potential_type:
+                        dst_func = {}
+                        if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                            dst_func['target_value'] = float(row[target_value_col])
+                        if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                            dst_func['lower_limit'] = float(row[lower_limit_col])
+                        if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                            dst_func['upper_limit'] = float(row[upper_limit_col])
+                        if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                            dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
+                        if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                            dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
+                        if _potential_type is None:
+                            _potential_type = getPotentialType(file_type, 'dist', dst_func)
+                        else:
+                            if getPotentialType(file_type, 'dist', dst_func) != _potential_type:
+                                has_potential_type = True
+
+                if not has_potential_type and _potential_type is not None:
+                    set_sf_tag(sf, 'Potential_type', _potential_type)
+
+                sf_item['id'] = count
+
+                if has_or_code:
+
+                    prev_id = -1
+                    for row in lp:
+                        if row[code_col] == 'OR':
+                            _id = int(row[id_col])
+                            if _id != prev_id:
+                                _atom1 = {'chain_id': row[auth_asym_id_1_col],
+                                          'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in emptyValue else None,
+                                          'comp_id': row[comp_id_1_col],
+                                          'atom_id': row[atom_id_1_col]}
+                                _atom2 = {'chain_id': row[auth_asym_id_2_col],
+                                          'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
+                                          'comp_id': row[comp_id_2_col],
+                                          'atom_id': row[atom_id_2_col]}
+                                prev_id = _id
+                                continue
+                            atom1 = {'chain_id': row[auth_asym_id_1_col],
+                                     'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in emptyValue else None,
+                                     'comp_id': row[comp_id_1_col],
+                                     'atom_id': row[atom_id_1_col]}
+                            atom2 = {'chain_id': row[auth_asym_id_2_col],
+                                     'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
+                                     'comp_id': row[comp_id_2_col],
+                                     'atom_id': row[atom_id_2_col]}
+                            if isAmbigAtomSelection([_atom1, atom1], self.__csStat) or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                sf_item['constraint_subsubtype'] = 'ambi'
+                                break
+                            _atom1, _atom2 = atom1, atom2
+
+                    if sf_item['constraint_subsubtype'] == 'ambi':
+
+                        if 'pre' in sf_framecode or 'paramag' in sf_framecode:
+                            sf_item['constraint_subtype'] = 'paramagnetic relaxation'
+                        if 'cidnp' in sf_framecode:
+                            sf_item['constraint_subtype'] = 'photo cidnp'
+                        if 'csp' in sf_framecode or 'perturb' in sf_framecode:
+                            sf_item['constraint_subtype'] = 'chemical shift perturbation'
+                        if 'mutat' in sf_framecode:
+                            sf_item['constraint_subtype'] = 'mutation'
+                        if 'protect' in sf_framecode:
+                            sf_item['constraint_subtype'] = 'hydrogen exchange protection'
+                        if 'symm' in sf_framecode:
+                            sf_item['constraint_subtype'] = 'symmetry'
+
+                        if 'pre' in original_file_name or 'paramag' in original_file_name:
+                            sf_item['constraint_subtype'] = 'paramagnetic relaxation'
+                        if 'cidnp' in original_file_name:
+                            sf_item['constraint_subtype'] = 'photo cidnp'
+                        if 'csp' in original_file_name or 'perturb' in original_file_name:
+                            sf_item['constraint_subtype'] = 'chemical shift perturbation'
+                        if 'mutat' in original_file_name:
+                            sf_item['constraint_subtype'] = 'mutation'
+                        if 'protect' in original_file_name:
+                            sf_item['constraint_subtype'] = 'hydrogen exchange protection'
+                        if 'symm' in original_file_name:
+                            sf_item['constraint_subtype'] = 'symmetry'
+
+                if sf_item['constraint_subsubtype'] == 'simple':
+
+                    metal_coord = False
+                    disele_bond = False
+                    disulf_bond = False
+                    hydrog_bond = False
+
+                    for row in lp:
+                        comp_id_1 = row[comp_id_1_col]
+                        comp_id_2 = row[comp_id_2_col]
+                        atom_id_1 = row[atom_id_1_col]
+                        atom_id_2 = row[atom_id_2_col]
+                        atom_id_1_ = atom_id_1[0]
+                        atom_id_2_ = atom_id_2[0]
+                        if comp_id_1 == atom_id_1 or comp_id_2 == atom_id_2:
+                            metal_coord = True
+                        elif 'SE' in (atom_id_1, atom_id_2):
+                            disele_bond = True
+                        elif 'SG' in (atom_id_1, atom_id_2):
+                            disulf_bond = True
+                        elif (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+                            hydrog_bond = True
+                        elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+                            hydrog_bond = True
+                        elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+                            hydrog_bond = True
+                        elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+                            hydrog_bond = True
+                        elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+                            hydrog_bond = True
+                        elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+                            hydrog_bond = True
+                        elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+                            hydrog_bond = True
+
+                    if not metal_coord and not disele_bond and not disulf_bond and not hydrog_bond:
+                        if 'build' in sf_framecode and 'up' in sf_framecode:
+                            if 'roe' in sf_framecode:
+                                sf_item['constraint_subtype'] = 'ROE build-up'
+                            else:
+                                sf_item['constraint_subtype'] = 'NOE build-up'
+
+                        elif 'not' in sf_framecode and 'seen' in sf_framecode:
+                            sf_item['constraint_subtype'] = 'NOE not seen'
+
+                        elif 'roe' in sf_framecode:
+                            sf_item['constraint_subtype'] = 'ROE'
+
+                        elif 'build' in original_file_name and 'up' in original_file_name:
+                            if 'roe' in original_file_name:
+                                sf_item['constraint_subtype'] = 'ROE build-up'
+                            else:
+                                sf_item['constraint_subtype'] = 'NOE build-up'
+
+                        elif 'not' in original_file_name and 'seen' in original_file_name:
+                            sf_item['constraint_subtype'] = 'NOE not seen'
+
+                        elif 'roe' in original_file_name:
+                            sf_item['constraint_subtype'] = 'ROE'
+
+                        sf_item['constraint_subtype'] = 'NOE'
+
+                    elif metal_coord and not disele_bond and not disulf_bond and not hydrog_bond:
+                        sf_item['constraint_subtype'] = 'metal coordination'
+
+                    elif not metal_coord and disele_bond and not disulf_bond and not hydrog_bond:
+                        sf_item['constraint_subtype'] = 'diselenide bond'
+
+                    elif not metal_coord and not disele_bond and disulf_bond and not hydrog_bond:
+                        sf_item['constraint_subtype'] = 'disulfide bond'
+
+                    elif not metal_coord and not disele_bond and not disulf_bond and hydrog_bond:
+                        sf_item['constraint_subtype'] = 'hydrogen bond'
+
+            elif content_subtype == 'dihed_restraint':
+
+                auth_to_entity_type = self.__caC['auth_to_entity_type']
+
+                sf_item['constraint_type'] = 'dihedral angle'
+
+                item_names = self.item_names_in_dh_loop[file_type]
+                id_col = lp.tags.index('ID')
+                try:
+                    target_value_col = lp.tags.index(item_names['target_value'])
+                except ValueError:
+                    target_value_col = -1
+                try:
+                    lower_limit_col = lp.tags.index(item_names['lower_limit'])
+                except ValueError:
+                    lower_limit_col = -1
+                try:
+                    upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                except ValueError:
+                    upper_limit_col = -1
+                try:
+                    lower_linear_limit_col = lp.tags.index(item_names['lower_linear_limit'])
+                except ValueError:
+                    lower_linear_limit_col = -1
+                try:
+                    upper_linear_limit_col = lp.tags.index(item_names['upper_linear_limit'])
+                except ValueError:
+                    upper_linear_limit_col = -1
+
+                potential_type = get_first_sf_tag(sf, 'Potential_type')
+                has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+
+                _potential_type = None
+                count = 0
+
+                prev_id = -1
+                for row in lp:
+                    _id = int(row[id_col])
+                    if _id == prev_id:
+                        continue
+                    prev_id = _id
+                    count += 1
+                    if not has_potential_type:
+                        dst_func = {}
+                        if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                            dst_func['target_value'] = float(row[target_value_col])
+                        if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                            dst_func['lower_limit'] = float(row[lower_limit_col])
+                        if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                            dst_func['upper_limit'] = float(row[upper_limit_col])
+                        if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                            dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
+                        if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                            dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
+                        if _potential_type is None:
+                            _potential_type = getPotentialType(file_type, 'dihed', dst_func)
+                        else:
+                            if getPotentialType(file_type, 'dihed', dst_func) != _potential_type:
+                                has_potential_type = True
+
+                if not has_potential_type and _potential_type is not None:
+                    set_sf_tag(sf, 'Potential_type', _potential_type)
+
+                sf_item['id'] = count
+
+                id_col = lp.tags.index('ID')
+                auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
+                auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+
+                _protein_angles = 0
+                _other_angles = 0
+
+                prev_id = -1
+                for row in lp:
+                    _id = int(row[id_col])
+                    if _id == prev_id:
+                        continue
+                    prev_id = _id
+                    auth_asym_id = row[auth_asym_id_col]
+                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+
+                    seq_key = (auth_asym_id, auth_seq_id)
+
+                    if seq_key in auth_to_entity_type:
+                        entity_type = auth_to_entity_type[seq_key]
+
+                        if 'peptide' in entity_type:
+                            _protein_angles += 1
+                        else:
+                            _other_angles += 1
+
+                if _protein_angles > 0 and _other_angles == 0:
+                    sf_item['constraint_type'] = 'protein dihedral angle'
+
+                    tagNames = [t[0] for t in sf.tags]
+
+                    if 'Constraint_type' not in tagNames:
+                        sf_item['constraint_subtype'] = 'backbone chemical shifts'
+                        sf.add_tag('Constraint_subtype', 'backbone chemical shifts')
+
+                _na_angles = 0
+                _other_angles = 0
+
+                prev_id = -1
+                for row in lp:
+                    _id = int(row[id_col])
+                    if _id == prev_id:
+                        continue
+                    prev_id = _id
+                    auth_asym_id = row[auth_asym_id_col]
+                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+
+                    seq_key = (auth_asym_id, auth_seq_id)
+
+                    if seq_key in auth_to_entity_type:
+                        entity_type = auth_to_entity_type[seq_key]
+
+                        if 'nucleotide' in entity_type:
+                            _na_angles += 1
+                        else:
+                            _other_angles += 1
+
+                if _na_angles > 0 and _other_angles == 0:
+                    sf_item['constraint_type'] = 'nucleic acid dihedral angle'
+
+                    tagNames = [t[0] for t in sf.tags]
+
+                    if 'Constraint_type' not in tagNames:
+                        sf_item['constraint_subtype'] = 'unknown'
+                        sf.add_tag('Constraint_type', 'unknown')
+
+                _br_angles = 0
+                _other_angles = 0
+
+                prev_id = -1
+                for row in lp:
+                    _id = int(row[id_col])
+                    if _id == prev_id:
+                        continue
+                    prev_id = _id
+                    auth_asym_id = row[auth_asym_id_col]
+                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+
+                    seq_key = (auth_asym_id, auth_seq_id)
+
+                    if seq_key in auth_to_entity_type:
+                        entity_type = auth_to_entity_type[seq_key]
+
+                        if 'saccharide' in entity_type:
+                            _br_angles += 1
+                        else:
+                            _other_angles += 1
+
+                if _br_angles > 0 and _other_angles == 0:
+                    sf_item['constraint_type'] = 'saccaride dihedral angle'
+
+                    tagNames = [t[0] for t in sf.tags]
+
+                    if 'Constraint_type' not in tagNames:
+                        sf_item['constraint_subtype'] = 'unknown'
+                        sf.add_tag('Constraint_type', 'unknown')
+
+            elif content_subtype == 'rdc_restraint':
+
+                sf_item['constraint_type'] = 'residual dipolar coupling'
+                sf_item['constraint_subtype'] = 'RDC'
+
+                item_names = self.item_names_in_rdc_loop[file_type]
+                id_col = lp.tags.index('ID')
+                try:
+                    target_value_col = lp.tags.index(item_names['target_value'])
+                except ValueError:
+                    target_value_col = -1
+                try:
+                    lower_limit_col = lp.tags.index(item_names['lower_limit'])
+                except ValueError:
+                    lower_limit_col = -1
+                try:
+                    upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                except ValueError:
+                    upper_limit_col = -1
+                try:
+                    lower_linear_limit_col = lp.tags.index(item_names['lower_linear_limit'])
+                except ValueError:
+                    lower_linear_limit_col = -1
+                try:
+                    upper_linear_limit_col = lp.tags.index(item_names['upper_linear_limit'])
+                except ValueError:
+                    upper_linear_limit_col = -1
+
+                potential_type = get_first_sf_tag(sf, 'Potential_type')
+                has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+
+                _potential_type = None
+                count = 0
+
+                prev_id = -1
+                for row in lp:
+                    _id = int(row[id_col])
+                    if _id == prev_id:
+                        continue
+                    prev_id = _id
+                    count += 1
+                    if not has_potential_type:
+                        dst_func = {}
+                        if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                            dst_func['target_value'] = float(row[target_value_col])
+                        if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                            dst_func['lower_limit'] = float(row[lower_limit_col])
+                        if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                            dst_func['upper_limit'] = float(row[upper_limit_col])
+                        if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                            dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
+                        if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                            dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
+                        if _potential_type is None:
+                            _potential_type = getPotentialType(file_type, 'rdc', dst_func)
+                        else:
+                            if getPotentialType(file_type, 'rdc', dst_func) != _potential_type:
+                                has_potential_type = True
+
+                if not has_potential_type and _potential_type is not None:
+                    set_sf_tag(sf, 'Potential_type', _potential_type)
+
+                sf_item['id'] = count
+
+            else:
+
+                sf_item['id'] = len(lp)
+
+            # merge other loops
+
+            if is_sf:
+
+                for loop in sf_data.loops:
+
+                    if loop.category == lp_category:
+                        continue
+
+                    if loop.category in self.linked_lp_categories[file_type][content_subtype]:
+                        sf.add_loop(loop)
+
+        self.__mr_sf_dict_holder[content_subtype].append(sf_item)
+
+        return True
+
     def __validateLegacyMr(self):
         """ Validate data content of legacy NMR restraint files.
         """
@@ -25135,8 +25750,10 @@ class NmrDpUtility:
 
         create_sf_dict = self.__remediation_mode
 
-        self.__list_id_counter = {}
-        self.__mr_sf_dict_holder = {}
+        if self.__list_id_counter is None:
+            self.__list_id_counter = {}
+        if self.__mr_sf_dict_holder is None:
+            self.__mr_sf_dict_holder = {}
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -27025,7 +27642,7 @@ class NmrDpUtility:
 
             stats = {}
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype in ('entry_info', 'entity'):
                     continue
@@ -32958,7 +33575,7 @@ class NmrDpUtility:
 
         content_subtype = 'poly_seq'
 
-        if content_subtype not in input_source_dic['content_subtype'].keys():
+        if content_subtype not in input_source_dic['content_subtype']:
             return False
 
         if has_key_value(input_source_dic, 'polymer_sequence'):
@@ -35102,7 +35719,7 @@ class NmrDpUtility:
 
             modified = False
 
-            for content_subtype in nmr_input_source_dic['content_subtype'].keys():
+            for content_subtype in nmr_input_source_dic['content_subtype']:
 
                 if content_subtype in ('entry_info', 'entity'):
                     continue
@@ -35580,7 +36197,7 @@ class NmrDpUtility:
         if not self.__resolve_conflict:
             return True
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        for content_subtype in input_source_dic['content_subtype']:
 
             if content_subtype in ('entry_info', 'entity'):
                 continue
@@ -35703,7 +36320,7 @@ class NmrDpUtility:
         if not self.__resolve_conflict:
             return True
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        for content_subtype in input_source_dic['content_subtype']:
 
             if content_subtype == 'entity':
                 continue
@@ -35783,7 +36400,7 @@ class NmrDpUtility:
             if input_source_dic['content_subtype'] is None:
                 continue
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype == 'entity':
                     continue
@@ -37567,7 +38184,7 @@ class NmrDpUtility:
         if len(self.authSeqMap) == 0:
             return False
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        for content_subtype in input_source_dic['content_subtype']:
 
             if content_subtype in ('entry_info', 'entity'):
                 continue
@@ -39726,7 +40343,7 @@ class NmrDpUtility:
                     is_done = False
                     continue
 
-                for content_subtype in input_source_dic['content_subtype'].keys():
+                for content_subtype in input_source_dic['content_subtype']:
 
                     if content_subtype == 'entity':
                         continue
@@ -39860,7 +40477,7 @@ class NmrDpUtility:
                 if input_source_dic['content_subtype'] is None:
                     continue
 
-                for content_subtype in input_source_dic['content_subtype'].keys():
+                for content_subtype in input_source_dic['content_subtype']:
 
                     if content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift'):
                         continue
@@ -40127,7 +40744,7 @@ class NmrDpUtility:
 
                             category = w['category'] if w['category'].startswith('_') else '_' + w['category']  # pynmrstar v2.6.5.1
 
-                            content_subtype = next(c for c in input_source_dic['content_subtype'].keys()
+                            content_subtype = next(c for c in input_source_dic['content_subtype']
                                                    if self.lp_categories[file_type][c] == category and self.index_tags[file_type][c] is not None)
 
                             if __pynmrstar_v3_2__:
@@ -40529,7 +41146,7 @@ class NmrDpUtility:
 
                                     try:
 
-                                        content_subtype = next(c for c in input_source_dic['content_subtype'].keys() if self.sf_categories[file_type][c] == sf_category)
+                                        content_subtype = next(c for c in input_source_dic['content_subtype'] if self.sf_categories[file_type][c] == sf_category)
 
                                         if (file_type == 'nef' and itName == 'restraint_origin') or (file_type == 'nmr-star' and itName == 'Constraint_type'):
 
@@ -41570,7 +42187,7 @@ class NmrDpUtility:
         if input_source_dic['content_subtype'] is None:
             return False
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        for content_subtype in input_source_dic['content_subtype']:
 
             if content_subtype in ('entry_info', 'entity'):
                 continue
@@ -41710,7 +42327,7 @@ class NmrDpUtility:
         if input_source_dic['content_subtype'] is None:
             return False
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        for content_subtype in input_source_dic['content_subtype']:
 
             if content_subtype in ('entry_info', 'entity'):
                 continue
@@ -41849,7 +42466,7 @@ class NmrDpUtility:
         if input_source_dic['content_subtype'] is None:
             return False
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        for content_subtype in input_source_dic['content_subtype']:
 
             if content_subtype in ('entry_info', 'entity'):
                 continue
@@ -41958,7 +42575,7 @@ class NmrDpUtility:
 
         try:
 
-            for content_subtype in input_source_dic['content_subtype'].keys():
+            for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype in ('entry_info', 'entity'):
                     continue
@@ -42098,7 +42715,7 @@ class NmrDpUtility:
 
         content_subtype = 'chem_shift'
 
-        if content_subtype not in input_source_dic['content_subtype'].keys():
+        if content_subtype not in input_source_dic['content_subtype']:
             return False
 
         sf_category = self.sf_categories[file_type][content_subtype]
@@ -42210,7 +42827,7 @@ class NmrDpUtility:
 
         content_subtype = 'chem_shift'
 
-        if content_subtype not in input_source_dic['content_subtype'].keys():
+        if content_subtype not in input_source_dic['content_subtype']:
             return False
 
         sf_category = self.sf_categories[file_type][content_subtype]
@@ -42327,7 +42944,7 @@ class NmrDpUtility:
 
         content_subtype = 'chem_shift'
 
-        if content_subtype not in input_source_dic['content_subtype'].keys():
+        if content_subtype not in input_source_dic['content_subtype']:
             return False
 
         sf_category = self.sf_categories[file_type][content_subtype]
@@ -42585,27 +43202,6 @@ class NmrDpUtility:
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
 
         # Refresh _Constraint_stat_list saveframe
-
-        content_subtype_order = ['dist_restraint',
-                                 'dihed_restraint',
-                                 'rdc_restraint',
-                                 'noepk_restraint',
-                                 'jcoup_restraint',
-                                 'csa_restraint',
-                                 'ddc_restraint',
-                                 'hvycs_restraint',
-                                 'procs_restraint',
-                                 'csp_restraint',
-                                 'auto_relax_restraint',
-                                 'ccr_d_csa_restraint',
-                                 'ccr_dd_restraint',
-                                 'fchiral_restraint',
-                                 'other_restraint']
-
-        def sf_key(content_subtype):
-            return self.__c2S.category_order.index(self.sf_tag_prefixes[file_type][content_subtype])
-
-        content_subtype_order.sort(key=sf_key)
 
         sf_framecode = 'constraint_statistics'
 
@@ -43553,7 +44149,7 @@ class NmrDpUtility:
         file_id = 0
         block_id = 0
 
-        for content_subtype in content_subtype_order:
+        for content_subtype in self.mr_content_subtypes:
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                     row = [None] * len(tags)
@@ -43568,13 +44164,15 @@ class NmrDpUtility:
                     if 'Constraint_file_ID' in sf_allowed_tags:
                         sf.add_tag('Constraint_file_ID', file_name_dict[file_name])
                     _name = get_first_sf_tag(sf, 'Sf_framecode').split('_')[0]
-                    if _name in software_dict:
-                        row[2], row[3], row[4] = software_dict[_name][0], f'${software_dict[_name][1]}', _name
-                    else:
-                        software_id += 1
-                        _code = f'software_{software_id}'
-                        row[2], row[3], row[4] = software_id, f'${_code}', _name
-                        software_dict[_name] = (software_id, _code)
+                    _name_ = _name.upper()
+                    if _name == _name_:
+                        if _name in software_dict:
+                            row[2], row[3], row[4] = software_dict[_name][0], f'${software_dict[_name][1]}', _name
+                        else:
+                            software_id += 1
+                            _code = f'software_{software_id}'
+                            row[2], row[3], row[4] = software_id, f'${_code}', _name
+                            software_dict[_name] = (software_id, _code)
                     if 'Block_ID' in sf_allowed_tags:
                         block_id += 1
                         _block_id = str(block_id)
@@ -43674,7 +44272,7 @@ class NmrDpUtility:
 
         master_entry.add_saveframe(cst_sf)
 
-        for content_subtype in content_subtype_order:
+        for content_subtype in self.mr_content_subtypes:
             if content_subtype in self.__mr_sf_dict_holder:
                 if content_subtype != 'other_restraint':
                     lp_category = self.lp_categories[file_type][content_subtype]
@@ -43752,27 +44350,6 @@ class NmrDpUtility:
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
 
         # Refresh _Constraint_stat_list saveframe
-
-        content_subtype_order = ['dist_restraint',
-                                 'dihed_restraint',
-                                 'rdc_restraint',
-                                 'noepk_restraint',
-                                 'jcoup_restraint',
-                                 'csa_restraint',
-                                 'ddc_restraint',
-                                 'hvycs_restraint',
-                                 'procs_restraint',
-                                 'csp_restraint',
-                                 'auto_relax_restraint',
-                                 'ccr_d_csa_restraint',
-                                 'ccr_dd_restraint',
-                                 'fchiral_restraint',
-                                 'other_restraint']
-
-        def sf_key(content_subtype):
-            return self.__c2S.category_order.index(self.sf_tag_prefixes[file_type][content_subtype])
-
-        content_subtype_order.sort(key=sf_key)
 
         sf_framecode = 'constraint_statistics'
 
@@ -44833,8 +45410,7 @@ class NmrDpUtility:
 
         block_id = 0
 
-        for content_subtype in content_subtype_order:
-
+        for content_subtype in self.mr_content_subtypes:
             if content_subtype in input_source_dic['content_subtype']:
                 sf_category = self.sf_categories[file_type][content_subtype]
 

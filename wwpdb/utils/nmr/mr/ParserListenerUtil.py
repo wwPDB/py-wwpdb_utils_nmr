@@ -3190,7 +3190,7 @@ def contentSubtypeOf(mrSubtype):
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
-def incListIdCounter(mrSubtype, listIdCounter):
+def incListIdCounter(mrSubtype, listIdCounter, reducedType=True):
     """ Increment list id counter for a given internal restraint subtype.
     """
 
@@ -3212,7 +3212,7 @@ def incListIdCounter(mrSubtype, listIdCounter):
                          'other_restraint': 0
                          }
 
-    contentSubtype = contentSubtypeOf(mrSubtype) if mrSubtype is not None else 'other_restraint'
+    contentSubtype = (contentSubtypeOf(mrSubtype) if reducedType else mrSubtype) if mrSubtype is not None else 'other_restraint'
 
     if contentSubtype is None or contentSubtype not in listIdCounter:
         return listIdCounter
@@ -3224,12 +3224,12 @@ def incListIdCounter(mrSubtype, listIdCounter):
 
 def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=None,
                  constraintType=None, potentialType=None,
-                 rdcCode=None, alignCenter=None, cyanaParameter=None):
+                 rdcCode=None, alignCenter=None, cyanaParameter=None, reducedType=True):
     """ Return pynmrstar saveframe for a given internal restraint subtype.
         @return: pynmrstar saveframe
     """
 
-    contentSubtype = contentSubtypeOf(mrSubtype) if mrSubtype is not None else 'other_restraint'
+    contentSubtype = (contentSubtypeOf(mrSubtype) if reducedType else mrSubtype) if mrSubtype is not None else 'other_restraint'
 
     if contentSubtype is None:
         return None
@@ -3265,43 +3265,43 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
             sf.add_tag(tag_item_name, 'diselenide bond')
         elif tag_item_name == 'Constraint_type' and constraintType is not None and constraintType == 'metal coordination':
             sf.add_tag(tag_item_name, 'metal coordination')
-        elif tag_item_name == 'Constraint_type' and mrSubtype == 'rdc':
+        elif tag_item_name == 'Constraint_type' and mrSubtype.startswith('rdc'):
             sf.add_tag(tag_item_name, 'RDC')
         elif tag_item_name == 'Constraint_type' and constraintType is not None:
             sf.add_tag(tag_item_name, constraintType)
-        elif tag_item_name == 'Constraint_type' and mrSubtype == 'dist':
+        elif tag_item_name == 'Constraint_type' and mrSubtype.startswith('dist'):
             sf.add_tag(tag_item_name, 'NOE')
         elif tag_item_name == 'Potential_type':
             sf.add_tag(tag_item_name, potentialType)
-        elif tag_item_name == 'Homonuclear_NOE_val_type' and mrSubtype == 'noepk':
+        elif tag_item_name == 'Homonuclear_NOE_val_type' and mrSubtype.startswith('noepk'):
             sf.add_tag(tag_item_name, 'peak volume')
-        elif tag_item_name == 'Val_units' and mrSubtype in ('csa', 'pccr'):
+        elif tag_item_name == 'Val_units' and (mrSubtype.startswith('csa') or mrSubtype in ('pccr', 'ccr_dd_restraint')):
             sf.add_tag(tag_item_name, 'ppm')
-        elif tag_item_name == 'Units' and mrSubtype in ('hvycs', 'procs'):
+        elif tag_item_name == 'Units' and (mrSubtype.startswith('hvycs') or mrSubtype.startswith('procs')):
             sf.add_tag(tag_item_name, 'ppm')
-        elif tag_item_name == 'Type' and mrSubtype == 'pcs':
+        elif tag_item_name == 'Type' and mrSubtype in ('pcs', 'csp_restraints'):
             sf.add_tag(tag_item_name, 'paramagnetic ligand binding')
-        elif tag_item_name == 'Common_relaxation_type_name' and mrSubtype == 'pre':
+        elif tag_item_name == 'Common_relaxation_type_name' and mrSubtype in ('pre', 'auto_realx_restraint'):
             sf.add_tag(tag_item_name, 'paramagnetic relaxation enhancement')
-        elif tag_item_name == 'Relaxation_coherence_type' and mrSubtype == 'pre':
+        elif tag_item_name == 'Relaxation_coherence_type' and mrSubtype in ('pre', 'auto_realx_restraint'):
             sf.add_tag(tag_item_name, "S+")
-        elif tag_item_name == 'Relaxation_val_units' and mrSubtype == 'pre':
+        elif tag_item_name == 'Relaxation_val_units' and mrSubtype in ('pre', 'auto_realx_restraint'):
             sf.add_tag(tag_item_name, 's-1')
         elif tag_item_name == 'Definition' and contentSubtype == 'other_restraint' and constraintType is not None:
             sf.add_tag(tag_item_name, constraintType)
-        elif tag_item_name == 'Tensor_auth_asym_ID' and mrSubtype == 'prdc' and alignCenter is not None:
+        elif tag_item_name == 'Tensor_auth_asym_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None:
             sf.add_tag(tag_item_name, alignCenter['chain_id'])
-        elif tag_item_name == 'Tensor_auth_seq_ID' and mrSubtype == 'prdc' and alignCenter is not None:
+        elif tag_item_name == 'Tensor_auth_seq_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None:
             sf.add_tag(tag_item_name, alignCenter['seq_id'])
-        elif tag_item_name == 'Tensor_auth_comp_ID' and mrSubtype == 'prdc' and alignCenter is not None:
+        elif tag_item_name == 'Tensor_auth_comp_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None:
             sf.add_tag(tag_item_name, alignCenter['comp_id'])
-        elif tag_item_name == 'Tensor_magnitude' and mrSubtype == 'rdc' and cyanaParameter is not None:
+        elif tag_item_name == 'Tensor_magnitude' and mrSubtype.startswith('rdc') and cyanaParameter is not None:
             sf.add_tag(tag_item_name, cyanaParameter['magnitude'])
-        elif tag_item_name == 'Tensor_rhombicity' and mrSubtype == 'rdc' and cyanaParameter is not None:
+        elif tag_item_name == 'Tensor_rhombicity' and mrSubtype.startswith('rdc') and cyanaParameter is not None:
             sf.add_tag(tag_item_name, cyanaParameter['rhombicity'])
-        elif tag_item_name == 'Details' and mrSubtype == 'rdc' and rdcCode is not None:
+        elif tag_item_name == 'Details' and mrSubtype.startswith('rdc') and rdcCode is not None:
             sf.add_tag(tag_item_name, rdcCode)
-        elif tag_item_name == 'Details' and mrSubtype == 'pcs' and cyanaParameter is not None:
+        elif tag_item_name == 'Details' and mrSubtype in ('pcs', 'csp_restraints') and cyanaParameter is not None:
             sf.add_tag(tag_item_name, f"Tensor_magnitude {cyanaParameter['magnitude']}, "
                        f"Tensor_rhombicity {cyanaParameter['rhombicity']}, "
                        f"Paramagnetic_center_seq_ID {cyanaParameter['orientation_center_seq_id']}")

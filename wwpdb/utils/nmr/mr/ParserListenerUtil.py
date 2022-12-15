@@ -3256,7 +3256,7 @@ def contentSubtypeOf(mrSubtype):
 
 
 def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
-    """ Increment list id counter for a given internal restraint subtype.
+    """ Increment list id counter for a given internal restraint subtype (default)/content subtype (reduced=False).
     """
 
     if len(listIdCounter) == 0:
@@ -3291,7 +3291,7 @@ def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
 def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=None,
                  constraintType=None, potentialType=None,
                  rdcCode=None, alignCenter=None, cyanaParameter=None, reduced=True):
-    """ Return pynmrstar saveframe for a given internal restraint subtype.
+    """ Return pynmrstar saveframe for a given internal restraint subtype (default)/content subtype (reduced=False).
         @return: pynmrstar saveframe
     """
 
@@ -3378,7 +3378,7 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
 
 
 def getLoop(mrSubtype, reduced=True):
-    """ Return pynmrstart loop for a given internal restraint subtype.
+    """ Return pynmrstart loop for a given internal restraint subtype (default)/content subtype (reduced=False)..
         @return: pynmrstar loop
     """
 
@@ -3439,7 +3439,8 @@ def getAuxLoops(mrSubtype):
 
 
 def getStarAtom(authToStarSeq, atom):
-    """ Return NMR-STAR sequence IDs for a give atom.
+    """ Return NMR-STAR sequence including entity ID for a given auth atom of the cooridnates.
+        @return: a dictionary of NMR-STAR sequence/entity, None otherwise
     """
 
     starAtom = copy.copy(atom)
@@ -3874,7 +3875,7 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
 def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listId, entryId,
                    originalTagNames, originalRow, authToStarSeq,
                    atoms):
-    """ Return row data for a given constraint subtype.
+    """ Return row data for a given constraint subtype and corresponding NMR-STAR row.
         @return: data array
     """
 
@@ -4487,6 +4488,7 @@ def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
 
 def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, atomId):
     """ Assign polymer sequences of the coordinates.
+        @return possible assignments to the coordinate, warning message (None for valid case)
     """
 
     warningMessage = None
@@ -4635,6 +4637,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
 
 def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True):
     """ Select atoms of the coordinates.
+        @return atom selection, warning mesage (None for valid case)
     """
 
     atomSelection = []
@@ -4714,6 +4717,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=T
 
 def getRealChainSeqId(ccU, polySeq, seqId, compId=None, isPolySeq=True):
     """ Return effective sequence key according to polymer sequence of the coordinates.
+        @return: sequence key
     """
 
     if compId is not None:
@@ -4729,6 +4733,7 @@ def getRealChainSeqId(ccU, polySeq, seqId, compId=None, isPolySeq=True):
 
 def getCoordAtomSiteOf(caC, chainId, seqId, cifCheck=True, asis=True):
     """ Return sequence key and its atom list of the coordinates.
+        @return: sequence key, atom list in the sequence
     """
 
     seqKey = (chainId, seqId)
@@ -4748,6 +4753,9 @@ def getCoordAtomSiteOf(caC, chainId, seqId, cifCheck=True, asis=True):
 
 
 def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey, coordAtomSite, enableWarning=True):
+    """ Check existence of specified atom in the coordinates.
+        @return: waring message (None for valid case)
+    """
 
     found = False
 

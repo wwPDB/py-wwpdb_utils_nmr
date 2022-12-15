@@ -459,7 +459,7 @@ def get_first_sf_tag(sf_data=None, tag=None):
     if len(array) == 0:
         return ''
 
-    return array[0]
+    return array[0] if array[0] is not None else ''
 
 
 def get_idx_msg(idx_tag_ids, tags, ent):

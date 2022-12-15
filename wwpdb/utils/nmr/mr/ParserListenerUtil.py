@@ -18,12 +18,14 @@ import pynmrstar
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
+                                           emptyValue,
                                            protonBeginCode,
                                            LARGE_ASYM_ID,
                                            LEN_LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID)
 except ImportError:
     from nmr.AlignUtil import (monDict3,
+                               emptyValue,
                                protonBeginCode,
                                LARGE_ASYM_ID,
                                LEN_LARGE_ASYM_ID,
@@ -241,6 +243,7 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'rdc_restraint': '_RDC_constraint_list',
                             'noepk_restraint': '_Homonucl_NOE_list',
                             'jcoup_restraint': '_J_three_bond_constraint_list',
+                            'rdc_raw_data': '_RDC_list',
                             'csa_restraint': '_Chem_shift_anisotropy',
                             'ddc_restraint': '_Dipolar_coupling_list',
                             'hvycs_restraint': '_CA_CB_constraint_list',
@@ -258,6 +261,7 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'rdc_restraint': 'RDC_constraints',
                           'noepk_restraint': 'homonucl_NOEs',
                           'jcoup_restraint': 'J_three_bond_constraints',
+                          'rdc_raw_data': 'RDCs',
                           'csa_restraint': 'chem_shift_anisotropy',
                           'ddc_restraint': 'dipolar_couplings',
                           'hvycs_restraint': 'CA_CB_chem_shift_constraints',
@@ -330,10 +334,18 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                              ],
+                         'rdc_raw_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                          {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                          {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                           'enforce-non-zero': True},
+                                          {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                          {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                          ],
                          'csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                            {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
-                                           'enforce-non-zero': True},
+                                            'enforce-non-zero': True},
                                            {'name': 'Val_units', 'type': 'enum', 'mandatory': False,
                                             'enum': ('ppm', 'ppb')},
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
@@ -343,7 +355,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                          'ddc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                            {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
-                                           'enforce-non-zero': True},
+                                            'enforce-non-zero': True},
                                            {'name': 'Scaling_factor', 'type': 'positive-float', 'mandatory': False},
                                            {'name': 'Fitting_procedure', 'type': 'str', 'mandatory': False},
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
@@ -441,6 +453,7 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'rdc_restraint': '_RDC_constraint',
                           'noepk_restraint': '_Homonucl_NOE',
                           'jcoup_restraint': '_J_three_bond_constraint',
+                          'rdc_raw_data': '_RDC',
                           'csa_restraint': '_CS_anisotropy',
                           'ddc_restraint': '_Dipolar_coupling',
                           'hvycs_restraint': '_CA_CB_constraint',
@@ -949,6 +962,56 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                'default': '1', 'default-from': 'parent'},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
+                          'rdc_raw_data': [{'name': 'RDC_code', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                            'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                            'enforce-enum': True},
+                                           {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                            'enforce-enum': True},
+                                           {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                            'enum': ALLOWED_AMBIGUITY_CODES,
+                                            'enforce-enum': True},
+                                           {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                            'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                            'enforce-enum': True},
+                                           {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                            'enforce-enum': True},
+                                           {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                            'enum': ALLOWED_AMBIGUITY_CODES,
+                                            'enforce-enum': True},
+                                           {'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                            'group': {'member-with': ['Val_min', 'Val_max'],
+                                                      'coexist-with': None,
+                                                      'smaller-than': None,
+                                                      'larger-than': None}},
+                                           {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                            'range': {'min_inclusive': 0.0}},
+                                           {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                            'group': {'member-with': ['Val', 'Val_max'],
+                                                      'coexist-with': None,
+                                                      'smaller-than': None,
+                                                      'larger-than': ['Val_max']}},
+                                           {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                            'group': {'member-with': ['Val', 'Val_min'],
+                                                      'coexist-with': None,
+                                                      'smaller-than': ['Val_min'],
+                                                      'larger-than': None}},
+                                           {'name': 'Val_bond_length', 'type': 'range-float', 'mandatory': False,
+                                            'range': DIST_RESTRAINT_RANGE},
+                                           {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                           {'name': 'RDC_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                            'default': '1', 'default-from': 'parent'},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
                           'csa_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                              'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                              'enforce-enum': True},
@@ -3111,8 +3174,10 @@ def getRestraintName(mrSubtype, title=False):
         return "Distance restraints" if title else "distance restraints"
     if mrSubtype.startswith('dihed'):
         return "Dihedral angle restraints" if title else "dihedral angle restraints"
-    if mrSubtype.startswith('rdc'):
+    if mrSubtype.startswith('rdc') and mrSubtype != 'rdc_raw_data':
         return "Residual dipolar coupling restraints" if title else "residual dipolar coupling restraints"
+    if mrSubtype == 'rdc_raw_data':
+        return "Raw residual dipolar coupling data" if title else "raw residual dipolar coupling data"
     if mrSubtype.startswith('plane'):
         return "Planarity constraints" if title else "planarity constraints"
     if mrSubtype.startswith('hbond'):
@@ -3190,7 +3255,7 @@ def contentSubtypeOf(mrSubtype):
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
-def incListIdCounter(mrSubtype, listIdCounter, reducedType=True):
+def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
     """ Increment list id counter for a given internal restraint subtype.
     """
 
@@ -3200,6 +3265,7 @@ def incListIdCounter(mrSubtype, listIdCounter, reducedType=True):
                          'rdc_restraint': 0,
                          'noepk_restraint': 0,
                          'jcoup_restraint': 0,
+                         'rdc_raw_data': 0,
                          'csa_restraint': 0,
                          'ddc_restraint': 0,
                          'hvycs_restraint': 0,
@@ -3212,7 +3278,7 @@ def incListIdCounter(mrSubtype, listIdCounter, reducedType=True):
                          'other_restraint': 0
                          }
 
-    contentSubtype = (contentSubtypeOf(mrSubtype) if reducedType else mrSubtype) if mrSubtype is not None else 'other_restraint'
+    contentSubtype = (contentSubtypeOf(mrSubtype) if reduced else mrSubtype) if mrSubtype is not None else 'other_restraint'
 
     if contentSubtype is None or contentSubtype not in listIdCounter:
         return listIdCounter
@@ -3224,12 +3290,12 @@ def incListIdCounter(mrSubtype, listIdCounter, reducedType=True):
 
 def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=None,
                  constraintType=None, potentialType=None,
-                 rdcCode=None, alignCenter=None, cyanaParameter=None, reducedType=True):
+                 rdcCode=None, alignCenter=None, cyanaParameter=None, reduced=True):
     """ Return pynmrstar saveframe for a given internal restraint subtype.
         @return: pynmrstar saveframe
     """
 
-    contentSubtype = (contentSubtypeOf(mrSubtype) if reducedType else mrSubtype) if mrSubtype is not None else 'other_restraint'
+    contentSubtype = (contentSubtypeOf(mrSubtype) if reduced else mrSubtype) if mrSubtype is not None else 'other_restraint'
 
     if contentSubtype is None:
         return None
@@ -3299,7 +3365,7 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
             sf.add_tag(tag_item_name, cyanaParameter['magnitude'])
         elif tag_item_name == 'Tensor_rhombicity' and mrSubtype.startswith('rdc') and cyanaParameter is not None:
             sf.add_tag(tag_item_name, cyanaParameter['rhombicity'])
-        elif tag_item_name == 'Details' and mrSubtype.startswith('rdc') and rdcCode is not None:
+        elif tag_item_name == 'Details' and mrSubtype.startswith('rdc') and mrSubtype != 'rdc_raw_data' and rdcCode is not None:
             sf.add_tag(tag_item_name, rdcCode)
         elif tag_item_name == 'Details' and mrSubtype in ('pcs', 'csp_restraints') and cyanaParameter is not None:
             sf.add_tag(tag_item_name, f"Tensor_magnitude {cyanaParameter['magnitude']}, "
@@ -3311,12 +3377,12 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
     return sf
 
 
-def getLoop(mrSubtype):
+def getLoop(mrSubtype, reduced=True):
     """ Return pynmrstart loop for a given internal restraint subtype.
         @return: pynmrstar loop
     """
 
-    contentSubtype = contentSubtypeOf(mrSubtype)
+    contentSubtype = contentSubtypeOf(mrSubtype) if reduced else mrSubtype
 
     if contentSubtype is None:
         return None
@@ -3324,7 +3390,7 @@ def getLoop(mrSubtype):
     if contentSubtype not in NMR_STAR_LP_CATEGORIES:
         return None
 
-    if contentSubtype == 'other_restraint':
+    if contentSubtype == 'other_restraint' and reduced:
         return {'tags': [], 'data': []}  # dictionary for _Other_data_type_list.Text_data
 
     prefix = NMR_STAR_LP_CATEGORIES[contentSubtype] + '.'
@@ -3483,7 +3549,7 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             float_row_idx.append(key_size + 9)
         if hasKeyValue(dstFunc, 'weight'):
             row[key_size + 10] = dstFunc['weight']
-        # Distance val
+        # Distance_val
 
         row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
@@ -3563,6 +3629,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
         elif atom5 is not None:  # PPA, phase angle of pseudorotation
             row[key_size + 25], row[key_size + 26], row[key_size + 27] =\
                 atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
+            if hasKeyValue(atom5, 'auth_atom_id'):
+                row[key_size + 29] = atom5['auth_atom_id']
 
     elif mrSubtype == 'rdc':
         # row[key_size + 1] = combinationId
@@ -3586,8 +3654,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             float_row_idx.append(key_size + 7)
         if hasKeyValue(dstFunc, 'weight'):
             row[key_size + 8] = dstFunc['weight']
-        # Rdc_val
-        # Rdc_val_err
+        # RDC_val
+        # RDC_val_err
         # RDC_val_scale_factor
         # RDC_distance_depedent
 
@@ -3739,13 +3807,6 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
         row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
-    elif mrSubtype == 'fchiral':
-        row[key_size] = code
-        row[key_size + 1], row[key_size + 2], row[key_size + 3], row[key_size + 4] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['auth_atom_id']
-        row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
-
     elif mrSubtype == 'pccr':
         row[11], row[12], row[13], row[14], row[15] =\
             star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
@@ -3774,9 +3835,597 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
         # Dipole_1_auth_comp_ID_2
         # Dipole_1_auth_atom_ID_2
         row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
+            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        row[key_size + 22], row[key_size + 23], row[key_size + 24], row[key_size + 25] =\
+            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+
+    elif mrSubtype == 'fchiral':
+        row[key_size] = code
+        row[key_size + 1], row[key_size + 2], row[key_size + 3], row[key_size + 4] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['auth_atom_id']
+        row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
+
+    if len(float_row_idx) > 0:
+        max_eff_digits = 0
+        for idx in float_row_idx:
+            val = row[idx]
+            if '.' in val and val[-1] == '0':
+                period = val.index('.')
+                last = len(val) - 1
+                while val[last] == '0':
+                    last -= 1
+                eff_digits = last - period
+                if eff_digits > 0 and eff_digits > max_eff_digits:
+                    max_eff_digits = eff_digits
+        for idx in float_row_idx:
+            val = row[idx]
+            if '.' in val and val[-1] == '0':
+                first_digit = val.index('.') + 1
+                eff_digits = len(val) - first_digit
+                if 0 < max_eff_digits < eff_digits:
+                    row[idx] = row[idx][0:first_digit + max_eff_digits]
+                else:
+                    row[idx] = row[idx][0:first_digit + 1]
+
+    return row
+
+
+def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listId, entryId,
+                   originalTagNames, originalRow, authToStarSeq,
+                   atoms):
+    """ Return row data for a given constraint subtype.
+        @return: data array
+    """
+
+    key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
+    data_size = len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
+
+    float_row_idx = []
+
+    row = [None] * (key_size + data_size)
+
+    row[0] = id
+
+    atom_dim_num = len(atoms)
+
+    atom1 = atoms[0]
+    atom2 = atoms[1] if atom_dim_num > 1 else None
+    atom3 = atoms[2] if atom_dim_num > 2 else None
+    atom4 = atoms[3] if atom_dim_num > 3 else None
+    atom5 = atoms[4] if atom_dim_num > 4 else None
+
+    if atom1 is not None:
+        star_atom1 = getStarAtom(authToStarSeq, atom1)
+    if atom2 is not None:
+        star_atom2 = getStarAtom(authToStarSeq, atom2)
+    if atom3 is not None:
+        star_atom3 = getStarAtom(authToStarSeq, atom3)
+    if atom4 is not None:
+        star_atom4 = getStarAtom(authToStarSeq, atom4)
+    if atom5 is not None:
+        star_atom5 = getStarAtom(authToStarSeq, atom5)
+
+    if star_atom1 is None and star_atom2 is not None:  # procs
+        row[1], row[2], row[3], row[4], row[5] =\
+            star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
+    elif contentSubtype != 'fchiral_restraint':
+        if atom1 is not None:
+            row[1], row[2], row[3], row[4], row[5] =\
+                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['atom_id']
+        if atom2 is not None:
+            row[6], row[7], row[8], row[9], row[10] =\
+                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
+    else:
+        if atom1 is not None:
+            row[1], row[2], row[3], row[4], row[5] =\
+                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['auth_atom_id']
+        if atom2 is not None:
+            row[6], row[7], row[8], row[9], row[10] =\
+                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['auth_atom_id']
+
+    if contentSubtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
+        row[key_size] = indexId
+
+    row[-2] = listId
+    row[-1] = entryId
+
+    def getRowValue(tag):
+        if tag not in originalTagNames:
+            return None
+
+        val = originalRow[originalTagNames.index(tag)]
+
+        if val in emptyValue:
+            return None
+
+        return val
+
+    if contentSubtype == 'dist_restraint':
+        val = getRowValue('Combination_ID')
+        if val is not None:
+            row[key_size + 1] = val
+
+        row[key_size + 2] = memberId
+        row[key_size + 3] = memberLogicCode
+
+        val = getRowValue('Target_val')
+        if val is not None:
+            row[key_size + 4] = val
+            float_row_idx.append(key_size + 4)
+        val = getRowValue('Target_val_uncertainty')
+        if val is not None:
+            row[key_size + 5] = str(abs(float(val)))
+            float_row_idx.append(key_size + 5)
+        val = getRowValue('Lower_linear_limit')
+        if val is not None:
+            row[key_size + 6] = val
+            float_row_idx.append(key_size + 6)
+        val = getRowValue('Distance_lower_bound_val')
+        if val is not None:
+            row[key_size + 7] = val
+            float_row_idx.append(key_size + 7)
+        val = getRowValue('Distance_upper_bound_val')
+        if val is not None:
+            row[key_size + 8] = val
+            float_row_idx.append(key_size + 8)
+        val = getRowValue('Upper_linear_limit')
+        if val is not None:
+            row[key_size + 9] = str(abs(float(val)))
+            float_row_idx.append(key_size + 9)
+        val = getRowValue('Weight')
+        if val is not None:
+            row[key_size + 10] = val
+        val = getRowValue('Distance_val')
+        if val is not None:
+            row[key_size + 11] = val
+
+        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if hasKeyValue(atom1, 'auth_atom_id'):
+            row[key_size + 16] = atom1['auth_atom_id']
+        row[key_size + 17], row[key_size + 18], row[key_size + 19], row[key_size + 20] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if hasKeyValue(atom2, 'auth_atom_id'):
+            row[key_size + 21] = atom2['auth_atom_id']
+
+    elif contentSubtype == 'dihed_restraint':
+        row[11], row[12], row[13], row[14], row[15] =\
+            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        row[16], row[17], row[18], row[19], row[20] =\
+            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+
+        val = getRowValue('Combination_ID')
+        if val is not None:
+            row[key_size + 1] = val
+        val = getRowValue('Torsion_angle_name')
+        if val is not None:
+            row[key_size + 2] = val
+        val = getRowValue('Angle_target_val')
+        if val is not None:
+            row[key_size + 3] = val
+            float_row_idx.append(key_size + 3)
+        val = getRowValue('Angle_target_val_err')
+        if val is not None:
+            row[key_size + 4] = str(abs(float(val)))
+            float_row_idx.append(key_size + 4)
+        val = getRowValue('Angle_lower_linear_limit')
+        if val is not None:
+            row[key_size + 5] = val
+            float_row_idx.append(key_size + 5)
+        val = getRowValue('Angle_lower_bound_val')
+        if val is not None:
+            row[key_size + 6] = val
+            float_row_idx.append(key_size + 6)
+        val = getRowValue('Angle_upper_bound_val')
+        if val is not None:
+            row[key_size + 7] = val
+            float_row_idx.append(key_size + 7)
+        val = getRowValue('Angle_upper_linear_limit')
+        if val is not None:
+            row[key_size + 8] = val
+            float_row_idx.append(key_size + 8)
+        val = getRowValue('Weight')
+        if val is not None:
+            row[key_size + 9] = str(abs(float(val)))
+
+        row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if hasKeyValue(atom1, 'auth_atom_id'):
+            row[key_size + 14] = atom1['auth_atom_id']
+        row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if hasKeyValue(atom2, 'auth_atom_id'):
+            row[key_size + 19] = atom2['auth_atom_id']
+        row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
+            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        if hasKeyValue(atom1, 'auth_atom_id'):
+            row[key_size + 24] = atom3['auth_atom_id']
+        row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
+            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+        if hasKeyValue(atom2, 'auth_atom_id'):
+            row[key_size + 29] = atom4['auth_atom_id']
+
+    elif contentSubtype == 'rdc_restraint':
+        val = getRowValue('Combination_ID')
+        if val is not None:
+            row[key_size + 1] = val
+        val = getRowValue('Target_value')
+        if val is not None:
+            row[key_size + 2] = str(abs(float(val)))
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Target_value_uncertainty')
+        if val is not None:
+            row[key_size + 3] = val
+            float_row_idx.append(key_size + 3)
+        val = getRowValue('RDC_lower_linear_limit')
+        if val is not None:
+            row[key_size + 4] = val
+            float_row_idx.append(key_size + 4)
+        val = getRowValue('RDC_lower_bound')
+        if val is not None:
+            row[key_size + 5] = val
+            float_row_idx.append(key_size + 5)
+        val = getRowValue('RDC_upper_bound')
+        if val is not None:
+            row[key_size + 6] = val
+            float_row_idx.append(key_size + 6)
+        val = getRowValue('RDC_upper_linear_limit')
+        if val is not None:
+            row[key_size + 7] = val
+            float_row_idx.append(key_size + 7)
+        val = getRowValue('Weight')
+        if val is not None:
+            row[key_size + 8] = str(abs(float(val)))
+        val = getRowValue('RDC_val')
+        if val is not None:
+            row[key_size + 9] = val
+            float_row_idx.append(key_size + 9)
+        val = getRowValue('RDC_val_err')
+        if val is not None:
+            row[key_size + 10] = str(abs(float(val)))
+            float_row_idx.append(key_size + 10)
+        val = getRowValue('RDC_val_scale_factor')
+        if val is not None:
+            row[key_size + 11] = str(abs(float(val)))
+        val = getRowValue('RDC_distance_dependent')
+        if val is not None:
+            row[key_size + 12] = val
+
+        row[key_size + 13], row[key_size + 14], row[key_size + 15], row[key_size + 16] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if hasKeyValue(atom1, 'auth_atom_id'):
+            row[key_size + 17] = atom1['auth_atom_id']
+        row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if hasKeyValue(atom2, 'auth_atom_id'):
+            row[key_size + 22] = atom2['auth_atom_id']
+
+    elif contentSubtype == 'noepk_restraint':
+        val = getRowValue('Val')
+        if val is not None:
+            row[key_size] = val
+            float_row_idx.append(key_size)
+        val = getRowValue('Val_err')
+        if val is not None:
+            row[key_size + 1] = str(abs(float(val)))
+            float_row_idx.append(key_size + 1)
+        val = getRowValue('Val_min')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Val_max')
+        if val is not None:
+            row[key_size + 3] = val
+            float_row_idx.append(key_size + 3)
+
+        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 8] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 9], row[key_size + 10], row[key_size + 11], row[key_size + 12] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+        if hasKeyValue(atom1, 'auth_atom_id'):
+            row[5] = row[key_size + 8] = atom1['auth_atom_id']
+        if hasKeyValue(atom2, 'auth_atom_id'):
+            row[10] = row[key_size + 12] = atom1['auth_atom_id']
+
+    elif contentSubtype == 'jcoup_restraint':
+        row[11], row[12], row[13], row[14], row[15] =\
+            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        row[16], row[17], row[18], row[19], row[20] =\
+            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+
+        val = getRowValue('Coupling_const_val')
+        if val is not None:
+            row[key_size] = val
+            float_row_idx.append(key_size)
+        val = getRowValue('Coupling_const_err')
+        if val is not None:
+            row[key_size + 1] = str(abs(float(val)))
+            float_row_idx.append(key_size + 1)
+        val = getRowValue('Coupling_const_lower_bound')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Coupling_const_upper_bound')
+        if val is not None:
+            row[key_size + 3] = val
+            float_row_idx.append(key_size + 3)
+
+        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 8], row[key_size + 9], row[key_size + 10], row[key_size + 11] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
+            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
+            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+
+    elif contentSubtype == 'rdc_raw_data':
+        row[key_size] = getRdcCode([atom1, atom2])
+        row[key_size + 1] = atomType = atom1['atom_id'][0]
+        row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Ambiguity_code_1')
+        if val is not None and val in ('1', '2', '3'):
+            row[key_size + 3] = val
+        row[key_size + 4] = atomType = atom2['atom_id'][0]
+        row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Ambiguity_code_2')
+        if val is not None and val in ('1', '2', '3'):
+            row[key_size + 6] = val
+            val = getRowValue('Val')
+        if val is not None:
+            row[key_size + 7] = val
+            float_row_idx.append(key_size + 7)
+        val = getRowValue('Val_err')
+        if val is not None:
+            row[key_size + 8] = str(abs(float(val)))
+            float_row_idx.append(key_size + 8)
+        val = getRowValue('Val_min')
+        if val is not None:
+            row[key_size + 9] = val
+            float_row_idx.append(key_size + 9)
+        val = getRowValue('Val_max')
+        if val is not None:
+            row[key_size + 10] = val
+        val = getRowValue('Val_bond_length')
+        if val is not None:
+            row[key_size + 11] = val
+
+        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+    elif contentSubtype == 'csa_restraint':
+        row[key_size] = atomType = atom1['atom_id'][0]
+        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Val')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Val_err')
+        if val is not None:
+            row[key_size + 3] = str(abs(float(val)))
+            float_row_idx.append(key_size + 3)
+        val = getRowValue('Principal_value_sigma_11_val')
+        if val is not None:
+            row[key_size + 4] = val
+        val = getRowValue('Principal_value_sigma_22_val')
+        if val is not None:
+            row[key_size + 5] = val
+        val = getRowValue('Principal_value_sigma_33_val')
+        if val is not None:
+            row[key_size + 6] = val
+        val = getRowValue('Principal_Euler_angle_alpha_val')
+        if val is not None:
+            row[key_size + 7] = val
+        val = getRowValue('Principal_Euler_angle_beta_val')
+        if val is not None:
+            row[key_size + 8] = val
+        val = getRowValue('Principal_Euler_angle_gamma_val')
+        if val is not None:
+            row[key_size + 9] = val
+        val = getRowValue('Bond_length')
+        if val is not None:
+            row[key_size + 10] = val
+
+        row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    elif contentSubtype == 'ddc_restraint':
+        val = getRowValue('Dipolar_coupling_code')
+        if val is not None:
+            row[key_size] = val
+        row[key_size + 1] = atomType = atom1['atom_id'][0]
+        row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Ambiguity_code_1')
+        if val is not None and val in ('1', '2', '3'):
+            row[key_size + 3] = val
+        row[key_size + 4] = atomType = atom2['atom_id'][0]
+        row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Ambiguity_code_2')
+        if val is not None and val in ('1', '2', '3'):
+            row[key_size + 6] = val
+        val = getRowValue('Val')
+        if val is not None:
+            row[key_size + 7] = str(abs(float(val)))
+            float_row_idx.append(key_size + 7)
+        val = getRowValue('Val_err')
+        if val is not None:
+            row[key_size + 8] = val
+            float_row_idx.append(key_size + 8)
+        val = getRowValue('Val_min')
+        if val is not None:
+            row[key_size + 9] = val
+            float_row_idx.append(key_size + 9)
+        val = getRowValue('Val_max')
+        if val is not None:
+            row[key_size + 10] = val
+            float_row_idx.append(key_size + 10)
+        val = getRowValue('Principal_Euler_angle_alpha_val')
+        if val is not None:
+            row[key_size + 11] = val
+        val = getRowValue('Principal_Euler_angle_beta_val')
+        if val is not None:
+            row[key_size + 12] = val
+        val = getRowValue('Principal_Euler_angle_gamma_val')
+        if val is not None:
+            row[key_size + 13] = val
+
+    elif contentSubtype == 'hvycs_restraint':
+        row[11], row[12], row[13], row[14], row[15] =\
+            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        row[16], row[17], row[18], row[19], row[20] =\
+            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+        row[21], row[22], row[23], row[24], row[25] =\
+            star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id'], star_atom5['atom_id']
+
+        val = getRowValue('CA_chem_shift_val')
+        if val is not None:
+            row[key_size] = val
+            float_row_idx.append(key_size)
+        val = getRowValue('CA_chem_shift_val_err')
+        if val is not None:
+            row[key_size + 1] = str(abs(float(val)))
+            float_row_idx.append(key_size + 1)
+        val = getRowValue('CB_chem_shift_val')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('CB_chem_shift_val_err')
+        if val is not None:
+            row[key_size + 3] = str(abs(float(val)))
+            float_row_idx.append(key_size + 3)
+
+        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 8], row[key_size + 9], row[key_size + 10], row[key_size + 11] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
+            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
+            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+        row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
+            atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id']
+
+    elif contentSubtype == 'procs_restraint':
+        row[key_size] = atomType = atom1['atom_id'][0]
+        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Chem_shift_val')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Chem_shift_val_err')
+        if val is not None:
+            row[key_size + 3] = str(abs(float(val)))
+            float_row_idx.append(key_size + 3)
+
+        if atom2 is None:
+            row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        else:
+            row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+    elif contentSubtype == 'csp_restraint':
+        row[key_size] = atomType = atom1['atom_id'][0]
+        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Chem_shift_val')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Chem_shift_val_err')
+        if val is not None:
+            row[key_size + 3] = str(abs(float(val)))
+            float_row_idx.append(key_size + 3)
+        val = getRowValue('Difference_chem_shift_val')
+        if val is not None:
+            row[key_size + 4] = val
+            float_row_idx.append(key_size + 4)
+        val = getRowValue('Difference_chem_shift_val_err')
+        if val is not None:
+            row[key_size + 5] = str(abs(float(val)))
+            float_row_idx.append(key_size + 5)
+
+        row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    elif contentSubtype == 'auto_relax_restraint':
+        row[key_size] = atomType = atom1['atom_id'][0]
+        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Auto_relaxation_val')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Auto_relaxation_val_err')
+        if val is not None:
+            row[key_size + 3] = str(abs(float(val)))
+            float_row_idx.append(key_size + 3)
+        val = getRowValue('Rex_val')
+        if val is not None:
+            row[key_size + 4] = val
+            float_row_idx.append(key_size + 4)
+        val = getRowValue('Rex_val_err')
+        if val is not None:
+            row[key_size + 5] = str(abs(float(val)))
+            float_row_idx.append(key_size + 5)
+
+        row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    elif contentSubtype.startswith('ccr'):
+        row[11], row[12], row[13], row[14], row[15] =\
+            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        row[16], row[17], row[18], row[19], row[20] =\
+            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+
+        row[key_size] = atomType = atom1['atom_id'][0]
+        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        row[key_size + 2] = atomType = atom2['atom_id'][0]
+        row[key_size + 3] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        row[key_size + 4] = atomType = atom3['atom_id'][0]
+        row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        row[key_size + 6] = atomType = atom4['atom_id'][0]
+        row[key_size + 7] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Val')
+        if val is not None:
+            row[key_size + 8] = val
+            float_row_idx.append(key_size + 8)
+        val = getRowValue('Val_err')
+        if val is not None:
+            row[key_size + 9] = str(abs(float(val)))
+            float_row_idx.append(key_size + 9)
+
+        row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 14], row[key_size + 15], row[key_size + 16], row[key_size + 17] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         row[key_size + 22], row[key_size + 23], row[key_size + 24], row[key_size + 25] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    elif contentSubtype == 'fchiral_restraint':
+        val = getRowValue('Stereospecific_assignment_code')
+        if val is not None:
+            row[key_size] = val
+        row[key_size + 1], row[key_size + 2], row[key_size + 3], row[key_size + 4] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['auth_atom_id']
+        row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
+
+    elif contentSubtype == 'other_restraint':
+        row[key_size] = atomType = atom1['atom_id'][0]
+        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Val')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Val_err')
+        if val is not None:
+            row[key_size + 3] = str(abs(float(val)))
+            float_row_idx.append(key_size + 3)
 
     if len(float_row_idx) > 0:
         max_eff_digits = 0
@@ -3834,6 +4483,335 @@ def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
             row[names.index(k)] = v
 
     return row
+
+
+def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, atomId):
+    """ Assign polymer sequences of the coordinates.
+    """
+
+    warningMessage = None
+
+    polySeq = caC['polymer_sequence']
+    altPolySeq = caC['alt_polymer_sequence']
+    nonPoly = caC['non_polymer']
+    branched = caC['branched']
+    authToLabelSeq = caC['auth_to_label_seq']
+
+    hasNonPoly = nonPoly is not None and len(nonPoly) > 0
+    hasBranched = branched is not None and len(branched) > 0
+
+    chainAssign = set()
+    _seqId = seqId
+
+    for ps in polySeq:
+        chainId, seqId = getRealChainSeqId(nefT.__ccU, ps, _seqId, compId)  # pylint: disable=protected-access
+        if refChainId != chainId:
+            continue
+        if seqId in ps['auth_seq_id']:
+            idx = ps['auth_seq_id'].index(seqId)
+            cifCompId = ps['comp_id'][idx]
+            origCompId = ps['auth_comp_id'][idx]
+            if compId in (cifCompId, origCompId):
+                if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    chainAssign.add((chainId, seqId, cifCompId, True))
+            elif len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                chainAssign.add((chainId, seqId, cifCompId, True))
+
+        elif 'gap_in_auth_seq' in ps:
+            min_auth_seq_id = ps['auth_seq_id'][0]
+            max_auth_seq_id = ps['auth_seq_id'][-1]
+            if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                _seqId_ = seqId + 1
+                while _seqId_ <= max_auth_seq_id:
+                    if _seqId_ in ps['auth_seq_id']:
+                        break
+                    _seqId_ += 1
+                if _seqId_ not in ps['auth_seq_id']:
+                    _seqId_ = seqId - 1
+                    while _seqId_ >= min_auth_seq_id:
+                        if _seqId_ in ps['auth_seq_id']:
+                            break
+                        _seqId_ -= 1
+                if _seqId_ in ps['auth_seq_id']:
+                    idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
+                    try:
+                        seqId_ = ps['auth_seq_id'][idx]
+                        cifCompId = ps['comp_id'][idx]
+                        origCompId = ps['auth_comp_id'][idx]
+                        if compId in (cifCompId, origCompId):
+                            if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((chainId, seqId_, cifCompId, True))
+                            elif len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((chainId, seqId_, cifCompId, True))
+                    except IndexError:
+                        pass
+
+    if hasNonPoly or hasBranched:
+
+        if hasNonPoly and hasBranched:
+            nonPolySeq = nonPoly
+            nonPolySeq.extend(branched)
+        elif hasNonPoly:
+            nonPolySeq = nonPoly
+        else:
+            nonPolySeq = branched
+
+        for np in nonPolySeq:
+            chainId, seqId = getRealChainSeqId(nefT.__ccU, np, _seqId, compId, False)  # pylint: disable=protected-access
+            if refChainId != chainId:
+                continue
+            if seqId in np['auth_seq_id']:
+                idx = np['auth_seq_id'].index(seqId)
+                cifCompId = np['comp_id'][idx]
+                origCompId = np['auth_comp_id'][idx]
+                if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
+                    seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
+                if compId in (cifCompId, origCompId):
+                    if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.add((chainId, seqId, cifCompId, False))
+                elif len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    chainAssign.add((chainId, seqId, cifCompId, False))
+
+    if len(chainAssign) == 0:
+        for ps in polySeq:
+            chainId = ps['chain_id']
+            if refChainId != chainId:
+                continue
+            seqKey = (chainId, _seqId)
+            if seqKey in authToLabelSeq:
+                _, seqId = authToLabelSeq[seqKey]
+                if seqId in ps['seq_id']:
+                    idx = ps['seq_id'].index(seqId)
+                    cifCompId = ps['comp_id'][idx]
+                    origCompId = ps['auth_comp_id'][idx]
+                    if compId in (cifCompId, origCompId):
+                        if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
+                    elif len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
+
+        if nonPolySeq is not None:
+            for np in nonPolySeq:
+                chainId = np['auth_chain_id']
+                if refChainId != chainId:
+                    continue
+                seqKey = (chainId, _seqId)
+                if seqKey in authToLabelSeq:
+                    _, seqId = authToLabelSeq[seqKey]
+                    if seqId in np['seq_id']:
+                        idx = np['seq_id'].index(seqId)
+                        cifCompId = np['comp_id'][idx]
+                        origCompId = np['auth_comp_id'][idx]
+                        if compId in (cifCompId, origCompId):
+                            if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
+                        elif len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
+
+    if len(chainAssign) == 0 and altPolySeq is not None:
+        for ps in altPolySeq:
+            chainId = ps['auth_chain_id']
+            if refChainId != chainId:
+                continue
+            if _seqId in ps['auth_seq_id']:
+                cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                chainAssign.add((chainId, _seqId, cifCompId, True))
+
+    if len(chainAssign) == 0:
+        if seqId == 1 and atomId in ('H', 'HN'):
+            return assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 'H1')
+
+        if seqId < 1 and len(polySeq) == 1:
+            warningMessage = f"[Atom not found] "\
+                f"{_seqId}:{compId}:{atomId} is not present in the coordinates. "\
+                f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "\
+                "Please update the sequence in the Macromolecules page.\n"
+        else:
+            warningMessage = f"[Atom not found] "\
+                f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+
+    return list(chainAssign), warningMessage
+
+
+def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True):
+    """ Select atoms of the coordinates.
+    """
+
+    atomSelection = []
+
+    authAtomId = atomId
+
+    _atomId = atomId
+
+    for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
+
+        seqKey, coordAtomSite = getCoordAtomSiteOf(caC, chainId, cifSeqId, True)
+        _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
+        if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+            _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+            if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+        if details is not None:
+            _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=nefT.__ccU)  # pylint: disable=protected-access
+            if _atomId_ != atomId:
+                __atomId = nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
+                if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
+                    _atomId = __atomId
+
+        if coordAtomSite is not None\
+           and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
+           and atomId in coordAtomSite['atom_id']:
+            _atomId = [atomId]
+
+        if coordAtomSite is None and not isPolySeq:
+            nonPoly = caC['non_polymer']
+            branched = caC['branched']
+
+            hasNonPoly = nonPoly is not None and len(nonPoly) > 0
+            hasBranched = branched is not None and len(branched) > 0
+
+            if hasNonPoly or hasBranched:
+                if hasNonPoly and hasBranched:
+                    nonPolySeq = nonPoly
+                    nonPolySeq.extend(branched)
+                elif hasNonPoly:
+                    nonPolySeq = nonPoly
+                else:
+                    nonPolySeq = branched
+
+                try:
+                    for np in nonPolySeq:
+                        if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
+                            cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
+                            seqKey, coordAtomSite = getCoordAtomSiteOf(caC, chainId, cifSeqId, True)
+                            if coordAtomSite is not None:
+                                break
+                except ValueError:
+                    pass
+
+        lenAtomId = len(_atomId)
+        if lenAtomId == 0:
+            if enableWarning:
+                warningMessage = f"[Invalid atom nomenclature] "\
+                    f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
+            continue
+        if lenAtomId > 1 and not allowAmbig:
+            if enableWarning:
+                warningMessage = f"[Invalid atom selection] "\
+                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
+            continue
+
+        for cifAtomId in _atomId:
+            atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
+                                  'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
+
+            warningMessage = testCoordAtomIdConsistency(caC, nefT.__ccU,  # pylint: disable=protected-access
+                                                        chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
+
+    return atomSelection, warningMessage
+
+
+def getRealChainSeqId(ccU, polySeq, seqId, compId=None, isPolySeq=True):
+    """ Return effective sequence key according to polymer sequence of the coordinates.
+    """
+
+    if compId is not None:
+        compId = translateToStdResName(compId, ccU)
+    if seqId in polySeq['auth_seq_id']:
+        if compId is None:
+            return polySeq['auth_chain_id'], seqId
+        idx = polySeq['auth_seq_id'].index(seqId)
+        if compId in (polySeq['comp_id'][idx], polySeq['auth_comp_id'][idx]):
+            return polySeq['auth_chain_id'], seqId
+    return polySeq['chain_id' if isPolySeq else 'auth_chain_id'], seqId
+
+
+def getCoordAtomSiteOf(caC, chainId, seqId, cifCheck=True, asis=True):
+    """ Return sequence key and its atom list of the coordinates.
+    """
+
+    seqKey = (chainId, seqId)
+    coordAtomSite = None
+    if cifCheck:
+        coordAtomSites = caC['coord_atom_site']
+        if asis:
+            if seqKey in coordAtomSites:
+                coordAtomSite = coordAtomSites[seqKey]
+            else:
+                labelToAuthSeq = caC['label_to_auth_seq']
+                if seqKey in labelToAuthSeq:
+                    seqKey = labelToAuthSeq[seqKey]
+                    if seqKey in coordAtomSites:
+                        coordAtomSite = coordAtomSites[seqKey]
+    return seqKey, coordAtomSite
+
+
+def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey, coordAtomSite, enableWarning=True):
+
+    found = False
+
+    if coordAtomSite is not None:
+        if atomId in coordAtomSite['atom_id']:
+            found = True
+        elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
+            found = True
+        else:
+            _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, chainId, seqId, asis=False)
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                if atomId in _coordAtomSite['atom_id']:
+                    found = True
+                    seqKey = _seqKey
+                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                    found = True
+                    seqKey = _seqKey
+
+    else:
+        _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, chainId, seqId, asis=False)
+        if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+            if atomId in _coordAtomSite['atom_id']:
+                found = True
+                seqKey = _seqKey
+            elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                found = True
+                seqKey = _seqKey
+
+    if found:
+        return None
+
+    _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, chainId, seqId, asis=False)
+    if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+        if atomId in _coordAtomSite['atom_id']:
+            found = True
+            seqKey = _seqKey
+        elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+            found = True
+            seqKey = _seqKey
+
+    if found:
+        return None
+
+    if ccU.updateChemCompDict(compId):
+        cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
+        if cca is not None and seqKey not in caC['coord_unobs_res'] and ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+            if seqId == 1 and atomId in ('H', 'HN'):
+                testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
+                return None
+            if atomId[0] in protonBeginCode:
+                ccb = next((ccb for ccb in ccU.lastBonds
+                            if atomId in (ccb[ccU.ccbAtomId1], ccb[ccU.ccbAtomId2])), None)
+                if ccb is not None:
+                    bondedTo = ccb[ccU.ccbAtomId2] if ccb[ccU.ccbAtomId1] == atomId else ccb[ccU.ccbAtomId1]
+                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[ccU.ccaLeavingAtomFlag] != 'Y':
+                        return f"[Hydrogen not instantiated] "\
+                            f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
+                            "Please re-upload the model file.\n"
+            if enableWarning:
+                if chainId in LARGE_ASYM_ID:
+                    return f"[Atom not found] "\
+                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+
+    return None
 
 
 def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):

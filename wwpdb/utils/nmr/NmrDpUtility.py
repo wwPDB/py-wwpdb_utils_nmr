@@ -5472,7 +5472,7 @@ class NmrDpUtility:
         self.__verbose = verbose
         self.__debug = verbose
 
-    def setMRDebugMode(self, debug):
+    def setMrDebugMode(self, debug):
         """ Set debug mode for MR splitter.
         """
 
@@ -9575,7 +9575,7 @@ class NmrDpUtility:
                 if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
                                  'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
                                  'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
-                    reader = self.__getSimpleMRPTFileReader(file_type, self.__verbose)
+                    reader = self.__getSimpleMrPtFileReader(file_type, self.__verbose)
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -9584,7 +9584,7 @@ class NmrDpUtility:
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
-                            reader = self.__getSimpleMRPTFileReader(file_type, self.__verbose, reasons)
+                            reader = self.__getSimpleMrPtFileReader(file_type, self.__verbose, reasons)
 
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -10084,7 +10084,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __retrieveOriginalFileExtensionOfCyanaMRFile(self):
+    def __retrieveOriginalFileExtensionOfCyanaMrFile(self):
         """ Retrieve original file extension of CYANA MR file.
         """
 
@@ -10159,7 +10159,7 @@ class NmrDpUtility:
         except StopIteration:
             return None
 
-    def __getCorrectedMRFilePath(self, src_path):
+    def __getCorrectedMrFilePath(self, src_path):
         """ Return corrected MR file path.
         """
 
@@ -10189,7 +10189,7 @@ class NmrDpUtility:
 
         return None, False
 
-    def __getSimpleMRPTFileReader(self, file_type, verbose, reasons=None):
+    def __getSimpleMrPtFileReader(self, file_type, verbose, reasons=None):
         """ Return simple MR/PT file reader for a given format.
         """
 
@@ -10211,7 +10211,7 @@ class NmrDpUtility:
             reader = CyanaMRReader(verbose, self.__lfh, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT,
                                    reasons,
-                                   file_ext=self.__retrieveOriginalFileExtensionOfCyanaMRFile())
+                                   file_ext=self.__retrieveOriginalFileExtensionOfCyanaMrFile())
             reader.setRemediateMode(self.__remediation_mode)
             return reader
         if file_type == 'nm-res-ros':
@@ -10386,7 +10386,7 @@ class NmrDpUtility:
                 test_line = err_input[0:err_column_position]
 
                 if reader is None:
-                    reader = self.__getSimpleMRPTFileReader(file_type, False)
+                    reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                 _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -10426,7 +10426,7 @@ class NmrDpUtility:
 
                         if corrected and os.path.exists(src_path):
 
-                            cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                            cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                             if cor_src_path is not None:
 
@@ -10567,7 +10567,7 @@ class NmrDpUtility:
 
                         comment_code = prev_input.rstrip()[0]
 
-                        cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                        cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                         if cor_src_path is not None:
 
@@ -10607,7 +10607,7 @@ class NmrDpUtility:
 
             if xplor_00_origin:
 
-                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                 if cor_src_path is not None:
 
@@ -10645,7 +10645,7 @@ class NmrDpUtility:
 
                 if has_end_tag:
 
-                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                     if cor_src_path is not None:
 
@@ -10692,7 +10692,7 @@ class NmrDpUtility:
                         typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
 
                         if reader is None:
-                            reader = self.__getSimpleMRPTFileReader(file_type, False)
+                            reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                         _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -10700,7 +10700,7 @@ class NmrDpUtility:
 
                         if not has_lexer_error:
 
-                            cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                            cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                             if cor_src_path is not None:
 
@@ -10736,7 +10736,7 @@ class NmrDpUtility:
 
                 if len(test_line) > 0:
 
-                    test_reader = self.__getSimpleMRPTFileReader('nm-res-gro', False)
+                    test_reader = self.__getSimpleMrPtFileReader('nm-res-gro', False)
 
                     _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
@@ -10749,7 +10749,7 @@ class NmrDpUtility:
 
                         return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset)
 
-                    test_reader = self.__getSimpleMRPTFileReader('nm-aux-gro', False)
+                    test_reader = self.__getSimpleMrPtFileReader('nm-aux-gro', False)
 
                     _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
@@ -10777,7 +10777,7 @@ class NmrDpUtility:
                     test_line = err_input[0:comment_code_index]
 
                     if reader is None:
-                        reader = self.__getSimpleMRPTFileReader(file_type, False)
+                        reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                     _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -10786,7 +10786,7 @@ class NmrDpUtility:
 
                     if not has_lexer_error and not has_parser_error:
 
-                        cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                        cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                         if cor_src_path is not None:
 
@@ -10813,7 +10813,7 @@ class NmrDpUtility:
 
                 if not xplor_missing_end_before or xplor_no_syntax_err_in_fac_or_ann:
 
-                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                     if cor_src_path is not None:
 
@@ -10846,7 +10846,7 @@ class NmrDpUtility:
 
             if err_line_number - 1 in (i, j + j_offset) and amber_missing_comma_before:
 
-                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                 if cor_src_path is not None:
 
@@ -10871,7 +10871,7 @@ class NmrDpUtility:
 
             if i == err_line_number - 1 and amber_missing_end:
 
-                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                 if cor_src_path is not None:
 
@@ -10895,7 +10895,7 @@ class NmrDpUtility:
                 test_line = err_input
 
                 if reader is None:
-                    reader = self.__getSimpleMRPTFileReader(file_type, False)
+                    reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -10903,7 +10903,7 @@ class NmrDpUtility:
 
                 if not has_lexer_error:
 
-                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                     if cor_src_path is not None:
 
@@ -10967,7 +10967,7 @@ class NmrDpUtility:
                 test_line = err_input[0:err_column_position]
 
                 if reader is None:
-                    reader = self.__getSimpleMRPTFileReader(file_type, False)
+                    reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -10993,7 +10993,7 @@ class NmrDpUtility:
                 test_line = next_input
 
                 if reader is None:
-                    reader = self.__getSimpleMRPTFileReader(file_type, False)
+                    reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                 _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -11005,7 +11005,7 @@ class NmrDpUtility:
 
                         for test_file_type in linear_mr_file_types:
 
-                            test_reader = self.__getSimpleMRPTFileReader(test_file_type, False)
+                            test_reader = self.__getSimpleMrPtFileReader(test_file_type, False)
 
                             listener, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
@@ -11148,7 +11148,7 @@ class NmrDpUtility:
                 test_line = g[0]
 
                 if reader is None:
-                    reader = self.__getSimpleMRPTFileReader(file_type, False)
+                    reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -11227,7 +11227,7 @@ class NmrDpUtility:
         if self.__mr_debug:
             print('PEEL-MR')
 
-        reader = self.__getSimpleMRPTFileReader(file_type, False)
+        reader = self.__getSimpleMrPtFileReader(file_type, False)
 
         if reader is None:
             return False
@@ -11270,7 +11270,7 @@ class NmrDpUtility:
 
             if has_end_tag:
 
-                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                 if cor_src_path is not None:
 
@@ -11307,7 +11307,7 @@ class NmrDpUtility:
                 if test_file_type == file_type:
                     continue
 
-                test_reader = self.__getSimpleMRPTFileReader(test_file_type, False)
+                test_reader = self.__getSimpleMrPtFileReader(test_file_type, False)
 
                 _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
@@ -11364,7 +11364,7 @@ class NmrDpUtility:
                 has_content = bool(listener is not None and len(listener.getContentSubtype()) > 0)
 
                 if has_lexer_error or has_parser_error or not has_content:
-                    test_reader = self.__getSimpleMRPTFileReader('nm-res-xpl', False)
+                    test_reader = self.__getSimpleMrPtFileReader('nm-res-xpl', False)
 
                     _, _, lexer_err_listener = test_reader.parse(prev_input, None, isFilePath=False)
 
@@ -11510,7 +11510,7 @@ class NmrDpUtility:
                 test_line = err_input[0:err_column_position]
 
                 if reader is None:
-                    reader = self.__getSimpleMRPTFileReader(file_type, False)
+                    reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -11771,7 +11771,7 @@ class NmrDpUtility:
 
             if xplor_00_origin:
 
-                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                 if cor_src_path is not None:
 
@@ -11809,7 +11809,7 @@ class NmrDpUtility:
 
                 if has_end_tag:
 
-                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                     if cor_src_path is not None:
 
@@ -11856,7 +11856,7 @@ class NmrDpUtility:
                         typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
 
                         if reader is None:
-                            reader = self.__getSimpleMRPTFileReader(file_type, False)
+                            reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                         _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -11864,7 +11864,7 @@ class NmrDpUtility:
 
                         if not has_lexer_error:
 
-                            cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                            cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                             if cor_src_path is not None:
 
@@ -11910,7 +11910,7 @@ class NmrDpUtility:
                     test_line = err_input[0:comment_code_index]
 
                     if reader is None:
-                        reader = self.__getSimpleMRPTFileReader(file_type, False)
+                        reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                     _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -11919,7 +11919,7 @@ class NmrDpUtility:
 
                     if not has_lexer_error and not has_parser_error:
 
-                        cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                        cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                         if cor_src_path is not None:
 
@@ -11946,7 +11946,7 @@ class NmrDpUtility:
 
                 if not xplor_missing_end_before or xplor_no_syntax_err_in_fac_or_ann:
 
-                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                     if cor_src_path is not None:
 
@@ -11979,7 +11979,7 @@ class NmrDpUtility:
 
             if err_line_number - 1 in (i, j) and amber_missing_comma_before:
 
-                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                 if cor_src_path is not None:
 
@@ -12004,7 +12004,7 @@ class NmrDpUtility:
 
             if i == err_line_number - 1 and amber_missing_end:
 
-                cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                 if cor_src_path is not None:
 
@@ -12028,7 +12028,7 @@ class NmrDpUtility:
                 test_line = err_input
 
                 if reader is None:
-                    reader = self.__getSimpleMRPTFileReader(file_type, False)
+                    reader = self.__getSimpleMrPtFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -12036,7 +12036,7 @@ class NmrDpUtility:
 
                 if not has_lexer_error:
 
-                    cor_src_path, cor_test = self.__getCorrectedMRFilePath(src_path)
+                    cor_src_path, cor_test = self.__getCorrectedMrFilePath(src_path)
 
                     if cor_src_path is not None:
 
@@ -12161,7 +12161,7 @@ class NmrDpUtility:
 
         try:
 
-            reader = self.__getSimpleMRPTFileReader(file_type, False)
+            reader = self.__getSimpleMrPtFileReader(file_type, False)
 
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -12171,7 +12171,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        reader = self.__getSimpleMRPTFileReader(file_type, False, reasons)
+                        reader = self.__getSimpleMrPtFileReader(file_type, False, reasons)
 
                         listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -12466,7 +12466,7 @@ class NmrDpUtility:
 
         try:
 
-            reader = self.__getSimpleMRPTFileReader(_file_type, False)
+            reader = self.__getSimpleMrPtFileReader(_file_type, False)
 
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -26827,7 +26827,7 @@ class NmrDpUtility:
                     else:
                         upl_or_lol = None
 
-                cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMRFile()
+                cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMrFile()
 
                 reader = CyanaMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,

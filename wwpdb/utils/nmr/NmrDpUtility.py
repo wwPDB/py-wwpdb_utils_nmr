@@ -25041,7 +25041,7 @@ class NmrDpUtility:
         sf = getSaveframe(content_subtype, sf_framecode, list_id, self.__entry_id, original_file_name,
                           reduced=False)
 
-        # merge saveframe tags
+        # merge saveframe tags of the source saveframe
 
         if is_sf:
 
@@ -25133,7 +25133,7 @@ class NmrDpUtility:
                 key_items = [item['name'] for item in NMR_STAR_LP_KEY_ITEMS[content_subtype]]
                 len_key_items = len(key_items)
 
-                atom_dim_num = (len_key_items - 1) // 5  # entity_assembly_id, entity_id, comp_index_id, comp_id, atom_id
+                atom_dim_num = (len_key_items - 1) // 5  # 5 for entity_assembly_id, entity_id, comp_index_id, comp_id, atom_id tags
 
                 key_chain_id_names = [key_items[idx] for idx in range(1, len_key_items, 5)]
                 key_entity_id_names = [key_items[idx] for idx in range(2, len_key_items, 5)]
@@ -25341,7 +25341,6 @@ class NmrDpUtility:
                                     _row = getRowForStrMr(content_subtype, Id, sf_item['idx'],
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
                                                           loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
-
                                     lp.add_data(_row)
 
                             else:
@@ -25554,7 +25553,6 @@ class NmrDpUtility:
                                     _row = getRowForStrMr(content_subtype, Id, sf_item['idx'],
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
                                                           loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
-
                                     lp.add_data(_row)
 
                             else:
@@ -25565,14 +25563,14 @@ class NmrDpUtility:
                                                       loop.tags, loop.data[idx], auth_to_star_seq, atom_sels)
                                 lp.add_data(_row)
 
-                else:  # nothing to do
+                else:  # nothing to do because of insufficient sequence tags
 
                     lp = loop
 
                     sf.add_loop(lp)
                     sf_item['loop'] = lp
 
-            else:  # other_restraints wo loop
+            else:  # nothing to do because of missing polimer sequence for this loop
 
                 lp = loop
 
@@ -26022,7 +26020,7 @@ class NmrDpUtility:
 
                 sf_item['id'] = len(lp)
 
-            # merge other loops
+            # merge other loops of the source saveframe
 
             if is_sf:
 
@@ -37187,6 +37185,15 @@ class NmrDpUtility:
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
+        
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        # file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return True
 
         master_entry = self.__star_data[0]
 

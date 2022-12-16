@@ -88,6 +88,7 @@
 # 01-Sep-2022  M. Yokochi - fix NEF atom name conversion for excess wild card (v3.1.5, NMR restraint remediation)
 # 09-Sep-2022  M. Yokochi - add support for NEF atom name conversion starting with wild card, i.e. '%HN' (v3.2.0, NMR restraint remediation)
 # 20-Oct-2022  M. Yokochi - allow missing distance restraints via allow_missing_dist_restraint(bool) (v3.2.1, DAOTHER-8088 1.b, 8108)
+# 16-Dec-2022  M. Yokochi - remove deprecated functions with minor code revisions (v3.2.2)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -124,7 +125,7 @@ except ImportError:
                                            ALLOWED_AMBIGUITY_CODES)
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '3.3.1'
+__version__ = '3.3.2'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -462,7 +463,7 @@ def get_first_sf_tag(sf_data=None, tag=None):
     return array[0] if array[0] is not None else ''
 
 
-def get_idx_msg(idx_tag_ids, tags, ent):
+def get_idx_msg(idx_tag_ids, tags, row):
     """ Return description about current index.
         @author: Masashi Yokochi
         @return: description
@@ -470,15 +471,15 @@ def get_idx_msg(idx_tag_ids, tags, ent):
 
     try:
 
-        idx_msg = ''
+        msg = ''
 
         if len(idx_tag_ids) > 0:
             for _j in idx_tag_ids:
-                idx_msg += tags[_j] + " " + str(ent[tags[_j]]) + ", "
+                msg += tags[_j] + " " + str(row[tags[_j]]) + ", "
 
-            idx_msg = "[Check row of " + idx_msg[:-2] + "] "
+            msg = "[Check row of " + msg[:-2] + "] "
 
-        return idx_msg
+        return msg
 
     except KeyError:
         return ''
@@ -675,27 +676,27 @@ class NEFTranslator:
     def read_input_file(self, in_file):  # pylint: disable=no-self-use
         """ Read input NEF/NMR-STAR file.
             @param in_file: input NEF/NMR-STAR file path
-            @return: status, Entry/Saveframe/Loop data type or message, data object
+            @return: status, one of ('Entry', 'Saveframe', 'Loop', error message), data object
         """
 
         is_ok = True
         star_data = None
 
         try:
+
             star_data = pynmrstar.Entry.from_file(in_file)
-            msg = 'Entry'
 
         except Exception as e1:
 
             try:
+
                 star_data = pynmrstar.Saveframe.from_file(in_file)
-                msg = 'Saveframe'
 
             except Exception as e2:
 
                 try:
+
                     star_data = pynmrstar.Loop.from_file(in_file)
-                    msg = 'Loop'
 
                 except Exception as e3:
 
@@ -703,27 +704,36 @@ class NEFTranslator:
 
                     if __pynmrstar_v3_1__:
                         if 'The Sf_framecode tag cannot be different from the saveframe name.' in str(e2):
-                            msg = str(e2)
+                            data_type = str(e2)
                         elif "Invalid loop. Loops must start with the 'loop_' keyword." not in str(e3) and\
                              "Invalid token found in loop contents" not in str(e3) and\
                              "Illegal value: 'loop_'" not in str(e3):
-                            msg = str(e3)
+                            data_type = str(e3)
                         else:
-                            msg = str(e1)
+                            data_type = str(e1)
 
                     elif version.parse(pynmrstar.__version__) >= version.parse("2.6.5.1"):
                         if "Invalid loop. Loops must start with the 'loop_' keyword." not in str(e3):
-                            msg = str(e3)
+                            data_type = str(e3)
                         else:
-                            msg = str(e1)
+                            data_type = str(e1)
 
                     else:
                         if 'internaluseyoushouldntseethis_frame' not in str(e3):
-                            msg = str(e3)
+                            data_type = str(e3)
                         else:
-                            msg = str(e1)
+                            data_type = str(e1)
 
-        return is_ok, msg, star_data
+        if is_ok:
+
+            if isinstance(star_data, pynmrstar.Entry):
+                data_type = 'Entry'
+            elif isinstance(star_data, pynmrstar.Saveframe):
+                data_type = 'Saveframe'
+            else:
+                data_type = 'Loop'
+
+        return is_ok, data_type, star_data
 
     def check_mandatory_tags(self, in_file=None, file_type=None):
         """ Returns list of missing mandatory saveframe/loop tags of the input file.
@@ -811,7 +821,6 @@ class NEFTranslator:
 
         is_valid = True
         info = []
-        warning = []
         error = []
 
         file_type = 'unknown'
@@ -1147,7 +1156,7 @@ class NEFTranslator:
             is_valid = False
             error.append(str(e))
 
-        return is_valid, {'info': info, 'warning': warning, 'error': error, 'file_type': file_type}
+        return is_valid, {'info': info, 'error': error, 'file_type': file_type}
 
     def resolve_sf_names_for_cif(self, star_data, data_type):  # pylint: disable=no-self-use # DAOTHER-7389, issue #4
         """ Resolve saveframe names to prevent case-insensitive name collisions occur in CIF format.
@@ -1214,58 +1223,6 @@ class NEFTranslator:
 
         return sf_list, lp_list
 
-    def get_seq_from_cs_loop(self, in_file):
-        """ Extract sequence from chemical shift loop.
-            @deprecated: used only for testing
-            @param in_file: NEF/NMR-STAR file
-            @return: status, message
-        """
-
-        is_valid, message = self.validate_file(in_file, 'S')
-
-        info = message['info']
-        warning = message['warning']
-        error = message['error']
-        file_type = message['file_type']
-
-        is_ok = False
-        seq = []
-
-        if is_valid:
-
-            info.append('File successfully read ')
-            in_data = self.read_input_file(in_file)[-1]
-
-            if file_type == 'nmr-star':
-
-                info.append('NMR-STAR')
-                seq = self.get_star_seq(in_data)
-
-                if len(seq[0]) > 0:
-                    is_ok = True
-
-                else:
-                    error.append("Can't extract sequence from chemical shift loop")
-
-            elif file_type == 'nef':
-
-                info.append('NEF')
-                seq = self.get_nef_seq(in_data)
-
-                if len(seq[0]) > 0:
-                    is_ok = True
-
-                else:
-                    error.append("Can't extract sequence from chemical shift loop")
-
-            else:
-                error.append("Can't identify file type, it is neither NEF nor NMR-STAR")
-
-        else:
-            error.append('File validation failed (or) File contains no chemical shift information')
-
-        return is_ok, {'info': info, 'warning': warning, 'error': error, 'file_type': file_type, 'data': seq}
-
     def get_nef_seq(self, star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',  # pylint: disable=no-self-use
                     chain_id='chain_code', allow_empty=False, allow_gap=False):
         """ Extract sequence from any given loops in an NEF file.
@@ -1273,7 +1230,7 @@ class NEFTranslator:
             @return: list of sequence information for each loop
         """
 
-        user_warn_msg = ''
+        warn = ''
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
@@ -1324,7 +1281,7 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        user_warn_msg += "[Invalid data] Sequence must not be empty. "\
+                        warn += "[Invalid data] Sequence must not be empty. "\
                             f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
             if len(seq_data) == 0:
@@ -1338,11 +1295,11 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        user_warn_msg += f"[Invalid data] {seq_id} must be an integer. "\
+                        warn += f"[Invalid data] {seq_id} must be an integer. "\
                             f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
-            if len(user_warn_msg) > 0:
-                raise UserWarning(user_warn_msg)
+            if len(warn) > 0:
+                raise UserWarning(warn)
 
             try:
 
@@ -1454,7 +1411,7 @@ class NEFTranslator:
             @return: list of sequence information for each loop
         """
 
-        user_warn_msg = ''
+        warn = ''
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
@@ -1537,7 +1494,7 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        user_warn_msg += "[Invalid data] Sequence must not be empty. "\
+                        warn += "[Invalid data] Sequence must not be empty. "\
                             f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
             if len(seq_data) == 0:
@@ -1551,11 +1508,11 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        user_warn_msg += f"[Invalid data] {seq_id} must be an integer. "\
+                        warn += f"[Invalid data] {seq_id} must be an integer. "\
                             f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
-            if len(user_warn_msg) > 0:
-                raise UserWarning(user_warn_msg)
+            if len(warn) > 0:
+                raise UserWarning(warn)
 
             try:
 
@@ -1688,7 +1645,7 @@ class NEFTranslator:
             @return: list of author sequence information for each loop
         """
 
-        user_warn_msg = ''
+        warn = ''
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
@@ -1751,7 +1708,7 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        user_warn_msg += "[Invalid data] Author sequence must not be empty. "\
+                        warn += "[Invalid data] Author sequence must not be empty. "\
                             f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
             if len(seq_data) == 0:
@@ -1765,11 +1722,11 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        user_warn_msg += f"[Invalid data] {seq_id} must be an integer. "\
+                        warn += f"[Invalid data] {seq_id} must be an integer. "\
                             f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
-            if len(user_warn_msg) > 0:
-                raise UserWarning(user_warn_msg)
+            if len(warn) > 0:
+                raise UserWarning(warn)
 
             try:
 
@@ -1871,7 +1828,7 @@ class NEFTranslator:
             @return: list of unique pairs of comp_id and atom_id for each loop
         """
 
-        user_warn_msg = ''
+        warn = ''
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
@@ -1920,11 +1877,11 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        user_warn_msg += f"[Invalid data] {comp_id} and {atom_id} must not be empty. "\
+                        warn += f"[Invalid data] {comp_id} and {atom_id} must not be empty. "\
                             f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
-            if len(user_warn_msg) > 0:
-                raise UserWarning(user_warn_msg)
+            if len(warn) > 0:
+                raise UserWarning(warn)
 
             comps = sorted(set(row[0].upper() for row in pair_data if row[0] not in emptyValue))
             sorted_comp_atom = sorted(set((row[0].upper(), row[1]) for row in pair_data),
@@ -1974,7 +1931,7 @@ class NEFTranslator:
             @return: list of unique pairs of atom_type, isotope number, and atom_id for each CS loop
         """
 
-        user_warn_msg = ''
+        warn = ''
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
@@ -2016,7 +1973,7 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        user_warn_msg += f"[Invalid data] {atom_type}, {isotope_number}, and {atom_id} must not be empty. "\
+                        warn += f"[Invalid data] {atom_type}, {isotope_number}, and {atom_id} must not be empty. "\
                             f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
             for idx, row in enumerate(a_type_data):
@@ -2027,11 +1984,11 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        user_warn_msg += f"[Invalid data] {isotope_number} must be an integer. "\
+                        warn += f"[Invalid data] {isotope_number} must be an integer. "\
                             f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
-            if len(user_warn_msg) > 0:
-                raise UserWarning(user_warn_msg)
+            if len(warn) > 0:
+                raise UserWarning(warn)
 
             try:
 
@@ -2073,7 +2030,7 @@ class NEFTranslator:
             @return: list of unique pairs of comp_id, atom_id, and ambiguity code for each CS loop
         """
 
-        user_warn_msg = ''
+        warn = ''
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
@@ -2122,7 +2079,7 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
-                            user_warn_msg += f"[Invalid data] {ambig_code} must be one of {ALLOWED_AMBIGUITY_CODES}. "\
+                            warn += f"[Invalid data] {ambig_code} must be one of {ALLOWED_AMBIGUITY_CODES}. "\
                                 f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
                     if code not in ALLOWED_AMBIGUITY_CODES:
@@ -2130,7 +2087,7 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
-                            user_warn_msg += f"[Invalid data] {ambig_code} must be one of {ALLOWED_AMBIGUITY_CODES}. "\
+                            warn += f"[Invalid data] {ambig_code} must be one of {ALLOWED_AMBIGUITY_CODES}. "\
                                 f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
                     if code >= 4:
@@ -2139,7 +2096,7 @@ class NEFTranslator:
                                 r = {}
                                 for j, t in enumerate(loop.tags):
                                     r[t] = loop.data[idx][j]
-                                user_warn_msg += f"[Invalid data] {ambig_set_id} must not be empty for {ambig_code} {code}. "\
+                                warn += f"[Invalid data] {ambig_set_id} must not be empty for {ambig_code} {code}. "\
                                     f"#_of_row {idx + 1}, data_of_row {r}.\n"
                         else:
                             try:
@@ -2149,7 +2106,7 @@ class NEFTranslator:
                                     r = {}
                                     for j, t in enumerate(loop.tags):
                                         r[t] = loop.data[idx][j]
-                                    user_warn_msg += f"[Invalid data] {ambig_set_id} must be an integer. "\
+                                    warn += f"[Invalid data] {ambig_set_id} must be an integer. "\
                                         f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
                 if row[3] not in emptyValue:
@@ -2159,11 +2116,11 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
-                            user_warn_msg += f"[Invalid data] {ambig_set_id} must be empty for {ambig_code} {row[2]}. "\
+                            warn += f"[Invalid data] {ambig_set_id} must be empty for {ambig_code} {row[2]}. "\
                                 f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
-            if len(user_warn_msg) > 0:
-                raise UserWarning(user_warn_msg)
+            if len(warn) > 0:
+                raise UserWarning(warn)
 
             _ambig_data = [row for row in ambig_data
                            if not (row[0] in emptyValue or badPattern.match(row[0]))
@@ -2198,29 +2155,13 @@ class NEFTranslator:
 
         return data
 
-    def get_nef_index(self, star_data, lp_category='nef_sequence', index_id='index'):
-        """ Wrapper function of get_index() for an NEF file.
-            @deprecated: used only for testing
-            @author: Masashi Yokochi
-        """
-
-        return self.get_index(star_data, lp_category, index_id)
-
-    def get_star_index(self, star_data, lp_category='Chem_comp_assembly', index_id='NEF_index'):
-        """ Wrapper function of get_index() for an NMR-STAR file.
-            @deprecated: used only for testing
-            @author: Masashi Yokochi
-        """
-
-        return self.get_index(star_data, lp_category, index_id)
-
     def get_index(self, star_data, lp_category, index_id):  # pylint: disable=no-self-use
         """ Extract index_id from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of index for each loop
         """
 
-        user_warn_msg = ''
+        warn = ''
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
@@ -2252,7 +2193,7 @@ class NEFTranslator:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[idx][j]
-                    user_warn_msg += f"[Invalid data] {index_id} must not be empty. "\
+                    warn += f"[Invalid data] {index_id} must not be empty. "\
                         f"#_of_row {idx + 1}, data_of_row {r}.\n"
                 else:
                     try:
@@ -2262,11 +2203,11 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
-                            user_warn_msg += f"[Invalid data] {index_id} must be an integer. "\
+                            warn += f"[Invalid data] {index_id} must be an integer. "\
                                 f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
-            if len(user_warn_msg) > 0:
-                raise UserWarning(user_warn_msg)
+            if len(warn) > 0:
+                raise UserWarning(warn)
 
             try:
 
@@ -2310,7 +2251,7 @@ class NEFTranslator:
             except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        user_warn_msg = ''
+        warn = ''
 
         data = []  # data of all loops
 
@@ -2591,7 +2532,7 @@ class NEFTranslator:
 
                                 idx_msg = "[Check rows of " + idx_msg[:-2] + "] "
 
-                            user_warn_msg += "[Multiple data] "\
+                            warn += "[Multiple data] "\
                                 f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
 
                     else:
@@ -2639,14 +2580,14 @@ class NEFTranslator:
 
                                 idx_msg = "[Check rows of " + idx_msg[:-2] + "] "
 
-                            user_warn_msg += "[Multiple data] "\
+                            warn += "[Multiple data] "\
                                 f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
 
                         else:
                             keys.add(key)
 
-            if len(user_warn_msg) > 0:
-                _user_warn_msg = ''
+            if len(warn) > 0:
+                _warn = ''
 
                 for k in key_items:
                     if k['type'] == 'int' and 'default-from' in k and k['default-from'] in loop.tags:
@@ -2723,7 +2664,7 @@ class NEFTranslator:
 
                                     idx_msg = "[Check rows of " + idx_msg[:-2] + "] "
 
-                                _user_warn_msg += "[Multiple data] "\
+                                _warn += "[Multiple data] "\
                                     f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
 
                         else:
@@ -2771,14 +2712,14 @@ class NEFTranslator:
 
                                     idx_msg = "[Check rows of " + idx_msg[:-2] + "] "
 
-                                _user_warn_msg += "[Multiple data] "\
+                                _warn += "[Multiple data] "\
                                     f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
 
                             else:
                                 keys.add(key)
 
-                if len(_user_warn_msg) == 0:
-                    user_warn_msg = ''
+                if len(_warn) == 0:
+                    warn = ''
 
             asm = []  # assembly of a loop
 
@@ -2870,7 +2811,7 @@ class NEFTranslator:
                                         loop.data[idx][loop.tags.index(name)] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                    warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                         f"{name} {val!r} should not be zero, "\
                                         f"as defined by {self.readableItemType[type]}.\n"
                             if type == 'positive-int-as-str':
@@ -2946,7 +2887,7 @@ class NEFTranslator:
                                         loop.data[idx][loop.tags.index(name)] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                    warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                         f"{name} {val!r} should not be zero, "\
                                         f"as defined by {self.readableItemType[type]}.\n"
                         elif type == 'range-float':
@@ -2968,7 +2909,7 @@ class NEFTranslator:
                                 if not enforce_range:
                                     ent[name] = None
                                     continue
-                                user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                     f"{name} {val!r} must be {self.readableItemType[type]}.\n"
                             if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                                or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
@@ -2979,17 +2920,17 @@ class NEFTranslator:
                                         if not enforce_range:
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                            warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                 f"{name} {val!r} must be within range {_range}.\n"
                                     elif enforce_sign:
-                                        user_warn_msg += f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                        warn += f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                             f"{name} {val!r} should not have "\
                                             f"negative value for {self.readableItemType[type]}, {_range}.\n"
                                 elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
                                     if not enforce_range:
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                        warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                             f"{name} {val!r} must be within range {_range}.\n"
                                 elif ent[name] == 0.0 and enforce_non_zero:
                                     if 'void-zero' in k:
@@ -2997,7 +2938,7 @@ class NEFTranslator:
                                             loop.data[idx][loop.tags.index(name)] = None
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                        warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                             f"{name} {val!r} should not be zero, "\
                                             f"as defined by {self.readableItemType[type]}, {_range}.\n"
                             elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
@@ -3011,7 +2952,7 @@ class NEFTranslator:
                                 elif not enforce_range:
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                    warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                         f"{name} {val!r} must be within range {_range}.\n"
                         elif type == 'enum':
                             try:
@@ -3036,7 +2977,7 @@ class NEFTranslator:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be one of {enum}.")
                                     elif enforce_enum and name in mand_data_names:
-                                        user_warn_msg += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                        warn += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                             f"{name} {val!r} should be one of {enum}.\n"
                                 ent[name] = val
                             except KeyError:
@@ -3052,7 +2993,7 @@ class NEFTranslator:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be one of {enum}.")
                                     if enforce_enum:
-                                        user_warn_msg += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                        warn += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                             f"{name} {val!r} should be one of {enum}.\n"
                                 ent[name] = int(val)
                             except KeyError:
@@ -3180,7 +3121,7 @@ class NEFTranslator:
                                                 loop.data[idx][loop.tags.index(name)] = None
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                            warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                 f"{name} {val!r} should not be zero, "\
                                                 f"as defined by {self.readableItemType[type]}.\n"
                                     if type == 'positive-int-as-str':
@@ -3256,7 +3197,7 @@ class NEFTranslator:
                                                 loop.data[idx][loop.tags.index(name)] = None
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                            warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                 f"{name} {val!r} should not be zero, "\
                                                 f"as defined by {self.readableItemType[type]}.\n"
                                 elif type == 'range-float':
@@ -3278,7 +3219,7 @@ class NEFTranslator:
                                         if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
                                             clear_bad_pattern = True
                                             continue
-                                        user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                        warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                             f"{name} {val!r} must be {self.readableItemType[type]}.\n"
                                     if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                                        or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
@@ -3289,17 +3230,17 @@ class NEFTranslator:
                                                 if not enforce_range:
                                                     ent[name] = None
                                                 else:
-                                                    user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                    warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                         f"{name} {val!r} must be within range {_range}.\n"
                                             elif enforce_sign:
-                                                user_warn_msg += f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                warn += f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                     f"{name} {val!r} should not have "\
                                                     f"negative value for {self.readableItemType[type]}, {_range}.\n"
                                         elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
                                             if not enforce_range:
                                                 ent[name] = None
                                             else:
-                                                user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                     f"{name} {val!r} must be within range {_range}.\n"
                                         elif ent[name] == 0.0 and enforce_non_zero:
                                             if 'void-zero' in d:
@@ -3307,7 +3248,7 @@ class NEFTranslator:
                                                     loop.data[idx][loop.tags.index(name)] = None
                                                 ent[name] = None
                                             else:
-                                                user_warn_msg += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                     f"{name} {val!r} should not be zero, "\
                                                     f"as defined by {self.readableItemType[type]}, {_range}.\n"
                                         elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
@@ -3333,7 +3274,7 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         else:
-                                            user_warn_msg += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                            warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                 f"{name} {val!r} must be within range {_range}.\n"
                                 elif type == 'enum':
                                     try:
@@ -3352,7 +3293,7 @@ class NEFTranslator:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                  + f"{name} {val!r} must be one of {enum}.")
                                             elif enforce_enum and name in mand_data_names:
-                                                user_warn_msg += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                warn += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                     f"{name} {val!r} should be one of {enum}.\n"
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 remove_bad_pattern = True
@@ -3374,7 +3315,7 @@ class NEFTranslator:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                  + f"{name} {val!r} must be one of {enum}.")
                                             if enforce_enum:
-                                                user_warn_msg += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
+                                                warn += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
                                                     f"{name} {val!r} should be one of {enum}.\n"
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 remove_bad_pattern = True
@@ -3462,7 +3403,7 @@ class NEFTranslator:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[idx][j]
-                    user_warn_msg += f"[Remove bad pattern] Found bad pattern. "\
+                    warn += f"[Remove bad pattern] Found bad pattern. "\
                         f"#_of_row {idx + 1}, data_of_row {r}.\n"
                     continue  # should be removed from loop later
 
@@ -3470,7 +3411,7 @@ class NEFTranslator:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[idx][j]
-                    user_warn_msg += f"[Clear bad pattern] Found bad pattern. "\
+                    warn += f"[Clear bad pattern] Found bad pattern. "\
                         f"#_of_row {idx + 1}, data_of_row {r}.\n"
                     for k in key_items:
                         if k in loop.tags and 'clear-bad-pattern' in k and k['clear-bad-pattern']:
@@ -3485,8 +3426,8 @@ class NEFTranslator:
 
             data.append(asm)
 
-        if len(user_warn_msg) > 0:
-            raise UserWarning(user_warn_msg)
+        if len(warn) > 0:
+            raise UserWarning(warn)
 
         if len(data) == 0:
             data.append([])
@@ -3776,7 +3717,7 @@ class NEFTranslator:
             @return: list of extracted saveframe tags
         """
 
-        user_warn_msg = ''
+        warn = ''
 
         item_types = ('str', 'bool', 'int', 'positive-int', 'positive-int-as-str',
                       'float', 'positive-float', 'range-float', 'enum', 'enum-int')
@@ -3891,7 +3832,7 @@ class NEFTranslator:
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
                                 ent[name] = None
                             else:
-                                user_warn_msg += f"[Zero value error] {name} {val!r} should not be zero, "\
+                                warn += f"[Zero value error] {name} {val!r} should not be zero, "\
                                     f"as defined by {self.readableItemType[type]}.\n"
                         if type == 'positive-int-as-str':
                             ent[name] = str(ent[name])
@@ -3913,7 +3854,7 @@ class NEFTranslator:
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
                                 ent[name] = None
                             else:
-                                user_warn_msg += f"[Zero value error] {name} {val!r} should not be zero, "\
+                                warn += f"[Zero value error] {name} {val!r} should not be zero, "\
                                     f"as defined by {self.readableItemType[type]}.\n"
                     elif type == 'range-float':
                         try:
@@ -3925,7 +3866,7 @@ class NEFTranslator:
                             if not enforce_range:
                                 ent[name] = None
                                 continue
-                            user_warn_msg += f"[Range value error] {name} {val!r} must be {self.readableItemType[type]}.\n"
+                            warn += f"[Range value error] {name} {val!r} must be {self.readableItemType[type]}.\n"
                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                            or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                             if ent[name] < 0.0:
@@ -3935,22 +3876,22 @@ class NEFTranslator:
                                     if not enforce_range:
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += f"[Range value error] {name} {val!r} must be within range {_range}.\n"
+                                        warn += f"[Range value error] {name} {val!r} must be within range {_range}.\n"
                                 elif enforce_sign:
-                                    user_warn_msg += f"[Negative value error] {name} {val!r} should not have "\
+                                    warn += f"[Negative value error] {name} {val!r} should not have "\
                                         f"negative value for {self.readableItemType[type]}, {_range}.\n"
                             elif ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']:
                                 if not enforce_range:
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += f"[Range value error] {name} {val!r} must be within range {_range}.\n"
+                                    warn += f"[Range value error] {name} {val!r} must be within range {_range}.\n"
                             elif ent[name] == 0.0 and enforce_non_zero:
                                 if 'void-zero' in t:
                                     if self.replace_zero_by_null_in_case:
                                         star_data.tags[sf_tags.keys().index(name)][1] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += f"[Zero value error] {name} {val!r} should not be zero, "\
+                                    warn += f"[Zero value error] {name} {val!r} should not be zero, "\
                                         f"as defined by {self.readableItemType[type]}, {_range}.\n"
                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
                              ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
@@ -3963,7 +3904,7 @@ class NEFTranslator:
                             elif not enforce_range:
                                 ent[name] = None
                             else:
-                                user_warn_msg += f"[Range value error] {name} {val} must be within range {_range}.\n"
+                                warn += f"[Range value error] {name} {val} must be within range {_range}.\n"
                     elif type == 'enum':
                         if val in emptyValue:
                             val = '?'  # '.' raises internal error in NmrDpUtility
@@ -3976,13 +3917,13 @@ class NEFTranslator:
                                     itName = '_' + category + '.' + t['name']
                                     if val == '?' and enforce_enum:
                                         if self.is_mandatory_tag(itName, file_type):
-                                            user_warn_msg += f"[Enumeration error] The mandatory type {itName} {val!r} is missing "\
+                                            warn += f"[Enumeration error] The mandatory type {itName} {val!r} is missing "\
                                                 f"and the type must be one of {enum}. {t['enum-alt'][val]} will be given "\
                                                 f"unless you would like to fix the type and re-upload the {file_type.upper()} file.\n"
                                             val = t['enum-alt'][val]
                                             star_data.tags[itCol][1] = val
                                         else:
-                                            user_warn_msg += f"[Enumeration error] {name} {val!r} should be one of {enum}. "\
+                                            warn += f"[Enumeration error] {name} {val!r} should be one of {enum}. "\
                                                 "The type may be filled with either 'undefined' or estimated value "\
                                                 f"unless you would like to fix the type and re-upload the {file_type.upper()} file.\n"
                                     else:
@@ -3991,7 +3932,7 @@ class NEFTranslator:
                                 elif 'enforce-enum' in t and t['enforce-enum']:
                                     raise ValueError(f"{name} {val!r} must be one of {enum}.")
                                 elif enforce_enum and name in mand_tag_names:
-                                    user_warn_msg += f"[Enumeration error] {name} {val!r} should be one of {enum}.\n"
+                                    warn += f"[Enumeration error] {name} {val!r} should be one of {enum}.\n"
                             ent[name] = None if val in emptyValue else val
                         except KeyError:
                             raise ValueError(f"Enumeration of tag item {name} is not defined.")
@@ -4002,7 +3943,7 @@ class NEFTranslator:
                                 if 'enforce-enum' in t and t['enforce-enum']:
                                     raise ValueError(f"{name} {val!r} must be one of {enum}.")
                                 if enforce_enum:
-                                    user_warn_msg += f"[Enumeration error] {name} {val!r} should be one of {enum}.\n"
+                                    warn += f"[Enumeration error] {name} {val!r} should be one of {enum}.\n"
                             ent[name] = int(val)
                         except KeyError:
                             raise ValueError(f"Enumeration of tag item {name} is not defined.")
@@ -4056,8 +3997,8 @@ class NEFTranslator:
                             member.add(name)
                             raise ValueError(f"One of tag items {member} must not be empty.")
 
-        if len(user_warn_msg) > 0:
-            raise UserWarning(user_warn_msg)
+        if len(warn) > 0:
+            raise UserWarning(warn)
 
         return ent
 
@@ -4076,52 +4017,6 @@ class NEFTranslator:
             return atom_id in [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
 
         return False
-
-    def validate_atom(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID'):
-        """ Validate atom_id in a given loop against CCD.
-            @deprecated: used only for testing
-            @change: support non-standard residue by Masashi Yokochi
-            @return: list of valid row data
-        """
-
-        try:
-            loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
-
-        valid_row = []
-
-        for loop in loops:
-
-            try:
-
-                data = get_lp_tag(loop, [comp_id, atom_id])
-
-                for row in data:
-
-                    _comp_id = row[0].upper()
-                    _atom_id = row[1].upper()
-
-                    if _comp_id in emptyValue:
-                        valid_row.append(row)
-
-                    else:
-                        if self.__ccU.updateChemCompDict(_comp_id):
-                            if _atom_id not in [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]:
-                                valid_row.append(row)
-                        else:
-                            valid_row.append(row)
-
-            except ValueError as e:
-                self.__lfh.write(f"+NEFTranslator.validate_atom() ++ ValueError  - {str(e)}\n")
-
-        return valid_row
 
     def get_star_tag(self, nef_tag):
         """ Return NMR-STAR saveframe/loop tag corresponding to NEF tag.
@@ -8526,7 +8421,6 @@ class NEFTranslator:
         (file_path, file_name) = ntpath.split(os.path.realpath(nef_file))
 
         info = []
-        warning = []
         error = []
 
         if star_file is None:
@@ -8540,20 +8434,20 @@ class NEFTranslator:
             star_data = pynmrstar.Entry.from_scratch(nef_data.entry_id)
         except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
             star_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
-            warning.append('Not a complete Entry')
+            # warning.append('Not a complete Entry')
 
         if not is_readable:
             error.append('Input file not readable.')
-            return False, {'info': info, 'warning': warning, 'error': error}
+            return False, {'info': info, 'error': error}
 
         if data_type not in ('Entry', 'Saveframe', 'Loop'):
             error.append('File content unknown.')
-            return False, {'info': info, 'warning': warning, 'error': error}
+            return False, {'info': info, 'error': error}
 
         if data_type == 'Entry':
             if len(nef_data.get_loops_by_category('nef_sequence')) == 0:  # DAOTHER-6694
                 error.append("Missing mandatory '_nef_sequence' category.")
-                return False, {'info': info, 'warning': warning, 'error': error}
+                return False, {'info': info, 'error': error}
             self.authChainId = sorted(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code')))
         elif data_type == 'Saveframe':
             self.authChainId = sorted(set(nef_data[0].get_tag('chain_code')))
@@ -8877,7 +8771,7 @@ class NEFTranslator:
 
                 else:
                     error.append(f"Loop category {nef_data.category} is not supported.")
-                    return False, {'info': info, 'warning': warning, 'error': error}
+                    return False, {'info': info, 'error': error}
 
                 sf.add_tag('Sf_framecode', sf.name)
 
@@ -9025,7 +8919,7 @@ class NEFTranslator:
 
         info.append(f"File {star_file} successfully written.")
 
-        return True, {'info': info, 'warning': warning, 'error': error}
+        return True, {'info': info, 'error': error}
 
     def nmrstar_to_nef(self, star_file, nef_file=None, report=None):
         """ Convert NMR-STAR file to NEF file.
@@ -9038,7 +8932,6 @@ class NEFTranslator:
         (file_path, file_name) = ntpath.split(os.path.realpath(star_file))
 
         info = []
-        warning = []
         error = []
 
         if nef_file is None:
@@ -9052,15 +8945,15 @@ class NEFTranslator:
             nef_data = pynmrstar.Entry.from_scratch(star_data.entry_id)
         except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
             nef_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
-            warning.append('Not a complete Entry.')
+            # warning.append('Not a complete Entry.')
 
         if not is_readable:
             error.append('Input file not readable.')
-            return False, {'info': info, 'warning': warning, 'error': error}
+            return False, {'info': info, 'error': error}
 
         if data_type not in ('Entry', 'Saveframe', 'Loop'):
             error.append('File content unknown.')
-            return False, {'info': info, 'warning': warning, 'error': error}
+            return False, {'info': info, 'error': error}
 
         asm_id = 0
         cs_list_id = 0
@@ -9072,7 +8965,7 @@ class NEFTranslator:
         if data_type == 'Entry':
             if len(star_data.get_loops_by_category('Chem_comp_assembly')) == 0:  # DAOTHER-6694
                 error.append("Missing mandatory '_Chem_comp_assembly' category.")
-                return False, {'info': info, 'warning': warning, 'error': error}
+                return False, {'info': info, 'error': error}
             self.authChainId = sorted(set(star_data.get_loops_by_category('Chem_comp_assembly')[0].get_tag('Entity_assembly_ID')),
                                       key=lambda x: float(re.sub(r'[^\d]+', '', x)))
         elif data_type == 'Saveframe':
@@ -9328,7 +9221,7 @@ class NEFTranslator:
 
                 else:
                     error.append(f"Loop category {star_data.category} is not supported.")
-                    return False, {'info': info, 'warning': warning, 'error': error}
+                    return False, {'info': info, 'error': error}
 
                 sf.add_tag('sf_framecode', sf.name)
 
@@ -9451,7 +9344,7 @@ class NEFTranslator:
 
         info.append(f"File {nef_file} successfully written.")
 
-        return True, {'info': info, 'warning': warning, 'error': error}
+        return True, {'info': info, 'error': error}
 
     def star_data_to_nmrstar(self, data_type, star_data, output_file_path=None, input_source_id=None, report=None, leave_unmatched=False):
         """ Convert PyNMRSTAR data object (Entry/Saveframe/Loop) to complete NMR-STAR (Entry) file.
@@ -9466,28 +9359,27 @@ class NEFTranslator:
         _, file_name = ntpath.split(os.path.realpath(output_file_path))
 
         info = []
-        warning = []
         error = []
 
         try:
             out_data = pynmrstar.Entry.from_scratch(star_data.entry_id)
         except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
             out_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
-            warning.append('Not a complete Entry.')
+            # warning.append('Not a complete Entry.')
 
         if star_data is None or report is None:
             error.append('Input file not readable.')
-            return False, {'info': info, 'warning': warning, 'error': error}
+            return False, {'info': info, 'error': error}
 
         if data_type not in ('Entry', 'Saveframe', 'Loop'):
             error.append('Data type unknown.')
-            return False, {'info': info, 'warning': warning, 'error': error}
+            return False, {'info': info, 'error': error}
 
         polymer_sequence = report.getPolymerSequenceByInputSrcId(input_source_id)
 
         if polymer_sequence is None:
             error.append('Common polymer sequence does not exist.')
-            return False, {'info': info, 'warning': warning, 'error': error}
+            return False, {'info': info, 'error': error}
 
         self.authChainId = sorted([ps['chain_id'] for ps in polymer_sequence])
         self.authSeqMap = {}
@@ -9814,7 +9706,7 @@ class NEFTranslator:
 
                 else:
                     error.append(f"Loop category {star_data.category} is not supported.")
-                    return False, {'info': info, 'warning': warning, 'error': error}
+                    return False, {'info': info, 'error': error}
 
                 sf.add_tag('Sf_framecode', sf.name)
 
@@ -9960,7 +9852,7 @@ class NEFTranslator:
 
         info.append(f"File {output_file_path} successfully written.")
 
-        return True, {'info': info, 'warning': warning, 'error': error}
+        return True, {'info': info, 'error': error}
 
 
 if __name__ == "__main__":

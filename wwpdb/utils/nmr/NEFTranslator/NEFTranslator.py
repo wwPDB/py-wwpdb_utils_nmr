@@ -485,46 +485,46 @@ def get_idx_msg(idx_tag_ids, tags, row):
         return ''
 
 
-def is_empty_loop(star_data, lp_category, data_type):
+def is_empty_loop(star_data, lp_category):
     """ Return whether one of specified loops is empty loop.
         @return: True for empty loop exists, False otherwise
     """
 
-    if data_type == 'Entry':
+    if isinstance(star_data, pynmrstar.Entry):
         loops = star_data.get_loops_by_category(lp_category)
 
-        return any(len(loop.data) == 0 for loop in loops)
+        return any(len(loop) == 0 for loop in loops)
 
-    if data_type == 'Saveframe':
+    if isinstance(star_data, pynmrstar.Saveframe):
         if __pynmrstar_v3_2__:
             loop = star_data.get_loop(lp_category)
         else:
             loop = star_data.get_loop_by_category(lp_category)
 
-        return len(loop.data) == 0
+        return len(loop) == 0
 
-    return len(star_data.data) == 0
+    return len(star_data) == 0
 
 
-def count_non_empty_loops(star_data, lp_category, data_type):
+def count_non_empty_loops(star_data, lp_category):
     """ Return the number of non-empty loops.
         @return: the number of non-empty loops.
     """
 
-    if data_type == 'Entry':
+    if isinstance(star_data, pynmrstar.Entry):
         loops = star_data.get_loops_by_category(lp_category)
 
-        return sum(len(loop.data) > 0 for loop in loops)
+        return sum(len(loop) > 0 for loop in loops)
 
-    if data_type == 'Saveframe':
+    if isinstance(star_data, pynmrstar.Saveframe):
         if __pynmrstar_v3_2__:
             loop = star_data.get_loop(lp_category)
         else:
             loop = star_data.get_loop_by_category(lp_category)
 
-        return 0 if len(loop.data) == 0 else 1
+        return 0 if len(loop) == 0 else 1
 
-    return 0 if len(star_data.data) == 0 else 1
+    return 0 if len(star_data) == 0 else 1
 
 
 def get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category):
@@ -676,7 +676,7 @@ class NEFTranslator:
     def read_input_file(self, in_file):  # pylint: disable=no-self-use
         """ Read input NEF/NMR-STAR file.
             @param in_file: input NEF/NMR-STAR file path
-            @return: status, one of ('Entry', 'Saveframe', 'Loop', error message), data object
+            @return: status, one of {'Entry', 'Saveframe', 'Loop', error message}, data object
         """
 
         is_ok = True
@@ -725,13 +725,8 @@ class NEFTranslator:
                             data_type = str(e1)
 
         if is_ok:
-
-            if isinstance(star_data, pynmrstar.Entry):
-                data_type = 'Entry'
-            elif isinstance(star_data, pynmrstar.Saveframe):
-                data_type = 'Saveframe'
-            else:
-                data_type = 'Loop'
+            data_type = 'Entry' if isinstance(star_data, pynmrstar.Entry)\
+                else ('Saveframe' if isinstance(star_data, pynmrstar.Saveframe) else 'Loop')
 
         return is_ok, data_type, star_data
 
@@ -833,9 +828,9 @@ class NEFTranslator:
 
         try:
 
-            is_done, data_type, star_data = self.read_input_file(in_file)
+            is_ok, data_type, star_data = self.read_input_file(in_file)
 
-            if is_done:
+            if is_ok:
 
                 minimal_lp_category_nef_a = ['_nef_chemical_shift', '_nef_distance_restraint']
                 minimal_lp_category_nef_s = ['_nef_chemical_shift']
@@ -880,7 +875,7 @@ class NEFTranslator:
                     minimal_sf_category_star_a = ['assigned_chemical_shifts']
                     minimal_sf_category_star_r = []
 
-                sf_list, lp_list = self.get_inventory_list(star_data, data_type)
+                sf_list, lp_list = self.get_inventory_list(star_data)
 
                 info.append(f"{len(sf_list)} saveframes and {len(lp_list)} loops found")
 
@@ -913,10 +908,10 @@ class NEFTranslator:
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
-                                if is_empty_loop(star_data, lp_category, data_type):
+                                if is_empty_loop(star_data, lp_category):
                                     is_valid = False
                                     if data_type == 'Loop':
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
                                                          % (lp_category, content_subtype, _file_type))
                                         else:
@@ -924,7 +919,7 @@ class NEFTranslator:
                                                          % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             if len(sf_framecodes) == 1:
                                                 error.append(err_template_for_empty_mandatory_loop_of_sf
                                                              % (lp_category, sf_framecodes[0], content_subtype, _file_type))
@@ -948,10 +943,10 @@ class NEFTranslator:
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
-                                if is_empty_loop(star_data, lp_category, data_type):
+                                if is_empty_loop(star_data, lp_category):
                                     is_valid = False
                                     if data_type == 'Loop':
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
                                                          % (lp_category, content_subtype, _file_type))
                                         else:
@@ -959,7 +954,7 @@ class NEFTranslator:
                                                          % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             if len(sf_framecodes) == 1:
                                                 error.append(err_template_for_empty_mandatory_loop_of_sf
                                                              % (lp_category, sf_framecodes[0], content_subtype, _file_type))
@@ -983,10 +978,10 @@ class NEFTranslator:
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
-                                if is_empty_loop(star_data, lp_category, data_type):
+                                if is_empty_loop(star_data, lp_category):
                                     is_valid = False
                                     if data_type == 'Loop':
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
                                                          % (lp_category, content_subtype, _file_type))
                                         else:
@@ -994,7 +989,7 @@ class NEFTranslator:
                                                          % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             if len(sf_framecodes) == 1:
                                                 error.append(err_template_for_empty_mandatory_loop_of_sf
                                                              % (lp_category, sf_framecodes[0], content_subtype, _file_type))
@@ -1011,7 +1006,7 @@ class NEFTranslator:
 
                     else:
                         is_valid = False
-                        error.append('file_subtype flag should be A/S/R')
+                        error.append("file_subtype flag should be one of {'A', 'S', 'R'}.")
 
                 else:
                     if file_subtype == 'A':
@@ -1023,10 +1018,10 @@ class NEFTranslator:
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
-                                if is_empty_loop(star_data, lp_category, data_type):
+                                if is_empty_loop(star_data, lp_category):
                                     is_valid = False
                                     if data_type == 'Loop':
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
                                                          % (lp_category, content_subtype, _file_type))
                                         else:
@@ -1034,7 +1029,7 @@ class NEFTranslator:
                                                          % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             if len(sf_framecodes) == 1:
                                                 error.append(err_template_for_empty_mandatory_loop_of_sf
                                                              % (lp_category, sf_framecodes[0], content_subtype, _file_type))
@@ -1058,10 +1053,10 @@ class NEFTranslator:
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
-                                if is_empty_loop(star_data, lp_category, data_type):
+                                if is_empty_loop(star_data, lp_category):
                                     is_valid = False
                                     if data_type == 'Loop':
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
                                                          % (lp_category, content_subtype, _file_type))
                                         else:
@@ -1069,7 +1064,7 @@ class NEFTranslator:
                                                          % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             if len(sf_framecodes) == 1:
                                                 error.append(err_template_for_empty_mandatory_loop_of_sf
                                                              % (lp_category, sf_framecodes[0], content_subtype, _file_type))
@@ -1093,10 +1088,10 @@ class NEFTranslator:
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
-                                if is_empty_loop(star_data, lp_category, data_type):
+                                if is_empty_loop(star_data, lp_category):
                                     is_valid = False
                                     if data_type == 'Loop':
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
                                                          % (lp_category, content_subtype, _file_type))
                                         else:
@@ -1104,7 +1099,7 @@ class NEFTranslator:
                                                          % (lp_category, _file_type))
                                     else:
                                         sf_framecodes = get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category)
-                                        if count_non_empty_loops(star_data, lp_category, data_type) == 0:
+                                        if count_non_empty_loops(star_data, lp_category) == 0:
                                             if len(sf_framecodes) == 1:
                                                 error.append(err_template_for_empty_mandatory_loop_of_sf
                                                              % (lp_category, sf_framecodes[0], content_subtype, _file_type))
@@ -1122,7 +1117,7 @@ class NEFTranslator:
                     elif file_subtype == 'O':  # DAOTHER-7545, issue #2
                         is_valid = False
                         for lp_category in allowed_lp_category_star_o:
-                            if lp_category in lp_list and not is_empty_loop(star_data, lp_category, data_type):
+                            if lp_category in lp_list and not is_empty_loop(star_data, lp_category):
                                 is_valid = True
                         if not is_valid:
                             error.append(f"One of the mandatory loops {allowed_lp_category_star_o} is missing. "
@@ -1130,7 +1125,7 @@ class NEFTranslator:
                         else:
                             for lp_category, sf_category in zip(allowed_lp_category_star_o, allowed_sf_category_star_o):
                                 if lp_category in lp_list:
-                                    if is_empty_loop(star_data, lp_category, data_type):
+                                    if is_empty_loop(star_data, lp_category):
                                         is_valid = False
                                         if data_type == 'Loop':
                                             error.append(warn_template_for_empty_mandatory_loop
@@ -1146,7 +1141,7 @@ class NEFTranslator:
 
                     else:
                         is_valid = False
-                        error.append('file_subtype flag should be A/S/R/O')
+                        error.append("file_subtype flag should be {'A', 'S', 'R', 'O'}.")
 
             else:
                 is_valid = False
@@ -1158,12 +1153,12 @@ class NEFTranslator:
 
         return is_valid, {'info': info, 'error': error, 'file_type': file_type}
 
-    def resolve_sf_names_for_cif(self, star_data, data_type):  # pylint: disable=no-self-use # DAOTHER-7389, issue #4
+    def resolve_sf_names_for_cif(self, star_data):  # pylint: disable=no-self-use # DAOTHER-7389, issue #4
         """ Resolve saveframe names to prevent case-insensitive name collisions occur in CIF format.
             @return: status, list of correction messages, dictionary of saveframe name corrections
         """
 
-        if data_type != 'Entry':
+        if not isinstance(star_data, pynmrstar.Entry):
             return True, [], {}
 
         original_names = [sf.name for sf in star_data.frame_list]
@@ -1196,7 +1191,7 @@ class NEFTranslator:
 
         return len(messages) == 0, messages, corrections
 
-    def get_inventory_list(self, star_data, data_type):  # pylint: disable=no-self-use
+    def get_inventory_list(self, star_data):  # pylint: disable=no-self-use
         """ Return lists of saveframe category names and loop category names in an NEF/NMR-STAR file.
             @change: rename the original get_data_content() to get_inventory_list() by Masashi Yokochi
             @return: list of saveframe category names, list of loop category names
@@ -1205,7 +1200,7 @@ class NEFTranslator:
         sf_list = []
         lp_list = []
 
-        if data_type == 'Entry':
+        if isinstance(star_data, pynmrstar.Entry):
 
             for sf in star_data.frame_list:
                 sf_list.append(sf.category)
@@ -1213,7 +1208,7 @@ class NEFTranslator:
                 for lp in sf:
                     lp_list.append(lp.category)
 
-        elif data_type == 'Saveframe':
+        elif isinstance(star_data, pynmrstar.Saveframe):
 
             for lp in star_data:
                 lp_list.append(lp.category)
@@ -1230,18 +1225,18 @@ class NEFTranslator:
             @return: list of sequence information for each loop
         """
 
-        warn = ''
-
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
+
+        warn = ''
 
         data = []  # data of all loops
 
@@ -1411,18 +1406,18 @@ class NEFTranslator:
             @return: list of sequence information for each loop
         """
 
-        warn = ''
-
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
+
+        warn = ''
 
         def_chain_id = 'A' if self.__remediation_mode else '1'
 
@@ -1645,18 +1640,18 @@ class NEFTranslator:
             @return: list of author sequence information for each loop
         """
 
-        warn = ''
-
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
+
+        warn = ''
 
         data = []  # data of all loops
 
@@ -1828,18 +1823,18 @@ class NEFTranslator:
             @return: list of unique pairs of comp_id and atom_id for each loop
         """
 
-        warn = ''
-
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
+
+        warn = ''
 
         data = []  # data of all loops
 
@@ -1931,18 +1926,18 @@ class NEFTranslator:
             @return: list of unique pairs of atom_type, isotope number, and atom_id for each CS loop
         """
 
-        warn = ''
-
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
+
+        warn = ''
 
         data = []  # data of all loops
 
@@ -2030,18 +2025,18 @@ class NEFTranslator:
             @return: list of unique pairs of comp_id, atom_id, and ambiguity code for each CS loop
         """
 
-        warn = ''
-
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
+
+        warn = ''
 
         data = []  # data of all loops
 
@@ -2155,24 +2150,24 @@ class NEFTranslator:
 
         return data
 
-    def get_index(self, star_data, lp_category, index_id):  # pylint: disable=no-self-use
+    def get_index(self, star_data, lp_category, index_id, row_limit=10000):  # pylint: disable=no-self-use
         """ Extract index_id from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of index for each loop
         """
 
-        warn = ''
-
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
+
+        warn = ''
 
         data = []  # data of all loops
 
@@ -2182,6 +2177,9 @@ class NEFTranslator:
             index_data = []
 
             len_loop_data = len(loop.data)
+
+            if len_loop_data > row_limit:
+                raise UserWarning(f'[Too big loop] The total number of rows in a loop, {len_loop_data}, exceeds the limit {row_limit}.')
 
             if set(tags) & set(loop.tags) == set(tags):
                 index_data = get_lp_tag(loop, tags)
@@ -2240,16 +2238,16 @@ class NEFTranslator:
             @return: list of extracted data for each loop
         """
 
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
 
         warn = ''
 
@@ -3440,16 +3438,16 @@ class NEFTranslator:
             @return: list of row IDs in reverse order for each loop
         """
 
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
 
         data = []  # data of all loops
 
@@ -3499,16 +3497,16 @@ class NEFTranslator:
             @return: list of row ID sets for each loop
         """
 
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
 
         data = []  # data of all loops
 
@@ -3586,16 +3584,16 @@ class NEFTranslator:
             @return: list of row IDs in reverse order for each loop
         """
 
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
 
         data = []  # data of all loops
 
@@ -3650,16 +3648,16 @@ class NEFTranslator:
             @return: list of row IDs in reverse order for each loop
         """
 
-        try:
+        if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-            try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
-            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
-                loops = [star_data]
+
+        elif isinstance(star_data, pynmrstar.Saveframe):
+            if __pynmrstar_v3_2__:
+                loops = [star_data.get_loop(lp_category)]
+            else:
+                loops = [star_data.get_loop_by_category(lp_category)]
+        else:
+            loops = [star_data]
 
         data = []  # data of all loops
 
@@ -8426,9 +8424,9 @@ class NEFTranslator:
         if star_file is None:
             star_file = file_path + '/' + file_name.split('.')[0] + '.str'
 
-        is_readable, data_type, nef_data = self.read_input_file(nef_file)
+        is_ok, data_type, nef_data = self.read_input_file(nef_file)
 
-        self.resolve_sf_names_for_cif(nef_data, data_type)  # DAOTHER-7389, issue #4
+        self.resolve_sf_names_for_cif(nef_data)  # DAOTHER-7389, issue #4
 
         try:
             star_data = pynmrstar.Entry.from_scratch(nef_data.entry_id)
@@ -8436,12 +8434,8 @@ class NEFTranslator:
             star_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
             # warning.append('Not a complete Entry')
 
-        if not is_readable:
+        if not is_ok:
             error.append('Input file not readable.')
-            return False, {'info': info, 'error': error}
-
-        if data_type not in ('Entry', 'Saveframe', 'Loop'):
-            error.append('File content unknown.')
             return False, {'info': info, 'error': error}
 
         if data_type == 'Entry':
@@ -8449,8 +8443,10 @@ class NEFTranslator:
                 error.append("Missing mandatory '_nef_sequence' category.")
                 return False, {'info': info, 'error': error}
             self.authChainId = sorted(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code')))
+
         elif data_type == 'Saveframe':
             self.authChainId = sorted(set(nef_data[0].get_tag('chain_code')))
+
         else:
             self.authChainId = sorted(set(nef_data.get_tag('chain_code')))
 
@@ -8937,9 +8933,9 @@ class NEFTranslator:
         if nef_file is None:
             nef_file = file_path + '/' + file_name.split('.')[0] + '.nef'
 
-        is_readable, data_type, star_data = self.read_input_file(star_file)
+        is_ok, data_type, star_data = self.read_input_file(star_file)
 
-        self.resolve_sf_names_for_cif(star_data, data_type)  # DAOTHER-7389, issue #4
+        self.resolve_sf_names_for_cif(star_data)  # DAOTHER-7389, issue #4
 
         try:
             nef_data = pynmrstar.Entry.from_scratch(star_data.entry_id)
@@ -8947,12 +8943,8 @@ class NEFTranslator:
             nef_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
             # warning.append('Not a complete Entry.')
 
-        if not is_readable:
+        if not is_ok:
             error.append('Input file not readable.')
-            return False, {'info': info, 'error': error}
-
-        if data_type not in ('Entry', 'Saveframe', 'Loop'):
-            error.append('File content unknown.')
             return False, {'info': info, 'error': error}
 
         asm_id = 0
@@ -8968,9 +8960,11 @@ class NEFTranslator:
                 return False, {'info': info, 'error': error}
             self.authChainId = sorted(set(star_data.get_loops_by_category('Chem_comp_assembly')[0].get_tag('Entity_assembly_ID')),
                                       key=lambda x: float(re.sub(r'[^\d]+', '', x)))
+
         elif data_type == 'Saveframe':
             self.authChainId = sorted(set(star_data[0].get_tag('Entity_assembly_ID')),
                                       key=lambda x: float(re.sub(r'[^\d]+', '', x)))
+
         else:
             self.authChainId = sorted(set(star_data.get_tag('Entity_assembly_ID')),
                                       key=lambda x: float(re.sub(r'[^\d]+', '', x)))
@@ -9346,7 +9340,7 @@ class NEFTranslator:
 
         return True, {'info': info, 'error': error}
 
-    def star_data_to_nmrstar(self, data_type, star_data, output_file_path=None, input_source_id=None, report=None, leave_unmatched=False):
+    def star_data_to_nmrstar(self, star_data, output_file_path=None, input_source_id=None, report=None, leave_unmatched=False):
         """ Convert PyNMRSTAR data object (Entry/Saveframe/Loop) to complete NMR-STAR (Entry) file.
             @author: Masashi Yokochi
             @param data_type: input PyNMRSTAR data object type, one of Entry/Saveframe/Loop
@@ -9355,6 +9349,9 @@ class NEFTranslator:
             @param input_source_id: input source id of NMR data processing report
             @param report: NMR data processing report object
         """
+
+        data_type = 'Entry' if isinstance(star_data, pynmrstar.Entry)\
+            else ('Saveframe' if isinstance(star_data, pynmrstar.Saveframe) else 'Loop')
 
         _, file_name = ntpath.split(os.path.realpath(output_file_path))
 
@@ -9369,10 +9366,6 @@ class NEFTranslator:
 
         if star_data is None or report is None:
             error.append('Input file not readable.')
-            return False, {'info': info, 'error': error}
-
-        if data_type not in ('Entry', 'Saveframe', 'Loop'):
-            error.append('Data type unknown.')
             return False, {'info': info, 'error': error}
 
         polymer_sequence = report.getPolymerSequenceByInputSrcId(input_source_id)

@@ -7616,7 +7616,7 @@ class NmrDpUtility:
 
         else:
 
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id])
 
             # initialize loop counter
             lp_counts = {t: 0 for t in self.nmr_content_subtypes}
@@ -7969,7 +7969,7 @@ class NmrDpUtility:
         if not self.__rescue_mode:
             return True
 
-        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id])
 
         # initialize loop counter
         lp_counts = {t: 0 for t in self.nmr_content_subtypes}
@@ -8267,9 +8267,9 @@ class NmrDpUtility:
         if input_source_dic['content_subtype'] is not None:
             return
 
-        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id])
 
-        is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[file_list_id], self.__star_data_type[file_list_id])  # DAOTHER-7389, issue #4
+        is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[file_list_id])  # DAOTHER-7389, issue #4
         self.__sf_name_corr.append(corrections)
 
         if not is_valid:
@@ -18031,6 +18031,9 @@ class NmrDpUtility:
 
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ ValueError  - {err}\n")
+
+                elif err.startswith('[Too big loop]'):
+                    continue
 
                 else:
 
@@ -36653,7 +36656,7 @@ class NmrDpUtility:
 
             _, star_data_type, star_data = self.__nefT.read_input_file(self.__srcPath)
 
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(star_data, star_data_type)
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(star_data)
 
             if len(self.__star_data_type) == 0:
                 self.__star_data_type.append(star_data_type)
@@ -36665,7 +36668,7 @@ class NmrDpUtility:
             else:
                 self.__star_data[0] = star_data
 
-            corrections = self.__nefT.resolve_sf_names_for_cif(star_data, star_data_type)  # DAOTHER-7389, issue #4
+            corrections = self.__nefT.resolve_sf_names_for_cif(star_data)  # DAOTHER-7389, issue #4
 
             if len(self.__sf_name_corr) == 0:
                 self.__sf_name_corr.append(corrections)
@@ -37185,7 +37188,7 @@ class NmrDpUtility:
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
-        
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
@@ -44656,6 +44659,7 @@ class NmrDpUtility:
 
         # inspect _Software saveframes to extend Software_ID in _Constraint_file loop
 
+        defined_software = []
         software_dict = {}
         software_id = 0
 
@@ -44664,6 +44668,7 @@ class NmrDpUtility:
                 _id = get_first_sf_tag('ID')
                 _name = get_first_sf_tag(sf, 'Name')
                 _code = get_first_sf_tag(sf, 'Sf_framecode')
+                defined_software.append(_name)
                 if _id not in emptyValue and _name not in emptyValue\
                    and _id.isdigit() and _name not in software_dict:
                     _id_ = int(_id)
@@ -44692,11 +44697,16 @@ class NmrDpUtility:
                     _name_ = _name.upper()
                     if _name == _name_:
                         if _name in software_dict:
-                            row[2], row[3], row[4] = software_dict[_name][0], f'${software_dict[_name][1]}', _name
+                            row[2], row[3], row[4] =\
+                                software_dict[_name][0],\
+                                f'${software_dict[_name][1]}' if _name in defined_software else None,\
+                                _name
                         else:
                             software_id += 1
                             _code = f'software_{software_id}'
-                            row[2], row[3], row[4] = software_id, f'${_code}', _name
+                            row[2], row[3], row[4] =\
+                                software_id, f'${_code}' if _name in defined_software else None,\
+                                _name
                             software_dict[_name] = (software_id, _code)
                     if 'Block_ID' in sf_allowed_tags:
                         block_id += 1
@@ -44774,11 +44784,17 @@ class NmrDpUtility:
 
             if data_format is not None and data_format != 'UNKNOWN':
                 if data_format in software_dict:
-                    row[2], row[3], row[4] = software_dict[data_format][0], f'${software_dict[data_format][1]}', data_format
+                    row[2], row[3], row[4] =\
+                        software_dict[data_format][0],\
+                        f'${software_dict[data_format][1]}' if data_format in defined_software else None,\
+                        data_format
                 else:
                     software_id += 1
                     _code = f'software_{software_id}'
-                    row[2], row[3], row[4] = software_id, f'${_code}', data_format
+                    row[2], row[3], row[4] =\
+                        software_id,\
+                        f'${_code}' if data_format in defined_software else None,\
+                        data_format
                     software_dict[data_format] = (software_id, _code)
 
             sf.add_tag('Text_data_format', data_format)
@@ -44947,7 +44963,7 @@ class NmrDpUtility:
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
                     if sf_framecode not in sf_item:
-                        sf_item[sf_framecode] = {'id': 0, 'constraint_type': 'distance', 'constraint_subsubtype': 'simple'}
+                        sf_item[sf_framecode] = {'constraint_type': 'distance', 'constraint_subsubtype': 'simple'}
                         constraint_type = get_first_sf_tag(sf, 'Constraint_type')
                         if len(constraint_type) > 0 and constraint_type not in emptyValue:
                             sf_item[sf_framecode]['constraint_subtype'] = constraint_type
@@ -45376,7 +45392,7 @@ class NmrDpUtility:
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
                     if sf_framecode not in sf_item:
-                        sf_item[sf_framecode] = {'id': 0, 'constraint_type': 'dihedral angle'}
+                        sf_item[sf_framecode] = {'constraint_type': 'dihedral angle'}
 
                     if __pynmrstar_v3_2__:
                         lp = sf.get_loop(lp_category)
@@ -45658,7 +45674,7 @@ class NmrDpUtility:
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
                     if sf_framecode not in sf_item:
-                        sf_item[sf_framecode] = {'id': 0, 'constraint_type': 'residual dipolar coupling', 'constraint_subtype': 'RDC'}
+                        sf_item[sf_framecode] = {'constraint_type': 'residual dipolar coupling', 'constraint_subtype': 'RDC'}
 
                     if __pynmrstar_v3_2__:
                         lp = sf.get_loop(lp_category)
@@ -45859,6 +45875,33 @@ class NmrDpUtility:
                     cst_sf.add_tag('RDC_ambig_intramol_tot_num', RDC_ambig_intramol_tot_num)
                     cst_sf.add_tag('RDC_ambig_intermol_tot_num', RDC_ambig_intermol_tot_num)
                     cst_sf.add_tag('RDC_intermol_tot_num', RDC_intermol_tot_num)
+
+            elif content_subtype in self.mr_content_subtypes:
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                restraint_name = getRestraintName(content_subtype)
+                _restraint_name = restraint_name.split()
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    if sf_framecode not in sf_item:
+                        sf_item[sf_framecode] = {'constraint_type': ' '.join(_restraint_name[:-1])}
+
+                        id_col = lp.tags.index('ID')
+
+                        count = 0
+
+                        prev_id = -1
+                        for row in lp:
+                            _id = int(row[id_col])
+                            if _id == prev_id:
+                                continue
+                            prev_id = _id
+                            count += 1
+
+                        sf_item[sf_framecode]['id'] = count
 
         content_subtype = 'dist_restraint'
 

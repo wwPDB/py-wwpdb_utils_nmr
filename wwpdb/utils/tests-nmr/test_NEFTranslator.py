@@ -15,7 +15,7 @@
 # 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (NEFTranslator v2.11.0, DAOTHER-7389, issue #5)
 # 28-Oct-2021  M. Yokochi - support NEFTranslator v3.0.2
 # 24-Feb-2022  M. Yokochi - support NEFTranslator v3.0.9
-# 16-Dec-2022  M. Yokochi - support NEFTranslator v3.3.2 (remove deprecated functions)
+# 16-Dec-2022  M. Yokochi - support NEFTranslator v3.3.2
 ##
 import unittest
 import os
@@ -348,7 +348,7 @@ class TestNEFTranslator(unittest.TestCase):
     def test_get_inventory_list(self):
         (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.nef"))
         self.assertTrue(isValid)
-        datacontent = self.neft.get_inventory_list(data, content)
+        datacontent = self.neft.get_inventory_list(data)
         self.assertEqual(
             datacontent[0],
             [
@@ -377,7 +377,7 @@ class TestNEFTranslator(unittest.TestCase):
         )
         (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.str"))
         self.assertTrue(isValid)
-        datacontent = self.neft.get_inventory_list(data, content)
+        datacontent = self.neft.get_inventory_list(data)
         self.assertEqual(
             datacontent[0],
             [

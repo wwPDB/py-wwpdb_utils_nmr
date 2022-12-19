@@ -2798,7 +2798,7 @@ class NmrDpUtility:
                                                             ],
                                         'jcoup_restraint': [{'name': 'Coupling_constant_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': RDC_RESTRAINT_RANGE,
-                                                             'group': {'member-with': ['Val_min', 'Val_max'],
+                                                             'group': {'member-with': ['Coupling_constant_lower_bound', 'Coupling_constant_upper_bound'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': None,
                                                                        'larger-than': None}},
@@ -26345,7 +26345,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -26515,7 +26515,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -26841,7 +26841,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -27012,7 +27012,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -27171,7 +27171,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -27452,7 +27452,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -27618,7 +27618,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -27776,7 +27776,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -27934,7 +27934,7 @@ class NmrDpUtility:
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()

@@ -3283,7 +3283,7 @@ def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
     if contentSubtype is None or contentSubtype not in listIdCounter:
         return listIdCounter
 
-    listIdCounter[contentSubtype] = listIdCounter[contentSubtype] + 1
+    listIdCounter[contentSubtype] += 1
 
     return listIdCounter
 

@@ -16,7 +16,7 @@ try:
     from wwpdb.utils.nmr.mr.CyanaMRLexer import CyanaMRLexer
     from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
     from wwpdb.utils.nmr.mr.CyanaMRParserListener import CyanaMRParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
@@ -29,7 +29,7 @@ except ImportError:
     from nmr.mr.CyanaMRLexer import CyanaMRLexer
     from nmr.mr.CyanaMRParser import CyanaMRParser
     from nmr.mr.CyanaMRParserListener import CyanaMRParserListener
-    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
@@ -45,7 +45,7 @@ class CyanaMRReader:
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
-                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None, upl_or_lol=None, file_ext=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -58,11 +58,11 @@ class CyanaMRReader:
         self.__representativeModelId = representativeModelId
         self.__mrAtomNameMapping = mrAtomNameMapping
 
-        if cR is not None and cC is None:
-            cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
+        if cR is not None and caC is None:
+            caC = coordAssemblyChecker(verbose, log, representativeModelId, cR, None, fullCheck=False)
 
         self.__cR = cR
-        self.__cC = cC
+        self.__caC = caC
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -162,7 +162,7 @@ class CyanaMRReader:
             listener = CyanaMRParserListener(self.__verbose, self.__lfh,
                                              self.__representativeModelId,
                                              self.__mrAtomNameMapping,
-                                             self.__cR, self.__cC,
+                                             self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              self.__reasons, self.__upl_or_lol, self.__file_ext)
             listener.setDebugMode(self.__debug)
@@ -198,18 +198,38 @@ class CyanaMRReader:
             if self.__verbose:
                 self.__lfh.write(f"+CyanaMRReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
-
+            """
         except Exception as e:
             if self.__verbose and isFilePath:
                 self.__lfh.write(f"+CyanaMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
-
+            """
         finally:
             if isFilePath and ifp is not None:
                 ifp.close()
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True, file_ext='upl')
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5ue2/pro_csp_28dec16.upl',
+                 '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif', originalFileName='pro_csp_28dec16.upl')
+
+    reader = CyanaMRReader(True, file_ext='upl')
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5ue2/pro_mutations_28dec16.upl',
+                 '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif', originalFileName='pro_mutations_28dec16.upl')
+
+    reader = CyanaMRReader(True, file_ext='upl')
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5ue2/methyl_NOEs.upl',
+                 '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5ue2/2_dp8_dihre.aco-corrected',
+                 '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif')
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2rrn/2rrn-trimmed-div_src.mr',

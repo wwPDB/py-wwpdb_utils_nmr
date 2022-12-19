@@ -16,7 +16,7 @@ try:
     from wwpdb.utils.nmr.mr.CnsMRLexer import CnsMRLexer
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
     from wwpdb.utils.nmr.mr.CnsMRParserListener import CnsMRParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
@@ -29,7 +29,7 @@ except ImportError:
     from nmr.mr.CnsMRLexer import CnsMRLexer
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.CnsMRParserListener import CnsMRParserListener
-    from nmr.mr.ParserListenerUtil import (checkCoordinates,
+    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.io.CifReader import CifReader
@@ -45,7 +45,7 @@ class CnsMRReader:
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
-                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -57,11 +57,11 @@ class CnsMRReader:
         self.__representativeModelId = representativeModelId
         self.__mrAtomNameMapping = mrAtomNameMapping
 
-        if cR is not None and cC is None:
-            cC = checkCoordinates(verbose, log, representativeModelId, cR, None, testTag=False)
+        if cR is not None and caC is None:
+            caC = coordAssemblyChecker(verbose, log, representativeModelId, cR, None, fullCheck=False)
 
         self.__cR = cR
-        self.__cC = cC
+        self.__caC = caC
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -154,7 +154,7 @@ class CnsMRReader:
             listener = CnsMRParserListener(self.__verbose, self.__lfh,
                                            self.__representativeModelId,
                                            self.__mrAtomNameMapping,
-                                           self.__cR, self.__cC,
+                                           self.__cR, self.__caC,
                                            self.__ccU, self.__csStat, self.__nefT,
                                            self.__reasons)
             listener.setDebugMode(self.__debug)
@@ -189,18 +189,23 @@ class CnsMRReader:
             if self.__verbose:
                 self.__lfh.write(f"+CnsMRReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
-
+            """
         except Exception as e:
             if self.__verbose and isFilePath:
                 self.__lfh.write(f"+CnsMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
-
+            """
         finally:
             if isFilePath and ifp is not None:
                 ifp.close()
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-7969/dna2_used.tbl',
+                 '../../tests-nmr/mock-data-daother-7969/D_800478_model_P1.cif.V3')
+
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6ijw/D_1300008256_mr_P1.cyana.V1-corrected',

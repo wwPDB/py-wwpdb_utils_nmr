@@ -20,17 +20,21 @@ try:
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
                                                        stripQuot,
-                                                       checkCoordinates,
+                                                       coordAssemblyChecker,
                                                        translateToStdAtomName,
                                                        translateToStdResName,
                                                        isLongRangeRestraint,
+                                                       isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
+                                                       getRdcCode,
                                                        getRestraintName,
-                                                       getValidSubType,
+                                                       contentSubtypeOf,
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getDistConstraintType,
+                                                       getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -45,7 +49,9 @@ try:
                                                        PCS_RESTRAINT_RANGE,
                                                        PCS_RESTRAINT_ERROR,
                                                        CS_RESTRAINT_RANGE,
-                                                       CS_RESTRAINT_ERROR)
+                                                       CS_RESTRAINT_ERROR,
+                                                       DIST_AMBIG_LOW,
+                                                       DIST_AMBIG_UP)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -62,17 +68,21 @@ except ImportError:
     from nmr.mr.AmberMRParser import AmberMRParser
     from nmr.mr.ParserListenerUtil import (toNpArray,
                                            stripQuot,
-                                           checkCoordinates,
+                                           coordAssemblyChecker,
                                            translateToStdAtomName,
                                            translateToStdResName,
                                            isLongRangeRestraint,
+                                           isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
+                                           getRdcCode,
                                            getRestraintName,
-                                           getValidSubType,
+                                           contentSubtypeOf,
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getDistConstraintType,
+                                           getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
@@ -87,7 +97,9 @@ except ImportError:
                                            PCS_RESTRAINT_RANGE,
                                            PCS_RESTRAINT_ERROR,
                                            CS_RESTRAINT_RANGE,
-                                           CS_RESTRAINT_ERROR)
+                                           CS_RESTRAINT_ERROR,
+                                           DIST_AMBIG_LOW,
+                                           DIST_AMBIG_UP)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -190,6 +202,8 @@ COL_DIST_COORD4 = 8
 # This class defines a complete listener for a parse tree produced by AmberMRParser.
 class AmberMRParserListener(ParseTreeListener):
 
+    __file_type = 'nm-res-amb'
+
     __verbose = None
     __lfh = None
     __debug = False
@@ -236,21 +250,22 @@ class AmberMRParserListener(ParseTreeListener):
     __authAtomId = None
     # __altAuthAtomId = None
 
-    # coordinates information generated by ParserListenerUtil.checkCoordinates()
+    # coordinates information generated by ParserListenerUtil.coordAssemblyChecker()
     __polySeq = None
     __altPolySeq = None
     __nonPoly = None
-    __branch = None
+    __branched = None
     __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
+    __authToStarSeq = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __hasPolySeq = False
     __hasNonPoly = False
-    __hasBranch = False
+    __hasBranched = False
     __hasNonPolySeq = False
     __preferAuthSeq = True
     __gapInAuthSeq = False
@@ -430,7 +445,7 @@ class AmberMRParserListener(ParseTreeListener):
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
-                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  atomNumberDict=None, reasons=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -442,7 +457,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            ret = checkCoordinates(verbose, log, representativeModelId, cR, cC)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -451,24 +466,25 @@ class AmberMRParserListener(ParseTreeListener):
             self.__polySeq = ret['polymer_sequence']
             self.__altPolySeq = ret['alt_polymer_sequence']
             self.__nonPoly = ret['non_polymer']
-            self.__branch = ret['branch']
+            self.__branched = ret['branched']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
+            self.__authToStarSeq = ret['auth_to_star_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
-        self.__hasBranch = self.__branch is not None and len(self.__branch) > 0
-        if self.__hasNonPoly or self.__hasBranch:
+        self.__hasBranched = self.__branched is not None and len(self.__branched) > 0
+        if self.__hasNonPoly or self.__hasBranched:
             self.__hasNonPolySeq = True
-            if self.__hasNonPoly and self.__hasBranch:
+            if self.__hasNonPoly and self.__hasBranched:
                 self.__nonPolySeq = self.__nonPoly
-                self.__nonPolySeq.extend(self.__branch)
+                self.__nonPolySeq.extend(self.__branched)
             elif self.__hasNonPoly:
                 self.__nonPolySeq = self.__nonPoly
             else:
-                self.__nonPolySeq = self.__branch
+                self.__nonPolySeq = self.__branched
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
@@ -667,6 +683,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.dihed_omega_atoms = ['CA', 'N', 'C', 'CA']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), CA(i-1)
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 
@@ -691,10 +709,8 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__hasPolySeq and self.__polySeqRst is not None:
             sortPolySeqRst(self.__polySeqRst)
 
-            file_type = 'nm-res-amb'
-
             self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
                 self.warningMessage += message
@@ -719,7 +735,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 ps['chain_id'] = chain_mapping[ps['chain_id']]
 
                         self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
@@ -1104,8 +1120,10 @@ class AmberMRParserListener(ParseTreeListener):
                         if lenIat == COL_DIST:
 
                             if self.__createSfDict:
-                                sf = self.__getSf()
+                                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                                 sf['id'] += 1
+                                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
@@ -1114,11 +1132,22 @@ class AmberMRParserListener(ParseTreeListener):
                                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                                 if self.__createSfDict and sf is not None:
                                     sf['index_id'] += 1
-                                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                                  '.', memberLogicCode,
-                                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                                     sf['loop'].add_data(row)
+
+                                    if sf['constraint_subsubtype'] == 'ambi':
+                                        continue
+
+                                    if memberLogicCode == 'OR'\
+                                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                                        sf['constraint_subsubtype'] = 'ambi'
+                                    if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                                        upperLimit = float(dstFunc['upper_limit'])
+                                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                                            sf['constraint_subsubtype'] = 'ambi'
 
                         # generalized distance
                         else:
@@ -1129,7 +1158,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 4 atoms')
                                     sf['id'] += 1
-                                    if len(sf['loop']['tag']) == 0:
+                                    if len(sf['loop']['tags']) == 0:
                                         sf['loop']['tags'] = ['index_id', 'id',
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -1171,7 +1200,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 6 atoms')
                                     sf['id'] += 1
-                                    if len(sf['loop']['tag']) == 0:
+                                    if len(sf['loop']['tags']) == 0:
                                         sf['loop']['tags'] = ['index_id', 'id',
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -1220,7 +1249,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 8 atoms')
                                     sf['id'] += 1
-                                    if len(sf['loop']['tag']) == 0:
+                                    if len(sf['loop']['tags']) == 0:
                                         sf['loop']['tags'] = ['index_id', 'id',
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -1291,7 +1320,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__createSfDict:
                             sf = self.__getSf('angle restraint')
                             sf['id'] += 1
-                            if len(sf['loop']['tag']) == 0:
+                            if len(sf['loop']['tags']) == 0:
                                 sf['loop']['tags'] = ['index_id', 'id',
                                                       'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -1341,7 +1370,7 @@ class AmberMRParserListener(ParseTreeListener):
                             return
 
                         if self.__createSfDict:
-                            sf = self.__getSf()
+                            sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                             sf['id'] += 1
 
                         compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1362,7 +1391,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 sf['index_id'] += 1
                                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                              '.', angleName,
-                                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
+                                sf['loop'].add_data(row)
 
                     # plane-(point/plane) angle
                     else:
@@ -1386,7 +1416,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__createSfDict:
                                 sf = self.__getSf('AMBER plane-point angle restraint')
                                 sf['id'] += 1
-                                if len(sf['loop']['tag']) == 0:
+                                if len(sf['loop']['tags']) == 0:
                                     sf['loop']['tags'] = ['index_id', 'id',
                                                           'plane_auth_asym_id_1', 'plane_auth_seq_id_1', 'plane_auth_comp_id_1', 'plane_auth_atom_id_1',
                                                           'plane_auth_asym_id_2', 'plane_auth_seq_id_2', 'plane_auth_comp_id_2', 'plane_auth_atom_id_2',
@@ -1428,7 +1458,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__createSfDict:
                                 sf = self.__getSf('AMBER plane-plane angle restraint')
                                 sf['id'] += 1
-                                if len(sf['loop']['tag']) == 0:
+                                if len(sf['loop']['tags']) == 0:
                                     sf['loop']['tags'] = ['index_id', 'id',
                                                           'plane_1_auth_asym_id_1', 'plane_1_auth_seq_id_1', 'plane_1_auth_comp_id_1', 'plane_1_auth_atom_id_1',
                                                           'plane_1_auth_asym_id_2', 'plane_1_auth_seq_id_2', 'plane_1_auth_comp_id_2', 'plane_1_auth_atom_id_2',
@@ -1924,8 +1954,10 @@ class AmberMRParserListener(ParseTreeListener):
                         if not self.inGenDist:
 
                             if self.__createSfDict:
-                                sf = self.__getSf()
+                                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                                 sf['id'] += 1
+                                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
@@ -1934,11 +1966,22 @@ class AmberMRParserListener(ParseTreeListener):
                                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                                 if self.__createSfDict and sf is not None:
                                     sf['index_id'] += 1
-                                    memberLogicCode = '.' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else 'OR'
                                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                                  '.', memberLogicCode,
-                                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                                     sf['loop'].add_data(row)
+
+                                    if sf['constraint_subsubtype'] == 'ambi':
+                                        continue
+
+                                    if memberLogicCode == 'OR'\
+                                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                                        sf['constraint_subsubtype'] = 'ambi'
+                                    if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                                        upperLimit = float(dstFunc['upper_limit'])
+                                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                                            sf['constraint_subsubtype'] = 'ambi'
 
                         # generalized distance
                         else:
@@ -1983,7 +2026,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 4 atoms')
                                     sf['id'] += 1
-                                    if len(sf['loop']['tag']) == 0:
+                                    if len(sf['loop']['tags']) == 0:
                                         sf['loop']['tags'] = ['index_id', 'id',
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -2025,7 +2068,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 6 atoms')
                                     sf['id'] += 1
-                                    if len(sf['loop']['tag']) == 0:
+                                    if len(sf['loop']['tags']) == 0:
                                         sf['loop']['tags'] = ['index_id', 'id',
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -2074,7 +2117,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict:
                                     sf = self.__getSf('AMBER generalized distance restraint of 8 atoms')
                                     sf['id'] += 1
-                                    if len(sf['loop']['tag']) == 0:
+                                    if len(sf['loop']['tags']) == 0:
                                         sf['loop']['tags'] = ['index_id', 'id',
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -2151,7 +2194,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__createSfDict:
                             sf = self.__getSf('angle restraint')
                             sf['id'] += 1
-                            if len(sf['loop']['tag']) == 0:
+                            if len(sf['loop']['tags']) == 0:
                                 sf['loop']['tags'] = ['index_id', 'id',
                                                       'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -2207,7 +2250,7 @@ class AmberMRParserListener(ParseTreeListener):
                             return
 
                         if self.__createSfDict:
-                            sf = self.__getSf()
+                            sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                             sf['id'] += 1
 
                         compId = self.atomSelectionSet[0][0]['comp_id']
@@ -2228,7 +2271,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 sf['index_id'] += 1
                                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                              '.', angleName,
-                                             sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
+                                sf['loop'].add_data(row)
 
                     # plane-(point/plane) angle
                     else:
@@ -2256,7 +2300,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__createSfDict:
                                 sf = self.__getSf('AMBER plane-point angle restraint')
                                 sf['id'] += 1
-                                if len(sf['loop']['tag']) == 0:
+                                if len(sf['loop']['tags']) == 0:
                                     sf['loop']['tags'] = ['index_id', 'id',
                                                           'plane_auth_asym_id_1', 'plane_auth_seq_id_1', 'plane_auth_comp_id_1', 'plane_auth_atom_id_1',
                                                           'plane_auth_asym_id_2', 'plane_auth_seq_id_2', 'plane_auth_comp_id_2', 'plane_auth_atom_id_2',
@@ -2328,7 +2372,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.__createSfDict:
                                 sf = self.__getSf('AMBER plane-plane angle restraint')
                                 sf['id'] += 1
-                                if len(sf['loop']['tag']) == 0:
+                                if len(sf['loop']['tags']) == 0:
                                     sf['loop']['tags'] = ['index_id', 'id',
                                                           'plane_1_auth_asym_id_1', 'plane_1_auth_seq_id_1', 'plane_1_auth_comp_id_1', 'plane_1_auth_atom_id_1',
                                                           'plane_1_auth_asym_id_2', 'plane_1_auth_seq_id_2', 'plane_1_auth_comp_id_2', 'plane_1_auth_atom_id_2',
@@ -3384,7 +3428,7 @@ class AmberMRParserListener(ParseTreeListener):
                     _, authCompId, _authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, authAtomId)
 
                 if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
-                   or compId == translateToStdResName(authCompId):
+                   or compId == translateToStdResName(authCompId, self.__ccU):
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
                     if coordAtomSite is not None and _authAtomId in coordAtomSite['atom_id']:
@@ -3873,7 +3917,7 @@ class AmberMRParserListener(ParseTreeListener):
                         _, authCompId, _authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, authAtomId)
 
                     if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
-                       or compId == translateToStdResName(authCompId):
+                       or compId == translateToStdResName(authCompId, self.__ccU):
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck)
                         if coordAtomSite is not None and _authAtomId in coordAtomSite['atom_id']:
@@ -4316,7 +4360,8 @@ class AmberMRParserListener(ParseTreeListener):
                 return None
 
             neighbor = [atom for atom in _neighbor if numpy.linalg.norm(toNpArray(atom) - origin) < around
-                        and translateToStdResName(factor['auth_comp_id']) in (atom['comp_id'], translateToStdResName(atom['comp_id']))
+                        and translateToStdResName(factor['auth_comp_id'], self.__ccU)
+                        in (atom['comp_id'], translateToStdResName(atom['comp_id'], self.__ccU))
                         and atom['atom_id'][0] == factor['auth_atom_id'][0]]
 
             len_neighbor = len(neighbor)
@@ -5028,7 +5073,7 @@ class AmberMRParserListener(ParseTreeListener):
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', None,
-                                         sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
@@ -5337,7 +5382,7 @@ class AmberMRParserListener(ParseTreeListener):
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None,
-                                     sf['list_id'], self.__entryId, dstFunc, atom)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom)
                         sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
@@ -5829,7 +5874,7 @@ class AmberMRParserListener(ParseTreeListener):
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None,
-                                     sf['list_id'], self.__entryId, dstFunc, atom)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom)
                         sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
@@ -6301,7 +6346,8 @@ class AmberMRParserListener(ParseTreeListener):
                     return
 
                 if self.__createSfDict:
-                    sf = self.__getSf()
+                    sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                      rdcCode=getRdcCode([self.atomSelectionSet[1][0], self.atomSelectionSet[1][0]]))
                     sf['id'] += 1
 
                 updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
@@ -6317,7 +6363,7 @@ class AmberMRParserListener(ParseTreeListener):
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
@@ -6961,7 +7007,7 @@ class AmberMRParserListener(ParseTreeListener):
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None,
-                                     sf['list_id'], self.__entryId, dstFunc, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom2)
                         sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
@@ -7453,7 +7499,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         unambigResidues = None
         if len(self.unambigAtomNameMapping) > 0:
-            unambigResidues = [translateToStdResName(residue) for residue in self.unambigAtomNameMapping.keys()]
+            unambigResidues = [translateToStdResName(residue, self.__ccU) for residue in self.unambigAtomNameMapping.keys()]
 
         for ambigDict in self.ambigAtomNameMapping.values():
             for ambigList in ambigDict.values():
@@ -7479,7 +7525,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if unambigResidues is not None and cifCompId in unambigResidues:
 
                             unambigMap = next(v for k, v in self.unambigAtomNameMapping.items()
-                                              if translateToStdResName(k) == cifCompId)
+                                              if translateToStdResName(k, self.__ccU) == cifCompId)
 
                             if atomName in unambigMap:
 
@@ -7521,7 +7567,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     def getRealChainSeqId(self, ps, seqId, compId=None, isPolySeq=True):  # pylint: disable=no-self-use
         if compId is not None:
-            compId = translateToStdResName(compId)
+            compId = translateToStdResName(compId, self.__ccU)
         if seqId in ps['auth_seq_id']:
             if compId is None:
                 return ps['auth_chain_id'], seqId
@@ -7540,7 +7586,7 @@ class AmberMRParserListener(ParseTreeListener):
         """ Assign polymer sequences of the coordinates.
         """
 
-        chainAssign = []
+        chainAssign = set()
         _seqId = seqId
 
         for ps in self.__polySeq:
@@ -7549,7 +7595,7 @@ class AmberMRParserListener(ParseTreeListener):
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
                 if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.append((chainId, seqId, cifCompId))
+                    chainAssign.add((chainId, seqId, cifCompId))
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
@@ -7571,7 +7617,7 @@ class AmberMRParserListener(ParseTreeListener):
                             seqId_ = ps['auth_seq_id'][idx]
                             cifCompId = ps['comp_id'][idx]
                             if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((chainId, seqId_, cifCompId))
+                                chainAssign.add((chainId, seqId_, cifCompId))
                         except IndexError:
                             pass
 
@@ -7582,7 +7628,7 @@ class AmberMRParserListener(ParseTreeListener):
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
                     if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.append((chainId, seqId, cifCompId))
+                        chainAssign.add((chainId, seqId, cifCompId))
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
@@ -7593,7 +7639,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.append((ps['auth_chain_id'], _seqId, cifCompId))
+                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId))
 
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
@@ -7604,14 +7650,14 @@ class AmberMRParserListener(ParseTreeListener):
                         if seqId in np['seq_id']:
                             cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
                             if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.append((np['auth_chain_id'], _seqId, cifCompId))
+                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId))
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
                 chainId = ps['auth_chain_id']
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.append((chainId, _seqId, cifCompId))
+                    chainAssign.add((chainId, _seqId, cifCompId))
 
         if len(chainAssign) == 0:
             if seqId == 1 and atomId is not None and atomId in ('H', 'HN'):
@@ -7630,7 +7676,7 @@ class AmberMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Atom not found] "\
                         f"{_seqId}:{atomId} is not present in the coordinates.\n"
 
-        return chainAssign
+        return list(chainAssign)
 
     def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True):
         """ Select atoms of the coordinates.
@@ -7644,6 +7690,8 @@ class AmberMRParserListener(ParseTreeListener):
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
             if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                    _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None:
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
@@ -7795,25 +7843,27 @@ class AmberMRParserListener(ParseTreeListener):
             return f"[Check the {self.geoRestraints}th row of generalized distance restraints] "
         return f"[Check the {self.nmrRestraints}th row of NMR restraints] "
 
-    def __addSf(self, constraintType=None):
-        _subtype = getValidSubType(self.__cur_subtype)
+    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None):
+        content_subtype = contentSubtypeOf(self.__cur_subtype)
 
-        if _subtype is None:
+        if content_subtype is None:
             return
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, constraintType, None)
+        key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
             self.sfDict[key] = []
 
-        list_id = self.__listIdCounter[self.__cur_subtype]
+        list_id = self.__listIdCounter[content_subtype]
 
-        sf_framecode = 'AMBER_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
+        restraint_name = getRestraintName(self.__cur_subtype)
+
+        sf_framecode = 'AMBER_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
-                          constraintType)
+                          constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         not_valid = True
 
@@ -7822,19 +7872,47 @@ class AmberMRParserListener(ParseTreeListener):
             sf.add_loop(lp)
             not_valid = False
 
-        item = {'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                'id': 0, 'index_id': 0}
+        _restraint_name = restraint_name.split()
+
+        item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                'id': 0, 'index_id': 0,
+                'constraint_type': ' '.join(_restraint_name[:-1])}
 
         if not_valid:
             item['tags'] = []
 
+        if self.__cur_subtype == 'dist':
+            item['constraint_subsubtype'] = 'simple'
+
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None):
-        key = (self.__cur_subtype, constraintType, None)
+    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None):
+        key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
-            self.__addSf(constraintType)
+            replaced = False
+            if potentialType is not None or rdcCode is not None:
+                old_key = (self.__cur_subtype, constraintType, None, None, None)
+                if old_key in self.sfDict:
+                    replaced = True
+                    self.sfDict[key] = [self.sfDict[old_key][-1]]
+                    del self.sfDict[old_key][-1]
+                    if len(self.sfDict[old_key]) == 0:
+                        del self.sfDict[old_key]
+                    sf = self.sfDict[key][-1]['saveframe']
+                    idx = next((idx for idx, t in enumerate(sf.tags) if t[0] == 'Potential_type'), -1)
+                    if idx != -1:
+                        sf.tags[idx][1] = potentialType
+                    else:
+                        sf.add_tag('Potential_type', potentialType)
+                    if rdcCode is not None:
+                        idx = next((idx for idx, t in enumerate(sf.tags) if t[0] == 'Details'), -1)
+                        if idx != -1:
+                            sf.tags[idx][1] = rdcCode
+                        else:
+                            sf.add_tag('Details', rdcCode)
+            if not replaced:
+                self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         return self.sfDict[key][-1]
 
@@ -7894,7 +7972,7 @@ class AmberMRParserListener(ParseTreeListener):
     def getListIdCounter(self):
         """ Return updated list id counter.
         """
-        return None if len(self.__listIdCounter) == 0 else self.__listIdCounter
+        return self.__listIdCounter
 
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.

@@ -21,20 +21,27 @@ try:
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
                                                        toRegEx, toNefEx,
-                                                       checkCoordinates,
-                                                       extendCoordinatesForExactNoes,
+                                                       coordAssemblyChecker,
+                                                       extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       hasInterChainRestraint,
                                                        isLongRangeRestraint,
                                                        isAsymmetricRangeRestraint,
+                                                       isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
+                                                       getRdcCode,
                                                        isCyclicPolymer,
                                                        getRestraintName,
-                                                       getValidSubType,
+                                                       contentSubtypeOf,
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
+                                                       getAuxLoops,
                                                        getRow,
+                                                       getAuxRow,
+                                                       getDistConstraintType,
+                                                       getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -49,6 +56,8 @@ try:
                                                        CS_RESTRAINT_ERROR,
                                                        T1T2_RESTRAINT_RANGE,
                                                        T1T2_RESTRAINT_ERROR,
+                                                       DIST_AMBIG_LOW,
+                                                       DIST_AMBIG_UP,
                                                        XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                                        XPLOR_NITROXIDE_NAMES,
                                                        XPLOR_ORIGIN_AXIS_COLS)
@@ -57,6 +66,7 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
                                            MAJOR_ASYM_ID_SET,
+                                           MAX_MAG_IDENT_ASYM_ID,
                                            monDict3,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
@@ -71,27 +81,34 @@ try:
                                            retrieveRemappedChainId,
                                            splitPolySeqRstForNonPoly,
                                            retrieveRemappedNonPoly,
-                                           splitPolySeqRstForBranch,
+                                           splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.ParserListenerUtil import (toNpArray,
                                            toRegEx, toNefEx,
-                                           checkCoordinates,
-                                           extendCoordinatesForExactNoes,
+                                           coordAssemblyChecker,
+                                           extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           hasInterChainRestraint,
                                            isLongRangeRestraint,
                                            isAsymmetricRangeRestraint,
+                                           isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
+                                           getRdcCode,
                                            isCyclicPolymer,
                                            getRestraintName,
-                                           getValidSubType,
+                                           contentSubtypeOf,
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
+                                           getAuxLoops,
                                            getRow,
+                                           getAuxRow,
+                                           getDistConstraintType,
+                                           getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -106,6 +123,8 @@ except ImportError:
                                            CS_RESTRAINT_ERROR,
                                            T1T2_RESTRAINT_RANGE,
                                            T1T2_RESTRAINT_ERROR,
+                                           DIST_AMBIG_LOW,
+                                           DIST_AMBIG_UP,
                                            XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                            XPLOR_NITROXIDE_NAMES,
                                            XPLOR_ORIGIN_AXIS_COLS)
@@ -114,6 +133,7 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LEN_MAJOR_ASYM_ID_SET,
                                MAJOR_ASYM_ID_SET,
+                               MAX_MAG_IDENT_ASYM_ID,
                                monDict3,
                                updatePolySeqRst,
                                sortPolySeqRst,
@@ -128,7 +148,7 @@ except ImportError:
                                retrieveRemappedChainId,
                                splitPolySeqRstForNonPoly,
                                retrieveRemappedNonPoly,
-                               splitPolySeqRstForBranch,
+                               splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
 
 
@@ -169,6 +189,8 @@ T1T2_ERROR_MAX = T1T2_RESTRAINT_ERROR['max_exclusive']
 
 # This class defines a complete listener for a parse tree produced by CnsMRParser.
 class CnsMRParserListener(ParseTreeListener):
+
+    __file_type = 'nm-res-cns'
 
     __verbose = None
     __lfh = None
@@ -221,21 +243,22 @@ class CnsMRParserListener(ParseTreeListener):
     __authAtomId = None
     # __altAuthAtomId = None
 
-    # coordinates information generated by ParserListenerUtil.checkCoordinates()
+    # coordinates information generated by ParserListenerUtil.coordAssemblyChecker()
     __polySeq = None
     __altPolySeq = None
     __nonPoly = None
-    __branch = None
+    __branched = None
     __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
+    __authToStarSeq = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __hasPolySeq = False
     __hasNonPoly = False
-    __hasBranch = False
+    __hasBranched = False
     __hasNonPolySeq = False
     __preferAuthSeq = True
     __gapInAuthSeq = False
@@ -276,9 +299,17 @@ class CnsMRParserListener(ParseTreeListener):
     noePotential = 'biharmonic'
     noeAverage = 'r-6'
     squareExponent = 2.0
+    softExponent = 2.0
+    squareConstant = 20.0
     squareOffset = 0.0
     rSwitch = 10.0
     scale = 1.0
+    asymptote = 0.0
+    B_high = 0.01
+    ceiling = 30.0
+    temperature = 300.0
+    monomers = 1
+    ncount = 2
     scale_a = None
     symmTarget = None
     symmDminus = None
@@ -366,7 +397,7 @@ class CnsMRParserListener(ParseTreeListener):
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
-                 cR=None, cC=None, ccU=None, csStat=None, nefT=None,
+                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -381,7 +412,7 @@ class CnsMRParserListener(ParseTreeListener):
             exptl = cR.getDictList('exptl')
             if len(exptl) > 0 and 'method' in exptl[0]:
                 self.__exptlMethod = exptl[0]['method']
-            ret = checkCoordinates(verbose, log, representativeModelId, cR, cC)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -390,24 +421,25 @@ class CnsMRParserListener(ParseTreeListener):
             self.__polySeq = ret['polymer_sequence']
             self.__altPolySeq = ret['alt_polymer_sequence']
             self.__nonPoly = ret['non_polymer']
-            self.__branch = ret['branch']
+            self.__branched = ret['branched']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
+            self.__authToStarSeq = ret['auth_to_star_seq']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
-        self.__hasBranch = self.__branch is not None and len(self.__branch) > 0
-        if self.__hasNonPoly or self.__hasBranch:
+        self.__hasBranched = self.__branched is not None and len(self.__branched) > 0
+        if self.__hasNonPoly or self.__hasBranched:
             self.__hasNonPolySeq = True
-            if self.__hasNonPoly and self.__hasBranch:
+            if self.__hasNonPoly and self.__hasBranched:
                 self.__nonPolySeq = self.__nonPoly
-                self.__nonPolySeq.extend(self.__branch)
+                self.__nonPolySeq.extend(self.__branched)
             elif self.__hasNonPoly:
                 self.__nonPolySeq = self.__nonPoly
             else:
-                self.__nonPolySeq = self.__branch
+                self.__nonPolySeq = self.__branched
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
@@ -431,11 +463,12 @@ class CnsMRParserListener(ParseTreeListener):
             self.__pA.setVerbose(verbose)
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
-            self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, self.__labelToAuthSeq, self.__authToLabelSeq =\
-                extendCoordinatesForExactNoes(reasons['model_chain_id_ext'],
+            self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes,\
+                self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq =\
+                extendCoordChainsForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__labelToAuthSeq, self.__authToLabelSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -467,6 +500,8 @@ class CnsMRParserListener(ParseTreeListener):
         # self.angStatements = 0       # CNS: Angle database statements
         self.geoStatements = 0       # CNS: Harmonic coordinate/NCS restraints
 
+        self.sfDict = {}
+
     def setDebugMode(self, debug):
         self.__debug = debug
 
@@ -492,11 +527,9 @@ class CnsMRParserListener(ParseTreeListener):
             sortPolySeqRst(self.__polySeqRst,
                            None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
 
-            file_type = 'nm-res-cns'
-
             self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
                                                       resolvedMultimer=(self.__reasons is not None))
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
                 self.warningMessage += message
@@ -522,7 +555,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                         self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
                                                                   resolvedMultimer=(self.__reasons is not None))
-                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
@@ -616,14 +649,14 @@ class CnsMRParserListener(ParseTreeListener):
                             if 'non_poly_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
 
-                    if self.__hasBranch:
-                        polySeqRst, branchMapping = splitPolySeqRstForBranch(self.__pA, self.__polySeq, self.__branch, self.__polySeqRst,
-                                                                             self.__chainAssign)
+                    if self.__hasBranched:
+                        polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.__polySeq, self.__branched, self.__polySeqRst,
+                                                                                 self.__chainAssign)
 
                         if polySeqRst is not None:
                             self.__polySeqRst = polySeqRst
-                            if 'branch_remap' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['branch_remap'] = branchMapping
+                            if 'branched_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['branched_remap'] = branchedMapping
 
         # """
         # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
@@ -633,7 +666,7 @@ class CnsMRParserListener(ParseTreeListener):
         #         del self.reasonsForReParsing['seq_id_remap']
         # """
         if 'local_seq_scheme' in self.reasonsForReParsing:
-            if 'non_poly_remap' in self.reasonsForReParsing or 'branch_remap' in self.reasonsForReParsing:
+            if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
             if 'seq_id_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
@@ -657,9 +690,17 @@ class CnsMRParserListener(ParseTreeListener):
         self.noePotential = 'biharmonic'  # default potential
         self.noeAverage = 'r-6'  # default averaging method
         self.squareExponent = 2.0
+        self.softExponent = 2.0
+        self.squareConstant = 20.0
         self.squareOffset = 0.0
         self.rSwitch = 10.0
         self.scale = 1.0
+        self.asymptote = 0.0
+        self.B_high = 0.01
+        self.ceiling = 30.0
+        self.temperature = 300.0
+        self.monomers = 1
+        self.ncount = 2
         self.symmTarget = None
         self.symmDminus = None
         self.symmDplus = None
@@ -669,7 +710,61 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CnsMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
-        pass
+        if self.__createSfDict and self.__cur_subtype == 'dist':
+            sf = self.__getSf()
+
+            if 'aux_loops' in sf:
+                return
+
+            sf['aux_loops'] = getAuxLoops(self.__cur_subtype)
+
+            aux_lp = next((aux_lp for aux_lp in sf['aux_loops'] if aux_lp.category == '_Gen_dist_constraint_software_param'), None)
+
+            if aux_lp is None:
+                return
+
+            aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                      {'Type': 'class name', 'Value': self.classification}))
+            aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                      {'Type': 'potential function', 'Value': self.noePotential}))
+            aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                      {'Type': 'averaging method', 'Value': self.noeAverage}))
+            aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                      {'Type': 'scaling constant', 'Value': self.scale}))
+            aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                      {'Type': 'ceiling', 'Value': self.ceiling}))
+            if self.noePotential in ('square', 'softsquare'):
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'exponent', 'Value': self.squareExponent}))
+            if self.noePotential == 'softsquare':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'soft exponent', 'Value': self.softExponent}))
+            if self.noePotential in ('square', 'softsquare'):
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'auxiliary scaling constant', 'Value': self.squareConstant}))
+            if self.noePotential in ('square', 'softsquare'):
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'negative offset', 'Value': self.squareOffset}))
+            if self.noePotential == 'softsquare':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'switch distance', 'Value': self.rSwitch}))
+            if self.noePotential == 'softsquare':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'asymptote slope', 'Value': self.asymptote}))
+            if self.noePotential == 'high':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'B_high', 'Value': self.B_high}))
+            if self.noePotential == 'biharmonic':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'temperature', 'Value': self.temperature}))
+            if self.noeAverage == 'sum':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'number monomers', 'Value': self.monomers}))
+            if self.noePotential == 'high':
+                aux_lp.add_data(getAuxRow(self.__cur_subtype, aux_lp.category, sf['list_id'], self.__entryId,
+                                          {'Type': 'number assign statements', 'Value': self.ncount}))
+
+            sf['saveframe'].add_loop(aux_lp)
 
     # Enter a parse tree produced by CnsMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: CnsMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
@@ -873,9 +968,37 @@ class CnsMRParserListener(ParseTreeListener):
                     "The exponent value of square-well or soft-square function "\
                     f"'NOE {str(ctx.SqExponent())} {self.getClass_name(ctx.class_name(0))} {self.squareExponent} END' must be a positive value.\n"
 
+        elif ctx.SoExponent():
+            self.softExponent = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.softExponent, str):
+                if self.softExponent in self.evaluate:
+                    self.softExponent = self.evaluate[self.softExponent]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.softExponent!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.softExponent = 2.0
+            if self.softExponent is None or self.softExponent <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    "The exponent value for soft-square function only "\
+                    f"'NOE {str(ctx.SoExponent())} {self.getClass_name(ctx.class_name(0))} {self.softExponent} END' must be a positive value.\n"
+
+        elif ctx.SqConstant():
+            self.squareConstant = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.squareConstant, str):
+                if self.squareConstant in self.evaluate:
+                    self.squareConstant = self.evaluate[self.squareConstant]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.squareConstant!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.squareConstant = 20.0
+            if self.squareConstant is None or self.squareConstant <= 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    "The auxiliary scaling constant of square-well or soft-square function "\
+                    f"'NOE {str(ctx.SqConstant())} {self.getClass_name(ctx.class_name(0))} {self.squareConstant} END' must be a positive value.\n"
+
         elif ctx.SqOffset():
             self.squareOffset = self.getNumber_s(ctx.number_s(0))
-            if self.squareOffset in self.evaluate:
+            if isinstance(self.squareOffset, str):
                 if self.squareOffset in self.evaluate:
                     self.squareOffset = self.evaluate[self.squareOffset]
                 else:
@@ -884,7 +1007,7 @@ class CnsMRParserListener(ParseTreeListener):
                     self.squareOffset = 0.0
             if self.squareOffset is None or self.squareOffset < 0.0:
                 self.warningMessage += "[Invalid data] "\
-                    "The offset value of square-well or soft-square function "\
+                    "The negative offset value to all upper bounds of square-well or soft-square function "\
                     f"'NOE {str(ctx.SqOffset())} {self.getClass_name(ctx.class_name(0))} {self.squareOffset} END' must not be a negative value.\n"
 
         elif ctx.Rswitch():
@@ -917,12 +1040,102 @@ class CnsMRParserListener(ParseTreeListener):
                 self.warningMessage += "[Invalid data] "\
                     f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' must not be a negative value.\n"
 
+        elif ctx.Asymptote():
+            self.asymptote = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.asymptote, str):
+                if self.asymptote in self.evaluate:
+                    self.asymptote = self.evaluate[self.asymptote]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.asymptote!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.asymptote = 0.0
+            if self.asymptote is None:
+                self.warningMessage += "[Range value warning] "\
+                    f"The asymptote slope value 'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' should be a non-negative value.\n"
+            elif self.asymptote < 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The asymptote slope value 'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' must not be a negative value.\n"
+
+        elif ctx.Bhig():
+            self.B_high = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.B_high, str):
+                if self.B_high in self.evaluate:
+                    self.B_high = self.evaluate[self.B_high]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.B_high!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.B_high = 0.01
+            if self.B_high is None:
+                self.warningMessage += "[Range value warning] "\
+                    f"The potential barrier value 'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' should be a non-negative value.\n"
+            elif self.B_high < 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The potential barrier value 'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' must not be a negative value.\n"
+
+        elif ctx.Ceiling():
+            self.ceiling = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.ceiling, str):
+                if self.ceiling in self.evaluate:
+                    self.ceiling = self.evaluate[self.ceiling]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.ceiling!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.ceiling = 30.0
+            if self.ceiling is None:
+                self.warningMessage += "[Range value warning] "\
+                    f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' should be a non-negative value.\n"
+            elif self.ceiling < 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' must not be a negative value.\n"
+
+        elif ctx.Temperature():
+            self.temperature = self.getNumber_s(ctx.number_s(0))
+            if isinstance(self.temperature, str):
+                if self.temperature in self.evaluate:
+                    self.temperature = self.evaluate[self.temperature]
+                else:
+                    self.warningMessage += "[Unsupported data] "\
+                        f"The symbol {self.temperature!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.temperature = 300.0
+            if self.temperature is None:
+                self.warningMessage += "[Range value warning] "\
+                    f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' should be a non-negative value.\n"
+            elif self.temperature < 0.0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' must not be a negative value.\n"
+
+        elif ctx.Monomers():
+            self.monomers = int(str(ctx.Integer()))
+            if self.monomers is None or self.monomers == 0:
+                self.warningMessage += "[Range value warning] "\
+                    f"The number of monomers 'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' should be a positive value.\n"
+            elif self.monomers < 0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The number of monomers 'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' must not be a negative value.\n"
+
+        elif ctx.Ncount():
+            self.ncount = int(str(ctx.Integer()))
+            if self.ncount is None or self.ncount == 0:
+                self.warningMessage += "[Range value warning] "\
+                    f"The number of assign statements 'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' should be a positive value.\n"
+            elif self.ncount < 0:
+                self.warningMessage += "[Invalid data] "\
+                    f"The number of assign statements 'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' must not be a negative value.\n"
+
         elif ctx.Reset():
             self.noePotential = 'biharmonic'  # default potential
             self.squareExponent = 2.0
+            self.softExponent = 2.0
+            self.squareConstant = 20.0
             self.squareOffset = 0.0
             self.rSwitch = 10.0
             self.scale = 1.0
+            self.asymptote = 0.0
+            self.B_high = 0.01
+            self.ceiling = 30.0
+            self.temperature = 300.0
+            self.monomers = 1
+            self.ncount = 2
             self.symmTarget = None
             self.symmDminus = None
             self.symmDplus = None
@@ -1054,6 +1267,7 @@ class CnsMRParserListener(ParseTreeListener):
                    and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
                         or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(scale,
                                                  target_value, lower_limit, upper_limit,
@@ -1064,7 +1278,8 @@ class CnsMRParserListener(ParseTreeListener):
 
             combinationId = '.'
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc, self.__originalFileName),
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
                 if len(self.atomSelectionSet) > 2:
                     combinationId = 0
@@ -1072,6 +1287,8 @@ class CnsMRParserListener(ParseTreeListener):
             for i in range(0, len(self.atomSelectionSet), 2):
                 if isinstance(combinationId, int):
                     combinationId += 1
+                if self.__createSfDict:
+                    memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     if self.__debug:
@@ -1079,11 +1296,23 @@ class CnsMRParserListener(ParseTreeListener):
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
-                        memberLogicCode = '.' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else 'OR'
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      combinationId, memberLogicCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
+
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
+                        if isinstance(combinationId, int)\
+                           or (memberLogicCode == 'OR'
+                               and (isAmbigAtomSelection(self.atomSelectionSet[i], self.__csStat)
+                                    or isAmbigAtomSelection(self.atomSelectionSet[i + 1], self.__csStat))):
+                            sf['constraint_subsubtype'] = 'ambi'
+                        if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                            upperLimit = float(dstFunc['upper_limit'])
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                                sf['constraint_subsubtype'] = 'ambi'
 
         finally:
             self.numberSelection.clear()
@@ -1380,7 +1609,7 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
                 sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
@@ -1401,7 +1630,7 @@ class CnsMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', angleName,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
         finally:
@@ -1618,7 +1847,7 @@ class CnsMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('planality restraint, CNS PLANE/GROUP statement')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                       'list_id', 'entry_id']
@@ -1810,7 +2039,7 @@ class CnsMRParserListener(ParseTreeListener):
                     chain_id_set.sort()
                     if self.__symmetric != 'no':
                         pass
-                    elif len(chain_id_set) > 2 and chain_id_2 in chain_id_set:
+                    elif len(chain_id_set) > MAX_MAG_IDENT_ASYM_ID and chain_id_2 in chain_id_set:
                         self.__symmetric = 'linear'
 
                         try:
@@ -1919,7 +2148,8 @@ class CnsMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  rdcCode=getRdcCode([self.atomSelectionSet[4][0], self.atomSelectionSet[5][0]]))
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
@@ -1944,7 +2174,7 @@ class CnsMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:
@@ -2203,16 +2433,16 @@ class CnsMRParserListener(ParseTreeListener):
                     self.warningMessage += self.__warningInAtomSelection
                 return
 
-            for i in range(0, len(self.atomSelectionSet), 2):
+            for i in range(0, len(self.atomSelectionSet), 4):
                 chain_id_1 = self.atomSelectionSet[i][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[i][0]['seq_id']
                 comp_id_1 = self.atomSelectionSet[i][0]['comp_id']
                 atom_id_1 = self.atomSelectionSet[i][0]['atom_id']
 
-                chain_id_2 = self.atomSelectionSet[i + 1][0]['chain_id']
-                seq_id_2 = self.atomSelectionSet[i + 1][0]['seq_id']
-                comp_id_2 = self.atomSelectionSet[i + 1][0]['comp_id']
-                atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[i + 3][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[i + 3][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[i + 3][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[i + 3][0]['atom_id']
 
                 if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2285,11 +2515,9 @@ class CnsMRParserListener(ParseTreeListener):
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     '.', None,
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
             else:
@@ -2304,11 +2532,9 @@ class CnsMRParserListener(ParseTreeListener):
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1, atom2)
+                                     '.', None,
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
                         sf['loop'].add_data(row)
 
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
@@ -2326,11 +2552,10 @@ class CnsMRParserListener(ParseTreeListener):
                                   f"atom4={atom1} atom5={atom2} atom6={atom3} atom7={atom4} {dstFunc2}")
                     if self.__createSfDict and sf is not None:
                         sf['index_id'] += 1
-                        couplingCode = '3J' + (atom1['auth_atom_id'] if 'auth_atom_id' in atom1 else atom1['atom_id'])\
-                            + (atom2['auth_atom_id'] if 'auth_atom_id' in atom2 else atom2['atom_id'])
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', couplingCode,
-                                     sf['list_id'], self.__entryId, dstFunc if dstFunc2 is None else dstFunc2, atom1, atom2)
+                                     '.', None,
+                                     sf['list_id'], self.__entryId, dstFunc if dstFunc2 is None else dstFunc2, self.__authToStarSeq,
+                                     atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
         finally:
@@ -2394,13 +2619,6 @@ class CnsMRParserListener(ParseTreeListener):
                     f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
                 return
 
-            if CS_ERROR_MIN < cb_shift < CS_ERROR_MAX:
-                pass
-            else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"CB chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
-                return
-
             if not self.__hasPolySeq:
                 return
 
@@ -2441,6 +2659,20 @@ class CnsMRParserListener(ParseTreeListener):
                     "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].\n"
                 return
 
+            comp_id = self.atomSelectionSet[2][0]['comp_id']
+
+            if comp_id == 'GLY':
+                del dstFunc['cb_shift']
+
+            else:
+
+                if CS_ERROR_MIN < cb_shift < CS_ERROR_MAX:
+                    pass
+                else:
+                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
+                        f"CB chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                    return
+
             if self.__createSfDict:
                 sf = self.__getSf()
                 sf['id'] += 1
@@ -2450,7 +2682,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                        self.atomSelectionSet[2],
                                                                        self.atomSelectionSet[3],
                                                                        self.atomSelectionSet[4]):
-                if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
+                if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
+                    continue
+                if isLongRangeRestraint([atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (CARB) id={self.hvycsRestraints} "
@@ -2459,7 +2693,7 @@ class CnsMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None,
-                                 sf['list_id'], self.__entryId, dstFunc, atom1, atom2, atom3, atom4, atom5)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4, atom5)
                     sf['loop'].add_data(row)
 
         finally:
@@ -2609,7 +2843,7 @@ class CnsMRParserListener(ParseTreeListener):
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None,
-                                     sf['list_id'], self.__entryId, dstFunc, atom1)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1)
                         sf['loop'].add_data(row)
 
             else:
@@ -2622,13 +2856,13 @@ class CnsMRParserListener(ParseTreeListener):
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      1, '.',
-                                     sf['list_id'], self.__entryId, dstFunc, atom1)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1)
                         sf['loop'].add_data(row)
                         #
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      2, '.',
-                                     sf['list_id'], self.__entryId, dstFunc, None, atom2)
+                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, None, atom2)
                         sf['loop'].add_data(row)
 
         finally:
@@ -3025,7 +3259,7 @@ class CnsMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('dihedral angle database restraint, CNS CONFormation statement')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id', 'combination_id',
                                       'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -3210,7 +3444,7 @@ class CnsMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 sf = self.__getSf('diffusion anisotropy restraint, CNS DANIsotropy statement')
                 sf['id'] += 1
-                if len(sf['loop']['tag']) == 0:
+                if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
@@ -3502,11 +3736,11 @@ class CnsMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             sf = self.__getSf('NCS restraint, CNS NCS/GROUP statement')
             sf['id'] += 1
-            if len(sf['loop']['tag']) == 0:
+            if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                       'list_id', 'entry_id']
-                sf['tags'].append(['sigma_b_factor', self.ncsSigb])
+                sf['tags'].append(['sigma_b', self.ncsSigb])
                 sf['tags'].append(['weight', self.ncsWeight])
 
         for atom1 in self.atomSelectionSet[0]:
@@ -3546,9 +3780,12 @@ class CnsMRParserListener(ParseTreeListener):
             while self.stackSelections:
                 _selection = self.stackSelections.pop()
                 if _selection is not None:
-                    for _atom in _selection:
-                        if _atom not in atomSelection:
-                            atomSelection.append(_atom)
+                    if self.depth > 0:
+                        for _atom in _selection:
+                            if _atom not in atomSelection:
+                                atomSelection.append(_atom)
+                    else:
+                        atomSelection = self.__intersectionAtom_selections(_selection, atomSelection)
 
         else:
 
@@ -3590,6 +3827,9 @@ class CnsMRParserListener(ParseTreeListener):
 
         if '*' in atomSelection:
             atomSelection.remove('*')
+
+        if self.__createSfDict:
+            atomSelection = sorted(atomSelection, key=lambda x: (x['chain_id'], x['seq_id'], x['atom_id']))
 
         if self.__sel_expr_debug:
             print("  " * self.depth + f"atom selection: {atomSelection}")
@@ -3711,6 +3951,10 @@ class CnsMRParserListener(ParseTreeListener):
         else:
             self.__cur_auth_atom_id = ''
 
+        if 'atom_id' not in _factor and 'atom_ids' not in _factor\
+           and 'type_symbol' not in _factor and 'type_symbols' not in _factor:
+            _factor['atom_not_specified'] = True
+
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
                 _factor['chain_id'] = [self.__representativeAsymId]
@@ -3735,13 +3979,13 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
                             if (lenCompIds == 1
-                                and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0])), realCompId)
-                                     or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0])), origCompId)))\
+                                and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), realCompId)
+                                     or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), origCompId)))\
                                or (lenCompIds == 2
-                                   and (translateToStdResName(_factor['comp_ids'][0]) <= realCompId
-                                        <= translateToStdResName(_factor['comp_ids'][1])
-                                        or translateToStdResName(_factor['comp_ids'][0]) <= origCompId
-                                        <= translateToStdResName(_factor['comp_ids'][1]))):
+                                   and (translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= realCompId
+                                        <= translateToStdResName(_factor['comp_ids'][1], self.__ccU)
+                                        or translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= origCompId
+                                        <= translateToStdResName(_factor['comp_ids'][1], self.__ccU))):
                                 _compIdSelect.add(realCompId)
                 if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
@@ -3752,13 +3996,13 @@ class CnsMRParserListener(ParseTreeListener):
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
                                 if (lenCompIds == 1
-                                    and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0])), realCompId)
-                                         or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0])), origCompId)))\
+                                    and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), realCompId)
+                                         or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), origCompId)))\
                                    or (lenCompIds == 2
-                                       and (translateToStdResName(_factor['comp_ids'][0]) <= realCompId
-                                            <= translateToStdResName(_factor['comp_ids'][1])
-                                            or translateToStdResName(_factor['comp_ids'][0]) <= origCompId
-                                            <= translateToStdResName(_factor['comp_ids'][1]))):
+                                       and (translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= realCompId
+                                            <= translateToStdResName(_factor['comp_ids'][1], self.__ccU)
+                                            or translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= origCompId
+                                            <= translateToStdResName(_factor['comp_ids'][1], self.__ccU))):
                                     _compIdSelect.add(realCompId)
                 _factor['comp_id'] = list(_compIdSelect)
                 del _factor['comp_ids']
@@ -3777,7 +4021,7 @@ class CnsMRParserListener(ParseTreeListener):
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         if re.match(_seqId, str(realSeqId)):
@@ -3789,7 +4033,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 idx = ps['auth_seq_id'].index(realSeqId)
                                 realCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             seqKey = (chainId, realSeqId)
@@ -3807,7 +4051,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             if re.match(_seqId, str(realSeqId)):
@@ -3819,7 +4063,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     idx = np['auth_seq_id'].index(realSeqId)
                                     realCompId = np['comp_id'][idx]
                                     origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                    _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
                                         continue
                                 seqKey = (chainId, realSeqId)
@@ -3840,7 +4084,7 @@ class CnsMRParserListener(ParseTreeListener):
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         seqIds.append(realSeqId)
@@ -3853,7 +4097,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             seqIds.append(realSeqId)
@@ -3923,7 +4167,7 @@ class CnsMRParserListener(ParseTreeListener):
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
@@ -3939,7 +4183,7 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
@@ -3982,6 +4226,7 @@ class CnsMRParserListener(ParseTreeListener):
                                    or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
                                     _atomIdSelect.add(realAtomId)
             _factor['atom_id'] = list(_atomIdSelect)
+
             if len(_factor['atom_id']) == 0:
                 self.__preferAuthSeq = not self.__preferAuthSeq
 
@@ -3997,7 +4242,7 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = ps['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
@@ -4013,7 +4258,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 realCompId = np['comp_id'][idx]
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                    _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
                                         continue
                                 _compIdSelect.add(realCompId)
@@ -4083,7 +4328,7 @@ class CnsMRParserListener(ParseTreeListener):
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
@@ -4099,7 +4344,7 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _nonPolyCompIdSelect.append({'chain_id': chainId,
@@ -4137,7 +4382,7 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = ps['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
@@ -4153,7 +4398,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 realCompId = np['comp_id'][idx]
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                    _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
                                         continue
                                 _nonPolyCompIdSelect.append({'chain_id': chainId,
@@ -4202,6 +4447,8 @@ class CnsMRParserListener(ParseTreeListener):
 
         if 'atom_ids' in _factor:
             del _factor['atom_ids']
+        if 'atom_not_specified' in _factor:
+            del _factor['atom_not_specified']
 
         atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
@@ -4265,6 +4512,9 @@ class CnsMRParserListener(ParseTreeListener):
         return _factor
 
     def __consumeFactor_expressions__(self, _factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True, altPolySeq=None):
+        atomSpecified = True
+        if 'atom_not_specified' in _factor:
+            atomSpecified = not _factor['atom_not_specified']
         foundCompId = False
 
         for chainId in (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]):
@@ -4280,8 +4530,8 @@ class CnsMRParserListener(ParseTreeListener):
                     seqId = self.getRealSeqId(ps, seqId, isPolySeq)
 
                     if self.__reasons is not None:
-                        if 'branch_remap' in self.__reasons and seqId in self.__reasons['branch_remap']:
-                            fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['branch_remap'], seqId)
+                        if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
+                            fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                             if fixedChainId != chainId:
                                 continue
                         if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
@@ -4393,8 +4643,8 @@ class CnsMRParserListener(ParseTreeListener):
                                 authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId_)]
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
                             if coordAtomSite is not None and atomId not in coordAtomSite['atom_id']:
-                                if self.__reasons is not None and 'branch_remap' in self.__reasons:
-                                    _seqId_ = retrieveOriginalSeqIdFromMRMap(self.__reasons['branch_remap'], chainId, seqId)
+                                if self.__reasons is not None and 'branched_remap' in self.__reasons:
+                                    _seqId_ = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, seqId)
                                     if _seqId_ != seqId:
                                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId_, authCompId, atomId, coordAtomSite)
                                 elif seqId != _seqId:
@@ -4428,9 +4678,14 @@ class CnsMRParserListener(ParseTreeListener):
                                         atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
 
                         if coordAtomSite is not None\
-                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
-                           and atomId in coordAtomSite['atom_id']:
-                            atomIds = [atomId]
+                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id']):
+                            if atomId in coordAtomSite['atom_id']:
+                                atomIds = [atomId]
+                            elif 'alt_atom_id' in _factor:
+                                _atomId_ = toNefEx(toRegEx(_factor['alt_atom_id']))
+                                _atomIds_ = [_atomId for _atomId in coordAtomSite['atom_id'] if re.match(_atomId_, _atomId)]
+                                if len(_atomIds_) > 0:
+                                    atomIds = _atomIds_
 
                         if self.__cur_subtype == 'dist' and atomId in XPLOR_NITROXIDE_NAMES and coordAtomSite is not None\
                            and atomId not in coordAtomSite['atom_id']:
@@ -4456,7 +4711,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         _atom['comp_id'] = coordAtomSite['comp_id']
                                         _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
                                         self.__authAtomId = 'auth_atom_id'
-                                    elif self.__preferAuthSeq:
+                                    elif self.__preferAuthSeq and atomSpecified:
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
@@ -4482,7 +4737,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                 chainId, seqId = seqKey
                                                 if len(self.atomSelectionSet) > 0:
                                                     self.__setLocalSeqScheme()
-                                    elif _seqId_ in ps['auth_seq_id']:
+                                    elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                         self.__preferAuthSeq = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck)
                                         if _coordAtomSite is not None:
@@ -4512,7 +4767,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         else:
                                             self.__preferAuthSeq = False
 
-                                elif self.__preferAuthSeq:
+                                elif self.__preferAuthSeq and atomSpecified:
                                     if len(self.atomSelectionSet) == 0:
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
                                         if _coordAtomSite is not None:
@@ -4539,7 +4794,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                 chainId, seqId = seqKey
                                                 if len(self.atomSelectionSet) > 0:
                                                     self.__setLocalSeqScheme()
-                                elif _seqId_ in ps['auth_seq_id']:
+                                elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                     if len(self.atomSelectionSet) == 0:
                                         self.__preferAuthSeq = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck)
@@ -4571,7 +4826,7 @@ class CnsMRParserListener(ParseTreeListener):
                                             self.__preferAuthSeq = False
 
                                 if _atom is not None:
-                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId}
@@ -4581,7 +4836,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 else:
                                     ccdCheck = True
 
-                            if len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1:
+                            if (len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1) and not atomSpecified:
                                 continue
 
                             if isPolySeq and 'ambig_auth_seq_id' in ps and _seqId in ps['ambig_auth_seq_id']:
@@ -4591,7 +4846,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 continue
 
                             if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and _atomId not in XPLOR_NITROXIDE_NAMES:
-                                _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId) for _compId in _factor['comp_id']]
+                                _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                 if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
                                     if len(origAtomId) > 1:
                                         typeSymbols = set()
@@ -4623,6 +4878,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                         if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
                                                             if len(origAtomId) == 1:
+                                                                _atomSelection[-1]['hydrogen_not_instantiated'] = True
                                                                 self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "\
                                                                     "Please re-upload the model file.\n"
@@ -4742,6 +4998,8 @@ class CnsMRParserListener(ParseTreeListener):
         atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
         if 'alt_atom_id' in factor and details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+            if atomId[-1].isdigit() and int(atomId[-1]) <= len(atomIds):
+                atomIds = [atomIds[int(atomId[-1]) - 1]]
 
         if details is not None:
             _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
@@ -4817,6 +5075,11 @@ class CnsMRParserListener(ParseTreeListener):
                 return _factor
             if _atom in atomSelection:
                 _atomSelection.append(_atom)
+            elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+                chain_id = _atom['chain_id']
+                seq_id = _atom['seq_id']
+                if any(_atom2 for _atom2 in atomSelection if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                    _atomSelection.append(_atom)
 
         _factor['atom_selection'] = _atomSelection
 
@@ -4829,12 +5092,70 @@ class CnsMRParserListener(ParseTreeListener):
         if isinstance(_selection2[0], str) and _selection2[0] == '*':
             return _selection1
 
+        hasAuthSeqId1 = any(_atom for _atom in _selection1 if 'auth_atom_id' in _atom)
+        hasAuthSeqId2 = any(_atom for _atom in _selection2 if 'auth_atom_id' in _atom)
+
         _atomSelection = []
-        for _atom in _selection1:
-            if isinstance(_atom, str) and _atom == '*':
-                return _selection2
-            if _atom in _selection2:
-                _atomSelection.append(_atom)
+
+        if not hasAuthSeqId1 and not hasAuthSeqId2:
+            for _atom in _selection1:
+                if isinstance(_atom, str) and _atom == '*':
+                    return _selection2
+                if _atom in _selection2:
+                    _atomSelection.append(_atom)
+                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+                    chain_id = _atom['chain_id']
+                    seq_id = _atom['seq_id']
+                    if any(_atom2 for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                        _atomSelection.append(_atom)
+
+        elif hasAuthSeqId1 and not hasAuthSeqId2:
+            __selection1 = copy.deepcopy(_selection1)
+            for _atom in __selection1:
+                _atom.pop('auth_atom_id')
+            for idx, _atom in enumerate(__selection1):
+                if isinstance(_atom, str) and _atom == '*':
+                    return _selection2
+                if _atom in _selection2:
+                    _atomSelection.append(_selection1[idx])
+                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+                    chain_id = _atom['chain_id']
+                    seq_id = _atom['seq_id']
+                    if any(_atom2 for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                        _atomSelection.append(_selection1[idx])
+
+        elif not hasAuthSeqId1 and hasAuthSeqId2:
+            __selection2 = copy.deepcopy(_selection2)
+            for idx, _atom in enumerate(__selection2):
+                _atom.pop('auth_atom_id')
+            for idx, _atom in enumerate(__selection2):
+                if isinstance(_atom, str) and _atom == '*':
+                    return _selection1
+                if _atom in _selection1:
+                    _atomSelection.append(_selection2[idx])
+                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+                    chain_id = _atom['chain_id']
+                    seq_id = _atom['seq_id']
+                    if any(_atom1 for _atom1 in _selection1 if _atom1['chain_id'] == chain_id and _atom1['seq_id'] == seq_id):
+                        _atomSelection.append(_selection2[idx])
+
+        else:
+            __selection1 = copy.deepcopy(_selection1)
+            for _atom in __selection1:
+                _atom.pop('auth_atom_id')
+            __selection2 = copy.deepcopy(_selection2)
+            for _atom in __selection2:
+                _atom.pop('auth_atom_id')
+            for idx, _atom in enumerate(__selection1):
+                if isinstance(_atom, str) and _atom == '*':
+                    return _selection2
+                if _atom in __selection2:
+                    _atomSelection.append(_selection1[idx])
+                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+                    chain_id = _atom['chain_id']
+                    seq_id = _atom['seq_id']
+                    if any(_atom2 for _atom2 in __selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                        _atomSelection.append(_selection1[idx])
 
         return _atomSelection
 
@@ -7435,25 +7756,27 @@ class CnsMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None):
-        _subtype = getValidSubType(self.__cur_subtype)
+    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None):
+        content_subtype = contentSubtypeOf(self.__cur_subtype)
 
-        if _subtype is None:
+        if content_subtype is None:
             return
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
-        key = (self.__cur_subtype, constraintType, None)
+        key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
             self.sfDict[key] = []
 
-        list_id = self.__listIdCounter[self.__cur_subtype]
+        list_id = self.__listIdCounter[content_subtype]
 
-        sf_framecode = 'CNS_' + getRestraintName(self.__cur_subtype).replace(' ', '_') + str(list_id)
+        restraint_name = getRestraintName(self.__cur_subtype)
+
+        sf_framecode = 'CNS_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
-                          constraintType)
+                          constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         not_valid = True
 
@@ -7462,19 +7785,51 @@ class CnsMRParserListener(ParseTreeListener):
             sf.add_loop(lp)
             not_valid = False
 
-        item = {'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                'id': 0, 'index_id': 0}
+        _restraint_name = restraint_name.split()
+
+        item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
+                'id': 0, 'index_id': 0,
+                'constraint_type': ' '.join(_restraint_name[:-1])}
 
         if not_valid:
             item['tags'] = []
 
+        if self.__cur_subtype == 'dist':
+            item['constraint_subsubtype'] = 'simple'
+            if constraintType is None:
+                item['NOE_dist_averaging_method'] = self.noeAverage
+            elif 'ROE' in constraintType:
+                item['ROE_dist_averaging_method'] = self.noeAverage
+
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None):
-        key = (self.__cur_subtype, constraintType, None)
+    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None):
+        key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
-            self.__addSf(constraintType)
+            replaced = False
+            if potentialType is not None or rdcCode is not None:
+                old_key = (self.__cur_subtype, constraintType, None, None, None)
+                if old_key in self.sfDict:
+                    replaced = True
+                    self.sfDict[key] = [self.sfDict[old_key][-1]]
+                    del self.sfDict[old_key][-1]
+                    if len(self.sfDict[old_key]) == 0:
+                        del self.sfDict[old_key]
+                    sf = self.sfDict[key][-1]['saveframe']
+                    idx = next((idx for idx, t in enumerate(sf.tags) if t[0] == 'Potential_type'), -1)
+                    if idx != -1:
+                        sf.tags[idx][1] = potentialType
+                    else:
+                        sf.add_tag('Potential_type', potentialType)
+                    if rdcCode is not None:
+                        idx = next((idx for idx, t in enumerate(sf.tags) if t[0] == 'Details'), -1)
+                        if idx != -1:
+                            sf.tags[idx][1] = rdcCode
+                        else:
+                            sf.add_tag('Details', rdcCode)
+            if not replaced:
+                self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         return self.sfDict[key][-1]
 
@@ -7553,7 +7908,7 @@ class CnsMRParserListener(ParseTreeListener):
     def getListIdCounter(self):
         """ Return updated list id counter.
         """
-        return None if len(self.__listIdCounter) == 0 else self.__listIdCounter
+        return self.__listIdCounter
 
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.

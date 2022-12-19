@@ -63,9 +63,15 @@ monDict3 = {'ALA': 'A',
             'U': 'U'
             }
 
+protonBeginCode = ('H', '1', '2', '3')
+pseProBeginCode = ('H', 'Q', 'M', '1', '2', '3')
+
 MAJOR_ASYM_ID_SET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 LEN_MAJOR_ASYM_ID_SET = len(MAJOR_ASYM_ID_SET)
+
+# maximum number of magnetically identifiable chain IDs
+MAX_MAG_IDENT_ASYM_ID = 2
 
 
 def hasLargeInnerSeqGap(polySeq, seqIdName='seq_id'):
@@ -983,6 +989,9 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
     elif fileType == 'nm-res-cha':
         _mr_format_name = 'CHARMM'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
+    elif fileType == 'nmr-star':
+        _mr_format_name = 'NMR-STAR'
+        _a_mr_format_name = 'the ' + _mr_format_name + ' data'
     else:
         _mr_format_name = 'MR'
         _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
@@ -2209,11 +2218,11 @@ def retrieveRemappedNonPoly(nonPolyRemap, chainId, seqId, compId):
     return None, None
 
 
-def splitPolySeqRstForBranch(pA, polySeqModel, branchModel, polySeqRst, chainAssign):
+def splitPolySeqRstForBranched(pA, polySeqModel, branchedModel, polySeqRst, chainAssign):
     """ Split polymer sequence of the current MR file for branched polymer.
     """
 
-    if polySeqRst is None or polySeqModel is None or branchModel is None or chainAssign is None:
+    if polySeqRst is None or polySeqModel is None or branchedModel is None or chainAssign is None:
         return None, None
 
     target_chain_ids = {}
@@ -2226,7 +2235,7 @@ def splitPolySeqRstForBranch(pA, polySeqModel, branchModel, polySeqRst, chainAss
             if test_ps is None:
                 continue
 
-            for bp in branchModel:
+            for bp in branchedModel:
                 b_ref_chain_id = bp['auth_chain_id']
 
                 pA.setReferenceSequence(bp['comp_id'], 'REF' + b_ref_chain_id)
@@ -2255,7 +2264,7 @@ def splitPolySeqRstForBranch(pA, polySeqModel, branchModel, polySeqRst, chainAss
     split = False
 
     _polySeqRst = copy.copy(polySeqRst)
-    _branchMapping = {}
+    _branchedMapping = {}
 
     for test_chain_id, ref_chain_ids in target_chain_ids.items():
 
@@ -2307,7 +2316,7 @@ def splitPolySeqRstForBranch(pA, polySeqModel, branchModel, polySeqRst, chainAss
 
             if b_ref_chain_id is not None:
 
-                ref_bp = next(bp for bp in branchModel if bp['auth_chain_id'] == b_ref_chain_id)
+                ref_bp = next(bp for bp in branchedModel if bp['auth_chain_id'] == b_ref_chain_id)
 
                 pA.setReferenceSequence(ref_bp['comp_id'], 'REF' + b_ref_chain_id)
                 pA.addTestSequence(_test_ps['comp_id'], b_ref_chain_id)
@@ -2422,12 +2431,12 @@ def splitPolySeqRstForBranch(pA, polySeqModel, branchModel, polySeqRst, chainAss
                         if ref_seq_id is not None:
                             if test_seq_id is not None:
                                 offset_in_chain = test_seq_id - ref_seq_id
-                                _branchMapping[test_seq_id] = {'chain_id': b_ref_chain_id,
-                                                               'seq_id': ref_seq_id}
+                                _branchedMapping[test_seq_id] = {'chain_id': b_ref_chain_id,
+                                                                 'seq_id': ref_seq_id}
                             elif offset_in_chain is not None:
                                 test_seq_id = ref_seq_id + offset_in_chain
-                                _branchMapping[test_seq_id] = {'chain_id': b_ref_chain_id,
-                                                               'seq_id': ref_seq_id}
+                                _branchedMapping[test_seq_id] = {'chain_id': b_ref_chain_id,
+                                                                 'seq_id': ref_seq_id}
 
                     _test_ps['seq_id'] = _test_ps['seq_id'][end:]
                     _test_ps['comp_id'] = _test_ps['comp_id'][end:]
@@ -2463,12 +2472,12 @@ def splitPolySeqRstForBranch(pA, polySeqModel, branchModel, polySeqRst, chainAss
                     if ref_seq_id is not None:
                         if test_seq_id is not None:
                             offset_in_chain = test_seq_id - ref_seq_id
-                            _branchMapping[test_seq_id] = {'chain_id': b_ref_chain_id,
-                                                           'seq_id': ref_seq_id}
+                            _branchedMapping[test_seq_id] = {'chain_id': b_ref_chain_id,
+                                                             'seq_id': ref_seq_id}
                         elif offset_in_chain is not None:
                             test_seq_id = ref_seq_id + offset_in_chain
-                            _branchMapping[test_seq_id] = {'chain_id': b_ref_chain_id,
-                                                           'seq_id': ref_seq_id}
+                            _branchedMapping[test_seq_id] = {'chain_id': b_ref_chain_id,
+                                                             'seq_id': ref_seq_id}
 
                 _test_ps['seq_id'] = _test_ps['seq_id'][end:]
                 _test_ps['comp_id'] = _test_ps['comp_id'][end:]
@@ -2480,4 +2489,4 @@ def splitPolySeqRstForBranch(pA, polySeqModel, branchModel, polySeqRst, chainAss
     if not split:
         return None, None
 
-    return _polySeqRst, _branchMapping
+    return _polySeqRst, _branchedMapping

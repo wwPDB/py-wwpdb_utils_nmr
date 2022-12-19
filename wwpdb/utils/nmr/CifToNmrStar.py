@@ -16,6 +16,10 @@ import os
 import re
 import pynmrstar
 import pickle
+import logging
+import hashlib
+
+from packaging import version
 
 try:
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
@@ -23,6 +27,18 @@ try:
 except ImportError:
     from nmr.io.mmCIFUtil import mmCIFUtil
     from nmr.AlignUtil import (emptyValue, trueValue)
+
+
+__pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
+__pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
+__pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
+__pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
+
+if __pynmrstar_v3_3_1__:
+    logger = logging.getLogger('pynmrstar')
+    logger.setLevel(logging.ERROR)
+else:
+    logging.getLogger().setLevel(logging.ERROR)  # set level for pynmrstar
 
 
 def load_schema_from_pickle(file_name):
@@ -101,8 +117,8 @@ class CifToNmrStar:
             ofp.write(schema.version)
         print(f"version: {schema.version}")
 
-    def convert(self, cifPath=None, strPath=None):
-        """ Convert CIF to NMR-STAR for re-upload without CS data
+    def convert(self, cifPath=None, strPath=None, datablockName=None):
+        """ Convert CIF formatted NMR data file to normalized NMR-STAR file.
         """
 
         if cifPath is None or strPath is None:
@@ -119,7 +135,7 @@ class CifToNmrStar:
 
             entry_id = None
 
-            strObj = pynmrstar.Entry.from_scratch(os.path.basename(cifPath))
+            strData = pynmrstar.Entry.from_scratch(datablockName)
 
             # check category order in CIF
             category_order = []
@@ -193,6 +209,9 @@ class CifToNmrStar:
                 entry_id = block_name_list[0]
 
             _entry_id = entry_id.upper()
+
+            if datablockName is None:
+                strData.entry_id = f'cs_{entry_id.lower()}'
 
             # reorder
             category_order.sort(key=lambda k: k['category_order'])
@@ -290,7 +309,7 @@ class CifToNmrStar:
                         continue
 
                     if sf is not None:
-                        strObj.add_saveframe(sf)
+                        strData.add_saveframe(sf)
 
                     sf = pynmrstar.Saveframe.from_scratch(new_block_name)
                     reserved_block_names.append(new_block_name)
@@ -309,7 +328,7 @@ class CifToNmrStar:
                         continue
 
                     if sf is not None:
-                        strObj.add_saveframe(sf)
+                        strData.add_saveframe(sf)
 
                     sf = pynmrstar.Saveframe.from_scratch(new_block_name)
                     reserved_block_names.append(new_block_name)
@@ -361,9 +380,14 @@ class CifToNmrStar:
                     sf.add_loop(lp)
 
             if sf is not None:
-                strObj.add_saveframe(sf)
+                strData.add_saveframe(sf)
 
-            strObj.write_to_file(strPath, skip_empty_tags=False)
+            self.normalize(strData)
+
+            if __pynmrstar_v3__:
+                strData.write_to_file(strPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+            else:
+                strData.write_to_file(strPath)
 
             return True
 
@@ -398,3 +422,98 @@ class CifToNmrStar:
             self.__lfh.write(f"+ERROR- CifToNmrStar.convert() {str(e)}\n")
 
             return False
+
+    def set_entry_id(self, strData, entryId):
+        """ Set entry ID without changing datablock name.
+            @see: pynmrstar.entry
+        """
+
+        for sf in strData.frame_list:
+            filled = False
+
+            for tag in sf.tags:
+                fqtn = (sf.tag_prefix + '.' + tag[0]).lower()
+
+                try:
+                    if self.schema[fqtn]['entryIdFlg'] == 'Y':
+                        tag[1] = entryId
+                        filled = True
+                        break
+                except KeyError:
+                    pass
+
+            if not filled:
+                entry_id_tag = 'ID' if sf.category == 'entry_information' else 'Entry_ID'
+
+                fqtn = (sf.tag_prefix + '.' + entry_id_tag).lower()
+
+                try:
+                    if self.schema[fqtn]['entryIdFlg'] == 'Y':
+                        sf.add_tag(entry_id_tag, entryId)
+                except KeyError:
+                    pass
+
+            for lp in sf.loops:
+                filled = False
+
+                for tag in lp.tags:
+                    fqtn = (lp.category + '.' + tag).lower()
+
+                    try:
+                        if self.schema[fqtn]['entryIdFlg'] == 'Y' or tag == 'Entry_ID':
+                            lp[tag] = [entryId] * len(lp[tag])
+                            filled = True
+                            break
+                    except KeyError:
+                        pass
+
+                if not filled:
+                    entry_id_tag = lp.category + '.Entry_ID'
+
+                    lp.add_tag(entry_id_tag)
+
+                    for row in lp:
+                        row.append(entryId)
+
+    def normalize(self, strData):
+        """ Sort saveframes, loops, and tags according to NMR-STAR schema.
+            @see: pynmrstar.entry.normalize
+        """
+
+        def sf_key(sf):
+            """ Helper function to sort the saveframes.
+            Returns (category order, saveframe order) """
+
+            # If not a real category, generate an artificial but stable order > the real saveframes
+            try:
+                category_order = self.category_order.index(sf.tag_prefix)
+            except (ValueError, KeyError):
+                if sf.category is None:
+                    category_order = float('infinity')
+                else:
+                    category_order = len(self.category_order) + abs(int(hashlib.sha1(str(sf.category).encode()).hexdigest(), 16))
+
+            # See if there is an ID tag, and it is a number
+            saveframe_id = float('infinity')
+            try:
+                saveframe_id = int(sf.get_tag("ID")[0])
+            except (ValueError, KeyError, IndexError, TypeError):
+                # Either there is no ID, or it is not a number. By default it will sort at the end of saveframes of its
+                # category. Note that the entry_information ID tag has a different meaning, but since there should
+                # only ever be one saveframe of that category, the sort order for it can be any value.
+                pass
+
+            return category_order, saveframe_id
+
+        try:
+            strData.frame_list.sort(key=sf_key)
+        except Exception as e:
+            self.__lfh.write(f"+ERROR- CifToNmrStar.normalize() {str(e)}\n")
+
+        for sf in strData.frame_list:
+            sf.sort_tags()
+            # Iterate through the loops
+            for lp in sf:
+                lp.sort_tags()
+
+        return strData

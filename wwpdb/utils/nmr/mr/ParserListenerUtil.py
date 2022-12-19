@@ -922,25 +922,25 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Homonucl_NOE_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
-                          'jcoup_restraint': [{'name': 'Coupling_const_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                          'jcoup_restraint': [{'name': 'Coupling_constant_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                'range': RDC_RESTRAINT_RANGE,
-                                               'group': {'member-with': ['Coupling_const_lower_bound', 'Coupling_const_upper_bound'],
+                                               'group': {'member-with': ['Coupling_constant_lower_bound', 'Coupling_constant_upper_bound'],
                                                          'coexist-with': None,
                                                          'smaller-than': None,
                                                          'larger-than': None}},
-                                              {'name': 'Coupling_const_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                              {'name': 'Coupling_constant_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                'range': {'min_inclusive': 0.0}},
-                                              {'name': 'Coupling_const_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                              {'name': 'Coupling_constant_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                'range': RDC_RESTRAINT_RANGE,
-                                               'group': {'member-with': ['Coupling_const_upper_bound'],
+                                               'group': {'member-with': ['Coupling_constant_upper_bound'],
                                                          'coexist-with': None,
                                                          'smaller-than': None,
-                                                         'larger-than': ['Coupling_const_upper_bound']}},
-                                              {'name': 'Coupling_const_upper_bound', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                         'larger-than': ['Coupling_constant_upper_bound']}},
+                                              {'name': 'Coupling_constant_upper_bound', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                'range': RDC_RESTRAINT_RANGE,
-                                               'group': {'member-with': ['Coupling_const_lower_bound'],
+                                               'group': {'member-with': ['Coupling_constant_lower_bound'],
                                                          'coexist-with': None,
-                                                         'smaller-than': ['Coupling_const_lower_bound'],
+                                                         'smaller-than': ['Coupling_constant_lower_bound'],
                                                          'larger-than': None}},
                                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -4136,19 +4136,19 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
         row[16], row[17], row[18], row[19], row[20] =\
             star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
-        val = getRowValue('Coupling_const_val')
+        val = getRowValue('Coupling_constant_val')
         if val is not None:
             row[key_size] = val
             float_row_idx.append(key_size)
-        val = getRowValue('Coupling_const_err')
+        val = getRowValue('Coupling_constant_err')
         if val is not None:
             row[key_size + 1] = str(abs(float(val)))
             float_row_idx.append(key_size + 1)
-        val = getRowValue('Coupling_const_lower_bound')
+        val = getRowValue('Coupling_constant_lower_bound')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Coupling_const_upper_bound')
+        val = getRowValue('Coupling_constant_upper_bound')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)

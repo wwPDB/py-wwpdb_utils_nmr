@@ -495,7 +495,7 @@ class CifToNmrStar:
             if sf.category.startswith('nef'):
                 return self.normalize_nef(strData)
             return self.normalize_str(strData)
-        except IndexError:
+        except (IndexError, AttributeError):
             return strData
 
     def normalize_str(self, strData):

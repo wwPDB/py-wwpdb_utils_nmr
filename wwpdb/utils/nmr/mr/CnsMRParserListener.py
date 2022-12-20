@@ -400,6 +400,9 @@ class CnsMRParserListener(ParseTreeListener):
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
+    # last edited pynmrstar saveframe
+    __lastSfDict = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
@@ -717,7 +720,10 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CnsMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict and self.__cur_subtype == 'dist':
-            sf = self.__getSf()
+            if self.__cur_subtype not in self.__lastSfDict:
+                return
+
+            sf = self.__lastSfDict[self.__cur_subtype]
 
             if 'aux_loops' in sf:
                 return
@@ -7857,6 +7863,8 @@ class CnsMRParserListener(ParseTreeListener):
                 item['NOE_dist_averaging_method'] = self.noeAverage
             elif 'ROE' in constraintType:
                 item['ROE_dist_averaging_method'] = self.noeAverage
+
+        self.__lastSfDict[self.__cur_subtype] = item
 
         self.sfDict[key].append(item)
 

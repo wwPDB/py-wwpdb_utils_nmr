@@ -4472,16 +4472,16 @@ def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
     key_names = [key['name'] for key in NMR_STAR_AUX_LP_KEY_ITEMS[contentSubtype][catName]]
     data_names = [data['name'] for data in NMR_STAR_AUX_LP_DATA_ITEMS[contentSubtype][catName]]
 
-    names = key_names.extend(data_names)
+    key_names.extend(data_names)
 
-    row = [None] * len(names)
+    row = [None] * len(key_names)
 
     row[-2] = listId
     row[-1] = entryId
 
-    for k, v in inDict:
-        if k in names:
-            row[names.index(k)] = v
+    for k, v in inDict.items():
+        if k in key_names:
+            row[key_names.index(k)] = v
 
     return row
 

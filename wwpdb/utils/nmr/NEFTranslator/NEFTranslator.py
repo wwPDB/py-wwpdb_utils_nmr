@@ -4263,6 +4263,9 @@ class NEFTranslator:
 
         try:
 
+            if '++' in atom_id:
+                atom_id = re.sub(f'\+\+', '+', atom_id)
+
             if '#' in atom_id:
                 atom_id = atom_id.replace('#', '%')
 

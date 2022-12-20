@@ -44598,7 +44598,7 @@ class NmrDpUtility:
             Protein_other_tot_num = 0
             NA_other_tot_num = 0
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                lp = sf['loop']
+                lp = sf_item['loop']
                 lp_tags = lp['tags']
                 lp_data = lp['data']
 
@@ -44714,7 +44714,7 @@ class NmrDpUtility:
                         sf.add_tag('Block_ID', _block_id)
                         row[5] = _block_id
                     constraint_type = sf_item['constraint_type']
-                    constraint_subtype = get_first_sf_tag(sf, 'Constraint_type')
+                    constraint_subtype = get_first_sf_tag(sf, 'Constraint_type') if content_subtype != 'other_restraint' else get_first_sf_tag(sf, 'Definition')
                     if len(constraint_subtype) == 0:
                         constraint_subtype = None
                     constraint_subsubtype = sf_item['constraint_subsubtype'] if 'constraint_subsubtype' in sf_item else None
@@ -45998,7 +45998,7 @@ class NmrDpUtility:
                         set_sf_tag(sf, 'Block_ID', _block_id)
                         row[2] = _block_id
                     constraint_type = sf_item[sf_framecode]['constraint_type']
-                    constraint_subtype = get_first_sf_tag(sf, 'Constraint_type')
+                    constraint_subtype = get_first_sf_tag(sf, 'Constraint_type') if content_subtype != 'other_restraint' else get_first_sf_tag(sf, 'Definition')
                     if len(constraint_subtype) == 0 or constraint_subtype in emptyValue:
                         constraint_subtype = sf_item[sf_framecode]['constraint_subtype']\
                             if 'constraint_subtype' in sf_item[sf_framecode] else None

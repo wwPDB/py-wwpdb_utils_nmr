@@ -6829,6 +6829,34 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(chainAssign1) == 0 or len(chainAssign2) == 0:
                 return
 
+            # circular shift
+            if 'seq_id_remap' in self.__reasons and len(chainAssign1) == 1 and len(chainAssign2) == 1 and {atomId1, atomId2} == {'N', 'C'}:
+                chainId1 = chainAssign1[0][0]
+                chainId2 = chainAssign2[0][0]
+                if chainId1 == chainId2:
+                    seqIdDict = next((remap['seq_id_dict'] for remap in self.__reasons['seq_id_remap'] if remap['chain_id'] == chainId1), None)
+                    if seqIdDict is not None:
+                        seqIdDictKeys = seqIdDict.keys()
+                        seqIdDictVals = seqIdDict.values()
+                        minSeqId = min(seqIdDictKeys)
+                        maxSeqId = max(seqIdDictKeys)
+                        if {seqId1, seqId2} == {minSeqId, maxSeqId}:
+                            _minSeqId = min(seqIdDictVals)
+                            _maxSeqId = max(seqIdDictVals)
+                            if seqId1 == minSeqId and atomId1 == 'N' and seqId2 == maxSeqId and atomId2 == 'C':
+                                seqId1 = next(k for k, v in seqIdDict.items() if v == _minSeqId)
+                                seqId2 = next(k for k, v in seqIdDict.items() if v == _maxSeqId)
+
+                                chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+                                chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+
+                            elif seqId2 == minSeqId and atomId2 == 'N' and seqId1 == maxSeqId and atomId1 == 'C':
+                                seqId2 = next(k for k, v in seqIdDict.items() if v == _minSeqId)
+                                seqId1 = next(k for k, v in seqIdDict.items() if v == _maxSeqId)
+
+                                chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+                                chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+
             self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
             self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
 

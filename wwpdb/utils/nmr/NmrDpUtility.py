@@ -44800,8 +44800,8 @@ class NmrDpUtility:
             sf.add_tag('Text_data_format', data_format)
 
             with open(file_path, 'r') as ifp:
-                content = ifp.read().decode('utf-8').encode('ascii')
-                sf.add_tag('Text_data', content)
+                content = ifp.read()
+                sf.add_tag('Text_data', content.encode('ascii'))
 
             row[10], row[11] = 1, self.__entry_id
 

@@ -3580,7 +3580,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                sf = self.__getSf(constraintType='RDC', potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[1][0], self.atomSelectionSet[1][0]]),
                                   orientationId=orientation)
                 sf['id'] += 1
@@ -7506,7 +7506,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if key not in self.sfDict:
             replaced = False
-            if potentialType is not None or rdcCode is not None:
+            if potentialType is not None or rdcCode is not None or orientationId is not None:
                 old_key = (self.__cur_subtype, constraintType, None, None, orientationId)
                 if old_key in self.sfDict:
                     replaced = True

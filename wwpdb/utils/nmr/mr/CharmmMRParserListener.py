@@ -4601,8 +4601,7 @@ class CharmmMRParserListener(ParseTreeListener):
                 old_key = (self.__cur_subtype, constraintType, None, None, None)
                 if old_key in self.sfDict:
                     replaced = True
-                    self.sfDict[key] = [self.sfDict[old_key][-1]]
-                    del self.sfDict[old_key][-1]
+                    self.sfDict[key] = [self.sfDict[old_key].pop(-1)]
                     if len(self.sfDict[old_key]) == 0:
                         del self.sfDict[old_key]
                     sf = self.sfDict[key][-1]['saveframe']

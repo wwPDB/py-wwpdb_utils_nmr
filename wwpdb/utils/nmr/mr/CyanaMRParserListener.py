@@ -305,6 +305,9 @@ class CyanaMRParserListener(ParseTreeListener):
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
+    # current constraint type
+    __cur_constraint_type = None
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
@@ -928,7 +931,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if self.__createSfDict:
                                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
-                                                  rdcCode=getRdcCode([self.atomSelectionSet[1][0], self.atomSelectionSet[1][0]]),
+                                                  rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
                                                   orientationId=self.__cur_rdc_orientation)
                                 sf['id'] += 1
 
@@ -1429,7 +1432,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if self.__createSfDict:
                                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
-                                                  rdcCode=getRdcCode([self.atomSelectionSet[1][0], self.atomSelectionSet[1][0]]),
+                                                  rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
                                                   orientationId=self.__cur_rdc_orientation)
                                 sf['id'] += 1
 
@@ -3580,8 +3583,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf(constraintType='RDC', potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
-                                  rdcCode=getRdcCode([self.atomSelectionSet[1][0], self.atomSelectionSet[1][0]]),
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
                                   orientationId=orientation)
                 sf['id'] += 1
 
@@ -5833,7 +5836,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         if self.__createSfDict:
                             sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
-                                              rdcCode=getRdcCode([self.atomSelectionSet[1][0], self.atomSelectionSet[1][0]]),
+                                              rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
                                               orientationId=self.__cur_rdc_orientation)
                             sf['id'] += 1
 
@@ -7460,6 +7463,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if content_subtype is None:
             return
 
+        self.__cur_constraint_type = constraintType
+
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, orientationId)
@@ -7507,11 +7512,10 @@ class CyanaMRParserListener(ParseTreeListener):
         if key not in self.sfDict:
             replaced = False
             if potentialType is not None or rdcCode is not None or orientationId is not None:
-                old_key = (self.__cur_subtype, constraintType, None, None, orientationId)
+                old_key = (self.__cur_subtype, self.__cur_constraint_type, None, None, orientationId)
                 if old_key in self.sfDict:
                     replaced = True
-                    self.sfDict[key] = [self.sfDict[old_key][-1]]
-                    del self.sfDict[old_key][-1]
+                    self.sfDict[key] = [self.sfDict[old_key].pop(-1)]
                     if len(self.sfDict[old_key]) == 0:
                         del self.sfDict[old_key]
                     sf = self.sfDict[key][-1]['saveframe']

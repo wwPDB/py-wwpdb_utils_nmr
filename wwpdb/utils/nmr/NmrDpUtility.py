@@ -43680,8 +43680,8 @@ class NmrDpUtility:
         if self.__combined_mode or not self.__remediation_mode or self.__dstPath is None:
             return True
 
-        if len(self.__mr_sf_dict_holder) == 0:
-            return False
+        # if len(self.__mr_sf_dict_holder) == 0:
+        #     return False
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None:
             return False

@@ -494,6 +494,9 @@ class XplorMRParserListener(ParseTreeListener):
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
+    # current constraint type
+    __cur_constraint_type = None
+
     # last edited pynmrstar saveframe
     __lastSfDict = {}
 
@@ -11847,6 +11850,8 @@ class XplorMRParserListener(ParseTreeListener):
         if content_subtype is None:
             return
 
+        self.__cur_constraint_type = constraintType
+
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None if alignCenter is None else str(alignCenter))
@@ -11901,11 +11906,10 @@ class XplorMRParserListener(ParseTreeListener):
         if key not in self.sfDict:
             replaced = False
             if potentialType is not None or rdcCode is not None:
-                old_key = (self.__cur_subtype, constraintType, None, None, None if alignCenter is None else str(alignCenter))
+                old_key = (self.__cur_subtype, self.__cur_constraint_type, None, None, None if alignCenter is None else str(alignCenter))
                 if old_key in self.sfDict:
                     replaced = True
-                    self.sfDict[key] = [self.sfDict[old_key][-1]]
-                    del self.sfDict[old_key][-1]
+                    self.sfDict[key] = [self.sfDict[old_key].pop(-1)]
                     if len(self.sfDict[old_key]) == 0:
                         del self.sfDict[old_key]
                     sf = self.sfDict[key][-1]['saveframe']

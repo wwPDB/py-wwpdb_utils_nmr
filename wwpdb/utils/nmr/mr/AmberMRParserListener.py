@@ -6377,7 +6377,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if self.__createSfDict:
                     sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
-                                      rdcCode=getRdcCode([self.atomSelectionSet[1][0], self.atomSelectionSet[1][0]]))
+                                      rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]))
                     sf['id'] += 1
 
                 updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
@@ -7925,8 +7925,7 @@ class AmberMRParserListener(ParseTreeListener):
                 old_key = (self.__cur_subtype, constraintType, None, None, None)
                 if old_key in self.sfDict:
                     replaced = True
-                    self.sfDict[key] = [self.sfDict[old_key][-1]]
-                    del self.sfDict[old_key][-1]
+                    self.sfDict[key] = [self.sfDict[old_key].pop(-1)]
                     if len(self.sfDict[old_key]) == 0:
                         del self.sfDict[old_key]
                     sf = self.sfDict[key][-1]['saveframe']

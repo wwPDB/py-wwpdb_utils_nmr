@@ -1318,6 +1318,8 @@ class NmrDpUtility:
                                     'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                     'fchiral_restraint', 'other_restraint']
 
+        self.pk_content_subtypes = ('spectral_peak', 'spectral_peak_alt')
+
         self.cif_content_subtypes = ('poly_seq', 'non_poly', 'branched', 'coordinate')
 
         # readable file type
@@ -5561,6 +5563,11 @@ class NmrDpUtility:
         if self.__combined_mode:
             if self.__srcPath is None:
                 raise ValueError(f"+NmrDpUtility.op() ++ Error  - No input provided for workflow operation {op}.")
+
+            self.__cs_file_path_list_len = 0
+
+            self.__file_path_list_len = 1
+
         else:
             cs_file_path_list = 'chem_shift_file_path_list'
 
@@ -6099,6 +6106,9 @@ class NmrDpUtility:
                     input_source.setItemValue('content_type', 'nmr-restraints')
                     if 'original_file_name' in ar:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
+
+        self.__file_path_list_len = 1
+        self.__cs_file_path_list_len = 1
 
         self.__star_data_type = []
         self.__star_data = []
@@ -18181,7 +18191,7 @@ class NmrDpUtility:
 
         except LookupError as e:
 
-            item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+            item = 'format_issue' if 'Unauthorized' in str(e) else 'missing_mandatory_item'
 
             self.report.error.appendDescription(item,
                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -19019,7 +19029,7 @@ class NmrDpUtility:
 
                         except LookupError as e:
 
-                            item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+                            item = 'format_issue' if 'Unauthorized' in str(e) else 'missing_mandatory_item'
 
                             self.report.error.appendDescription(item,
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -19160,7 +19170,7 @@ class NmrDpUtility:
 
                             except LookupError as e:
 
-                                item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+                                item = 'format_issue' if 'Unauthorized' in str(e) else 'missing_mandatory_item'
 
                                 self.report.error.appendDescription(item,
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -19667,7 +19677,7 @@ class NmrDpUtility:
 
             except LookupError as e:
 
-                item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+                item = 'format_issue' if 'Unauthorized' in str(e) else 'missing_mandatory_item'
 
                 self.report.error.appendDescription(item,
                                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -23365,34 +23375,36 @@ class NmrDpUtility:
                                                 while position > value:
                                                     position -= sp_widths[d]
 
-                                        if abs(position - value) > error:
+                                        if abs(position - value) > error and sp_widths[d] is not None:
 
-                                            err = f"[Check row of {index_tag} {row[index_tag]}] "\
-                                                f"Peak position of spectral peak {position_names[d]} {position} ("\
-                                                + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
-                                                                                comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
-                                                + f") in {sf_framecode!r} saveframe is inconsistent with the assigned chemical shift value "\
-                                                f"{value} (difference {position - value:.3f}, tolerance {error}) in {cs_list!r} saveframe."
+                                            if CS_RANGE_MIN < sp_width[d] < CS_RANGE_MAX:
 
-                                            if error >= CS_UNCERT_MAX:
+                                                err = f"[Check row of {index_tag} {row[index_tag]}] "\
+                                                    f"Peak position of spectral peak {position_names[d]} {position} ("\
+                                                    + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
+                                                                                    comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
+                                                    + f") in {sf_framecode!r} saveframe is inconsistent with the assigned chemical shift value "\
+                                                    f"{value} (difference {position - value:.3f}, tolerance {error}) in {cs_list!r} saveframe."
 
-                                                self.report.error.appendDescription('invalid_data',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': err})
-                                                self.report.setError()
+                                                if error >= CS_UNCERT_MAX:
 
-                                                if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
+                                                    self.report.error.appendDescription('invalid_data',
+                                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                         'description': err})
+                                                    self.report.setError()
 
-                                            else:
+                                                    if self.__verbose:
+                                                        self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
 
-                                                self.report.warning.appendDescription('unusual_chemical_shift',
-                                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                       'description': err})
-                                                self.report.setWarning()
+                                                else:
 
-                                                if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ Warning  - {err}\n")
+                                                    self.report.warning.appendDescription('unusual_chemical_shift',
+                                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                           'description': err})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ Warning  - {err}\n")
 
                                     axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
@@ -23858,33 +23870,35 @@ class NmrDpUtility:
                                             while position > value:
                                                 position -= sp_widths[d]
 
-                                    if abs(position - value) > error:
+                                    if abs(position - value) > error and sp_widths[d] is not None:
 
-                                        err = f"[Check row of {pk_id_name} {row[pk_id_name]}] Peak position of spectral peak {cs_value_name} {position} ("\
-                                            + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
-                                                                            cs_comp_id_name, comp_id, cs_atom_id_name, atom_id)\
-                                            + f") in {sf_framecode!r} saveframe is inconsistent with the assigned chemical shift value "\
-                                            f"{value} (difference {position - value:.3f}, tolerance {error}) in {cs_list!r} saveframe."
+                                        if CS_RANGE_MIN < sp_width[d] < CS_RANGE_MAX:
 
-                                        if error >= CS_UNCERT_MAX:
+                                            err = f"[Check row of {pk_id_name} {row[pk_id_name]}] Peak position of spectral peak {cs_value_name} {position} ("\
+                                                + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
+                                                                                cs_comp_id_name, comp_id, cs_atom_id_name, atom_id)\
+                                                + f") in {sf_framecode!r} saveframe is inconsistent with the assigned chemical shift value "\
+                                                f"{value} (difference {position - value:.3f}, tolerance {error}) in {cs_list!r} saveframe."
 
-                                            self.report.error.appendDescription('invalid_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': err})
-                                            self.report.setError()
+                                            if error >= CS_UNCERT_MAX:
 
-                                            if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
+                                                self.report.error.appendDescription('invalid_data',
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                     'description': err})
+                                                self.report.setError()
 
-                                        else:
+                                                if self.__verbose:
+                                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
 
-                                            self.report.warning.appendDescription('unusual_chemical_shift',
-                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                   'description': err})
-                                            self.report.setWarning()
+                                            else:
 
-                                            if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ Warning  - {err}\n")
+                                                self.report.warning.appendDescription('unusual_chemical_shift',
+                                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                       'description': err})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ Warning  - {err}\n")
 
                                 axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
@@ -24879,7 +24893,7 @@ class NmrDpUtility:
 
         except LookupError as e:
 
-            item = 'format_issue' if 'Unauthorized item' in str(e) else 'missing_mandatory_item'
+            item = 'format_issue' if 'Unauthorized' in str(e) else 'missing_mandatory_item'
 
             self.report.error.appendDescription(item,
                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -24937,7 +24951,7 @@ class NmrDpUtility:
         return msg[:-2]
 
     def __validateStrMr(self):
-        """ Validate data content of NMR-STAR restraint files.
+        """ Validate restraints of NMR-STAR restraint files.
         """
 
         if self.__combined_mode:
@@ -25049,7 +25063,7 @@ class NmrDpUtility:
         if is_sf:
 
             origTagNames = [t[0] for t in sf_data.tags]
-            tagNames = [t[0] for t in sf]
+            tagNames = [t[0] for t in sf.tags]
 
             for idx, origTagName in enumerate(origTagNames):
                 if origTagName not in tagNames and origTagName in self.sf_allowed_tags[file_type][content_subtype]:
@@ -25071,7 +25085,7 @@ class NmrDpUtility:
         _restraint_name = restraint_name.split()
 
         sf_item = {'file_type': file_type, 'saveframe': sf, 'list_id': list_id,
-                   'id': 0, 'index': 0,
+                   'id': 0, 'index_id': 0,
                    'constraint_type': ' '.join(_restraint_name[:-1])}
 
         if content_subtype == 'dist_restraint':
@@ -25553,7 +25567,7 @@ class NmrDpUtility:
                                             memberId += 1
                                             _atom1, _atom2 = atom1, atom2
                                     sf_item['index_id'] += 1
-                                    _row = getRowForStrMr(content_subtype, Id, sf_item['idx'],
+                                    _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
                                                           loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
                                     lp.add_data(_row)
@@ -25561,7 +25575,7 @@ class NmrDpUtility:
                             else:
 
                                 sf_item['index_id'] += 1
-                                _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['idx'],
+                                _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
                                                       None, None, list_id, self.__entry_id,
                                                       loop.tags, loop.data[idx], auth_to_star_seq, atom_sels)
                                 lp.add_data(_row)
@@ -26036,6 +26050,75 @@ class NmrDpUtility:
                         sf.add_loop(loop)
 
         self.__mr_sf_dict_holder[content_subtype].append(sf_item)
+
+        return True
+
+    def __mergeStrPk(self):
+        """ Merge spectral peak lists in NMR-STAR restraint files.
+        """
+
+        if self.__combined_mode:
+            return True
+
+        mr_file_path_list = 'restraint_file_path_list'
+
+        if mr_file_path_list not in self.__inputParamDict:
+            return True
+
+        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+
+        if id < 0:
+            return False
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        list_id = 1
+
+        for fileListId in range(self.__cs_file_path_list_len, self.__file_path_list_len):
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            if file_type != 'nmr-star':
+                continue
+
+            if input_source_dic['content_subtype'] is None:
+                continue
+
+            for content_subtype in self.pk_content_subtypes:
+
+                if content_subtype not in input_source_dic['content_subtype']:
+                    continue
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+
+                if self.__star_data_type[fileListId] == 'Loop':
+                    pass
+
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+                    sf_data = self.__star_data[fileListId]
+
+                    self.__c2S.set_entry_id(sf_data, self.__entry_id)
+                    self.__c2S.set_local_sf_id(sf_data, list_id)
+
+                    self.__star_data[0].add_saveframe(sf_data)
+
+                    list_id += 1
+
+                else:
+
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                        self.__c2S.set_entry_id(sf_data, self.__entry_id)
+                        self.__c2S.set_local_sf_id(sf_data, list_id)
+
+                        self.__star_data[0].add_saveframe(sf_data)
+
+                        list_id += 1
 
         return True
 
@@ -28240,45 +28323,43 @@ class NmrDpUtility:
 
         ambig = False
 
-        if file_type == 'nmr-star' and self.__star_data_type[file_list_id] == 'Entry':
+        if file_type == 'nmr-star' and self.__star_data_type[0] == 'Entry':
 
             _sf_category = 'constraint_statistics'
             _lp_category = '_Constraint_file'
 
-            if _sf_category in self.__sf_category_list and _lp_category in self.__lp_category_list:
+            try:
 
-                try:
+                block_id = get_first_sf_tag(sf_data, 'Block_ID')
 
-                    block_id = get_first_sf_tag(sf_data, 'Block_ID')
+                _sf_data = self.__star_data[0].get_saveframes_by_category(_sf_category)
 
-                    _sf_data = self.__star_data[file_list_id].get_saveframes_by_category(_sf_category)
+                if __pynmrstar_v3_2__:
+                    _loop = _sf_data[0].get_loop(_lp_category)
+                else:
+                    _loop = _sf_data[0].get_loop_by_category(_lp_category)
 
-                    if __pynmrstar_v3_2__:
-                        _loop = _sf_data[0].get_loop(_lp_category)
-                    else:
-                        _loop = _sf_data[0].get_loop_by_category(_lp_category)
+                _block_id_col = _loop.tags.index('Block_ID')
+                _constraint_type_col = _loop.tags.index('Constraint_type')
+                _constraint_subtype_col = _loop.tags.index('Constraint_subtype')
+                _constraint_subsubtype_col = _loop.tags.index('Constraint_subsubtype')
 
-                    _block_id_col = _loop.tags.index('Block_ID')
-                    _constraint_type_col = _loop.tags.index('Constraint_type')
-                    _constraint_subtype_col = _loop.tags.index('Constraint_subtype')
-                    _constraint_subsubtype_col = _loop.tags.index('Constraint_subsubtype')
+                _row = next((_row for _row in _loop if _row[_block_id_col] == block_id), None)
 
-                    _row = next((_row for _row in _loop if _row[_block_id_col] == block_id), None)
+                if _row is not None:
+                    _constraint_type = _row[_constraint_type_col]
+                    _constraint_subtype = _row[_constraint_subtype_col]
+                    _constraint_subsubtype = _row[_constraint_subsubtype_col]
 
-                    if _row is not None:
-                        _constraint_type = _row[_constraint_type_col]
-                        _constraint_subtype = _row[_constraint_subtype_col]
-                        _constraint_subsubtype = _row[_constraint_subsubtype_col]
+                    if (_constraint_type == 'distance' and _constraint_subtype not in ('NOE', 'ROE'))\
+                       or ('dihedral angle' in _constraint_type and _constraint_subtype == 'unknown'):
+                        ambig = True
 
-                        if (_constraint_type == 'distance' and _constraint_subtype not in ('NOE', 'ROE'))\
-                           or ('dihedral angle' in _constraint_type and _constraint_subtype == 'unknown'):
-                            ambig = True
+                    if _constraint_subsubtype not in emptyValue and _constraint_subsubtype == 'ambi':
+                        ambig = True
 
-                        if _constraint_subsubtype not in emptyValue and _constraint_subsubtype == 'ambi':
-                            ambig = True
-
-                except ValueError:
-                    pass
+            except (IndexError, ValueError):
+                pass
 
         sf_tag_data = next((t['data'] for t in self.__sf_tag_data[content_subtype] if t['file_name'] == file_name and t['sf_framecode'] == sf_framecode), None)
 
@@ -44854,6 +44935,8 @@ class NmrDpUtility:
 
         for sf in ext_mr_sf_holder:
             master_entry.add_saveframe(sf)
+
+        self.__mergeStrPk()
 
         master_entry = self.__c2S.normalize_str(master_entry)
 

@@ -4015,23 +4015,39 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
 
-                    self.__allowZeroUpperLimit = False
-                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
-                       and len(self.atomSelectionSet[0]) > 0\
-                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
-                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+                    if self.__hasPolySeq:
 
-                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                        self.__retrieveLocalSeqScheme()
 
-                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
-                            self.__allowZeroUpperLimit = True
-                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+                        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                            return
+
+                        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                        if len(self.atomSelectionSet) < 2:
+                            return
+
+                        self.__allowZeroUpperLimit = False
+                        if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                           and len(self.atomSelectionSet[0]) > 0\
+                           and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                            if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                               and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                    or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                                self.__allowZeroUpperLimit = True
+                        self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
                     dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
@@ -4050,19 +4066,21 @@ class CyanaMRParserListener(ParseTreeListener):
                 if not self.__hasPolySeq:
                     return
 
-                self.__retrieveLocalSeqScheme()
+                if self.__cur_subtype != 'dist':
 
-                chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    self.__retrieveLocalSeqScheme()
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-                    return
+                    chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                    chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
-                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        return
 
-                if len(self.atomSelectionSet) < 2:
-                    return
+                    self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                    if len(self.atomSelectionSet) < 2:
+                        return
 
                 if self.__createSfDict:
                     sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
@@ -4308,23 +4326,39 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
 
-                    self.__allowZeroUpperLimit = False
-                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
-                       and len(self.atomSelectionSet[0]) > 0\
-                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
-                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+                    if self.__hasPolySeq:
 
-                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                        self.__retrieveLocalSeqScheme()
 
-                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
-                            self.__allowZeroUpperLimit = True
-                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+                        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                            return
+
+                        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                        if len(self.atomSelectionSet) < 2:
+                            return
+
+                        self.__allowZeroUpperLimit = False
+                        if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                           and len(self.atomSelectionSet[0]) > 0\
+                           and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                            if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                               and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                    or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                                self.__allowZeroUpperLimit = True
+                        self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
@@ -4347,19 +4381,21 @@ class CyanaMRParserListener(ParseTreeListener):
                 if not self.__hasPolySeq:
                     return
 
-                self.__retrieveLocalSeqScheme()
+                if self.__cur_subtype != 'dist':
 
-                chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    self.__retrieveLocalSeqScheme()
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-                    return
+                    chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                    chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
-                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        return
 
-                if len(self.atomSelectionSet) < 2:
-                    return
+                    self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                    if len(self.atomSelectionSet) < 2:
+                        return
 
                 if self.__createSfDict:
                     sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
@@ -4520,23 +4556,39 @@ class CyanaMRParserListener(ParseTreeListener):
                         else:
                             upper_limit = value2
 
-                    self.__allowZeroUpperLimit = False
-                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
-                       and len(self.atomSelectionSet[0]) > 0\
-                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
-                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+                    if self.__hasPolySeq:
 
-                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                        self.__retrieveLocalSeqScheme()
 
-                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
-                            self.__allowZeroUpperLimit = True
-                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+                        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                            return
+
+                        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                        if len(self.atomSelectionSet) < 2:
+                            return
+
+                        self.__allowZeroUpperLimit = False
+                        if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                           and len(self.atomSelectionSet[0]) > 0\
+                           and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                            if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                               and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                    or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                                self.__allowZeroUpperLimit = True
+                        self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
@@ -4556,19 +4608,21 @@ class CyanaMRParserListener(ParseTreeListener):
                 if not self.__hasPolySeq:
                     return
 
-                self.__retrieveLocalSeqScheme()
+                if self.__cur_subtype != 'dist':
 
-                chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    self.__retrieveLocalSeqScheme()
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-                    return
+                    chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                    chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
-                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        return
 
-                if len(self.atomSelectionSet) < 2:
-                    return
+                    self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                    if len(self.atomSelectionSet) < 2:
+                        return
 
                 if self.__createSfDict:
                     sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
@@ -4746,23 +4800,39 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
 
-                    self.__allowZeroUpperLimit = False
-                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
-                       and len(self.atomSelectionSet[0]) > 0\
-                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
-                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+                    if self.__hasPolySeq:
 
-                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                        self.__retrieveLocalSeqScheme()
 
-                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
-                            self.__allowZeroUpperLimit = True
-                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+                        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                            return
+
+                        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                        if len(self.atomSelectionSet) < 2:
+                            return
+
+                        self.__allowZeroUpperLimit = False
+                        if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                           and len(self.atomSelectionSet[0]) > 0\
+                           and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                            if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                               and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                    or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                                self.__allowZeroUpperLimit = True
+                        self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
                     dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
@@ -4781,19 +4851,21 @@ class CyanaMRParserListener(ParseTreeListener):
                 if not self.__hasPolySeq:
                     return
 
-                self.__retrieveLocalSeqScheme()
+                if self.__cur_subtype != 'dist':
 
-                chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    self.__retrieveLocalSeqScheme()
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-                    return
+                    chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                    chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
-                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        return
 
-                if len(self.atomSelectionSet) < 2:
-                    return
+                    self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                    if len(self.atomSelectionSet) < 2:
+                        return
 
                 if self.__createSfDict:
                     sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
@@ -5039,23 +5111,39 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
 
-                    self.__allowZeroUpperLimit = False
-                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
-                       and len(self.atomSelectionSet[0]) > 0\
-                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
-                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+                    if self.__hasPolySeq:
 
-                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                        self.__retrieveLocalSeqScheme()
 
-                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
-                            self.__allowZeroUpperLimit = True
-                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+                        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                            return
+
+                        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                        if len(self.atomSelectionSet) < 2:
+                            return
+
+                        self.__allowZeroUpperLimit = False
+                        if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                           and len(self.atomSelectionSet[0]) > 0\
+                           and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                            if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                               and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                    or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                                self.__allowZeroUpperLimit = True
+                        self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
@@ -5078,19 +5166,21 @@ class CyanaMRParserListener(ParseTreeListener):
                 if not self.__hasPolySeq:
                     return
 
-                self.__retrieveLocalSeqScheme()
+                if self.__cur_subtype != 'dist':
 
-                chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    self.__retrieveLocalSeqScheme()
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-                    return
+                    chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                    chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
-                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        return
 
-                if len(self.atomSelectionSet) < 2:
-                    return
+                    self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                    if len(self.atomSelectionSet) < 2:
+                        return
 
                 if self.__createSfDict:
                     sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
@@ -5251,23 +5341,39 @@ class CyanaMRParserListener(ParseTreeListener):
                         else:
                             upper_limit = value2
 
-                    self.__allowZeroUpperLimit = False
-                    if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
-                       and len(self.atomSelectionSet[0]) > 0\
-                       and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
-                        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-                        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-                        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+                    if self.__hasPolySeq:
 
-                        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-                        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-                        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                        self.__retrieveLocalSeqScheme()
 
-                        if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                           and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                                or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
-                            self.__allowZeroUpperLimit = True
-                    self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+                        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                            return
+
+                        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                        if len(self.atomSelectionSet) < 2:
+                            return
+
+                        self.__allowZeroUpperLimit = False
+                        if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                           and len(self.atomSelectionSet[0]) > 0\
+                           and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                            if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                               and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                                    or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                                self.__allowZeroUpperLimit = True
+                        self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
                     dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
 
@@ -5287,19 +5393,21 @@ class CyanaMRParserListener(ParseTreeListener):
                 if not self.__hasPolySeq:
                     return
 
-                self.__retrieveLocalSeqScheme()
+                if self.__cur_subtype != 'dist':
 
-                chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    self.__retrieveLocalSeqScheme()
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-                    return
+                    chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                    chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
-                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        return
 
-                if len(self.atomSelectionSet) < 2:
-                    return
+                    self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                    if len(self.atomSelectionSet) < 2:
+                        return
 
                 if self.__createSfDict:
                     sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,

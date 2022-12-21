@@ -439,7 +439,62 @@ class CifToNmrStar:
             @see: pynmrstar.entry
         """
 
-        for sf in strData.frame_list:
+        if strData is None:
+            return
+
+        if isinstance(strData, pynmrstar.Entry):
+
+            for sf in strData.frame_list:
+                filled = False
+
+                for tag in sf.tags:
+                    fqtn = (sf.tag_prefix + '.' + tag[0]).lower()
+
+                    try:
+                        if self.schema[fqtn]['entryIdFlg'] == 'Y':
+                            tag[1] = entryId
+                            filled = True
+                            break
+                    except KeyError:
+                        pass
+
+                if not filled:
+                    entry_id_tag = 'ID' if sf.category == 'entry_information' else 'Entry_ID'
+
+                    fqtn = (sf.tag_prefix + '.' + entry_id_tag).lower()
+
+                    try:
+                        if self.schema[fqtn]['entryIdFlg'] == 'Y':
+                            sf.add_tag(entry_id_tag, entryId)
+                    except KeyError:
+                        pass
+
+                for lp in sf.loops:
+                    filled = False
+
+                    for tag in lp.tags:
+                        fqtn = (lp.category + '.' + tag).lower()
+
+                        try:
+                            if self.schema[fqtn]['entryIdFlg'] == 'Y' or tag == 'Entry_ID':
+                                lp[tag] = [entryId] * len(lp[tag])
+                                filled = True
+                                break
+                        except KeyError:
+                            pass
+
+                    if not filled:
+                        entry_id_tag = lp.category + '.Entry_ID'
+
+                        lp.add_tag(entry_id_tag)
+
+                        for row in lp:
+                            row.append(entryId)
+
+        elif isinstance(strData, pynmrstar.Saveframe):
+
+            sf = strData
+
             filled = False
 
             for tag in sf.tags:
@@ -485,6 +540,78 @@ class CifToNmrStar:
 
                     for row in lp:
                         row.append(entryId)
+
+        elif isinstance(strData, pynmrstar.Loop):
+
+            lp = strData
+
+            filled = False
+
+            for tag in lp.tags:
+                fqtn = (lp.category + '.' + tag).lower()
+
+                try:
+                    if self.schema[fqtn]['entryIdFlg'] == 'Y' or tag == 'Entry_ID':
+                        lp[tag] = [entryId] * len(lp[tag])
+                        filled = True
+                        break
+                except KeyError:
+                    pass
+
+            if not filled:
+                entry_id_tag = lp.category + '.Entry_ID'
+
+                lp.add_tag(entry_id_tag)
+
+                for row in lp:
+                    row.append(entryId)
+
+    def set_local_sf_id(self, strData, listId):
+        """ Set list ID for a given saveframe or loop.
+        """
+
+        if strData is None:
+            return
+
+        if isinstance(strData, pynmrstar.Saveframe):
+
+            sf = strData
+
+            for tag in sf.tags:
+                fqtn = (sf.tag_prefix + '.' + tag[0]).lower()
+
+                try:
+                    if self.schema[fqtn]['lclSfIdFlg'] == 'Y':
+                        tag[1] = listId
+                        break
+                except KeyError:
+                    pass
+
+            for lp in sf.loops:
+
+                for tag in lp.tags:
+                    fqtn = (lp.category + '.' + tag).lower()
+
+                    try:
+                        if self.schema[fqtn]['lclSfIdFlg'] == 'Y':
+                            lp[tag] = [listId] * len(lp[tag])
+                            break
+                    except KeyError:
+                        pass
+
+        elif isinstance(strData, pynmrstar.Loop):
+
+            lp = strData
+
+            for tag in lp.tags:
+                fqtn = (lp.category + '.' + tag).lower()
+
+                try:
+                    if self.schema[fqtn]['lclSfIdFlg'] == 'Y':
+                        lp[tag] = [listId] * len(lp[tag])
+                        break
+                except KeyError:
+                    pass
 
     def normalize(self, strData):
         """ Wrapper function of normalize_str() and normalize_nef().

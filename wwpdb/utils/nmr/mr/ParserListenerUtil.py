@@ -253,7 +253,7 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                             'ccr_dd_restraint': '_Cross_correlation_DD_list',
                             'fchiral_restraint': '_Floating_chirality_assign',
-                            'other_restraint': '_Other_data_type_list'
+                            'other_restraint': '_Other_data_type_list',
                             }
 
 NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
@@ -271,7 +271,7 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                           'fchiral_restraint': 'floating_chiral_stereo_assign',
-                          'other_restraint': 'other_data_types'
+                          'other_restraint': 'other_data_types',
                           }
 
 NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -3929,6 +3929,17 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
     atom4 = atoms[3] if atom_dim_num > 3 else None
     atom5 = atoms[4] if atom_dim_num > 4 else None
 
+    if isinstance(atom1, list):
+        atom1 = atom1[0]
+    if atom2 is not None and isinstance(atom2, list):
+        atom2 = atom2[0]
+    if atom3 is not None and isinstance(atom3, list):
+        atom3 = atom3[0]
+    if atom4 is not None and isinstance(atom4, list):
+        atom4 = atom4[0]
+    if atom5 is not None and isinstance(atom5, list):
+        atom5 = atom5[0]
+
     if atom1 is not None:
         star_atom1 = getStarAtom(authToStarSeq, atom1)
     if atom2 is not None:
@@ -4539,7 +4550,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
     _seqId = seqId
 
     for ps in polySeq:
-        chainId, seqId = getRealChainSeqId(nefT.__ccU, ps, _seqId, compId)  # pylint: disable=protected-access
+        chainId, seqId = getRealChainSeqId(nefT.get_ccu(), ps, _seqId, compId)
         if refChainId != chainId:
             continue
         if seqId in ps['auth_seq_id']:
@@ -4592,7 +4603,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
             nonPolySeq = branched
 
         for np in nonPolySeq:
-            chainId, seqId = getRealChainSeqId(nefT.__ccU, np, _seqId, compId, False)  # pylint: disable=protected-access
+            chainId, seqId = getRealChainSeqId(nefT.get_ccu(), np, _seqId, compId, False)
             if refChainId != chainId:
                 continue
             if seqId in np['auth_seq_id']:
@@ -4689,7 +4700,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=T
                 _atomId = [_atomId[int(atomId[-1]) - 1]]
 
         if details is not None:
-            _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=nefT.__ccU)  # pylint: disable=protected-access
+            _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=nefT.get_ccu())
             if _atomId_ != atomId:
                 __atomId = nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                 if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
@@ -4742,8 +4753,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=T
             atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                   'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
-            warningMessage = testCoordAtomIdConsistency(caC, nefT.__ccU,  # pylint: disable=protected-access
-                                                        chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
+            warningMessage = testCoordAtomIdConsistency(caC, nefT.get_ccu(), chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
 
     return atomSelection, warningMessage
 

@@ -635,6 +635,11 @@ class NEFTranslator:
         self.__cachedDictForStarAtom = {}
         self.__cachedDictForNefAtom = {}
 
+    def get_ccu(self):
+        """ Get instance of ChemCompUtil.
+        """
+        return self.__ccU
+
     def set_remediation_mode(self, flag):
         """ Set remediation mode.
         """
@@ -2380,7 +2385,7 @@ class NEFTranslator:
 
             if enforce_allowed_tags and allowed_tags is not None:
                 extra_tags = (set(loop.tags) | set(allowed_tags)) - set(allowed_tags)
-                if len(extra_tags) > 0:
+                if len(extra_tags) > 0 and not self.__remediation_mode:
                     raise LookupError(f"Unauthorized {extra_tags} loop tag(s) must not exists.")  # DAOTHER-7545 only for NMR-STAR
 
             for d in data_items:
@@ -4264,7 +4269,7 @@ class NEFTranslator:
         try:
 
             if '++' in atom_id:
-                atom_id = re.sub(f'\+\+', '+', atom_id)
+                atom_id = re.sub(r'\+\+', '+', atom_id)
 
             if '#' in atom_id:
                 atom_id = atom_id.replace('#', '%')

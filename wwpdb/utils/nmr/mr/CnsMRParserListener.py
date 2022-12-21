@@ -784,7 +784,7 @@ class CnsMRParserListener(ParseTreeListener):
             sf['saveframe'].add_loop(aux_lp)
 
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: CnsMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
@@ -799,7 +799,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: CnsMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#plane_restraint.
     def enterPlane_restraint(self, ctx: CnsMRParser.Plane_restraintContext):  # pylint: disable=unused-argument
@@ -812,7 +812,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#plane_restraint.
     def exitPlane_restraint(self, ctx: CnsMRParser.Plane_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -828,7 +828,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: CnsMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
@@ -846,7 +846,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: CnsMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#coupling_restraint.
     def enterCoupling_restraint(self, ctx: CnsMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
@@ -861,7 +861,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#coupling_restraint.
     def exitCoupling_restraint(self, ctx: CnsMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#carbon_shift_restraint.
     def enterCarbon_shift_restraint(self, ctx: CnsMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
@@ -876,7 +876,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#carbon_shift_restraint.
     def exitCarbon_shift_restraint(self, ctx: CnsMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#proton_shift_restraint.
     def enterProton_shift_restraint(self, ctx: CnsMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
@@ -891,7 +891,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#proton_shift_restraint.
     def exitProton_shift_restraint(self, ctx: CnsMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#conformation_db_restraint.
     def enterConformation_db_restraint(self, ctx: CnsMRParser.Conformation_db_restraintContext):  # pylint: disable=unused-argument
@@ -920,7 +920,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#diffusion_anisotropy_restraint.
     def exitDiffusion_anisotropy_restraint(self, ctx: CnsMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#one_bond_coupling_restraint.
     def enterOne_bond_coupling_restraint(self, ctx: CnsMRParser.One_bond_coupling_restraintContext):  # pylint: disable=unused-argument
@@ -3725,7 +3725,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#ncs_restraint.
     def exitNcs_restraint(self, ctx: CnsMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#ncs_statement.
     def enterNcs_statement(self, ctx: CnsMRParser.Ncs_statementContext):
@@ -7916,10 +7916,10 @@ class CnsMRParserListener(ParseTreeListener):
 
         return self.sfDict[key][-1]
 
-    def __trimSf(self):
+    def __trimSfWoLp(self):
         if self.__cur_subtype not in self.__lastSfDict:
             return
-        if self.__lastSfDict[self.__cur_subtype]['id'] > 0:
+        if self.__lastSfDict[self.__cur_subtype]['index_id'] > 0:
             return
         for k, v in self.sfDict.items():
             for item in v:
@@ -8015,7 +8015,7 @@ class CnsMRParserListener(ParseTreeListener):
         ign_keys = []
         for k, v in self.sfDict.items():
             for item in v:
-                if item['id'] == 0:
+                if item['index_id'] == 0:
                     v.remove(item)
                     if len(v) == 0:
                         ign_keys.append(k)

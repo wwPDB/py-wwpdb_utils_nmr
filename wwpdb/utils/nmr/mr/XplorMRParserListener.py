@@ -902,7 +902,7 @@ class XplorMRParserListener(ParseTreeListener):
             sf['saveframe'].add_loop(aux_lp)
 
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
@@ -917,7 +917,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
@@ -943,10 +943,10 @@ class XplorMRParserListener(ParseTreeListener):
             if ctx.VeAngle() or ctx.Anisotropy():
                 self.__cur_subtype = 'dihed'
                 if self.__createSfDict and self.__cur_subtype not in self.__lastSfDict and self.__lastSfDict[self.__cur_subtype]['id'] == 0:
-                    self.__trimSf()
+                    self.__trimSfWoLp()
                     self.__cur_subtype = 'rdc'
             else:
-                self.__trimSf()
+                self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#planar_restraint.
     def enterPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
@@ -960,7 +960,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#planar_restraint.
     def exitPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -977,7 +977,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#antidistance_restraint.
     def enterAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
@@ -992,7 +992,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#antidistance_restraint.
     def exitAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#coupling_restraint.
     def enterCoupling_restraint(self, ctx: XplorMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
@@ -1007,7 +1007,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#coupling_restraint.
     def exitCoupling_restraint(self, ctx: XplorMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_restraint.
     def enterCarbon_shift_restraint(self, ctx: XplorMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
@@ -1022,7 +1022,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#carbon_shift_restraint.
     def exitCarbon_shift_restraint(self, ctx: XplorMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_restraint.
     def enterProton_shift_restraint(self, ctx: XplorMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
@@ -1037,7 +1037,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#proton_shift_restraint.
     def exitProton_shift_restraint(self, ctx: XplorMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def enterDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
@@ -1054,7 +1054,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def exitDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
     def enterRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext):  # pylint: disable=unused-argument
@@ -1067,7 +1067,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
     def exitRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
     def enterDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
@@ -1083,7 +1083,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
     def exitDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#orientation_db_restraint.
     def enterOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
@@ -1098,7 +1098,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#orientation_db_restraint.
     def exitOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#csa_restraint.
     def enterCsa_restraint(self, ctx: XplorMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
@@ -1113,7 +1113,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#csa_restraint.
     def exitCsa_restraint(self, ctx: XplorMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#pcsa_restraint.
     def enterPcsa_restraint(self, ctx: XplorMRParser.Pcsa_restraintContext):  # pylint: disable=unused-argument
@@ -1128,7 +1128,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#pcsa_restraint.
     def exitPcsa_restraint(self, ctx: XplorMRParser.Pcsa_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#one_bond_coupling_restraint.
     def enterOne_bond_coupling_restraint(self, ctx: XplorMRParser.One_bond_coupling_restraintContext):  # pylint: disable=unused-argument
@@ -1163,7 +1163,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#pre_restraint.
     def exitPre_restraint(self, ctx: XplorMRParser.Pre_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
@@ -1178,7 +1178,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#prdc_restraint.
     def enterPrdc_restraint(self, ctx: XplorMRParser.Prdc_restraintContext):  # pylint: disable=unused-argument
@@ -1208,7 +1208,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#porientation_restraint.
     def exitPorientation_restraint(self, ctx: XplorMRParser.Porientation_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#pccr_restraint.
     def enterPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
@@ -1225,7 +1225,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#pccr_restraint.
     def exitPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#hbond_restraint.
     def enterHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
@@ -1240,7 +1240,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#hbond_restraint.
     def exitHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#hbond_db_restraint.
     def enterHbond_db_restraint(self, ctx: XplorMRParser.Hbond_db_restraintContext):  # pylint: disable=unused-argument
@@ -1253,7 +1253,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#hbond_db_restraint.
     def exitHbond_db_restraint(self, ctx: XplorMRParser.Hbond_db_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#noe_statement.
     def enterNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):
@@ -7480,7 +7480,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#ncs_restraint.
     def exitNcs_restraint(self, ctx: XplorMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#ncs_statement.
     def enterNcs_statement(self, ctx: XplorMRParser.Ncs_statementContext):
@@ -11962,10 +11962,10 @@ class XplorMRParserListener(ParseTreeListener):
 
         return self.sfDict[key][-1]
 
-    def __trimSf(self):
+    def __trimSfWoLp(self):
         if self.__cur_subtype not in self.__lastSfDict:
             return
-        if self.__lastSfDict[self.__cur_subtype]['id'] > 0:
+        if self.__lastSfDict[self.__cur_subtype]['index_id'] > 0:
             return
         for k, v in self.sfDict.items():
             for item in v:
@@ -12101,7 +12101,7 @@ class XplorMRParserListener(ParseTreeListener):
         ign_keys = []
         for k, v in self.sfDict.items():
             for item in v:
-                if item['id'] == 0:
+                if item['index_id'] == 0:
                     v.remove(item)
                     if len(v) == 0:
                         ign_keys.append(k)

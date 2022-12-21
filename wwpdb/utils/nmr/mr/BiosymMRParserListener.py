@@ -27,6 +27,7 @@ try:
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
+                                                       decListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
@@ -76,6 +77,7 @@ except ImportError:
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
+                                           decListIdCounter,
                                            getSaveframe,
                                            getLoop,
                                            getRow,
@@ -1991,6 +1993,18 @@ class BiosymMRParserListener(ParseTreeListener):
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.
         """
+        if len(self.sfDict) == 0:
+            return None
+        ign_keys = []
+        for k, v in self.sfDict.items():
+            for item in v:
+                if item['index_id'] == 0:
+                    v.remove(item)
+                    if len(v) == 0:
+                        ign_keys.append(k)
+                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
+        for k in ign_keys:
+            del self.sfDict[k]
         return None if len(self.sfDict) == 0 else self.sfDict
 
 # del BiosymMRParser

@@ -3446,7 +3446,7 @@ class CyanaMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Exit a parse tree produced by CyanaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):
@@ -3755,7 +3755,7 @@ class CyanaMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
         if self.__createSfDict:
-            self.__trimSf()
+            self.__trimSfWoLp()
 
     # Exit a parse tree produced by CyanaMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
@@ -7549,10 +7549,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return self.sfDict[key][-1]
 
-    def __trimSf(self):
+    def __trimSfWoLp(self):
         if self.__cur_subtype not in self.__lastSfDict:
             return
-        if self.__lastSfDict[self.__cur_subtype]['id'] > 0:
+        if self.__lastSfDict[self.__cur_subtype]['index_id'] > 0:
             return
         for k, v in self.sfDict.items():
             for item in v:
@@ -7650,7 +7650,7 @@ class CyanaMRParserListener(ParseTreeListener):
         ign_keys = []
         for k, v in self.sfDict.items():
             for item in v:
-                if item['id'] == 0:
+                if item['index_id'] == 0:
                     v.remove(item)
                     if len(v) == 0:
                         ign_keys.append(k)

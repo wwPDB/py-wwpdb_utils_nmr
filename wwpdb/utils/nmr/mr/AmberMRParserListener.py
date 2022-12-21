@@ -1114,6 +1114,9 @@ class AmberMRParserListener(ParseTreeListener):
 
                     updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
+                    if any(len(atomSelection) == 0 for atomSelection in self.atomSelectionSet):
+                        return
+
                     if self.__cur_subtype in ('dist', 'geo'):
 
                         dstFunc = self.validateDistanceRange(1.0)
@@ -1963,6 +1966,9 @@ class AmberMRParserListener(ParseTreeListener):
                             print('# ' + self.lastComment)
 
                     updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+
+                    if any(len(atomSelection) == 0 for atomSelection in self.atomSelectionSet):
+                        return
 
                     if self.__cur_subtype in ('dist', 'geo'):
 
@@ -5101,6 +5107,9 @@ class AmberMRParserListener(ParseTreeListener):
 
                         updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
+                        if any(len(atomSelection) == 0 for atomSelection in self.atomSelectionSet):
+                            continue
+
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                               self.atomSelectionSet[1]):
                             if self.__debug:
@@ -5121,7 +5130,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         finally:
             if self.__createSfDict:
-                self.__trimSf()
+                self.__trimSfWoLp()
 
     def validateNoexpRange(self, imix, ipeak, awt, arange):
         """ Validate NOESY peak volume range.
@@ -5481,6 +5490,9 @@ class AmberMRParserListener(ParseTreeListener):
 
                         updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
+                        if any(len(atomSelection) == 0 for atomSelection in self.atomSelectionSet):
+                            continue
+
                         for atom in self.atomSelectionSet[0]:
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} iatr({n},{r}) "
@@ -5494,7 +5506,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         finally:
             if self.__createSfDict:
-                self.__trimSf()
+                self.__trimSfWoLp()
 
     def validateShfRange(self, n, wt, shrang):
         """ Validate chemical shift value range.
@@ -5912,6 +5924,9 @@ class AmberMRParserListener(ParseTreeListener):
                     sf['id'] += 1
 
                 updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+
+                if any(len(atomSelection) == 0 for atomSelection in self.atomSelectionSet):
+                    continue
 
                 for atom in self.atomSelectionSet[0]:
                     if self.__debug:
@@ -6401,6 +6416,9 @@ class AmberMRParserListener(ParseTreeListener):
 
                     updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
+                    if any(len(atomSelection) == 0 for atomSelection in self.atomSelectionSet):
+                        continue
+
                     for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                           self.atomSelectionSet[1]):
                         if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -6423,7 +6441,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         finally:
             if self.__createSfDict:
-                self.__trimSf()
+                self.__trimSfWoLp()
 
         # Enter a parse tree produced by AmberMRParser#align_factor.
     def enterAlign_factor(self, ctx: AmberMRParser.Align_factorContext):  # pylint: disable=unused-argument
@@ -7050,6 +7068,9 @@ class AmberMRParserListener(ParseTreeListener):
 
                     updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
+                    if any(len(atomSelection) == 0 for atomSelection in self.atomSelectionSet):
+                        continue
+
                     for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                  self.atomSelectionSet[1],
                                                                  self.atomSelectionSet[2]):
@@ -7073,7 +7094,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         finally:
             if self.__createSfDict:
-                self.__trimSf()
+                self.__trimSfWoLp()
 
     # Enter a parse tree produced by AmberMRParser#csa_factor.
     def enterCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):  # pylint: disable=unused-argument
@@ -7976,10 +7997,10 @@ class AmberMRParserListener(ParseTreeListener):
 
         return self.sfDict[key][-1]
 
-    def __trimSf(self):
+    def __trimSfWoLp(self):
         if self.__cur_subtype not in self.__lastSfDict:
             return
-        if self.__lastSfDict[self.__cur_subtype]['id'] > 0:
+        if self.__lastSfDict[self.__cur_subtype]['index_id'] > 0:
             return
         for k, v in self.sfDict.items():
             for item in v:
@@ -8056,7 +8077,7 @@ class AmberMRParserListener(ParseTreeListener):
         ign_keys = []
         for k, v in self.sfDict.items():
             for item in v:
-                if item['id'] == 0:
+                if item['index_id'] == 0:
                     v.remove(item)
                     if len(v) == 0:
                         ign_keys.append(k)

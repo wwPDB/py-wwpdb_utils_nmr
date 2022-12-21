@@ -3288,6 +3288,39 @@ def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
     return listIdCounter
 
 
+def decListIdCounter(mrSubtype, listIdCounter, reduced=True):
+    """ Decrement list id counter for a given internal restraint subtype (default)/content subtype (reduced=False).
+    """
+
+    if len(listIdCounter) == 0:
+        listIdCounter = {'dist_restraint': 0,
+                         'dihed_restraint': 0,
+                         'rdc_restraint': 0,
+                         'noepk_restraint': 0,
+                         'jcoup_restraint': 0,
+                         'rdc_raw_data': 0,
+                         'csa_restraint': 0,
+                         'ddc_restraint': 0,
+                         'hvycs_restraint': 0,
+                         'procs_restraint': 0,
+                         'csp_restraint': 0,
+                         'auto_relax_restraint': 0,
+                         'ccr_d_csa_restraint': 0,
+                         'ccr_dd_restraint': 0,
+                         'fchiral_restraint': 0,
+                         'other_restraint': 0
+                         }
+
+    contentSubtype = (contentSubtypeOf(mrSubtype) if reduced else mrSubtype) if mrSubtype is not None else 'other_restraint'
+
+    if contentSubtype is None or contentSubtype not in listIdCounter:
+        return listIdCounter
+
+    listIdCounter[contentSubtype] -= 1
+
+    return listIdCounter
+
+
 def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=None,
                  constraintType=None, potentialType=None,
                  rdcCode=None, alignCenter=None, cyanaParameter=None, reduced=True):

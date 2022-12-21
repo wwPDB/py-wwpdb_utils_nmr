@@ -38155,7 +38155,8 @@ class NmrDpUtility:
                             _seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']) if test_seq_id == seq_id), None)
                             if _seq_id is not None:
                                 _ps = next(_ps for _ps in poly_seq if _ps['chain_id'] == _chain_id)
-                                _comp_id = _ps['comp_id'][_ps['seq_id'].index(_seq_id)]
+                                if _seq_id in _ps['seq_id']:
+                                    _comp_id = _ps['comp_id'][_ps['seq_id'].index(_seq_id)]
 
                 if _chain_id is not None and _seq_id is not None and comp_id == _comp_id:
                     if chain_id not in self.__chain_id_map_for_remediation:

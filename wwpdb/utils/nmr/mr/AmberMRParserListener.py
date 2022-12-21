@@ -30,6 +30,7 @@ try:
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
+                                                       decListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
@@ -79,6 +80,7 @@ except ImportError:
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
+                                           decListIdCounter,
                                            getSaveframe,
                                            getLoop,
                                            getRow,
@@ -443,6 +445,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     # dictionary of pynmrstar saveframes
     sfDict = {}
+
+    # last edited pynmrstar saveframe
+    __lastSfDict = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -4984,133 +4989,139 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#noeexp_statement.
     def exitNoeexp_statement(self, ctx: AmberMRParser.Noeexp_statementContext):  # pylint: disable=unused-argument
-        imixes = self.npeak.keys()
-        if len(imixes) <= 0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"No NOESY experiment exists.\n"
-            return
+        try:
 
-        for imix in imixes:
-
-            if imix not in self.emix:
+            imixes = self.npeak.keys()
+            if len(imixes) <= 0:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The mixing time of the NOESY experiment emix({imix}) is unknown.\n"
-                continue
+                    f"No NOESY experiment exists.\n"
+                return
 
-            mix = self.emix[imix]
+            for imix in imixes:
 
-            for ipeak in range(1, self.npeak[imix] + 1):
-
-                if ipeak not in self.ihp[imix]:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The atom number involved in the NOESY peak ihp({imix},{ipeak}) was not set.\n"
+                if imix not in self.emix:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The mixing time of the NOESY experiment emix({imix}) is unknown.\n"
                     continue
 
-                if ipeak not in self.jhp[imix]:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The atom number involved in the NOESY peak jhp({imix},{ipeak}) was not set.\n"
-                    continue
+                mix = self.emix[imix]
 
-                if ipeak not in self.aexp[imix]:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The NOESY peak volume aexp({imix},{ipeak}) was not set.\n"
-                    continue
+                for ipeak in range(1, self.npeak[imix] + 1):
 
-                _iprot = self.ihp[imix][ipeak]
-                _jprot = self.jhp[imix][ipeak]
-
-                if _iprot <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The atom number involved in the NOESY peak 'ihp({imix},{ipeak})={_iprot}' should be a positive integer.\n"
-                    continue
-
-                if _jprot <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The atom number involved in the NOESY peak 'jhp({imix},{ipeak})={_jprot}' should be a positive integer.\n"
-                    continue
-
-                awt = 1.0
-                if imix in self.awt and ipeak in self.awt[imix]:
-                    awt = self.awt[imix][ipeak]
-                    if awt <= 0.0:
-                        awt = 1.0
-
-                arange = 0.0
-                if imix in self.arange and ipeak in self.arange[imix]:
-                    arange = max(self.arange[imix][ipeak], 0.0)
-
-                # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-                if self.__atomNumberDict is not None:
-
-                    self.atomSelectionSet = []
-
-                    atomSelection = []
-
-                    if _iprot in self.__atomNumberDict:
-                        atomSelection.append(self.__atomNumberDict[_iprot])
-                    else:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                            f"'ihp({imix},{ipeak})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
-                        continue
-
-                    chain_id = atomSelection[0]['chain_id']
-                    seq_id = atomSelection[0]['seq_id']
-                    comp_id = atomSelection[0]['comp_id']
-                    atom_id = atomSelection[0]['atom_id']
-
-                    self.atomSelectionSet.append(atomSelection)
-
-                    if atom_id[0] not in protonBeginCode:
+                    if ipeak not in self.ihp[imix]:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from ihp) is not a proton.\n"
+                            f"The atom number involved in the NOESY peak ihp({imix},{ipeak}) was not set.\n"
                         continue
 
-                    atomSelection = []
-
-                    if _jprot in self.__atomNumberDict:
-                        atomSelection.append(self.__atomNumberDict[_jprot])
-                    else:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                            f"'jhp({imix},{ipeak})={_jprot}' is not defined in the AMBER parameter/topology file.\n"
-                        continue
-
-                    chain_id = atomSelection[0]['chain_id']
-                    seq_id = atomSelection[0]['seq_id']
-                    comp_id = atomSelection[0]['comp_id']
-                    atom_id = atomSelection[0]['atom_id']
-
-                    self.atomSelectionSet.append(atomSelection)
-
-                    if atom_id[0] not in protonBeginCode:
+                    if ipeak not in self.jhp[imix]:
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from jhp) is not a proton.\n"
+                            f"The atom number involved in the NOESY peak jhp({imix},{ipeak}) was not set.\n"
                         continue
 
-                    dstFunc = self.validateNoexpRange(imix, ipeak, awt, arange)
+                    if ipeak not in self.aexp[imix]:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                            f"The NOESY peak volume aexp({imix},{ipeak}) was not set.\n"
+                        continue
 
-                    if self.__createSfDict:
-                        sf = self.__getSf()
-                        sf['id'] += 1
+                    _iprot = self.ihp[imix][ipeak]
+                    _jprot = self.jhp[imix][ipeak]
 
-                    updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+                    if _iprot <= 0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                            f"The atom number involved in the NOESY peak 'ihp({imix},{ipeak})={_iprot}' should be a positive integer.\n"
+                        continue
 
-                    for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                                          self.atomSelectionSet[1]):
-                        if self.__debug:
-                            print(f"subtype={self.__cur_subtype} dataset={imix} mixing_time={mix} peak={ipeak} "
-                                  f"atom1={atom1} atom2={atom2} {dstFunc}")
-                        if self.__createSfDict and sf is not None:
-                            sf['index_id'] += 1
-                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', None, None,
-                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
-                            sf['loop'].add_data(row)
+                    if _jprot <= 0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                            f"The atom number involved in the NOESY peak 'jhp({imix},{ipeak})={_jprot}' should be a positive integer.\n"
+                        continue
 
-                elif self.__hasPolySeq:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                        "Failed to recognize AMBER atom numbers in the NOESY volume restraint file "\
-                        "because AMBER parameter/topology file is not available.\n"
-                    return
+                    awt = 1.0
+                    if imix in self.awt and ipeak in self.awt[imix]:
+                        awt = self.awt[imix][ipeak]
+                        if awt <= 0.0:
+                            awt = 1.0
+
+                    arange = 0.0
+                    if imix in self.arange and ipeak in self.arange[imix]:
+                        arange = max(self.arange[imix][ipeak], 0.0)
+
+                    # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+                    if self.__atomNumberDict is not None:
+
+                        self.atomSelectionSet = []
+
+                        atomSelection = []
+
+                        if _iprot in self.__atomNumberDict:
+                            atomSelection.append(self.__atomNumberDict[_iprot])
+                        else:
+                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                                f"'ihp({imix},{ipeak})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
+                            continue
+
+                        chain_id = atomSelection[0]['chain_id']
+                        seq_id = atomSelection[0]['seq_id']
+                        comp_id = atomSelection[0]['comp_id']
+                        atom_id = atomSelection[0]['atom_id']
+
+                        self.atomSelectionSet.append(atomSelection)
+
+                        if atom_id[0] not in protonBeginCode:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                                f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from ihp) is not a proton.\n"
+                            continue
+
+                        atomSelection = []
+
+                        if _jprot in self.__atomNumberDict:
+                            atomSelection.append(self.__atomNumberDict[_jprot])
+                        else:
+                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                                f"'jhp({imix},{ipeak})={_jprot}' is not defined in the AMBER parameter/topology file.\n"
+                            continue
+
+                        chain_id = atomSelection[0]['chain_id']
+                        seq_id = atomSelection[0]['seq_id']
+                        comp_id = atomSelection[0]['comp_id']
+                        atom_id = atomSelection[0]['atom_id']
+
+                        self.atomSelectionSet.append(atomSelection)
+
+                        if atom_id[0] not in protonBeginCode:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
+                                f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from jhp) is not a proton.\n"
+                            continue
+
+                        dstFunc = self.validateNoexpRange(imix, ipeak, awt, arange)
+
+                        if self.__createSfDict:
+                            sf = self.__getSf()
+                            sf['id'] += 1
+
+                        updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+
+                        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                              self.atomSelectionSet[1]):
+                            if self.__debug:
+                                print(f"subtype={self.__cur_subtype} dataset={imix} mixing_time={mix} peak={ipeak} "
+                                      f"atom1={atom1} atom2={atom2} {dstFunc}")
+                            if self.__createSfDict and sf is not None:
+                                sf['index_id'] += 1
+                                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                             '.', None, None,
+                                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                                sf['loop'].add_data(row)
+
+                    elif self.__hasPolySeq:
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                            "Failed to recognize AMBER atom numbers in the NOESY volume restraint file "\
+                            "because AMBER parameter/topology file is not available.\n"
+                        return
+
+        finally:
+            if self.__createSfDict:
+                self.__trimSf()
 
     def validateNoexpRange(self, imix, ipeak, awt, arange):
         """ Validate NOESY peak volume range.
@@ -5332,118 +5343,44 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#shf_statement.
     def exitShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
-        if self.nprot < 0 and len(self.iprot.keys()) > 0:  # pylint: disable=chained-comparison
-            self.nprot = max(self.iprot.keys())
+        try:
 
-        if self.nprot <= 0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The number of observed chemical shifts 'nprot' is the mandatory variable.\n"
-            return
+            if self.nprot < 0 and len(self.iprot.keys()) > 0:  # pylint: disable=chained-comparison
+                self.nprot = max(self.iprot.keys())
 
-        for n in range(1, self.nprot + 1):
-
-            if n not in self.iprot:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
-                    f"The atom number involved in the chemical shifts nprot({n}) was not set.\n"
-                continue
-
-            if n not in self.obs:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
-                    f"The observed chemical shift value obs({n}) was not set.\n"
-                continue
-
-            _iprot = self.iprot[n]
-
-            if _iprot <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
-                    f"The atom number involved in the chemical shift 'iprot({n})={_iprot}' should be a positive integer.\n"
-                continue
-
-            wt = 1.0
-            if n in self.wt:
-                wt = self.wt[n]
-                if wt <= 0.0:
-                    wt = 1.0
-
-            shrang = 0.0
-            if n in self.shrang:
-                shrang = max(self.shrang[n], 0.0)
-
-            # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-            if self.__atomNumberDict is not None:
-
-                self.atomSelectionSet.clear()
-
-                atomSelection = []
-
-                if _iprot in self.__atomNumberDict:
-                    atomSelection.append(self.__atomNumberDict[_iprot])
-                else:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
-                        f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
-                    continue
-
-                chain_id = atomSelection[0]['chain_id']
-                seq_id = atomSelection[0]['seq_id']
-                comp_id = atomSelection[0]['comp_id']
-                atom_id = atomSelection[0]['atom_id']
-
-                self.atomSelectionSet.append(atomSelection)
-
-                if atom_id[0] not in protonBeginCode:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
-                        f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.\n"
-                    continue
-
-                dstFunc = self.validateShfRange(n, wt, shrang)
-
-                if dstFunc is None:
-                    return
-
-                if self.__createSfDict:
-                    sf = self.__getSf()
-                    sf['id'] += 1
-
-                for atom in self.atomSelectionSet[0]:
-                    if self.__debug:
-                        print(f"subtype={self.__cur_subtype} n={n} "
-                              f"atom={atom} {dstFunc}")
-                    if self.__createSfDict and sf is not None:
-                        sf['index_id'] += 1
-                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None, None,
-                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom)
-                        sf['loop'].add_data(row)
-
-            elif self.__hasPolySeq:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
-                    "because AMBER parameter/topology file is not available.\n"
+            if self.nprot <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The number of observed chemical shifts 'nprot' is the mandatory variable.\n"
                 return
 
-        if self.nring <= 0:
-            return
+            for n in range(1, self.nprot + 1):
 
-        for r in range(1, self.nring + 1):
-
-            if r not in self.natr:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The number of atoms in a ring 'natr({r})' was not set.\n"
-                continue
-
-            for n in range(1, self.natr[r] + 1):
-
-                if n not in self.iatr[r]:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The ring atom 'iatr({n},{r})' was not set.\n"
+                if n not in self.iprot:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
+                        f"The atom number involved in the chemical shifts nprot({n}) was not set.\n"
                     continue
 
-                _iat = self.iatr[r][n]
-
-                if _iat <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n)}"\
-                        f"The atom number involved in the ring 'iatr({n},{r})={_iat}' should be a positive integer.\n"
+                if n not in self.obs:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
+                        f"The observed chemical shift value obs({n}) was not set.\n"
                     continue
+
+                _iprot = self.iprot[n]
+
+                if _iprot <= 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
+                        f"The atom number involved in the chemical shift 'iprot({n})={_iprot}' should be a positive integer.\n"
+                    continue
+
+                wt = 1.0
+                if n in self.wt:
+                    wt = self.wt[n]
+                    if wt <= 0.0:
+                        wt = 1.0
+
+                shrang = 0.0
+                if n in self.shrang:
+                    shrang = max(self.shrang[n], 0.0)
 
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
                 if self.__atomNumberDict is not None:
@@ -5452,11 +5389,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                     atomSelection = []
 
-                    if _iat in self.__atomNumberDict:
-                        atomSelection.append(self.__atomNumberDict[_iat])
+                    if _iprot in self.__atomNumberDict:
+                        atomSelection.append(self.__atomNumberDict[_iprot])
                     else:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                            f"The ring atom 'iatr({n},{r})={_iat}' is not defined in the AMBER parameter/topology file.\n"
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
+                            f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
                         continue
 
                     chain_id = atomSelection[0]['chain_id']
@@ -5466,18 +5403,98 @@ class AmberMRParserListener(ParseTreeListener):
 
                     self.atomSelectionSet.append(atomSelection)
 
-                    updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+                    if atom_id[0] not in protonBeginCode:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
+                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.\n"
+                        continue
+
+                    dstFunc = self.validateShfRange(n, wt, shrang)
+
+                    if dstFunc is None:
+                        return
+
+                    if self.__createSfDict:
+                        sf = self.__getSf()
+                        sf['id'] += 1
 
                     for atom in self.atomSelectionSet[0]:
                         if self.__debug:
-                            print(f"subtype={self.__cur_subtype} iatr({n},{r}) "
-                                  f"ring_atom={atom}")
+                            print(f"subtype={self.__cur_subtype} n={n} "
+                                  f"atom={atom} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', None, None,
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom)
+                            sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
                     self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
                         "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
                         "because AMBER parameter/topology file is not available.\n"
                     return
+
+            if self.nring <= 0:
+                return
+
+            for r in range(1, self.nring + 1):
+
+                if r not in self.natr:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                        f"The number of atoms in a ring 'natr({r})' was not set.\n"
+                    continue
+
+                for n in range(1, self.natr[r] + 1):
+
+                    if n not in self.iatr[r]:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            f"The ring atom 'iatr({n},{r})' was not set.\n"
+                        continue
+
+                    _iat = self.iatr[r][n]
+
+                    if _iat <= 0:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n)}"\
+                            f"The atom number involved in the ring 'iatr({n},{r})={_iat}' should be a positive integer.\n"
+                        continue
+
+                    # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+                    if self.__atomNumberDict is not None:
+
+                        self.atomSelectionSet.clear()
+
+                        atomSelection = []
+
+                        if _iat in self.__atomNumberDict:
+                            atomSelection.append(self.__atomNumberDict[_iat])
+                        else:
+                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                                f"The ring atom 'iatr({n},{r})={_iat}' is not defined in the AMBER parameter/topology file.\n"
+                            continue
+
+                        chain_id = atomSelection[0]['chain_id']
+                        seq_id = atomSelection[0]['seq_id']
+                        comp_id = atomSelection[0]['comp_id']
+                        atom_id = atomSelection[0]['atom_id']
+
+                        self.atomSelectionSet.append(atomSelection)
+
+                        updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+
+                        for atom in self.atomSelectionSet[0]:
+                            if self.__debug:
+                                print(f"subtype={self.__cur_subtype} iatr({n},{r}) "
+                                      f"ring_atom={atom}")
+
+                    elif self.__hasPolySeq:
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                            "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
+                            "because AMBER parameter/topology file is not available.\n"
+                        return
+
+        finally:
+            if self.__createSfDict:
+                self.__trimSf()
 
     def validateShfRange(self, n, wt, shrang):
         """ Validate chemical shift value range.
@@ -6182,225 +6199,231 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#align_statement.
     def exitAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
-        if self.ndip < 0 and len(self.id.keys()) > 0:  # pylint: disable=chained-comparison
-            self.ndip = max(self.id.keys())
+        try:
 
-        if self.ndip <= 0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The number of observed dipolar couplings 'ndip' is the mandatory variable.\n"
-            return
+            if self.ndip < 0 and len(self.id.keys()) > 0:  # pylint: disable=chained-comparison
+                self.ndip = max(self.id.keys())
 
-        for n in range(1, self.ndip + 1):
+            if self.ndip <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The number of observed dipolar couplings 'ndip' is the mandatory variable.\n"
+                return
 
-            if n not in self.id:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The first atom number involved in the dipolar coupling id({n}) was not set.\n"
-                continue
+            for n in range(1, self.ndip + 1):
 
-            if n not in self.jd:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The second atom number involved in the dipolar coupling jd({n}) was not set.\n"
-                continue
+                if n not in self.id:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"The first atom number involved in the dipolar coupling id({n}) was not set.\n"
+                    continue
 
-            if n not in self.dobsl:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The lower limit value for the observed dipolar coupling dobsl({n}) was not set.\n"
-                continue
+                if n not in self.jd:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"The second atom number involved in the dipolar coupling jd({n}) was not set.\n"
+                    continue
 
-            if n not in self.dobsu:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The upper limit value for the observed dipolar coupling dobsu({n}) was not set.\n"
-                continue
+                if n not in self.dobsl:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"The lower limit value for the observed dipolar coupling dobsl({n}) was not set.\n"
+                    continue
 
-            _id = self.id[n]
-            _jd = self.jd[n]
+                if n not in self.dobsu:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"The upper limit value for the observed dipolar coupling dobsu({n}) was not set.\n"
+                    continue
 
-            if _id <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The first atom number involved in the dipolar coupling 'id({n})={_id}' should be a positive integer.\n"
-                continue
+                _id = self.id[n]
+                _jd = self.jd[n]
 
-            if _jd <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The second atom number involved in the dipolar coupling 'jd({n})={_jd}' should be a positive integer.\n"
-                continue
+                if _id <= 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"The first atom number involved in the dipolar coupling 'id({n})={_id}' should be a positive integer.\n"
+                    continue
 
-            dwt = 1.0
-            if n in self.dwt:
-                dwt = self.dwt[n]
-                if dwt <= 0.0:
-                    dwt = 1.0
+                if _jd <= 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                        f"The second atom number involved in the dipolar coupling 'jd({n})={_jd}' should be a positive integer.\n"
+                    continue
 
-            # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-            if self.__atomNumberDict is not None:
+                dwt = 1.0
+                if n in self.dwt:
+                    dwt = self.dwt[n]
+                    if dwt <= 0.0:
+                        dwt = 1.0
 
-                self.atomSelectionSet.clear()
+                # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+                if self.__atomNumberDict is not None:
 
-                atomSelection = []
+                    self.atomSelectionSet.clear()
 
-                if _id in self.__atomNumberDict:
-                    atomSelection.append(self.__atomNumberDict[_id])
-                else:
-                    atom_id_i = None
-                    if _jd in self.__atomNumberDict:
-                        atom_sel_j = self.__atomNumberDict[_jd]
-                        comp_id_j = atom_sel_j['comp_id']
-                        atom_id_j = atom_sel_j['atom_id']
-                        if self.__ccU.updateChemCompDict(comp_id_j):  # matches with comp_id in CCD
-                            if atom_id_j[0] in protonBeginCode:
-                                b = next((b for b in self.__ccU.lastBonds
-                                          if atom_id_j in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
-                            else:
-                                b = next((b for b in self.__ccU.lastBonds
-                                          if (b[self.__ccU.ccbAtomId1] == atom_id_j and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode)
-                                          or (b[self.__ccU.ccbAtomId2] == atom_id_j and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)), None)
-                            if b is not None:
-                                atom_id_i = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_j else b[self.__ccU.ccbAtomId2]
-                                atom_sel_i = copy.copy(atom_sel_j)
-                                atom_sel_i['auth_atom_id'] = atom_sel_i['atom_id'] = atom_id_i
-                                self.__atomNumberDict[_id] = atom_sel_i
-                                atomSelection.append(atom_sel_i)
-                    if atom_id_i is None:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                            f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.\n"
-                        continue
+                    atomSelection = []
 
-                chain_id_1 = atomSelection[0]['chain_id']
-                seq_id_1 = atomSelection[0]['seq_id']
-                comp_id_1 = atomSelection[0]['comp_id']
-                atom_id_1 = atomSelection[0]['atom_id']
-
-                self.atomSelectionSet.append(atomSelection)
-
-                atomSelection = []
-
-                if _jd in self.__atomNumberDict:
-                    atomSelection.append(self.__atomNumberDict[_jd])
-                else:
-                    atom_id_j = None
                     if _id in self.__atomNumberDict:
-                        atom_sel_i = self.__atomNumberDict[_id]
-                        comp_id_i = atom_sel_i['comp_id']
-                        atom_id_i = atom_sel_i['atom_id']
-                        if self.__ccU.updateChemCompDict(comp_id_i):  # matches with comp_id in CCD
-                            if atom_id_i[0] in protonBeginCode:
-                                b = next((b for b in self.__ccU.lastBonds
-                                          if atom_id_i in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
-                            else:
-                                b = next((b for b in self.__ccU.lastBonds
-                                          if (b[self.__ccU.ccbAtomId1] == atom_id_i and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode)
-                                          or (b[self.__ccU.ccbAtomId2] == atom_id_i and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)), None)
-                            if b is not None:
-                                atom_id_j = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_i else b[self.__ccU.ccbAtomId2]
-                                atom_sel_j = copy.copy(atom_sel_i)
-                                atom_sel_j['auth_atom_id'] = atom_sel_j['atom_id'] = atom_id_j
-                                self.__atomNumberDict[_jd] = atom_sel_j
-                                atomSelection.append(atom_sel_j)
-                    if atom_id_j is None:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                            f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.\n"
-                        continue
-
-                chain_id_2 = atomSelection[0]['chain_id']
-                seq_id_2 = atomSelection[0]['seq_id']
-                comp_id_2 = atomSelection[0]['comp_id']
-                atom_id_2 = atomSelection[0]['atom_id']
-
-                self.atomSelectionSet.append(atomSelection)
-
-                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"Non-magnetic susceptible spin appears in RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    continue
-
-                if chain_id_1 != chain_id_2:
-                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                    ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
-                    if ps1 is None and ps2 is None:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                            f"Found inter-chain RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                        continue
-
-                elif abs(seq_id_1 - seq_id_2) > 1:
-                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
-                    if ps1 is None:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                            f"Found inter-residue RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                        continue
-
-                elif abs(seq_id_1 - seq_id_2) == 1:
-
-                    if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
-                             or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
-                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
-                        pass
-
+                        atomSelection.append(self.__atomNumberDict[_id])
                     else:
+                        atom_id_i = None
+                        if _jd in self.__atomNumberDict:
+                            atom_sel_j = self.__atomNumberDict[_jd]
+                            comp_id_j = atom_sel_j['comp_id']
+                            atom_id_j = atom_sel_j['atom_id']
+                            if self.__ccU.updateChemCompDict(comp_id_j):  # matches with comp_id in CCD
+                                if atom_id_j[0] in protonBeginCode:
+                                    b = next((b for b in self.__ccU.lastBonds
+                                              if atom_id_j in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
+                                else:
+                                    b = next((b for b in self.__ccU.lastBonds
+                                              if (b[self.__ccU.ccbAtomId1] == atom_id_j and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode)
+                                              or (b[self.__ccU.ccbAtomId2] == atom_id_j and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)), None)
+                                if b is not None:
+                                    atom_id_i = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_j else b[self.__ccU.ccbAtomId2]
+                                    atom_sel_i = copy.copy(atom_sel_j)
+                                    atom_sel_i['auth_atom_id'] = atom_sel_i['atom_id'] = atom_id_i
+                                    self.__atomNumberDict[_id] = atom_sel_i
+                                    atomSelection.append(atom_sel_i)
+                        if atom_id_i is None:
+                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                                f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.\n"
+                            continue
+
+                    chain_id_1 = atomSelection[0]['chain_id']
+                    seq_id_1 = atomSelection[0]['seq_id']
+                    comp_id_1 = atomSelection[0]['comp_id']
+                    atom_id_1 = atomSelection[0]['atom_id']
+
+                    self.atomSelectionSet.append(atomSelection)
+
+                    atomSelection = []
+
+                    if _jd in self.__atomNumberDict:
+                        atomSelection.append(self.__atomNumberDict[_jd])
+                    else:
+                        atom_id_j = None
+                        if _id in self.__atomNumberDict:
+                            atom_sel_i = self.__atomNumberDict[_id]
+                            comp_id_i = atom_sel_i['comp_id']
+                            atom_id_i = atom_sel_i['atom_id']
+                            if self.__ccU.updateChemCompDict(comp_id_i):  # matches with comp_id in CCD
+                                if atom_id_i[0] in protonBeginCode:
+                                    b = next((b for b in self.__ccU.lastBonds
+                                              if atom_id_i in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
+                                else:
+                                    b = next((b for b in self.__ccU.lastBonds
+                                              if (b[self.__ccU.ccbAtomId1] == atom_id_i and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode)
+                                              or (b[self.__ccU.ccbAtomId2] == atom_id_i and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)), None)
+                                if b is not None:
+                                    atom_id_j = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_i else b[self.__ccU.ccbAtomId2]
+                                    atom_sel_j = copy.copy(atom_sel_i)
+                                    atom_sel_j['auth_atom_id'] = atom_sel_j['atom_id'] = atom_id_j
+                                    self.__atomNumberDict[_jd] = atom_sel_j
+                                    atomSelection.append(atom_sel_j)
+                        if atom_id_j is None:
+                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                                f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.\n"
+                            continue
+
+                    chain_id_2 = atomSelection[0]['chain_id']
+                    seq_id_2 = atomSelection[0]['seq_id']
+                    comp_id_2 = atomSelection[0]['comp_id']
+                    atom_id_2 = atomSelection[0]['atom_id']
+
+                    self.atomSelectionSet.append(atomSelection)
+
+                    if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                            "Found inter-residue RDC vector; "\
+                            f"Non-magnetic susceptible spin appears in RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                         continue
 
-                elif atom_id_1 == atom_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        "Found zero RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                    continue
-
-                elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
-
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                    if chain_id_1 != chain_id_2:
+                        ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                        ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                        if ps1 is None and ps2 is None:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                                "Found an RDC vector over multiple covalent bonds; "\
+                                f"Found inter-chain RDC vector; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                                 f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                             continue
 
-                dstFunc = self.validateRdcRange(n, dwt)
+                    elif abs(seq_id_1 - seq_id_2) > 1:
+                        ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                        if ps1 is None:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                                f"Found inter-residue RDC vector; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            continue
 
-                if dstFunc is None:
+                    elif abs(seq_id_1 - seq_id_2) == 1:
+
+                        if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                                 or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                            pass
+
+                        else:
+                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                                "Found inter-residue RDC vector; "\
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            continue
+
+                    elif atom_id_1 == atom_id_2:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                            "Found zero RDC vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        continue
+
+                    elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                        if not any(b for b in self.__ccU.lastBonds
+                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
+                                    "Found an RDC vector over multiple covalent bonds; "\
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                                continue
+
+                    dstFunc = self.validateRdcRange(n, dwt)
+
+                    if dstFunc is None:
+                        return
+
+                    if self.__createSfDict:
+                        sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                          rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]))
+                        sf['id'] += 1
+
+                    updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+
+                    for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                          self.atomSelectionSet[1]):
+                        if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
+                            continue
+                        if self.__debug:
+                            print(f"subtype={self.__cur_subtype} dataset={self.dataset} n={n} "
+                                  f"atom1={atom1} atom2={atom2} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', None, None,
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                            sf['loop'].add_data(row)
+
+                elif self.__hasPolySeq:
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                        "Failed to recognize AMBER atom numbers in the Direct dipolar coupling restraint file "\
+                        "because AMBER parameter/topology file is not available.\n"
                     return
 
-                if self.__createSfDict:
-                    sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
-                                      rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]))
-                    sf['id'] += 1
-
-                updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
-
-                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                                      self.atomSelectionSet[1]):
-                    if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
-                        continue
-                    if self.__debug:
-                        print(f"subtype={self.__cur_subtype} dataset={self.dataset} n={n} "
-                              f"atom1={atom1} atom2={atom2} {dstFunc}")
-                    if self.__createSfDict and sf is not None:
-                        sf['index_id'] += 1
-                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None, None,
-                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
-                        sf['loop'].add_data(row)
-
-            elif self.__hasPolySeq:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    "Failed to recognize AMBER atom numbers in the Direct dipolar coupling restraint file "\
-                    "because AMBER parameter/topology file is not available.\n"
-                return
+        finally:
+            if self.__createSfDict:
+                self.__trimSf()
 
         # Enter a parse tree produced by AmberMRParser#align_factor.
     def enterAlign_factor(self, ctx: AmberMRParser.Align_factorContext):  # pylint: disable=unused-argument
@@ -6781,270 +6804,276 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#csa_statement.
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
-        if self.ncsa < 0 and len(self.icsa.keys()) > 0:  # pylint: disable=chained-comparison
-            self.ncsa = max(self.icsa.keys())
+        try:
 
-        if self.ncsa <= 0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The number of observed CSA values 'ncsa' is the mandatory variable.\n"
-            return
+            if self.ncsa < 0 and len(self.icsa.keys()) > 0:  # pylint: disable=chained-comparison
+                self.ncsa = max(self.icsa.keys())
 
-        for n in range(1, self.ncsa + 1):
+            if self.ncsa <= 0:
+                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                    f"The number of observed CSA values 'ncsa' is the mandatory variable.\n"
+                return
 
-            if n not in self.icsa:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The first atom number involved in the CSA icsa({n}) was not set.\n"
-                continue
+            for n in range(1, self.ncsa + 1):
 
-            if n not in self.jcsa:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The second atom number involved in the CSA jcsa({n}) was not set.\n"
-                continue
-
-            if n not in self.kcsa:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The second atom number involved in the CSA kcsa({n}) was not set.\n"
-                continue
-
-            if n not in self.cobsl:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The lower limit value for the observed CSA cobsl({n}) was not set.\n"
-                continue
-
-            if n not in self.cobsu:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The upper limit value for the observed CSA cobsu({n}) was not set.\n"
-                continue
-
-            _icsa = self.icsa[n]
-            _jcsa = self.jcsa[n]
-            _kcsa = self.kcsa[n]
-
-            if _icsa <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The first atom number involved in the CSA 'icsa({n})={_icsa}' should be a positive integer.\n"
-                continue
-
-            if _jcsa <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The second atom number involved in the CSA 'jcsa({n})={_jcsa}' should be a positive integer.\n"
-                continue
-
-            if _kcsa <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The second atom number involved in the CSA 'kcsa({n})={_kcsa}' should be a positive integer.\n"
-                continue
-
-            cwt = 1.0
-            if n in self.cwt:
-                cwt = self.cwt[n]
-                if cwt <= 0.0:
-                    cwt = 1.0
-
-            # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-            if self.__atomNumberDict is not None:
-
-                self.atomSelectionSet.clear()
-
-                atomSelection = []
-
-                if _icsa in self.__atomNumberDict:
-                    atomSelection.append(self.__atomNumberDict[_icsa])
-                else:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"'icsa({n})={_icsa}' is not defined in the AMBER parameter/topology file.\n"
-                    continue
-
-                chain_id_1 = atomSelection[0]['chain_id']
-                seq_id_1 = atomSelection[0]['seq_id']
-                comp_id_1 = atomSelection[0]['comp_id']
-                atom_id_1 = atomSelection[0]['atom_id']
-
-                self.atomSelectionSet.append(atomSelection)
-
-                atomSelection = []
-
-                if _jcsa in self.__atomNumberDict:
-                    atomSelection.append(self.__atomNumberDict[_jcsa])
-                else:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"'jcsa({n})={_jcsa}' is not defined in the AMBER parameter/topology file.\n"
-                    continue
-
-                chain_id_2 = atomSelection[0]['chain_id']
-                seq_id_2 = atomSelection[0]['seq_id']
-                comp_id_2 = atomSelection[0]['comp_id']
-                atom_id_2 = atomSelection[0]['atom_id']
-
-                self.atomSelectionSet.append(atomSelection)
-
-                atomSelection = []
-
-                if _kcsa in self.__atomNumberDict:
-                    atomSelection.append(self.__atomNumberDict[_kcsa])
-                else:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"'kcsa({n})={_kcsa}' is not defined in the AMBER parameter/topology file.\n"
-                    continue
-
-                chain_id_3 = atomSelection[0]['chain_id']
-                seq_id_3 = atomSelection[0]['seq_id']
-                comp_id_3 = atomSelection[0]['comp_id']
-                atom_id_3 = atomSelection[0]['atom_id']
-
-                self.atomSelectionSet.append(atomSelection)
-
-                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
-                   or (atom_id_3[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                if n not in self.icsa:
                     self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"Non-magnetic susceptible spin appears in CSA vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        f"The first atom number involved in the CSA icsa({n}) was not set.\n"
                     continue
 
-                if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3:
-                    ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                    ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
-                    ps3 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_3 and 'identical_auth_chain_id' in ps), None)
-                    if ps1 is None and ps2 is None and ps3 is None:
+                if n not in self.jcsa:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"The second atom number involved in the CSA jcsa({n}) was not set.\n"
+                    continue
+
+                if n not in self.kcsa:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"The second atom number involved in the CSA kcsa({n}) was not set.\n"
+                    continue
+
+                if n not in self.cobsl:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"The lower limit value for the observed CSA cobsl({n}) was not set.\n"
+                    continue
+
+                if n not in self.cobsu:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"The upper limit value for the observed CSA cobsu({n}) was not set.\n"
+                    continue
+
+                _icsa = self.icsa[n]
+                _jcsa = self.jcsa[n]
+                _kcsa = self.kcsa[n]
+
+                if _icsa <= 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"The first atom number involved in the CSA 'icsa({n})={_icsa}' should be a positive integer.\n"
+                    continue
+
+                if _jcsa <= 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"The second atom number involved in the CSA 'jcsa({n})={_jcsa}' should be a positive integer.\n"
+                    continue
+
+                if _kcsa <= 0:
+                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                        f"The second atom number involved in the CSA 'kcsa({n})={_kcsa}' should be a positive integer.\n"
+                    continue
+
+                cwt = 1.0
+                if n in self.cwt:
+                    cwt = self.cwt[n]
+                    if cwt <= 0.0:
+                        cwt = 1.0
+
+                # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
+                if self.__atomNumberDict is not None:
+
+                    self.atomSelectionSet.clear()
+
+                    atomSelection = []
+
+                    if _icsa in self.__atomNumberDict:
+                        atomSelection.append(self.__atomNumberDict[_icsa])
+                    else:
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                            f"'icsa({n})={_icsa}' is not defined in the AMBER parameter/topology file.\n"
+                        continue
+
+                    chain_id_1 = atomSelection[0]['chain_id']
+                    seq_id_1 = atomSelection[0]['seq_id']
+                    comp_id_1 = atomSelection[0]['comp_id']
+                    atom_id_1 = atomSelection[0]['atom_id']
+
+                    self.atomSelectionSet.append(atomSelection)
+
+                    atomSelection = []
+
+                    if _jcsa in self.__atomNumberDict:
+                        atomSelection.append(self.__atomNumberDict[_jcsa])
+                    else:
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                            f"'jcsa({n})={_jcsa}' is not defined in the AMBER parameter/topology file.\n"
+                        continue
+
+                    chain_id_2 = atomSelection[0]['chain_id']
+                    seq_id_2 = atomSelection[0]['seq_id']
+                    comp_id_2 = atomSelection[0]['comp_id']
+                    atom_id_2 = atomSelection[0]['atom_id']
+
+                    self.atomSelectionSet.append(atomSelection)
+
+                    atomSelection = []
+
+                    if _kcsa in self.__atomNumberDict:
+                        atomSelection.append(self.__atomNumberDict[_kcsa])
+                    else:
+                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                            f"'kcsa({n})={_kcsa}' is not defined in the AMBER parameter/topology file.\n"
+                        continue
+
+                    chain_id_3 = atomSelection[0]['chain_id']
+                    seq_id_3 = atomSelection[0]['seq_id']
+                    comp_id_3 = atomSelection[0]['comp_id']
+                    atom_id_3 = atomSelection[0]['atom_id']
+
+                    self.atomSelectionSet.append(atomSelection)
+
+                    if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+                       or (atom_id_3[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                            f"Found inter-chain CSA vector; "\
+                            f"Non-magnetic susceptible spin appears in CSA vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
                             f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
                         continue
 
-                elif abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"Found inter-residue CSA vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                    continue
-
-                elif abs(seq_id_1 - seq_id_2) == 1 or abs(seq_id_2 - seq_id_3) == 1 or abs(seq_id_3 - seq_id_1) == 1:
-
-                    if abs(seq_id_1 - seq_id_2) == 1:
-
-                        if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                                 or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
-                                 or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
-                                 or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
-                            pass
-
-                        else:
+                    if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3:
+                        ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                        ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                        ps3 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_3 and 'identical_auth_chain_id' in ps), None)
+                        if ps1 is None and ps2 is None and ps3 is None:
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                "Found inter-residue CSA vector; "\
+                                f"Found inter-chain CSA vector; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                                 f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
                                 f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
                             continue
 
-                    elif abs(seq_id_2 - seq_id_3) == 1:
+                    elif abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                            f"Found inter-residue CSA vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        continue
 
-                        if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
-                                ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA'))
-                                 or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')
-                                 or (seq_id_2 < seq_id_3 and atom_id_2.startswith('HA') and atom_id_3 == 'H')
-                                 or (seq_id_2 > seq_id_3 and atom_id_2 == 'H' and atom_id_3.startswith('HA'))):
-                            pass
+                    elif abs(seq_id_1 - seq_id_2) == 1 or abs(seq_id_2 - seq_id_3) == 1 or abs(seq_id_3 - seq_id_1) == 1:
 
-                        else:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                "Found inter-residue CSA vector; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                            continue
+                        if abs(seq_id_1 - seq_id_2) == 1:
 
-                    elif abs(seq_id_3 - seq_id_1) == 1:
+                            if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                                    ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
+                                     or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')
+                                     or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                                     or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                                pass
 
-                        if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
-                                ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H', 'CA'))
-                                 or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H', 'CA') and atom_id_1 == 'C')
-                                 or (seq_id_3 < seq_id_1 and atom_id_3.startswith('HA') and atom_id_1 == 'H')
-                                 or (seq_id_3 > seq_id_1 and atom_id_3 == 'H' and atom_id_1.startswith('HA'))):
-                            pass
-
-                        else:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                "Found inter-residue CSA vector; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                            continue
-
-                elif atom_id_1 == atom_id_2 or atom_id_2 == atom_id_3 or atom_id_3 == atom_id_1:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        "Found zero CSA vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
-                    continue
-
-                else:
-
-                    if self.__ccU.updateChemCompDict(comp_id_1) and seq_id_1 == seq_id_2:  # matches with comp_id in CCD
-
-                        if not any(b for b in self.__ccU.lastBonds
-                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                            if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            else:
                                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                    "Found an CSA vector over multiple covalent bonds; "\
+                                    "Found inter-residue CSA vector; "\
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                                     f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
                                     f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
                                 continue
 
-                    if self.__ccU.updateChemCompDict(comp_id_3) and seq_id_3 == seq_id_2:  # matches with comp_id in CCD
+                        elif abs(seq_id_2 - seq_id_3) == 1:
 
-                        if not any(b for b in self.__ccU.lastBonds
-                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_3 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_3))):
+                            if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
+                                    ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in ('N', 'H', 'CA'))
+                                     or (seq_id_2 > seq_id_3 and atom_id_2 in ('N', 'H', 'CA') and atom_id_3 == 'C')
+                                     or (seq_id_2 < seq_id_3 and atom_id_2.startswith('HA') and atom_id_3 == 'H')
+                                     or (seq_id_2 > seq_id_3 and atom_id_2 == 'H' and atom_id_3.startswith('HA'))):
+                                pass
 
-                            if self.__nefT.validate_comp_atom(comp_id_3, atom_id_3) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                            else:
                                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                    "Found an CSA vector over multiple covalent bonds; "\
+                                    "Found inter-residue CSA vector; "\
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                                     f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
                                     f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
                                 continue
 
-                dstFunc = self.validateCsaRange(n, cwt)
+                        elif abs(seq_id_3 - seq_id_1) == 1:
 
-                if dstFunc is None:
+                            if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
+                                    ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in ('N', 'H', 'CA'))
+                                     or (seq_id_3 > seq_id_1 and atom_id_3 in ('N', 'H', 'CA') and atom_id_1 == 'C')
+                                     or (seq_id_3 < seq_id_1 and atom_id_3.startswith('HA') and atom_id_1 == 'H')
+                                     or (seq_id_3 > seq_id_1 and atom_id_3 == 'H' and atom_id_1.startswith('HA'))):
+                                pass
+
+                            else:
+                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                                    "Found inter-residue CSA vector; "\
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                                continue
+
+                    elif atom_id_1 == atom_id_2 or atom_id_2 == atom_id_3 or atom_id_3 == atom_id_1:
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                            "Found zero CSA vector; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        continue
+
+                    else:
+
+                        if self.__ccU.updateChemCompDict(comp_id_1) and seq_id_1 == seq_id_2:  # matches with comp_id in CCD
+
+                            if not any(b for b in self.__ccU.lastBonds
+                                       if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                           or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+
+                                if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                                        "Found an CSA vector over multiple covalent bonds; "\
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                                    continue
+
+                        if self.__ccU.updateChemCompDict(comp_id_3) and seq_id_3 == seq_id_2:  # matches with comp_id in CCD
+
+                            if not any(b for b in self.__ccU.lastBonds
+                                       if ((b[self.__ccU.ccbAtomId1] == atom_id_3 and b[self.__ccU.ccbAtomId2] == atom_id_2)
+                                           or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_3))):
+
+                                if self.__nefT.validate_comp_atom(comp_id_3, atom_id_3) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
+                                        "Found an CSA vector over multiple covalent bonds; "\
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
+                                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                                    continue
+
+                    dstFunc = self.validateCsaRange(n, cwt)
+
+                    if dstFunc is None:
+                        return
+
+                    if self.__createSfDict:
+                        sf = self.__getSf()
+                        sf['id'] += 1
+
+                    updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+
+                    for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                                 self.atomSelectionSet[1],
+                                                                 self.atomSelectionSet[2]):
+                        if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
+                            continue
+                        if self.__debug:
+                            print(f"subtype={self.__cur_subtype} dataset={self.datasetc} n={n} "
+                                  f"atom1={atom1} atom2(CSA central)={atom2} atom3={atom3} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         '.', None, None,
+                                         sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom2)
+                            sf['loop'].add_data(row)
+
+                elif self.__hasPolySeq:
+                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
+                        "Failed to recognize AMBER atom numbers in the Residual CSA or psuedo-CSA restraint file "\
+                        "because AMBER parameter/topology file is not available.\n"
                     return
 
-                if self.__createSfDict:
-                    sf = self.__getSf()
-                    sf['id'] += 1
-
-                updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
-
-                for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
-                                                             self.atomSelectionSet[1],
-                                                             self.atomSelectionSet[2]):
-                    if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
-                        continue
-                    if self.__debug:
-                        print(f"subtype={self.__cur_subtype} dataset={self.datasetc} n={n} "
-                              f"atom1={atom1} atom2(CSA central)={atom2} atom3={atom3} {dstFunc}")
-                    if self.__createSfDict and sf is not None:
-                        sf['index_id'] += 1
-                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None, None,
-                                     sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom2)
-                        sf['loop'].add_data(row)
-
-            elif self.__hasPolySeq:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    "Failed to recognize AMBER atom numbers in the Residual CSA or psuedo-CSA restraint file "\
-                    "because AMBER parameter/topology file is not available.\n"
-                return
+        finally:
+            if self.__createSfDict:
+                self.__trimSf()
 
     # Enter a parse tree produced by AmberMRParser#csa_factor.
     def enterCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):  # pylint: disable=unused-argument
@@ -7914,6 +7943,8 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'dist':
             item['constraint_subsubtype'] = 'simple'
 
+        self.__lastSfDict[self.__cur_subtype] = item
+
         self.sfDict[key].append(item)
 
     def __getSf(self, constraintType=None, potentialType=None, rdcCode=None):
@@ -7944,6 +7975,20 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         return self.sfDict[key][-1]
+
+    def __trimSf(self):
+        if self.__cur_subtype not in self.__lastSfDict:
+            return
+        if self.__lastSfDict[self.__cur_subtype]['id'] > 0:
+            return
+        for k, v in self.sfDict.items():
+            for item in v:
+                if item == self.__lastSfDict:
+                    v.remove(item)
+                    if len(v) == 0:
+                        del self.sfDict[k]
+                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
+                    return
 
     def getContentSubtype(self):
         """ Return content subtype of AMBER MR file.
@@ -8006,6 +8051,18 @@ class AmberMRParserListener(ParseTreeListener):
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.
         """
+        if len(self.sfDict) == 0:
+            return None
+        ign_keys = []
+        for k, v in self.sfDict.items():
+            for item in v:
+                if item['id'] == 0:
+                    v.remove(item)
+                    if len(v) == 0:
+                        ign_keys.append(k)
+                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
+        for k in ign_keys:
+            del self.sfDict[k]
         return None if len(self.sfDict) == 0 else self.sfDict
 
 # del AmberMRParser

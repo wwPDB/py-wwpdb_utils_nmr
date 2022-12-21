@@ -32,6 +32,7 @@ try:
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
+                                                       decListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
@@ -95,6 +96,7 @@ except ImportError:
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
+                                           decListIdCounter,
                                            getSaveframe,
                                            getLoop,
                                            getRow,
@@ -307,6 +309,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # current constraint type
     __cur_constraint_type = None
+
+    # last edited pynmrstar saveframe
+    __lastSfDict = {}
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -3440,6 +3445,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.atomSelectionSet.clear()
 
+        if self.__createSfDict:
+            self.__trimSf()
+
     # Exit a parse tree produced by CyanaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):
 
@@ -3745,6 +3753,9 @@ class CyanaMRParserListener(ParseTreeListener):
         self.pcsRestraints += 1
 
         self.atomSelectionSet.clear()
+
+        if self.__createSfDict:
+            self.__trimSf()
 
     # Exit a parse tree produced by CyanaMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
@@ -7503,6 +7514,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'dist':
             item['constraint_subsubtype'] = 'simple'
 
+        self.__lastSfDict[self.__cur_subtype] = item
+
         self.sfDict[key].append(item)
 
     def __getSf(self, constraintType=None, potentialType=None, rdcCode=None,
@@ -7535,6 +7548,20 @@ class CyanaMRParserListener(ParseTreeListener):
                              orientationId=orientationId, cyanaParameter=cyanaParameter)
 
         return self.sfDict[key][-1]
+
+    def __trimSf(self):
+        if self.__cur_subtype not in self.__lastSfDict:
+            return
+        if self.__lastSfDict[self.__cur_subtype]['id'] > 0:
+            return
+        for k, v in self.sfDict.items():
+            for item in v:
+                if item == self.__lastSfDict:
+                    v.remove(item)
+                    if len(v) == 0:
+                        del self.sfDict[k]
+                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
+                    return
 
     def getContentSubtype(self):
         """ Return content subtype of CYANA MR file.
@@ -7618,6 +7645,18 @@ class CyanaMRParserListener(ParseTreeListener):
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.
         """
+        if len(self.sfDict) == 0:
+            return None
+        ign_keys = []
+        for k, v in self.sfDict.items():
+            for item in v:
+                if item['id'] == 0:
+                    v.remove(item)
+                    if len(v) == 0:
+                        ign_keys.append(k)
+                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
+        for k in ign_keys:
+            del self.sfDict[k]
         return None if len(self.sfDict) == 0 else self.sfDict
 
 # del CyanaMRParser

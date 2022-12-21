@@ -253,7 +253,7 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                             'ccr_dd_restraint': '_Cross_correlation_DD_list',
                             'fchiral_restraint': '_Floating_chirality_assign',
-                            'other_restraint': '_Other_data_type_list',
+                            'other_restraint': '_Other_data_type_list'
                             }
 
 NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
@@ -271,7 +271,7 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                           'fchiral_restraint': 'floating_chiral_stereo_assign',
-                          'other_restraint': 'other_data_types',
+                          'other_restraint': 'other_data_types'
                           }
 
 NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},

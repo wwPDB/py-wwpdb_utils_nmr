@@ -5565,7 +5565,6 @@ class NmrDpUtility:
                 raise ValueError(f"+NmrDpUtility.op() ++ Error  - No input provided for workflow operation {op}.")
 
             self.__cs_file_path_list_len = 0
-
             self.__file_path_list_len = 1
 
         else:
@@ -5575,7 +5574,6 @@ class NmrDpUtility:
                 raise ValueError(f"+NmrDpUtility.op() ++ Error  - No input provided for workflow operation {op}.")
 
             self.__cs_file_path_list_len = len(self.__inputParamDict[cs_file_path_list])
-
             self.__file_path_list_len = self.__cs_file_path_list_len
 
             mr_file_path_list = 'restraint_file_path_list'
@@ -6107,8 +6105,7 @@ class NmrDpUtility:
                     if 'original_file_name' in ar:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
 
-        self.__file_path_list_len = 1
-        self.__cs_file_path_list_len = 1
+        self.__file_path_list_len = self.__cs_file_path_list_len = 1
 
         self.__star_data_type = []
         self.__star_data = []
@@ -10054,8 +10051,7 @@ class NmrDpUtility:
             self.report = None
             self.report_prev = None
 
-            self.__file_path_list_len = 1
-            self.__cs_file_path_list_len = 1
+            self.__file_path_list_len = self.__cs_file_path_list_len = 1
 
             self.__star_data_type = []
             self.__star_data = []

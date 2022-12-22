@@ -44889,7 +44889,8 @@ class NmrDpUtility:
 
         cst_sf.add_loop(cf_loop)
 
-        master_entry.add_saveframe(cst_sf)
+        if len(cf_loop) > 0:
+            master_entry.add_saveframe(cst_sf)
 
         for content_subtype in self.mr_content_subtypes:
             if content_subtype in self.__mr_sf_dict_holder:
@@ -46092,7 +46093,8 @@ class NmrDpUtility:
 
         cst_sf.add_loop(cf_loop)
 
-        master_entry.add_saveframe(cst_sf)
+        if len(cs_loop) > 0:
+            master_entry.add_saveframe(cst_sf)
 
         master_entry = self.__c2S.normalize_str(master_entry)
 

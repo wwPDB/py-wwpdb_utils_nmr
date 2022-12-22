@@ -208,6 +208,11 @@ class RosettaMRReader:
 if __name__ == "__main__":
     reader = RosettaMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2m9v/2m9v-trimmed-div_dst.mr',
+                 '../../tests-nmr/mock-data-remediation/2m9v/2m9v.cif')
+
+    reader = RosettaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mme/2mme-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2mme/2mme.cif')
 

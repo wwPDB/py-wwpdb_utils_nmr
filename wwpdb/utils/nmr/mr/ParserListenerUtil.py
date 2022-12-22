@@ -4705,6 +4705,8 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=T
                 __atomId = nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                 if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
                     _atomId = __atomId
+            elif coordAtomSite is not None:
+                _atomId = []
 
         if coordAtomSite is not None\
            and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\

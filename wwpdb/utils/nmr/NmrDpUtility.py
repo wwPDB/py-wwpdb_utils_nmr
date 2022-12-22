@@ -17720,13 +17720,13 @@ class NmrDpUtility:
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
-                self.__validateAmbigCodeOfCsLoop__(fileListId, file_name, sf_data, sf_framecode, lp_category)
+                self.__validateAmbigCodeOfCsLoop__(file_name, sf_data, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                self.__validateAmbigCodeOfCsLoop__(fileListId, file_name, sf_data, sf_framecode, lp_category)
+                self.__validateAmbigCodeOfCsLoop__(file_name, sf_data, sf_framecode, lp_category)
 
             else:
 
@@ -17736,11 +17736,11 @@ class NmrDpUtility:
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                         continue
 
-                    self.__validateAmbigCodeOfCsLoop__(fileListId, file_name, sf_data, sf_framecode, lp_category)
+                    self.__validateAmbigCodeOfCsLoop__(file_name, sf_data, sf_framecode, lp_category)
 
         return not self.report.isError()
 
-    def __validateAmbigCodeOfCsLoop__(self, file_list_id, file_name, sf_data, sf_framecode, lp_category):
+    def __validateAmbigCodeOfCsLoop__(self, file_name, sf_data, sf_framecode, lp_category):
         """ Validate ambiguity code on assigned chemical shifts.
         """
 
@@ -17778,7 +17778,7 @@ class NmrDpUtility:
                             if allowed_ambig_code < 1:
 
                                 if self.__remediation_mode:
-
+                                    """
                                     if __pynmrstar_v3_2__:
                                         loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
                                     else:
@@ -17791,7 +17791,7 @@ class NmrDpUtility:
                                     for row in loop:
                                         if row[comp_id_col] == comp_id and row[atom_id_col] == atom_id and row[ambig_code_col] == ambig_code:
                                             row[ambig_code_col] = 1
-
+                                    """
                                 else:
 
                                     warn = f"Ambiguity code {str(ambig_code)!r} (comp_id {comp_id}, atom_id {atom_id}) "\
@@ -17808,7 +17808,7 @@ class NmrDpUtility:
                             else:
 
                                 if self.__remediation_mode:
-
+                                    """
                                     if __pynmrstar_v3_2__:
                                         loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
                                     else:
@@ -17821,7 +17821,7 @@ class NmrDpUtility:
                                     for row in loop:
                                         if row[comp_id_col] == comp_id and row[atom_id_col] == atom_id and row[ambig_code_col] == ambig_code:
                                             row[ambig_code_col] = allowed_ambig_code
-
+                                    """
                                 else:
 
                                     err = f"Invalid ambiguity code {str(ambig_code)!r} (comp_id {comp_id}, atom_id {atom_id}, "\
@@ -21180,7 +21180,7 @@ class NmrDpUtility:
                             elif allowed_ambig_code > 0:
 
                                 if self.__remediation_mode:
-
+                                    """
                                     chain_id_col = loop.tags.index(chain_id_name)
                                     seq_id_col = loop.tags.index(seq_id_name)
                                     comp_id_col = loop.tags.index(comp_id_name)
@@ -21193,7 +21193,7 @@ class NmrDpUtility:
 
                                     row[ambig_code_col] = allowed_ambig_code
                                     modified = True
-
+                                    """
                                 else:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
@@ -21220,10 +21220,11 @@ class NmrDpUtility:
 
                             if ambig_code2 != ambig_code:
 
-                                loop.data[lp_data.index(_row)][loop.tags.index(ambig_code_name)] = ambig_code
+                                if ambig_code2 < 4:
+                                    loop.data[lp_data.index(_row)][loop.tags.index(ambig_code_name)] = ambig_code
 
                                 if self.__remediation_mode:
-
+                                    """
                                     chain_id_col = loop.tags.index(chain_id_name)
                                     seq_id_col = loop.tags.index(seq_id_name)
                                     comp_id_col = loop.tags.index(comp_id_name)
@@ -21236,7 +21237,7 @@ class NmrDpUtility:
 
                                     row[ambig_code_col] = ambig_code
                                     modified = True
-
+                                    """
                                 else:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
@@ -21393,7 +21394,7 @@ class NmrDpUtility:
                                 # Inter-molecular ambiguities
                                 elif ambig_code == 6:
 
-                                    for row in ambig_set:
+                                    for _row in ambig_set:
                                         chain_id2 = _row[chain_id_name]
                                         seq_id2 = _row[seq_id_name]
                                         comp_id2 = _row[comp_id_name]
@@ -21661,6 +21662,8 @@ class NmrDpUtility:
         else:
             loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
+        aux_lp = None
+
         if file_type == 'nef':
 
             items = ['chain_code', 'sequence_code', 'residue_name', 'atom_name', 'value', 'value_uncertainty', 'element', 'isotope_number']
@@ -21912,6 +21915,8 @@ class NmrDpUtility:
             for tag in tags:
                 lp.add_tag(tag)
 
+            has_genuine_ambig_code = False
+
             index = 1
 
             for idx, row in enumerate(loop):
@@ -21947,16 +21952,44 @@ class NmrDpUtility:
                     _row[11] = row[fig_of_merit_col]
 
                 if ambig_code_col != -1:
-                    _row[12] = row[ambig_code_col]
+                    ambig_code = row[ambig_code_col]
+                    if ambig_code not in emptyValue:
+                        try:
+                            ambig_code = int(ambig_code)
+                            if ambig_code in ALLOWED_AMBIGUITY_CODES:
+                                _row[12] = ambig_code
+                        except ValueError:
+                            pass
 
                 if ambig_set_id_col != -1:
-                    _row[13] = row[ambig_set_id_col]
+                    ambig_set_id = row[ambig_set_id_col]
+                    if ambig_set_id not in emptyValue:
+                        try:
+                            ambig_set_id = int(ambig_set_id)
+                            if ambig_set_id > 0:
+                                _row[13] = ambig_set_id
+                        except ValueError:
+                            pass
 
                 if occupancy_col != -1:
-                    _row[14] = row[occupancy_col]
+                    occupancy = row[occupancy_col]
+                    if occupancy not in emptyValue:
+                        try:
+                            occupancy = float(occupancy)
+                            if occupancy >= 0.0:
+                                _row[14] = occupancy
+                        except ValueError:
+                            pass
 
                 if reson_id_col != -1:
-                    _row[15] = row[reson_id_col]
+                    reson_id = row[reson_id_col]
+                    if reson_id not in emptyValue:
+                        try:
+                            reson_id = int(reson_id)
+                            if reson_id > 0:
+                                _row[15] = reson_id
+                        except ValueError:
+                            pass
 
                 if has_auth_seq:
 
@@ -22489,13 +22522,179 @@ class NmrDpUtility:
                                 _row[0] = index
                                 _row[6] = atom_ids[-1]
 
+                if isinstance(_row[12], int):
+                    comp_id = _row[5]
+                    atom_id = _row[6]
+                    ambig_id = _row[12]
+
+                    if ambig_id in (2, 3):
+                        _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                        if _ambig_id not in (0, ambig_id):
+                            if _ambig_id != 1:
+                                _row[12] = _ambig_id
+                            else:
+                                _row[12] = ambig_id = 4
+
+                    elif ambig_id == 6 and len(self.__caC['entity_assembly']) < 2:
+                        _row[12] = ambig_id = 5
+
+                    if ambig_id in (1, 2, 3):
+                        if _row[13] is not None:
+                            _row[13] = None
+
+                    elif ambig_id in (4, 5, 6, 9):
+                        has_genuine_ambig_code = True
+
                 lp.add_data(_row)
 
                 index += 1
 
+            if has_genuine_ambig_code:
+
+                has_genuine_ambig_code = False
+
+                for _row in lp:
+
+                    if _row[12] not in (4, 5, 6, 9):
+                        continue
+
+                    ambig_id = _row[12]
+                    _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+
+                    chain_id = _row[1]
+                    seq_id = _row[3]
+                    comp_id = _row[5]
+                    atom_id = _row[6]
+                    atom_type = _row[7]
+
+                    if ambig_id == 4:
+                        _atom_id_set_w_same_ambig_id = set(_row_[6] for _row_ in lp
+                                                           if _row != _row_ and _row_[1] == chain_id and _row_[3] == seq_id
+                                                           and _row_[7] == atom_type and _row_[12] == ambig_id)
+
+                        if atom_type == 'H':
+                            atom_in_same_group = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
+
+                            if len(_atom_id_set_w_same_ambig_id - set(atom_in_same_group)) == 0:
+                                if _ambig_id > 1:
+                                    _row[12] = _ambig_id
+                                    _row[13] = None
+
+                        else:
+                            geminal_atom = self.__csStat.getGeminalAtom(comp_id, atom_id)
+
+                            if geminal_atom is not None and len(_atom_id_set_w_same_ambig_id - set([geminal_atom])) == 0:
+                                if _ambig_id > 1:
+                                    _row[12] = _ambig_id
+                                    _row[13] = None
+
+                    elif ambig_id == 5:
+                        _atom_id_set_w_same_ambig_id = set(_row_[6] for _row_ in lp
+                                                           if _row != _row_ and _row_[1] == chain_id and _row_[3] != seq_id
+                                                           and _row_[7] == atom_type and _row_[12] == ambig_id)
+
+                        if len(_atom_id_set_w_same_ambig_id) == 0 and _ambig_id != 0:
+                            _row[12] = _ambig_id
+                            _row[13] = None
+
+                    else:
+                        _row[13] = None
+
+                    if _row[12] in (4, 5):
+                        has_genuine_ambig_code = True
+
+                if has_genuine_ambig_code:
+
+                    aux_lp_category = self.aux_lp_categories[file_type][content_subtype][0]
+
+                    aux_lp = pynmrstar.Loop.from_scratch(aux_lp_category)
+
+                    aux_items = ['Ambiguous_shift_set_ID', 'Atom_chem_shift_ID', 'Entry_ID', 'Assigned_chem_shift_list_ID']
+
+                    aux_tags = [aux_lp_category + '.' + item for item in aux_items]
+
+                    for tag in aux_tags:
+                        aux_lp.add_tag(tag)
+
+                    aux_index_id = 1
+
+                    inter_residue_seq_id = {}
+
+                    for _row in lp:
+
+                        if _row[12] != 5:
+                            continue
+
+                        chain_id = _row[1]
+                        seq_id = _row[3]
+
+                        if chain_id not in inter_residue_seq_id:
+                            inter_residue_seq_id[chain_id] = set()
+
+                        inter_residue_seq_id[chain_id].add(seq_id)
+
+                    if len(inter_residue_seq_id) > 0:
+
+                        for k, v in inter_residue_seq_id.items():
+                            if len(v) == 1:
+                                chain_id = k
+                                seq_id = v[0]
+
+                                for _row in lp:
+
+                                    if _row[12] != 5:
+                                        continue
+
+                                    if _row[1] == chain_id and _row[3] == seq_id:
+                                        _row[12] = 4
+
+                    ambig_shift_set_id = {}
+
+                    for _row in lp:
+
+                        if _row[12] not in (4, 5):
+                            continue
+
+                        ambig_id = _row[12]
+
+                        chain_id = _row[1]
+                        seq_id = _row[3]
+                        comp_id = _row[5]
+                        atom_id = _row[6]
+                        atom_type = _row[7]
+
+                        if ambig_id == 4:
+                            key = (chain_id, str(seq_id), atom_type, ambig_id)
+                        else:
+                            key = (chain_id, str(inter_residue_seq_id[chain_id]), atom_type, ambig_id)
+
+                        if key not in ambig_shift_set_id:
+                            ambig_shift_set_id[key] = aux_index_id
+                            aux_index_id += 1
+
+                        _row[13] = ambig_shift_set_id[key]
+
+                        _aux_row = [None] * 4
+                        _aux_row[0], _aux_row[1], _aux_row[2], _aux_row[3] =\
+                            ambig_shift_set_id[key], _row[0], self.__entry_id, list_id
+
+                        aux_lp.add_data(_aux_row)
+
+                    if not isinstance(sf_data, pynmrstar.Loop) and any(aux_loop for aux_loop in sf_data if aux_loop.category == aux_lp_category):
+
+                        if __pynmrstar_v3_2__:
+                            aux_loop = sf_data.get_loop(aux_lp_category)
+                        else:
+                            aux_loop = sf_data.get_loop_by_category(aux_lp_category)
+
+                        del sf_data[aux_loop]
+
         del sf_data[loop]
 
         sf_data.add_loop(lp)
+
+        if aux_lp is not None and len(aux_lp) > 0:
+            sf_data.add_loop(aux_lp)
 
         return True
 
@@ -38655,7 +38854,7 @@ class NmrDpUtility:
                         row = [None] * len(tags)
 
                         row[0], row[1], row[2], row[3] =\
-                            ent_name_sys['name'], ent_name_sys['system'], entity_id, self.__entry_id
+                            ent_name_sys['name'], ent_name_sys['system'] if 'system' in ent_name_sys else None, entity_id, self.__entry_id
 
                         esn_loop.add_data(row)
 

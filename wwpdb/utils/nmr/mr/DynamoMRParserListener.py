@@ -1392,7 +1392,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         return list(chainAssign)
 
-    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, index=None, group=None):
+    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, index=None, group=None, offset=0):
         """ Select atoms of the coordinates.
         """
 
@@ -1405,6 +1405,10 @@ class DynamoMRParserListener(ParseTreeListener):
             _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
+
+            if offset != 0:
+                cifSeqId += offset
+                cifCompId = compId
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
@@ -1450,6 +1454,9 @@ class DynamoMRParserListener(ParseTreeListener):
 
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
+                if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
+                    self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, index, group, offset=1)
+                    return
                 self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index,g=group)}"\
                     f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
                 continue

@@ -2627,7 +2627,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return list(chainAssign)
 
-    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True):
+    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True, offset=0):
         """ Select atoms of the coordinates.
         """
 
@@ -2695,6 +2695,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
+            if offset != 0:
+                cifSeqId += offset
+                cifCompId = compId
+
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
@@ -2739,6 +2743,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
+                if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
+                    self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, offset=1)
+                    return
                 if enableWarning:
                     self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
                         f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"

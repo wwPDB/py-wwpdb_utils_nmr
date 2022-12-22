@@ -21776,7 +21776,7 @@ class NmrDpUtility:
                         has_auth_seq = valid_auth_seq = True
                         for row in auth_dat:
                             try:
-                                seq_key = (row[0], int(row[1]))
+                                seq_key = (row[0], int(row[1]), row[2])
                                 if seq_key not in auth_to_star_seq:
                                     valid_auth_seq = False
                                     break
@@ -22015,9 +22015,10 @@ class NmrDpUtility:
                 if has_auth_seq:
                     auth_asym_id = row[auth_asym_id_col]
                     auth_seq_id = row[auth_seq_id_col]
+                    auth_comp_id = row[auth_comp_id_col]
 
                     if valid_auth_seq:
-                        seq_key = (auth_asym_id, int(auth_seq_id))
+                        seq_key = (auth_asym_id, int(auth_seq_id), auth_comp_id)
                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                         _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
@@ -22153,7 +22154,7 @@ class NmrDpUtility:
                     elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_seq_id:
                         try:
                             _auth_seq_id = int(auth_seq_id)
-                            seq_key = (auth_asym_id, _auth_seq_id)
+                            seq_key = (auth_asym_id, _auth_seq_id, auth_comp_id)
                             if seq_key in auth_to_star_seq:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                 _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
@@ -22335,8 +22336,8 @@ class NmrDpUtility:
 
                     resolved = True
 
-                    if auth_asym_id is not None and auth_seq_id is not None:
-                        seq_key = (auth_asym_id, auth_seq_id)
+                    if auth_asym_id is not None and auth_seq_id is not None and auth_comp_id is not None:
+                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
                         if seq_key in auth_to_star_seq:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                             _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
@@ -25397,7 +25398,7 @@ class NmrDpUtility:
                         for row in auth_dat:
                             try:
                                 for d in range(atom_dim_num):
-                                    seq_key = (row[d], int(row[atom_dim_num + d]))
+                                    seq_key = (row[d], int(row[atom_dim_num + d]), row[atom_dim_num * 2 + d])
                                     if seq_key not in auth_to_star_seq:
                                         valid_auth_seq = False
                                         break
@@ -25630,7 +25631,7 @@ class NmrDpUtility:
                                     k = next((k for k, v in auth_to_star_seq.items() if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
                                     if k is None:
                                         continue
-                                    auth_asym_id, auth_seq_id = k
+                                    auth_asym_id, auth_seq_id, _ = k
 
                                 chain_id, seq_id = auth_asym_id, auth_seq_id
 
@@ -37958,7 +37959,7 @@ class NmrDpUtility:
             cis_res_col = loop.tags.index('cis_peptide')
 
             for k, v in self.__caC['auth_to_star_seq'].items():
-                auth_asym_id, auth_seq_id = k
+                auth_asym_id, auth_seq_id, comp_id = k
                 entity_assembly_id, seq_id, entity_id, genuine = v
 
                 if not genuine:
@@ -37976,7 +37977,7 @@ class NmrDpUtility:
                 row[chain_id_col], row[seq_id_col] = auth_asym_id, auth_seq_id
 
                 entity_type = entity_type_of[entity_id]
-
+                """
                 if entity_type == 'polymer':
                     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
                     try:
@@ -38002,7 +38003,7 @@ class NmrDpUtility:
                         comp_id = np['comp_id'][0]
                     except IndexError:
                         comp_id = None
-
+                """
                 row[comp_id_col] = comp_id
 
                 if entity_type == 'polymer':
@@ -38018,11 +38019,13 @@ class NmrDpUtility:
                             row[seq_link_col] = 'cyclic'
                         elif label_seq_id == 1 and length == 1:
                             row[seq_link_col] = 'single'
-                        elif label_seq_id == 1:
+                        elif seq_id == 1:
                             row[seq_link_col] = 'start'
                         elif label_seq_id == length:
                             row[seq_link_col] = 'end'
                         elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
+                            row[seq_link_col] = 'middle'
+                        elif label_seq_id == 1:
                             row[seq_link_col] = 'middle'
                         else:
                             row[seq_link_col] = 'break'
@@ -38108,12 +38111,12 @@ class NmrDpUtility:
 
                     row = [None] * len(tags)
 
-                    seq_key_1 = (auth_asym_id_1, int(auth_seq_id_1))
+                    seq_key_1 = (auth_asym_id_1, int(auth_seq_id_1), auth_comp_id_1)
 
                     if seq_key_1 in self.__caC['auth_to_star_seq']:
                         row[0], row[1], row[2], row[3] = auth_asym_id_1, auth_seq_id_1, auth_comp_id_1, atom_id_1
 
-                    seq_key_2 = (auth_asym_id_2, int(auth_seq_id_2))
+                    seq_key_2 = (auth_asym_id_2, int(auth_seq_id_2), auth_comp_id_2)
 
                     if seq_key_2 in self.__caC['auth_to_star_seq']:
                         row[4], row[5], row[6], row[7] = auth_asym_id_2, auth_seq_id_2, auth_comp_id_2, atom_id_2
@@ -38141,7 +38144,7 @@ class NmrDpUtility:
             entry_id_col = loop.tags.index('Entry_ID') if 'Entry_ID' in loop.tags else -1
 
             for k, v in self.__caC['auth_to_star_seq'].items():
-                auth_asym_id, auth_seq_id = k
+                auth_asym_id, auth_seq_id, comp_id = k
                 entity_assembly_id, seq_id, entity_id, genuine = v
 
                 if not genuine:
@@ -38159,7 +38162,7 @@ class NmrDpUtility:
                 row[chain_id_col], row[ent_id_col], row[seq_id_col], row[alt_seq_id_col] = entity_assembly_id, entity_id, seq_id, seq_id
 
                 entity_type = entity_type_of[entity_id]
-
+                """
                 if entity_type == 'polymer':
                     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
                     try:
@@ -38185,7 +38188,7 @@ class NmrDpUtility:
                         comp_id = np['comp_id'][0]
                     except IndexError:
                         comp_id = None
-
+                """
                 row[comp_id_col], row[auth_asym_id_col], row[auth_seq_id_col], row[auth_comp_id_col] = comp_id, auth_asym_id, auth_seq_id, comp_id
 
                 if entity_type == 'polymer':
@@ -38201,11 +38204,13 @@ class NmrDpUtility:
                             row[seq_link_col] = 'cyclic'
                         elif label_seq_id == 1 and length == 1:
                             row[seq_link_col] = 'single'
-                        elif label_seq_id == 1:
+                        elif seq_id == 1:
                             row[seq_link_col] = 'start'
                         elif label_seq_id == length:
                             row[seq_link_col] = 'end'
                         elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
+                            row[seq_link_col] = 'middle'
+                        elif label_seq_id == 1:
                             row[seq_link_col] = 'middle'
                         else:
                             row[seq_link_col] = 'break'
@@ -38330,7 +38335,7 @@ class NmrDpUtility:
                         row[1] = 'na'
                         continue
 
-                    seq_key_1 = (auth_asym_id_1, auth_seq_id_1)
+                    seq_key_1 = (auth_asym_id_1, auth_seq_id_1, auth_comp_id_1)
 
                     entity_id_1 = entity_id_2 = None
 
@@ -38344,7 +38349,7 @@ class NmrDpUtility:
                         row[17], row[18], row[19], row[20] =\
                             auth_asym_id_1, auth_seq_id_1, auth_comp_id_1, atom_id_1
 
-                    seq_key_2 = (auth_asym_id_2, auth_seq_id_2)
+                    seq_key_2 = (auth_asym_id_2, auth_seq_id_2, auth_comp_id_2)
 
                     if seq_key_2 in self.__caC['auth_to_star_seq']:
                         entity_assembly_id_2, seq_id_2, entity_id_2, _ = self.__caC['auth_to_star_seq'][seq_key_2]
@@ -38428,7 +38433,7 @@ class NmrDpUtility:
 
                                 if leaving_atom_id is not None:
 
-                                    seq_key = (auth_asym_id, int(auth_seq_id))
+                                    seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                     if seq_key in self.__caC['auth_to_star_seq']:
                                         row = [None] * len(tags)
@@ -38468,7 +38473,7 @@ class NmrDpUtility:
 
                                     if leaving_atom_id is not None:
 
-                                        seq_key = (auth_asym_id, int(auth_seq_id))
+                                        seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                         if seq_key in self.__caC['auth_to_star_seq']:
                                             row = [None] * len(tags)
@@ -38912,7 +38917,7 @@ class NmrDpUtility:
             for tag in tags:
                 eci_loop.add_tag(tag)
 
-            auth_seq_ids = set()
+            # auth_seq_ids = set()
 
             index = 1
 
@@ -38925,17 +38930,24 @@ class NmrDpUtility:
                 else:
                     ps = next(ps for ps in self.__caC['non_polymer'] if ps['chain_id'] == chain_id)
 
+                seq_ids = set()
+
                 for idx, comp_id in enumerate(ps['comp_id']):
+                    seq_id = ps['seq_id'][idx]
+
+                    if seq_id in seq_ids:
+                        continue
+
                     auth_seq_id = ps['auth_seq_id'][idx]
                     if entity_type == 'non-polymer':
                         auth_seq_id = ps['seq_id'][idx]
 
-                    if auth_seq_id in auth_seq_ids:
-                        continue
+                    # if auth_seq_id in auth_seq_ids:
+                    #    continue
 
                     row = [None] * len(tags)
 
-                    auth_seq_ids.add(auth_seq_id)
+                    # auth_seq_ids.add(auth_seq_id)
 
                     row[0], row[1], row[2] = index, auth_seq_id, comp_id
 
@@ -45238,7 +45250,7 @@ class NmrDpUtility:
                                       }
 
                         sf.add_tag('Text_data_format', 'json')
-                        sf.add_tag('Text_data', json.dumps(other_data, indent=2))
+                        sf.add_tag('Text_data', re.sub(r'",\s+', '", ', json.dumps(other_data, indent=2)))
                         master_entry.add_saveframe(sf)
 
         for sf in ext_mr_sf_holder:
@@ -45280,6 +45292,9 @@ class NmrDpUtility:
         master_entry = self.__star_data[0]
 
         if not isinstance(master_entry, pynmrstar.Entry):
+            return False
+
+        if 'constraint_statistics' in self.__sf_category_list:
             return False
 
         master_entry.entry_id = f'nef_{self.__entry_id.lower()}'

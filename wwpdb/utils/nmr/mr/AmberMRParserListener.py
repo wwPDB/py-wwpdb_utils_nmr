@@ -7675,7 +7675,7 @@ class AmberMRParserListener(ParseTreeListener):
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
                 if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.add((chainId, seqId, cifCompId))
+                    chainAssign.add((chainId, seqId, cifCompId, True))
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
                 max_auth_seq_id = ps['auth_seq_id'][-1]
@@ -7697,7 +7697,7 @@ class AmberMRParserListener(ParseTreeListener):
                             seqId_ = ps['auth_seq_id'][idx]
                             cifCompId = ps['comp_id'][idx]
                             if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.add((chainId, seqId_, cifCompId))
+                                chainAssign.add((chainId, seqId_, cifCompId, True))
                         except IndexError:
                             pass
 
@@ -7708,7 +7708,7 @@ class AmberMRParserListener(ParseTreeListener):
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
                     if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.add((chainId, seqId, cifCompId))
+                        chainAssign.add((chainId, seqId, cifCompId, False))
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
@@ -7719,7 +7719,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId))
+                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
 
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
@@ -7730,14 +7730,14 @@ class AmberMRParserListener(ParseTreeListener):
                         if seqId in np['seq_id']:
                             cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
                             if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId))
+                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
                 chainId = ps['auth_chain_id']
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    chainAssign.add((chainId, _seqId, cifCompId))
+                    chainAssign.add((chainId, _seqId, cifCompId, True))
 
         if len(chainAssign) == 0:
             if seqId == 1 and atomId is not None and atomId in ('H', 'HN'):
@@ -7758,13 +7758,18 @@ class AmberMRParserListener(ParseTreeListener):
 
         return list(chainAssign)
 
-    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True):
+    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True, offset=0):
         """ Select atoms of the coordinates.
         """
 
         atomSelection = []
 
-        for chainId, cifSeqId, cifCompId in chainAssign:
+        for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
+
+            if offset != 0:
+                cifSeqId += offset
+                cifCompId = compId
+
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
@@ -7790,6 +7795,9 @@ class AmberMRParserListener(ParseTreeListener):
 
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
+                if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
+                    self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, offset=1)
+                    return
                 if enableWarning:
                     self.warningMessage += f"[Invalid atom nomenclature] "\
                         f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"

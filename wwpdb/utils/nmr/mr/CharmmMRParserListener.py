@@ -306,6 +306,9 @@ class CharmmMRParserListener(ParseTreeListener):
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
+    # last edited pynmrstar saveframe
+    __lastSfDict = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
@@ -709,6 +712,9 @@ class CharmmMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
+            if self.__createSfDict:
+                self.__trimSfWoLp()
+
     # Enter a parse tree produced by CharmmMRParser#point_distance_restraint.
     def enterPoint_distance_restraint(self, ctx: CharmmMRParser.Point_distance_restraintContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'geo'
@@ -780,6 +786,9 @@ class CharmmMRParserListener(ParseTreeListener):
 
         finally:
             self.numberSelection.clear()
+
+            if self.__createSfDict:
+                self.__trimSfWoLp()
 
     # Enter a parse tree produced by CharmmMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: CharmmMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -4592,6 +4601,8 @@ class CharmmMRParserListener(ParseTreeListener):
             elif 'ROE' in constraintType:
                 item['ROE_dist_averaging_method'] = self.noeAverage
 
+        self.__lastSfDict[self.__cur_subtype] = item
+
         self.sfDict[key].append(item)
 
     def __getSf(self, constraintType=None, potentialType=None):
@@ -4616,6 +4627,20 @@ class CharmmMRParserListener(ParseTreeListener):
                 self.__addSf(constraintType=constraintType, potentialType=potentialType)
 
         return self.sfDict[key][-1]
+
+    def __trimSfWoLp(self):
+        if self.__cur_subtype not in self.__lastSfDict:
+            return
+        if self.__lastSfDict[self.__cur_subtype]['index_id'] > 0:
+            return
+        for k, v in self.sfDict.items():
+            for item in reversed(v):
+                if item == self.__lastSfDict:
+                    v.remove(item)
+                    if len(v) == 0:
+                        del self.sfDict[k]
+                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
+                    return
 
     def getContentSubtype(self):
         """ Return content subtype of CHARMM MR file.
@@ -4660,7 +4685,7 @@ class CharmmMRParserListener(ParseTreeListener):
             return None
         ign_keys = []
         for k, v in self.sfDict.items():
-            for item in v:
+            for item in reversed(v):
                 if item['index_id'] == 0:
                     v.remove(item)
                     if len(v) == 0:

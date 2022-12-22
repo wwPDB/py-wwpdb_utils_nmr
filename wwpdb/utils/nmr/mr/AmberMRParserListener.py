@@ -8005,7 +8005,7 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__lastSfDict[self.__cur_subtype]['index_id'] > 0:
             return
         for k, v in self.sfDict.items():
-            for item in v:
+            for item in reversed(v):
                 if item == self.__lastSfDict:
                     v.remove(item)
                     if len(v) == 0:
@@ -8078,7 +8078,7 @@ class AmberMRParserListener(ParseTreeListener):
             return None
         ign_keys = []
         for k, v in self.sfDict.items():
-            for item in v:
+            for item in reversed(v):
                 if item['index_id'] == 0:
                     v.remove(item)
                     if len(v) == 0:

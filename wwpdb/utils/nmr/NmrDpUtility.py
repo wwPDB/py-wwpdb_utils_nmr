@@ -1165,6 +1165,7 @@ class NmrDpUtility:
                              self.__extractCoordOtherBond,
                              self.__validateStrMr,
                              self.__validateLegacyMr,
+                             # self.__validateStrPk,
                              self.__calculateStatsOfExptlData,
                              self.__updateConstraintStats,
                              self.__detectSimpleDistanceRestraint
@@ -1298,6 +1299,7 @@ class NmrDpUtility:
 
         self.__list_id_counter = None
         self.__mr_sf_dict_holder = None
+        self.__pk_sf_dict_holder = None
 
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
@@ -5650,12 +5652,12 @@ class NmrDpUtility:
                             if 'default-from' in d:
                                 del d['default-from']
 
-        if self.__remediation_mode:
+        self.__remediation_loop_count = 0
 
-            self.__nefT.set_remediation_mode(True)
-            self.__nefT.allow_missing_dist_restraint(True)
+        self.__nefT.set_remediation_mode(self.__remediation_mode)
+        self.__nefT.allow_missing_dist_restraint(self.__remediation_mode)
 
-            self.__allow_missing_dist_restraint = self.__allow_missing_legacy_dist_restraint = True
+        self.__allow_missing_dist_restraint = self.__allow_missing_legacy_dist_restraint = self.__remediation_mode
 
         self.__release_mode = 'release' in op
 
@@ -15647,7 +15649,6 @@ class NmrDpUtility:
         update_poly_seq = False
 
         self.__alt_chain = False
-
         self.__valid_seq = False
 
         if not self.__tolerant_seq_align:
@@ -28218,6 +28219,109 @@ class NmrDpUtility:
             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
         return not self.report.isError()
+
+    def __validateStrPk(self):
+        """ Validate spectral peak lists in NMR-STAR restraint files.
+        """
+
+        if self.__combined_mode:
+            return True
+
+        mr_file_path_list = 'restraint_file_path_list'
+
+        if mr_file_path_list not in self.__inputParamDict:
+            return True
+
+        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+
+        if id < 0:
+            return False
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return False
+
+        if self.__caC is None:
+            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__cR, None)
+
+        list_id = 1
+
+        if self.__pk_sf_dict_holder is None:
+            self.__pk_sf_dict_holder = {}
+
+        for fileListId in range(self.__cs_file_path_list_len, self.__file_path_list_len):
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            if file_type != 'nmr-star':
+                continue
+
+            file_name = input_source_dic['file_name']
+
+            original_file_name = file_name
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+
+            if input_source_dic['content_subtype'] is None:
+                continue
+
+            for content_subtype in self.pk_content_subtypes:
+
+                if content_subtype not in input_source_dic['content_subtype']:
+                    continue
+
+                if content_subtype not in self.__pk_sf_dict_holder:
+                    self.__pk_sf_dict_holder[content_subtype] = []
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                if self.__star_data_type[fileListId] == 'Loop':
+
+                    err = f"Mandatory loops with categories {self.aux_lp_categories[file_type][content_subtype]} are missing. "\
+                        f"Please re-upload the {file_type.upper()} file."
+
+                    self.report.error.appendDescription('missing_data',
+                                                        {'file_name': file_name, 'category': lp_category,
+                                                         'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__validateStrPk() ++ Error  - {err}\n")
+
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                    self.__validateStrPk__(fileListId, file_type, original_file_name, content_subtype, list_id, sf_data, sf_framecode, lp_category)
+
+                    list_id += 1
+
+                else:
+
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                        sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                        self.__validateStrPk__(fileListId, file_type, original_file_name, content_subtype, list_id, sf_data, sf_framecode, lp_category)
+
+                        list_id += 1
+
+        return True
+
+    def __validateStrPk__(self, file_list_id, file_type, original_file_name, content_subtype, list_id, sf_data, sf_framecode, lp_category):
+        """ Validate spectral peak lists in NMR-STAR restraint files.
+        """
 
     def __calculateStatsOfExptlData(self):
         """ Calculate statistics of experimental data.
@@ -44530,16 +44634,20 @@ class NmrDpUtility:
                     atom_id_2 = row[atom_id_2_col]
                     if atom_id_1[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_1_col]):
-                            bonded_atom_id_1 = next((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_1 else b[self.__ccU.ccbAtomId2])
-                                                    for b in self.__ccU.lastBonds if atom_id_1 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]))
+                            bonded_atom_id_1 = next(((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_1 else b[self.__ccU.ccbAtomId2])
+                                                     for b in self.__ccU.lastBonds if atom_id_1 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
+                            if bonded_atom_id_1 is None:
+                                continue
                             if any(_row for _row in lp
                                    if (int(_row[chain_id_1_col]) == chain_id_1 and int(_row[seq_id_1_col]) == seq_id_1 and _row[atom_id_1_col] == bonded_atom_id_1)
                                    or (int(_row[chain_id_2_col]) == chain_id_1 and int(_row[seq_id_2_col]) == seq_id_1 and _row[atom_id_2_col] == bonded_atom_id_1)):
                                 continue
                     if atom_id_2[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_2_col]):
-                            bonded_atom_id_2 = next((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_2 else b[self.__ccU.ccbAtomId2])
-                                                    for b in self.__ccU.lastBonds if atom_id_2 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]))
+                            bonded_atom_id_2 = next(((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_2 else b[self.__ccU.ccbAtomId2])
+                                                     for b in self.__ccU.lastBonds if atom_id_2 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
+                            if bonded_atom_id_2 is None:
+                                continue
                             if any(_row for _row in lp
                                    if (int(_row[chain_id_1_col]) == chain_id_2 and int(_row[seq_id_1_col]) == seq_id_2 and _row[atom_id_1_col] == bonded_atom_id_2)
                                    or (int(_row[chain_id_2_col]) == chain_id_2 and int(_row[seq_id_2_col]) == seq_id_2 and _row[atom_id_2_col] == bonded_atom_id_2)):
@@ -44585,16 +44693,20 @@ class NmrDpUtility:
                     atom_id_2 = row[atom_id_2_col]
                     if atom_id_1[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_1_col]):
-                            bonded_atom_id_1 = next((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_1 else b[self.__ccU.ccbAtomId2])
-                                                    for b in self.__ccU.lastBonds if atom_id_1 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]))
+                            bonded_atom_id_1 = next(((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_1 else b[self.__ccU.ccbAtomId2])
+                                                     for b in self.__ccU.lastBonds if atom_id_1 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
+                            if bonded_atom_id_1 is None:
+                                continue
                             if any(_row for _row in lp
                                    if (int(_row[chain_id_1_col]) == chain_id_1 and int(_row[seq_id_1_col]) == seq_id_1 and _row[atom_id_1_col] == bonded_atom_id_1)
                                    or (int(_row[chain_id_2_col]) == chain_id_1 and int(_row[seq_id_2_col]) == seq_id_1 and _row[atom_id_2_col] == bonded_atom_id_1)):
                                 continue
                     if atom_id_2[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_2_col]):
-                            bonded_atom_id_2 = next((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_2 else b[self.__ccU.ccbAtomId2])
-                                                    for b in self.__ccU.lastBonds if atom_id_2 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]))
+                            bonded_atom_id_2 = next(((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_2 else b[self.__ccU.ccbAtomId2])
+                                                     for b in self.__ccU.lastBonds if atom_id_2 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
+                            if bonded_atom_id_2 is None:
+                                continue
                             if any(_row for _row in lp
                                    if (int(_row[chain_id_1_col]) == chain_id_2 and int(_row[seq_id_1_col]) == seq_id_2 and _row[atom_id_1_col] == bonded_atom_id_2)
                                    or (int(_row[chain_id_2_col]) == chain_id_2 and int(_row[seq_id_2_col]) == seq_id_2 and _row[atom_id_2_col] == bonded_atom_id_2)):
@@ -44941,6 +45053,10 @@ class NmrDpUtility:
             master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
             master_entry.write_to_file(self.__dstPath)
+
+        self.__list_id_counter = None
+        self.__mr_sf_dict_holder = None
+        self.__pk_sf_dict_holder = None
 
         return True
 

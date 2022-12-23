@@ -4893,10 +4893,10 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
             warningMessage = f"[Atom not found] "\
                 f"{_seqId}:{compId}:{atomId} is not present in the coordinates. "\
                 f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "\
-                "Please update the sequence in the Macromolecules page.\n"
+                "Please update the sequence in the Macromolecules page."
         else:
             warningMessage = f"[Atom not found] "\
-                f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                f"{_seqId}:{compId}:{atomId} is not present in the coordinates."
 
     return list(chainAssign), warningMessage
 
@@ -4967,12 +4967,12 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=T
                 return selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, offset=1)
             if enableWarning:
                 warningMessage = f"[Invalid atom nomenclature] "\
-                    f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
+                    f"{seqId}:{compId}:{atomId} is invalid atom nomenclature."
             continue
         if lenAtomId > 1 and not allowAmbig:
             if enableWarning:
                 warningMessage = f"[Invalid atom selection] "\
-                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
+                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint."
             continue
 
         for cifAtomId in _atomId:
@@ -5082,11 +5082,11 @@ def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey,
                     if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[ccU.ccaLeavingAtomFlag] != 'Y':
                         return f"[Hydrogen not instantiated] "\
                             f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
-                            "Please re-upload the model file.\n"
+                            "Please re-upload the model file."
             if enableWarning:
                 if chainId in LARGE_ASYM_ID:
                     return f"[Atom not found] "\
-                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates."
 
     return None
 

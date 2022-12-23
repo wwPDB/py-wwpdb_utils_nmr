@@ -3465,6 +3465,16 @@
           },
           "minItems": 1
         },
+        "ref_auth_seq_id": {
+          "type": "array",
+          "items": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "minItems": 1
+        },
         "ref_gauge_code": {
           "type": "string",
           "minLength": 1

@@ -895,6 +895,9 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
+            if 'auth_seq_id' in _s1:
+                seq_align['ref_auth_seq_id'] = _s1['auth_seq_id']
+
             if 'identical_auth_chain_id' in s1:
                 hasMultimer = True
 

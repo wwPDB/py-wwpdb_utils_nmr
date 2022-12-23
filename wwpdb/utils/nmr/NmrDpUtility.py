@@ -25431,8 +25431,17 @@ class NmrDpUtility:
                                 if warn is not None:
 
                                     _index_tag = index_tag if index_tag is not None else 'ID'
-                                    _index_tag_col = loop.tags.index(_index_tag)
-                                    idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                    try:
+                                        _index_tag_col = loop.tags.index(_index_tag)
+                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                    except ValueError:
+                                        _index_tag = 'ID'
+                                        try:
+                                            _index_tag_col = loop.tags.index(_index_tag)
+                                            idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                        except ValueError:
+                                            _index_tag = 'Index_ID'
+                                            idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
                                     if warn.startswith('[Atom not found]'):
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
@@ -25454,8 +25463,17 @@ class NmrDpUtility:
                                 if warn is not None:
 
                                     _index_tag = index_tag if index_tag is not None else 'ID'
-                                    _index_tag_col = loop.tags.index(_index_tag)
-                                    idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                    try:
+                                        _index_tag_col = loop.tags.index(_index_tag)
+                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                    except ValueError:
+                                        _index_tag = 'ID'
+                                        try:
+                                            _index_tag_col = loop.tags.index(_index_tag)
+                                            idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                        except ValueError:
+                                            _index_tag = 'Index_ID'
+                                            idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
                                     if warn.startswith('[Atom not found]'):
 
@@ -25534,7 +25552,8 @@ class NmrDpUtility:
                                         int(memberId)
                                     except ValueError:
                                         memberId = '.'
-                                if len(atom_sels[0]) * len(atom_sels[1]) > 1\
+                                valid_atom_sels = atom_sels[0] is not None and atom_sels[1] is not None
+                                if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
                                    and (isAmbigAtomSelection(atom_sels[0], self.__csStat)
                                         or isAmbigAtomSelection(atom_sels[1], self.__csStat)):
                                     memberId = 0
@@ -25543,19 +25562,43 @@ class NmrDpUtility:
                                     memberLogicCode = loop.data[idx][member_logic_code_col]
                                     if memberLogicCode in emptyValue:
                                         memberLogicCode = '.'
-                                memberLogicCode = 'OR' if len(atom_sels[0]) * len(atom_sels[1]) > 1 else memberLogicCode
+                                memberLogicCode = 'OR' if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1 else memberLogicCode
 
                                 if isinstance(memberId, int):
                                     _atom1 = _atom2 = None
 
-                                for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
-                                    if isinstance(memberId, int):
-                                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                           or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                            memberId += 1
-                                            _atom1, _atom2 = atom1, atom2
+                                if valid_atom_sels:
+                                    for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
+                                        if isinstance(memberId, int):
+                                            if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                               or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                                memberId += 1
+                                                _atom1, _atom2 = atom1, atom2
+                                        sf_item['index_id'] += 1
+                                        _row = getRowForStrMr(content_subtype, Id, sf_item['idx'],
+                                                              memberId, memberLogicCode, list_id, self.__entry_id,
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                        lp.add_data(_row)
+                                elif atom_sels[0] is not None:
+                                    atom2 = None
+                                    for atom1 in atom_sels[0]:
+                                        sf_item['index_id'] += 1
+                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                              memberId, memberLogicCode, list_id, self.__entry_id,
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                        lp.add_data(_row)
+                                elif atom_sels[1] is not None:
+                                    atom1 = None
+                                    for atom2 in atom_sels[1]:
+                                        sf_item['index_id'] += 1
+                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                              memberId, memberLogicCode, list_id, self.__entry_id,
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                        lp.add_data(_row)
+                                else:
+                                    atom1 = atom2 = None
                                     sf_item['index_id'] += 1
-                                    _row = getRowForStrMr(content_subtype, Id, sf_item['idx'],
+                                    _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
                                                           loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
                                     lp.add_data(_row)
@@ -25589,16 +25632,17 @@ class NmrDpUtility:
                                         sa = next((sa for sa in seq_align
                                                    if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
                                         if sa is not None:
-                                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id'])
+                                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                                 if test_seq_id == seq_id), None)
                                             if auth_seq_id is None:
                                                 for offset in range(1, 10):
-                                                    auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id'])
+                                                    auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                                         if test_seq_id == seq_id + offset), None)
                                                     if auth_seq_id is not None:
                                                         auth_seq_id -= offset
                                                         break
-                                                    auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id'])
+                                                    auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                                         if test_seq_id == seq_id - offset), None)
                                                     if auth_seq_id is not None:
                                                         auth_seq_id += offset
@@ -25610,7 +25654,8 @@ class NmrDpUtility:
                                         sa = next((sa for sa in br_seq_align
                                                    if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
                                         if sa is not None:
-                                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id'])
+                                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                                 if test_seq_id == seq_id), None)
 
                                 if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
@@ -25619,7 +25664,8 @@ class NmrDpUtility:
                                         sa = next((sa for sa in np_seq_align
                                                    if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
                                         if sa is not None:
-                                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id'])
+                                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                                 if test_seq_id == seq_id), None)
 
                                 if auth_asym_id is None or auth_seq_id is None:
@@ -25643,8 +25689,17 @@ class NmrDpUtility:
                                 if warn is not None:
 
                                     _index_tag = index_tag if index_tag is not None else 'ID'
-                                    _index_tag_col = loop.tags.index(_index_tag)
-                                    idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                    try:
+                                        _index_tag_col = loop.tags.index(_index_tag)
+                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                    except ValueError:
+                                        _index_tag = 'ID'
+                                        try:
+                                            _index_tag_col = loop.tags.index(_index_tag)
+                                            idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                        except ValueError:
+                                            _index_tag = 'Index_ID'
+                                            idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
                                     if warn.startswith('[Atom not found]'):
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
@@ -25666,8 +25721,17 @@ class NmrDpUtility:
                                 if warn is not None:
 
                                     _index_tag = index_tag if index_tag is not None else 'ID'
-                                    _index_tag_col = loop.tags.index(_index_tag)
-                                    idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                    try:
+                                        _index_tag_col = loop.tags.index(_index_tag)
+                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                    except ValueError:
+                                        _index_tag = 'ID'
+                                        try:
+                                            _index_tag_col = loop.tags.index(_index_tag)
+                                            idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                        except ValueError:
+                                            _index_tag = 'Index_ID'
+                                            idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
                                     if warn.startswith('[Atom not found]'):
 
@@ -25746,7 +25810,8 @@ class NmrDpUtility:
                                         int(memberId)
                                     except ValueError:
                                         memberId = '.'
-                                if len(atom_sels[0]) * len(atom_sels[1]) > 1\
+                                valid_atom_sels = atom_sels[0] is not None and atom_sels[1] is not None
+                                if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
                                    and (isAmbigAtomSelection(atom_sels[0], self.__csStat)
                                         or isAmbigAtomSelection(atom_sels[1], self.__csStat)):
                                     memberId = 0
@@ -25755,17 +25820,41 @@ class NmrDpUtility:
                                     memberLogicCode = loop.data[idx][member_logic_code_col]
                                     if memberLogicCode in emptyValue:
                                         memberLogicCode = '.'
-                                memberLogicCode = 'OR' if len(atom_sels[0]) * len(atom_sels[1]) > 1 else memberLogicCode
+                                memberLogicCode = 'OR' if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1 else memberLogicCode
 
                                 if isinstance(memberId, int):
                                     _atom1 = _atom2 = None
 
-                                for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
-                                    if isinstance(memberId, int):
-                                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                           or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                            memberId += 1
-                                            _atom1, _atom2 = atom1, atom2
+                                if valid_atom_sels:
+                                    for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
+                                        if isinstance(memberId, int):
+                                            if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                               or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                                memberId += 1
+                                                _atom1, _atom2 = atom1, atom2
+                                        sf_item['index_id'] += 1
+                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                              memberId, memberLogicCode, list_id, self.__entry_id,
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                        lp.add_data(_row)
+                                elif atom_sels[0] is not None:
+                                    atom2 = None
+                                    for atom1 in atom_sels[0]:
+                                        sf_item['index_id'] += 1
+                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                              memberId, memberLogicCode, list_id, self.__entry_id,
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                        lp.add_data(_row)
+                                elif atom_sels[1] is not None:
+                                    atom1 = None
+                                    for atom2 in atom_sels[1]:
+                                        sf_item['index_id'] += 1
+                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                              memberId, memberLogicCode, list_id, self.__entry_id,
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                        lp.add_data(_row)
+                                else:
+                                    atom1 = atom2 = None
                                     sf_item['index_id'] += 1
                                     _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
@@ -44217,12 +44306,17 @@ class NmrDpUtility:
                         if _id == prev_id:
                             continue
                         prev_id = _id
-                        chain_id_1 = int(row[chain_id_1_col])
-                        chain_id_2 = int(row[chain_id_2_col])
-                        seq_id_1 = int(row[seq_id_1_col])
-                        seq_id_2 = int(row[seq_id_2_col])
+                        try:
+                            chain_id_1 = int(row[chain_id_1_col])
+                            chain_id_2 = int(row[chain_id_2_col])
+                            seq_id_1 = int(row[seq_id_1_col])
+                            seq_id_2 = int(row[seq_id_2_col])
+                        except (ValueError, TypeError):
+                            continue
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
+                        if atom_id_1 is None or atom_id_2 is None:
+                            continue
                         comb_id = row[comb_id_col] if comb_id_col != -1 else None
                         upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
@@ -44342,12 +44436,17 @@ class NmrDpUtility:
                         if _id == prev_id:
                             continue
                         prev_id = _id
-                        chain_id_1 = int(row[chain_id_1_col])
-                        chain_id_2 = int(row[chain_id_2_col])
-                        seq_id_1 = int(row[seq_id_1_col])
-                        seq_id_2 = int(row[seq_id_2_col])
+                        try:
+                            chain_id_1 = int(row[chain_id_1_col])
+                            chain_id_2 = int(row[chain_id_2_col])
+                            seq_id_1 = int(row[seq_id_1_col])
+                            seq_id_2 = int(row[seq_id_2_col])
+                        except (ValueError, TypeError):
+                            continue
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
+                        if atom_id_1 is None or atom_id_2 is None:
+                            continue
                         comb_id = row[comb_id_col] if comb_id_col != -1 else None
                         upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
@@ -44428,8 +44527,13 @@ class NmrDpUtility:
                         continue
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    try:
+                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    except (ValueError, TypeError):
+                        continue
                     angle_name = row[angle_name_col]
+                    if angle_name is None:
+                        continue
 
                     seq_key = (auth_asym_id, auth_seq_id)
 
@@ -44479,7 +44583,10 @@ class NmrDpUtility:
 
                             for _row in _lp:
                                 auth_asym_id = _row[auth_asym_id_col]
-                                auth_seq_id = int(_row[auth_seq_id_col])
+                                try:
+                                    auth_seq_id = int(_row[auth_seq_id_col])
+                                except (ValueError, TypeError):
+                                    continue
                                 atom_id_1 = _row[atom_id_1_col]
                                 atom_id_4 = _row[atom_id_4_col]
 
@@ -44543,8 +44650,13 @@ class NmrDpUtility:
                         continue
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    try:
+                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    except (ValueError, TypeError):
+                        continue
                     angle_name = row[angle_name_col]
+                    if angle_name is None:
+                        continue
 
                     seq_key = (auth_asym_id, auth_seq_id)
 
@@ -44594,7 +44706,10 @@ class NmrDpUtility:
 
                             for _row in _lp:
                                 auth_asym_id = _row[auth_asym_id_col]
-                                auth_seq_id = int(_row[auth_seq_id_col])
+                                try:
+                                    auth_seq_id = int(_row[auth_seq_id_col])
+                                except (ValueError, TypeError):
+                                    continue
 
                                 seq_key = (auth_asym_id, auth_seq_id)
 
@@ -44637,8 +44752,13 @@ class NmrDpUtility:
                         continue
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    try:
+                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    except (ValueError, TypeError):
+                        continue
                     angle_name = row[angle_name_col]
+                    if angle_name is None:
+                        continue
 
                     seq_key = (auth_asym_id, auth_seq_id)
 
@@ -44671,7 +44791,10 @@ class NmrDpUtility:
 
                             for _row in _lp:
                                 auth_asym_id = _row[auth_asym_id_col]
-                                auth_seq_id = int(_row[auth_seq_id_col])
+                                try:
+                                    auth_seq_id = int(_row[auth_seq_id_col])
+                                except (ValueError, TypeError):
+                                    continue
 
                                 seq_key = (auth_asym_id, auth_seq_id)
 
@@ -44735,12 +44858,17 @@ class NmrDpUtility:
                     if _id == prev_id:
                         continue
                     prev_id = _id
-                    chain_id_1 = int(row[chain_id_1_col])
-                    chain_id_2 = int(row[chain_id_2_col])
-                    seq_id_1 = int(row[seq_id_1_col])
-                    seq_id_2 = int(row[seq_id_2_col])
+                    try:
+                        chain_id_1 = int(row[chain_id_1_col])
+                        chain_id_2 = int(row[chain_id_2_col])
+                        seq_id_1 = int(row[seq_id_1_col])
+                        seq_id_2 = int(row[seq_id_2_col])
+                    except (ValueError, TypeError):
+                        continue
                     atom_id_1 = row[atom_id_1_col]
                     atom_id_2 = row[atom_id_2_col]
+                    if atom_id_1 is None or atom_id_2 is None:
+                        continue
                     comb_id = row[comb_id_col] if comb_id_col != -1 else None
 
                     vector = {atom_id_1, atom_id_2}
@@ -44843,12 +44971,17 @@ class NmrDpUtility:
                 atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
 
                 for row in lp:
-                    chain_id_1 = int(row[chain_id_1_col])
-                    chain_id_2 = int(row[chain_id_2_col])
-                    seq_id_1 = int(row[seq_id_1_col])
-                    seq_id_2 = int(row[seq_id_2_col])
+                    try:
+                        chain_id_1 = int(row[chain_id_1_col])
+                        chain_id_2 = int(row[chain_id_2_col])
+                        seq_id_1 = int(row[seq_id_1_col])
+                        seq_id_2 = int(row[seq_id_2_col])
+                    except (ValueError, TypeError):
+                        continue
                     atom_id_1 = row[atom_id_1_col]
                     atom_id_2 = row[atom_id_2_col]
+                    if atom_id_1 is None or atom_id_2 is None:
+                        continue
                     if atom_id_1[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_1_col]):
                             bonded_atom_id_1 = next(((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_1 else b[self.__ccU.ccbAtomId2])
@@ -44902,12 +45035,17 @@ class NmrDpUtility:
                 atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
 
                 for row in lp:
-                    chain_id_1 = int(row[chain_id_1_col])
-                    chain_id_2 = int(row[chain_id_2_col])
-                    seq_id_1 = int(row[seq_id_1_col])
-                    seq_id_2 = int(row[seq_id_2_col])
+                    try:
+                        chain_id_1 = int(row[chain_id_1_col])
+                        chain_id_2 = int(row[chain_id_2_col])
+                        seq_id_1 = int(row[seq_id_1_col])
+                        seq_id_2 = int(row[seq_id_2_col])
+                    except (ValueError, TypeError):
+                        continue
                     atom_id_1 = row[atom_id_1_col]
                     atom_id_2 = row[atom_id_2_col]
+                    if atom_id_1 is None or atom_id_2 is None:
+                        continue
                     if atom_id_1[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_1_col]):
                             bonded_atom_id_1 = next(((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_1 else b[self.__ccU.ccbAtomId2])
@@ -45014,7 +45152,10 @@ class NmrDpUtility:
 
                 for row in lp_data:
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = row[auth_seq_id_col]
+                    try:
+                        auth_seq_id = int(row[auth_seq_id_col])
+                    except (ValueError, TypeError):
+                        continue
 
                     seq_key = (auth_asym_id, auth_seq_id)
 
@@ -45626,12 +45767,17 @@ class NmrDpUtility:
                             if _id == prev_id:
                                 continue
                             prev_id = _id
-                            chain_id_1 = row[chain_id_1_col]
-                            chain_id_2 = row[chain_id_2_col]
-                            seq_id_1 = int(row[seq_id_1_col])
-                            seq_id_2 = int(row[seq_id_2_col])
+                            try:
+                                chain_id_1 = int(row[chain_id_1_col])
+                                chain_id_2 = int(row[chain_id_2_col])
+                                seq_id_1 = int(row[seq_id_1_col])
+                                seq_id_2 = int(row[seq_id_2_col])
+                            except (ValueError, TypeError):
+                                continue
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
+                            if atom_id_1 is None or atom_id_2 is None:
+                                continue
                             comb_id = row[comb_id_col] if comb_id_col != -1 else None
                             upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
@@ -45755,12 +45901,17 @@ class NmrDpUtility:
                             if _id == prev_id:
                                 continue
                             prev_id = _id
-                            chain_id_1 = row[chain_id_1_col]
-                            chain_id_2 = row[chain_id_2_col]
-                            seq_id_1 = int(row[seq_id_1_col])
-                            seq_id_2 = int(row[seq_id_2_col])
+                            try:
+                                chain_id_1 = int(row[chain_id_1_col])
+                                chain_id_2 = int(row[chain_id_2_col])
+                                seq_id_1 = int(row[seq_id_1_col])
+                                seq_id_2 = int(row[seq_id_2_col])
+                            except (ValueError, TypeError):
+                                continue
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
+                            if atom_id_1 is None or atom_id_2 is None:
+                                continue
                             comb_id = row[comb_id_col] if comb_id_col != -1 else None
                             upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
@@ -45914,8 +46065,13 @@ class NmrDpUtility:
                             continue
                         prev_id = _id
                         auth_asym_id = row[auth_asym_id_col]
-                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                        try:
+                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                        except (ValueError, TypeError):
+                            continue
                         angle_name = row[angle_name_col]
+                        if angle_name is None:
+                            continue
 
                         seq_key = (auth_asym_id, auth_seq_id)
 
@@ -45990,8 +46146,13 @@ class NmrDpUtility:
                             continue
                         prev_id = _id
                         auth_asym_id = row[auth_asym_id_col]
-                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                        try:
+                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                        except (ValueError, TypeError):
+                            continue
                         angle_name = row[angle_name_col]
+                        if angle_name is None:
+                            continue
 
                         seq_key = (auth_asym_id, auth_seq_id)
 
@@ -46063,8 +46224,13 @@ class NmrDpUtility:
                             continue
                         prev_id = _id
                         auth_asym_id = row[auth_asym_id_col]
-                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                        try:
+                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                        except (ValueError, TypeError):
+                            continue
                         angle_name = row[angle_name_col]
+                        if angle_name is None:
+                            continue
 
                         seq_key = (auth_asym_id, auth_seq_id)
 
@@ -46215,10 +46381,15 @@ class NmrDpUtility:
                         prev_id = _id
                         chain_id_1 = row[chain_id_1_col]
                         chain_id_2 = row[chain_id_2_col]
-                        seq_id_1 = int(row[seq_id_1_col]) if row[seq_id_1_col] not in emptyValue else None
-                        seq_id_2 = int(row[seq_id_2_col]) if row[seq_id_2_col] not in emptyValue else None
+                        try:
+                            seq_id_1 = int(row[seq_id_1_col]) if row[seq_id_1_col] not in emptyValue else None
+                            seq_id_2 = int(row[seq_id_2_col]) if row[seq_id_2_col] not in emptyValue else None
+                        except (ValueError, TypeError):
+                            continue
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
+                        if atom_id_1 is None or atom_id_2 is None:
+                            continue
                         comb_id = row[comb_id_col] if comb_id_col != -1 else None
 
                         vector = {atom_id_1, atom_id_2}

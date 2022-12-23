@@ -21455,7 +21455,7 @@ class NmrDpUtility:
                                             + f", {value_name} {value}, {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
                                             f"However, {value_name} {value2} of "\
                                             + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
-                                            + f"differs by {value2 - value} (tolerance {CS_UNCERT_MAX})."
+                                            + f" differs by {value2 - value:.3f} (tolerance {CS_UNCERT_MAX})."
 
                                         self.report.error.appendDescription('invalid_ambiguity_code',
                                                                             {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,

@@ -4096,6 +4096,8 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
     if atom5 is not None and isinstance(atom5, list):
         atom5 = atom5[0]
 
+    star_atom1 = star_atom2 = star_atom3 = star_atom4 = star_atom5 = None
+
     if atom1 is not None:
         star_atom1 = getStarAtom(authToStarSeq, atom1)
         if 'atom_id' not in atom1:
@@ -4191,20 +4193,24 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
         if val is not None:
             row[key_size + 11] = val
 
-        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom1 is not None:
+            row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         if hasKeyValue(atom1, 'auth_atom_id'):
             row[key_size + 16] = atom1['auth_atom_id']
-        row[key_size + 17], row[key_size + 18], row[key_size + 19], row[key_size + 20] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if atom2 is not None:
+            row[key_size + 17], row[key_size + 18], row[key_size + 19], row[key_size + 20] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 21] = atom2['auth_atom_id']
 
     elif contentSubtype == 'dihed_restraint':
-        row[11], row[12], row[13], row[14], row[15] =\
-            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
-        row[16], row[17], row[18], row[19], row[20] =\
-            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+        if star_atom3 is not None:
+            row[11], row[12], row[13], row[14], row[15] =\
+                star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        if star_atom4 is not None:
+            row[16], row[17], row[18], row[19], row[20] =\
+                star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
         val = getRowValue('Combination_ID')
         if val is not None:
@@ -4240,21 +4246,25 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
         if val is not None:
             row[key_size + 9] = str(abs(float(val)))
 
-        row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom1 is not None:
+            row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         if hasKeyValue(atom1, 'auth_atom_id'):
             row[key_size + 14] = atom1['auth_atom_id']
-        row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if atom2 is not None:
+            row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 19] = atom2['auth_atom_id']
-        row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
-            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
-        if hasKeyValue(atom1, 'auth_atom_id'):
+        if atom3 is not None:
+            row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
+                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        if hasKeyValue(atom3, 'auth_atom_id'):
             row[key_size + 24] = atom3['auth_atom_id']
-        row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
-            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
+        if atom4 is not None:
+            row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
+                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+        if hasKeyValue(atom4, 'auth_atom_id'):
             row[key_size + 29] = atom4['auth_atom_id']
 
     elif contentSubtype == 'rdc_restraint':
@@ -4303,12 +4313,14 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
         if val is not None:
             row[key_size + 12] = val
 
-        row[key_size + 13], row[key_size + 14], row[key_size + 15], row[key_size + 16] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom1 is not None:
+            row[key_size + 13], row[key_size + 14], row[key_size + 15], row[key_size + 16] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         if hasKeyValue(atom1, 'auth_atom_id'):
             row[key_size + 17] = atom1['auth_atom_id']
-        row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if atom2 is not None:
+            row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 22] = atom2['auth_atom_id']
 
@@ -4330,21 +4342,25 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
 
-        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 8] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[key_size + 9], row[key_size + 10], row[key_size + 11], row[key_size + 12] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if atom1 is not None:
+            row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 8] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom2 is not None:
+            row[key_size + 9], row[key_size + 10], row[key_size + 11], row[key_size + 12] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
         if hasKeyValue(atom1, 'auth_atom_id'):
             row[5] = row[key_size + 8] = atom1['auth_atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
-            row[10] = row[key_size + 12] = atom1['auth_atom_id']
+            row[10] = row[key_size + 12] = atom2['auth_atom_id']
 
     elif contentSubtype == 'jcoup_restraint':
-        row[11], row[12], row[13], row[14], row[15] =\
-            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
-        row[16], row[17], row[18], row[19], row[20] =\
-            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+        if star_atom3 is not None:
+            row[11], row[12], row[13], row[14], row[15] =\
+                star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        if star_atom4 is not None:
+            row[16], row[17], row[18], row[19], row[20] =\
+                star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
         val = getRowValue('Coupling_constant_val')
         if val is not None:
@@ -4363,14 +4379,18 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
 
-        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[key_size + 8], row[key_size + 9], row[key_size + 10], row[key_size + 11] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
-            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
-        row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
-            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+        if atom1 is not None:
+            row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom2 is not None:
+            row[key_size + 8], row[key_size + 9], row[key_size + 10], row[key_size + 11] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if atom3 is not None:
+            row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
+                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        if atom4 is not None:
+            row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
+                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
 
     elif contentSubtype == 'rdc_raw_data':
         row[key_size] = getRdcCode([atom1, atom2])
@@ -4403,10 +4423,12 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
         if val is not None:
             row[key_size + 11] = val
 
-        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if atom1 is not None:
+            row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom2 is not None:
+            row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
     elif contentSubtype == 'csa_restraint':
         row[key_size] = atomType = atom1['atom_id'][0]
@@ -4441,20 +4463,23 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
         if val is not None:
             row[key_size + 10] = val
 
-        row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom1 is not None:
+            row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     elif contentSubtype == 'ddc_restraint':
         val = getRowValue('Dipolar_coupling_code')
         if val is not None:
             row[key_size] = val
-        row[key_size + 1] = atomType = atom1['atom_id'][0]
-        row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size + 1] = atomType = atom1['atom_id'][0]
+            row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         val = getRowValue('Ambiguity_code_1')
         if val is not None and val in ('1', '2', '3'):
             row[key_size + 3] = val
-        row[key_size + 4] = atomType = atom2['atom_id'][0]
-        row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom2 is not None:
+            row[key_size + 4] = atomType = atom2['atom_id'][0]
+            row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         val = getRowValue('Ambiguity_code_2')
         if val is not None and val in ('1', '2', '3'):
             row[key_size + 6] = val
@@ -4485,12 +4510,15 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
             row[key_size + 13] = val
 
     elif contentSubtype == 'hvycs_restraint':
-        row[11], row[12], row[13], row[14], row[15] =\
-            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
-        row[16], row[17], row[18], row[19], row[20] =\
-            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
-        row[21], row[22], row[23], row[24], row[25] =\
-            star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id'], star_atom5['atom_id']
+        if star_atom3 is not None:
+            row[11], row[12], row[13], row[14], row[15] =\
+                star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        if star_atom4 is not None:
+            row[16], row[17], row[18], row[19], row[20] =\
+                star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+        if star_atom5 is not None:
+            row[21], row[22], row[23], row[24], row[25] =\
+                star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id'], star_atom5['atom_id']
 
         val = getRowValue('CA_chem_shift_val')
         if val is not None:
@@ -4509,20 +4537,26 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
             row[key_size + 3] = str(abs(float(val)))
             float_row_idx.append(key_size + 3)
 
-        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[key_size + 8], row[key_size + 9], row[key_size + 10], row[key_size + 11] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
-            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
-        row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
-            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
-        row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
-            atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id']
+        if atom1 is not None:
+            row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom2 is not None:
+            row[key_size + 8], row[key_size + 9], row[key_size + 10], row[key_size + 11] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if atom3 is not None:
+            row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
+                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        if atom4 is not None:
+            row[key_size + 16], row[key_size + 17], row[key_size + 18], row[key_size + 19] =\
+                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+        if atom5 is not None:
+            row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
+                atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id']
 
     elif contentSubtype == 'procs_restraint':
-        row[key_size] = atomType = atom1['atom_id'][0]
-        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         val = getRowValue('Chem_shift_val')
         if val is not None:
             row[key_size + 2] = val
@@ -4532,16 +4566,14 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
             row[key_size + 3] = str(abs(float(val)))
             float_row_idx.append(key_size + 3)
 
-        if atom2 is None:
+        if atom1 is None:
             row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        else:
-            row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
-                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
     elif contentSubtype == 'csp_restraint':
-        row[key_size] = atomType = atom1['atom_id'][0]
-        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         val = getRowValue('Chem_shift_val')
         if val is not None:
             row[key_size + 2] = val
@@ -4559,12 +4591,14 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
             row[key_size + 5] = str(abs(float(val)))
             float_row_idx.append(key_size + 5)
 
-        row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom1 is not None:
+            row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     elif contentSubtype == 'auto_relax_restraint':
-        row[key_size] = atomType = atom1['atom_id'][0]
-        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         val = getRowValue('Auto_relaxation_val')
         if val is not None:
             row[key_size + 2] = val
@@ -4582,23 +4616,30 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
             row[key_size + 5] = str(abs(float(val)))
             float_row_idx.append(key_size + 5)
 
-        row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom1 is not None:
+            row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     elif contentSubtype.startswith('ccr'):
-        row[11], row[12], row[13], row[14], row[15] =\
-            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
-        row[16], row[17], row[18], row[19], row[20] =\
-            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+        if star_atom3 is not None:
+            row[11], row[12], row[13], row[14], row[15] =\
+                star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        if star_atom4 is not None:
+            row[16], row[17], row[18], row[19], row[20] =\
+                star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
-        row[key_size] = atomType = atom1['atom_id'][0]
-        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        row[key_size + 2] = atomType = atom2['atom_id'][0]
-        row[key_size + 3] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        row[key_size + 4] = atomType = atom3['atom_id'][0]
-        row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        row[key_size + 6] = atomType = atom4['atom_id'][0]
-        row[key_size + 7] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom2 is not None:
+            row[key_size + 2] = atomType = atom2['atom_id'][0]
+            row[key_size + 3] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom3 is not None:
+            row[key_size + 4] = atomType = atom3['atom_id'][0]
+            row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom4 is not None:
+            row[key_size + 6] = atomType = atom4['atom_id'][0]
+            row[key_size + 7] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         val = getRowValue('Val')
         if val is not None:
             row[key_size + 8] = val
@@ -4608,27 +4649,34 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
             row[key_size + 9] = str(abs(float(val)))
             float_row_idx.append(key_size + 9)
 
-        row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[key_size + 14], row[key_size + 15], row[key_size + 16], row[key_size + 17] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[key_size + 22], row[key_size + 23], row[key_size + 24], row[key_size + 25] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom1 is not None:
+            row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom2 is not None:
+            row[key_size + 14], row[key_size + 15], row[key_size + 16], row[key_size + 17] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if atom3 is not None:
+            row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
+                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+        if atom4 is not None:
+            row[key_size + 22], row[key_size + 23], row[key_size + 24], row[key_size + 25] =\
+                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
 
     elif contentSubtype == 'fchiral_restraint':
         val = getRowValue('Stereospecific_assignment_code')
         if val is not None:
             row[key_size] = val
-        row[key_size + 1], row[key_size + 2], row[key_size + 3], row[key_size + 4] =\
-            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['auth_atom_id']
-        row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
-            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
+        if atom1 is not None:
+            row[key_size + 1], row[key_size + 2], row[key_size + 3], row[key_size + 4] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['auth_atom_id']
+        if atom2 is not None:
+            row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
 
     elif contentSubtype == 'other_restraint':
-        row[key_size] = atomType = atom1['atom_id'][0]
-        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         val = getRowValue('Val')
         if val is not None:
             row[key_size + 2] = val
@@ -4711,6 +4759,8 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
 
     hasNonPoly = nonPoly is not None and len(nonPoly) > 0
     hasBranched = branched is not None and len(branched) > 0
+
+    nonPolySeq = None
 
     chainAssign = set()
     _seqId = seqId

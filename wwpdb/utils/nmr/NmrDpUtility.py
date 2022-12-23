@@ -25196,7 +25196,7 @@ class NmrDpUtility:
 
             file_name = input_source_dic['file_name']
 
-            original_file_name = file_name
+            original_file_name = file_name.replace('-corrected', '')
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
@@ -25246,9 +25246,11 @@ class NmrDpUtility:
 
         restraint_name = getRestraintName(content_subtype)
 
+        _sf_framecode = sf_framecode
+
         is_sf = True
         if len(sf_framecode) == 0:
-            sf_framecode = restraint_name.replace(' ', '_') + f'_{list_id}'
+            sf_framecode = restraint_name.replace(' ', '_').lower() + f'_{list_id}'
             is_sf = False
 
         # refresh saveframe
@@ -25310,7 +25312,7 @@ class NmrDpUtility:
                 np_seq_align = np_chain_assign = None
 
                 if content_subtype in polymer_sequence_in_loop:
-                    ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == sf_framecode), None)
+                    ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == _sf_framecode), None)
 
                     if ps_in_loop is not None:
                         list_id = ps_in_loop['list_id']
@@ -28469,7 +28471,7 @@ class NmrDpUtility:
 
             file_name = input_source_dic['file_name']
 
-            original_file_name = file_name
+            original_file_name = file_name.replace('-corrected', '')
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
@@ -28631,33 +28633,36 @@ class NmrDpUtility:
 
             try:
 
-                block_id = get_first_sf_tag(sf_data, 'Block_ID')
+                tagNames = [t[0] for t in sf_data.tags]
 
-                _sf_data = self.__star_data[0].get_saveframes_by_category(_sf_category)
+                if 'Block_ID' in tagNames:
+                    block_id = get_first_sf_tag(sf_data, 'Block_ID')
 
-                if __pynmrstar_v3_2__:
-                    _loop = _sf_data[0].get_loop(_lp_category)
-                else:
-                    _loop = _sf_data[0].get_loop_by_category(_lp_category)
+                    _sf_data = self.__star_data[0].get_saveframes_by_category(_sf_category)
 
-                _block_id_col = _loop.tags.index('Block_ID')
-                _constraint_type_col = _loop.tags.index('Constraint_type')
-                _constraint_subtype_col = _loop.tags.index('Constraint_subtype')
-                _constraint_subsubtype_col = _loop.tags.index('Constraint_subsubtype')
+                    if __pynmrstar_v3_2__:
+                        _loop = _sf_data[0].get_loop(_lp_category)
+                    else:
+                        _loop = _sf_data[0].get_loop_by_category(_lp_category)
 
-                _row = next((_row for _row in _loop if _row[_block_id_col] == block_id), None)
+                    _block_id_col = _loop.tags.index('Block_ID')
+                    _constraint_type_col = _loop.tags.index('Constraint_type')
+                    _constraint_subtype_col = _loop.tags.index('Constraint_subtype')
+                    _constraint_subsubtype_col = _loop.tags.index('Constraint_subsubtype')
 
-                if _row is not None:
-                    _constraint_type = _row[_constraint_type_col]
-                    _constraint_subtype = _row[_constraint_subtype_col]
-                    _constraint_subsubtype = _row[_constraint_subsubtype_col]
+                    _row = next((_row for _row in _loop if _row[_block_id_col] == block_id), None)
 
-                    if (_constraint_type == 'distance' and _constraint_subtype not in ('NOE', 'ROE'))\
-                       or ('dihedral angle' in _constraint_type and _constraint_subtype == 'unknown'):
-                        ambig = True
+                    if _row is not None:
+                        _constraint_type = _row[_constraint_type_col]
+                        _constraint_subtype = _row[_constraint_subtype_col]
+                        _constraint_subsubtype = _row[_constraint_subsubtype_col]
 
-                    if _constraint_subsubtype not in emptyValue and _constraint_subsubtype == 'ambi':
-                        ambig = True
+                        if (_constraint_type == 'distance' and _constraint_subtype not in ('NOE', 'ROE'))\
+                           or ('dihedral angle' in _constraint_type and _constraint_subtype == 'unknown'):
+                            ambig = True
+
+                        if _constraint_subsubtype not in emptyValue and _constraint_subsubtype == 'ambi':
+                            ambig = True
 
             except (IndexError, ValueError):
                 pass

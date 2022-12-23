@@ -21219,7 +21219,7 @@ class NmrDpUtility:
 
                             ambig_code2 = _row[ambig_code_name]
 
-                            if ambig_code2 != ambig_code:
+                            if ambig_code2 is not None and ambig_code2 != ambig_code:
 
                                 if ambig_code2 < 4:
                                     loop.data[lp_data.index(_row)][loop.tags.index(ambig_code_name)] = ambig_code

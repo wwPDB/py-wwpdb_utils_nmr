@@ -3625,6 +3625,8 @@ def getStarAtom(authToStarSeq, atom):
     seqId = atom['seq_id']
     compId = atom['comp_id']
     seqKey = (chainId, seqId, compId)
+    if 'atom_id' not in atom:
+        starAtom['atom_id'] = None
 
     if seqKey in authToStarSeq:
         starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
@@ -3670,14 +3672,24 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
 
     if atom1 is not None:
         star_atom1 = getStarAtom(authToStarSeq, atom1)
+        if 'atom_id' not in atom1:
+            atom1['atom_id'] = None
     if atom2 is not None:
         star_atom2 = getStarAtom(authToStarSeq, atom2)
+        if 'atom_id' not in atom2:
+            atom2['atom_id'] = None
     if atom3 is not None:
         star_atom3 = getStarAtom(authToStarSeq, atom3)
+        if 'atom_id' not in atom3:
+            atom3['atom_id'] = None
     if atom4 is not None:
         star_atom4 = getStarAtom(authToStarSeq, atom4)
+        if 'atom_id' not in atom4:
+            atom4['atom_id'] = None
     if atom5 is not None:
         star_atom5 = getStarAtom(authToStarSeq, atom5)
+        if 'atom_id' not in atom5:
+            atom5['atom_id'] = None
 
     if star_atom1 is None and star_atom2 is not None:  # procs
         row[1], row[2], row[3], row[4], row[5] =\
@@ -4086,14 +4098,24 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
 
     if atom1 is not None:
         star_atom1 = getStarAtom(authToStarSeq, atom1)
+        if 'atom_id' not in atom1:
+            atom1['atom_id'] = None
     if atom2 is not None:
         star_atom2 = getStarAtom(authToStarSeq, atom2)
+        if 'atom_id' not in atom2:
+            atom2['atom_id'] = None
     if atom3 is not None:
         star_atom3 = getStarAtom(authToStarSeq, atom3)
+        if 'atom_id' not in atom3:
+            atom3['atom_id'] = None
     if atom4 is not None:
         star_atom4 = getStarAtom(authToStarSeq, atom4)
+        if 'atom_id' not in atom4:
+            atom4['atom_id'] = None
     if atom5 is not None:
         star_atom5 = getStarAtom(authToStarSeq, atom5)
+        if 'atom_id' not in atom5:
+            atom5['atom_id'] = None
 
     if star_atom1 is None and star_atom2 is not None:  # procs
         row[1], row[2], row[3], row[4], row[5] =\
@@ -5027,8 +5049,11 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
     if atom1 is None or atom2 is None:
         return None
 
-    atom_id_1 = atom1['atom_id']
-    atom_id_2 = atom2['atom_id']
+    atom_id_1 = atom1['atom_id'] if 'atom_id' in atom1 else atom1['auth_atom_id']
+    atom_id_2 = atom2['atom_id'] if 'atom_id' in atom2 else atom2['auth_atom_id']
+
+    if atom_id_1 is None or atom_id_2 is None:
+        return None
 
     if atom1['comp_id'] == atom_id_1 or atom2['comp_id'] == atom_id_2:
         return 'metal coordination'

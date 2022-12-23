@@ -262,7 +262,8 @@ class GromacsPTParserListener(ParseTreeListener):
                         for atomNum in self.__atomNumberDict.values():
                             if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
                                 atomNum['comp_id'] = authCompId
-                                atomNum['atom_id'] = atomNum['auth_atom_id']
+                                # atomNum['atom_id'] = atomNum['auth_atom_id']
+                                atomNum['atom_id'] = translateToStdAtomName(atomNum['auth_atom_id'], atomNum['comp_id'])
                                 if 'atom_type' in atomNum:
                                     del atomNum['atom_type']
                     else:
@@ -279,7 +280,8 @@ class GromacsPTParserListener(ParseTreeListener):
                                 if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
                                     atomNum['comp_id'] = compId
                                     if chemCompAtomIds is not None and atomNum['auth_atom_id'] in chemCompAtomIds:
-                                        atomNum['atom_id'] = atomNum['auth_atom_id']
+                                        # atomNum['atom_id'] = atomNum['auth_atom_id']
+                                        atomNum['atom_id'] = translateToStdAtomName(atomNum['auth_atom_id'], atomNum['comp_id'])
                                         if 'atom_type' in atomNum:
                                             del atomNum['atom_type']
                         else:
@@ -302,7 +304,8 @@ class GromacsPTParserListener(ParseTreeListener):
                             if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
                                 atomNum['comp_id'] = compId
                                 if chemCompAtomIds is not None and atomNum['auth_atom_id'] in chemCompAtomIds:
-                                    atomNum['atom_id'] = atomNum['auth_atom_id']
+                                    # atomNum['atom_id'] = atomNum['auth_atom_id']
+                                    atomNum['atom_id'] = translateToStdAtomName(atomNum['auth_atom_id'], atomNum['comp_id'])
                                     if 'atom_type' in atomNum:
                                         del atomNum['atom_type']
                     else:
@@ -340,7 +343,8 @@ class GromacsPTParserListener(ParseTreeListener):
             else:
                 authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                 if self.__ccU.updateChemCompDict(authCompId):
-                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomNum['auth_atom_id'])[0]
+                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], atomNum['comp_id'])
+                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomId)[0]
                     if len(atomIds) == 1:
                         atomNum['atom_id'] = atomIds[0]
                         if 'atom_type' in atomNum:
@@ -357,7 +361,8 @@ class GromacsPTParserListener(ParseTreeListener):
                 if atomNum['chain_id'] == cmap['chain_id'] and atomNum['seq_id'] == cmap['seq_id']:
                     atomNum['comp_id'] = cmap['comp_id']
                     atomNum['auth_comp_id'] = cmap['auth_comp_id']
-                    atomNum['atom_id'] = atomNum['auth_atom_id']
+                    # atomNum['atom_id'] = atomNum['auth_atom_id']
+                    atomNum['atom_id'] = translateToStdAtomName(atomNum['auth_atom_id'], atomNum['comp_id'])
                     if 'atom_type' in atomNum:
                         del atomNum['atom_type']
 
@@ -371,7 +376,8 @@ class GromacsPTParserListener(ParseTreeListener):
                 else:
                     authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
-                        atomNum['atom_id'] = atomNum['auth_atom_id']
+                        # atomNum['atom_id'] = atomNum['auth_atom_id']
+                        atomNum['atom_id'] = translateToStdAtomName(atomNum['auth_atom_id'], atomNum['comp_id'])
                         self.warningMessage += f"[Unknown atom name] "\
                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "\
                             f"(the original residue label is {atomNum['auth_comp_id']!r}).\n"

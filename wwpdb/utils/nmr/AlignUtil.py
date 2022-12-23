@@ -7,6 +7,8 @@
     @author: Masashi Yokochi
 """
 import copy
+import json
+import re
 from itertools import zip_longest
 
 
@@ -2494,3 +2496,56 @@ def splitPolySeqRstForBranched(pA, polySeqModel, branchedModel, polySeqRst, chai
         return None, None
 
     return _polySeqRst, _branchedMapping
+
+
+def getPrettyJson(data):
+    """ Return pretty JSON string.
+    """
+
+    def getPrettyChunk(str):
+
+        # string
+        str_ = re.sub(r'",\s+', '", ', str)
+        # number
+        str__ = re.sub(r'(\d),\s+', r'\1, ', str_)
+        # null, true, false
+        str___ = re.sub(r'(null|true|false),\s+', r'\1, ', str__)
+
+        return re.sub(r'(\s+)\[\s+([\S ]+)\s+\](,?)\n', r'\1[\2]\3\n', str___)
+
+    lines = json.dumps(data, indent=2).split('\n')
+
+    is_tag = []
+    chunk = []
+
+    buff = ''
+
+    for line in lines:
+
+        if '": ' in line:
+
+            if len(buff) > 0:
+                is_tag.append(False)
+                chunk.append(buff)
+
+            is_tag.append(True)
+            chunk.append(line)
+
+            buff = ''
+
+        else:
+            buff += line + '\n'
+
+    if len(buff) > 0:
+        is_tag.append(False)
+        chunk.append(buff)
+
+    buff = ''
+
+    for _is_tag, _chunk in zip(is_tag, chunk):
+        if _is_tag:
+            buff += _chunk + '\n'
+        else:
+            buff += getPrettyChunk(_chunk)
+
+    return buff

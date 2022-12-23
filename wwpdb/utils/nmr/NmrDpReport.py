@@ -84,9 +84,9 @@ import copy
 import re
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3
+    from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3, getPrettyJson
 except ImportError:
-    from nmr.AlignUtil import emptyValue, monDict3
+    from nmr.AlignUtil import emptyValue, monDict3, getPrettyJson
 
 
 def get_value_safe(d=None, key=None):
@@ -1478,7 +1478,7 @@ class NmrDpReport:
             return False
 
         with open(out_path, 'w', encoding='utf-8') as file:
-            file.write(json.dumps(self.get(), indent=2))
+            file.write(getPrettyJson(self.get()))
 
         return True
 

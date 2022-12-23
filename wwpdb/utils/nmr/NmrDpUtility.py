@@ -183,7 +183,6 @@ import hashlib
 import pynmrstar
 import gzip
 import chardet
-import json
 
 from packaging import version
 from munkres import Munkres
@@ -218,7 +217,8 @@ try:
                                            sortPolySeqRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
-                                           trimSequenceAlignment)
+                                           trimSequenceAlignment,
+                                           getPrettyJson)
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.io.CifReader import (CifReader, LEN_MAJOR_ASYM_ID)
@@ -306,7 +306,8 @@ except ImportError:
                                sortPolySeqRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
-                               trimSequenceAlignment)
+                               trimSequenceAlignment,
+                               getPrettyJson)
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.io.CifReader import (CifReader, LEN_MAJOR_ASYM_ID)
@@ -45250,7 +45251,7 @@ class NmrDpUtility:
                                       }
 
                         sf.add_tag('Text_data_format', 'json')
-                        sf.add_tag('Text_data', re.sub(r'",\s+', '", ', json.dumps(other_data, indent=2)))
+                        sf.add_tag('Text_data', getPrettyJson(other_data))
                         master_entry.add_saveframe(sf)
 
         for sf in ext_mr_sf_holder:

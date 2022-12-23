@@ -9610,7 +9610,7 @@ class XplorMRParserListener(ParseTreeListener):
                         "requires a reference coordinate set.\n"
                     validProp = False
 
-                elif attr_prop == ('vx', 'vy', 'vz'):
+                elif attr_prop in ('vx', 'vy', 'vz'):
                     self.factor['atom_id'] = [None]
                     self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
                         f"The attribute property {_attr_prop!r} "\

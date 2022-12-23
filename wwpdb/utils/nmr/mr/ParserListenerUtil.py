@@ -1496,8 +1496,9 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
             elif atomId + '2' in refAtomIdList:
                 return atomId + '%'
 
-    # GROMACS atom nomenclature
     if refCompId is not None:
+
+        # GROMACS atom nomenclature
         if refCompId == 'ILE':
             if atomId in ('HD1', 'HD2', 'HD3'):
                 return 'HD1' + atomId[-1]
@@ -1511,192 +1512,143 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
             if atomId.startswith('HT') and len(atomId) > 2:
                 return 'H' + atomId[2:]
 
-    # BIOSYM atom nomenclature
-    if refCompId is not None:
-        if refCompId in ('CYS', 'ASP', 'HIS', 'SER'):
-            if atomId == 'HBR':
-                return 'HB3'
-            if atomId == 'HBS':
-                return 'HB2'
-            if atomId == 'HB*':
-                return 'HB'
-        elif refCompId in ('GLU', 'PHE', 'TRP', 'TYR'):
-            if atomId == 'HBR':
-                return 'HB2'
-            if atomId == 'HBS':
-                return 'HB3'
-            if atomId == 'HGR':
-                return 'HG3'
-            if atomId == 'HGS':
-                return 'HG2'
-            if atomId == 'HB*':
-                return 'HB'
-            if atomId == 'HG*':
-                return 'HG'
-        elif refCompId == 'GLY':
-            if atomId == 'HAR':
-                return 'HA2'
-            if atomId == 'HAS':
-                return 'HA3'
-            if atomId == 'HA*':
-                return 'HA'
-        elif refCompId == 'ILE':
-            if atomId == 'HG1R':
-                return 'HG12'
-            if atomId == 'HG1S':
-                return 'HG13'
-            if atomId == 'HG1*':
-                return 'HG1'
-        elif refCompId == 'LYS':
-            if atomId == 'HBR':
-                return 'HB2'
-            if atomId == 'HBS':
-                return 'HB3'
-            if atomId == 'HGR':
-                return 'HG2'
-            if atomId == 'HGS':
-                return 'HG3'
-            if atomId == 'HDR':
-                return 'HD3'
-            if atomId == 'HDS':
-                return 'HD2'
-            if atomId == 'HER':
-                return 'HE3'
-            if atomId == 'HES':
-                return 'HE2'
-            if atomId == 'HB*':
-                return 'HB'
-            if atomId == 'HG*':
-                return 'HG'
-            if atomId == 'HD*':
-                return 'HD'
-            if atomId == 'HE*':
-                return 'HE'
-        elif refCompId == 'LEU':
-            if atomId == 'HBR':
-                return 'HB2'
-            if atomId == 'HBS':
-                return 'HB3'
-            if atomId == 'HDR*':
-                return 'HD1'
-            if atomId == 'HDS*':
-                return 'HD2'
-            if atomId == 'CDR':
-                return 'CD1'
-            if atomId == 'CDS':
-                return 'CD2'
-            if atomId == 'HB*':
-                return 'HB'
-        elif refCompId == 'MET':
-            if atomId == 'HBR':
-                return 'HB3'
-            if atomId == 'HBS':
-                return 'HB2'
-            if atomId == 'HGR':
-                return 'HG3'
-            if atomId == 'HGS':
-                return 'HG2'
-            if atomId == 'HB*':
-                return 'HB'
-            if atomId == 'HG*':
-                return 'HG'
-        elif refCompId == 'ASN':
-            if atomId == 'HBR':
-                return 'HB3'
-            if atomId == 'HBS':
-                return 'HB2'
-            if atomId == 'HD2Z':
-                return 'HD22'
-            if atomId == 'HD2E':
-                return 'HD21'
-            if atomId == 'HB*':
-                return 'HB'
-            if atomId == 'HD2*':
-                return 'HD2'
-        elif refCompId == 'PRO':
-            if atomId == 'HBR':
-                return 'HB2'
-            if atomId == 'HBS':
-                return 'HB3'
-            if atomId == 'HGR':
-                return 'HG3'
-            if atomId == 'HGS':
-                return 'HG2'
-            if atomId == 'HDR':
-                return 'HD3'
-            if atomId == 'HDS':
-                return 'HD2'
-            if atomId == 'HB*':
-                return 'HB'
-            if atomId == 'HG*':
-                return 'HG'
-            if atomId == 'HD*':
-                return 'HD'
-        elif refCompId == 'GLN':
-            if atomId == 'HBR':
-                return 'HB2'
-            if atomId == 'HBS':
-                return 'HB3'
-            if atomId == 'HGR':
-                return 'HG3'
-            if atomId == 'HGS':
-                return 'HG2'
-            if atomId == 'HE2Z':
-                return 'HE22'
-            if atomId == 'HE2E':
-                return 'HE21'
-            if atomId == 'HB*':
-                return 'HB'
-            if atomId == 'HG*':
-                return 'HG'
-            if atomId == 'HE2*':
-                return 'HE2'
-        elif refCompId == 'ARG':
-            if atomId == 'HBR':
-                return 'HB2'
-            if atomId == 'HBS':
-                return 'HB3'
-            if atomId == 'HGR':
-                return 'HG3'
-            if atomId == 'HGS':
-                return 'HG2'
-            if atomId == 'HDR':
-                return 'HD3'
-            if atomId == 'HDS':
-                return 'HD2'
-            if atomId == 'NHZ':
-                return 'NH1'
-            if atomId == 'NHE':
-                return 'NH2'
-            if atomId == 'HH1Z':
-                return 'HH11'
-            if atomId == 'HH1E':
-                return 'HH12'
-            if atomId == 'HH2Z':
-                return 'HH21'
-            if atomId == 'HH2E':
-                return 'HH22'
-            if atomId == 'HB*':
-                return 'HB'
-            if atomId == 'HG*':
-                return 'HG'
-            if atomId == 'HD*':
-                return 'HD'
-            if atomId == 'HH1*':
-                return 'HH1'
-            if atomId == 'HH2*':
-                return 'HH2'
-        elif refCompId == 'VAL':
-            if atomId == 'HGR*':
-                return 'HG1'
-            if atomId == 'HGS*':
-                return 'HG2'
-            if atomId == 'CGR':
-                return 'CG1'
-            if atomId == 'CGS':
-                return 'CG2'
-        elif refCompId == 'ACE':
-            if atomId == 'HA*':
+        # BIOSYM atom nomenclature
+        if (atomId[-1] in ('R', 'S', 'Z', 'E') or (atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
+            if refCompId in ('CYS', 'ASP', 'HIS', 'SER'):
+                if atomId == 'HBR':
+                    return 'HB3'
+                if atomId == 'HBS':
+                    return 'HB2'
+            elif refCompId in ('GLU', 'PHE', 'TRP', 'TYR'):
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId == 'HGR':
+                    return 'HG3'
+                if atomId == 'HGS':
+                    return 'HG2'
+            elif refCompId == 'GLY':
+                if atomId == 'HAR':
+                    return 'HA2'
+                if atomId == 'HAS':
+                    return 'HA3'
+            elif refCompId == 'ILE':
+                if atomId == 'HG1R':
+                    return 'HG12'
+                if atomId == 'HG1S':
+                    return 'HG13'
+            elif refCompId == 'LYS':
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId == 'HGR':
+                    return 'HG2'
+                if atomId == 'HGS':
+                    return 'HG3'
+                if atomId == 'HDR':
+                    return 'HD3'
+                if atomId == 'HDS':
+                    return 'HD2'
+                if atomId == 'HER':
+                    return 'HE3'
+                if atomId == 'HES':
+                    return 'HE2'
+            elif refCompId == 'LEU':
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId in ('HDR*', 'HDR%'):
+                    return 'HD1'
+                if atomId in ('HDS*', 'HDS%'):
+                    return 'HD2'
+                if atomId == 'CDR':
+                    return 'CD1'
+                if atomId == 'CDS':
+                    return 'CD2'
+            elif refCompId == 'MET':
+                if atomId == 'HBR':
+                    return 'HB3'
+                if atomId == 'HBS':
+                    return 'HB2'
+                if atomId == 'HGR':
+                    return 'HG3'
+                if atomId == 'HGS':
+                    return 'HG2'
+            elif refCompId == 'ASN':
+                if atomId == 'HBR':
+                    return 'HB3'
+                if atomId == 'HBS':
+                    return 'HB2'
+                if atomId == 'HD2Z':
+                    return 'HD22'
+                if atomId == 'HD2E':
+                    return 'HD21'
+            elif refCompId == 'PRO':
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId == 'HGR':
+                    return 'HG3'
+                if atomId == 'HGS':
+                    return 'HG2'
+                if atomId == 'HDR':
+                    return 'HD3'
+                if atomId == 'HDS':
+                    return 'HD2'
+            elif refCompId == 'GLN':
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId == 'HGR':
+                    return 'HG3'
+                if atomId == 'HGS':
+                    return 'HG2'
+                if atomId == 'HE2Z':
+                    return 'HE22'
+                if atomId == 'HE2E':
+                    return 'HE21'
+            elif refCompId == 'ARG':
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId == 'HGR':
+                    return 'HG3'
+                if atomId == 'HGS':
+                    return 'HG2'
+                if atomId == 'HDR':
+                    return 'HD3'
+                if atomId == 'HDS':
+                    return 'HD2'
+                if atomId == 'NHZ':
+                    return 'NH1'
+                if atomId == 'NHE':
+                    return 'NH2'
+                if atomId == 'HH1Z':
+                    return 'HH11'
+                if atomId == 'HH1E':
+                    return 'HH12'
+                if atomId == 'HH2Z':
+                    return 'HH21'
+                if atomId == 'HH2E':
+                    return 'HH22'
+            elif refCompId == 'VAL':
+                if atomId in ('HGR*', 'HGR%'):
+                    return 'HG1'
+                if atomId in ('HGS*', 'HGS%'):
+                    return 'HG2'
+                if atomId == 'CGR':
+                    return 'CG1'
+                if atomId == 'CGS':
+                    return 'CG2'
+
+        if refCompId == 'ACE':
+            if atomId in ('HA*', 'HA%'):
                 return 'H%'
             if atomId == 'CA':
                 return 'CH3'

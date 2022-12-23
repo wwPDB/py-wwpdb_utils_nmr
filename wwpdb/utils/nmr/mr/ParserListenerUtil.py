@@ -1325,7 +1325,10 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                 {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                                 {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                                 {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
-                                                {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
+                                                {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Floating_chirality_assign_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                 ],
                           'other_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),

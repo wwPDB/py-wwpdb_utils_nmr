@@ -436,8 +436,11 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                               ],
                          'fchiral_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                               {'name': 'Stereo_count', 'type': 'int', 'mandatory': True},
-                                               {'name': 'Stereo_assigned_count', 'type': 'int', 'mandatory': True}
+                                               {'name': 'Stereo_count', 'type': 'int', 'mandatory': False},
+                                               {'name': 'Stereo_assigned_count', 'type': 'int', 'mandatory': True},
+                                               {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                               {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                ],
                          'other_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
@@ -462,7 +465,7 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'auto_relax_restraint': '_Auto_relaxation',
                           'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                           'ccr_dd_restraint': '_Cross_correlation_DD',
-                          'fchiral_restraint': 'Floating_chirality',
+                          'fchiral_restraint': '_Floating_chirality',
                           'other_restraint': '_Other_data'
                           }
 

@@ -1441,7 +1441,7 @@ class NmrDpUtility:
                                            'auto_relax_restraint': '_Auto_relaxation',
                                            'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                                            'ccr_dd_restraint': '_Cross_correlation_DD',
-                                           'fchiral_restraint': '_Floating_chirality_assign',
+                                           'fchiral_restraint': '_Floating_chirality',
                                            'other_restraint': '_Other_data'
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
@@ -4273,7 +4273,7 @@ class NmrDpUtility:
                                                                ],
                                           'fchiral_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                                {'name': 'Stereo_count', 'type': 'int', 'mandatory': True},
+                                                                {'name': 'Stereo_count', 'type': 'int', 'mandatory': False},
                                                                 {'name': 'Stereo_assigned_count', 'type': 'int', 'mandatory': True}
                                                                 ],
                                           'other_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -45096,7 +45096,7 @@ class NmrDpUtility:
                     if file_name not in file_name_dict:
                         file_id += 1
                         file_name_dict[file_name] = file_id
-                    row[0], row[1] = file_name_dict[file_name], file_name
+                    row[0], row[1] = file_name_dict[file_name], file_name if len(file_name) > 0 else None
                     sf_allowed_tags = self.sf_allowed_tags[file_type][content_subtype]
                     if 'Constraint_file_ID' in sf_allowed_tags:
                         sf.add_tag('Constraint_file_ID', file_name_dict[file_name])
@@ -45227,10 +45227,12 @@ class NmrDpUtility:
                     lp_category = self.lp_categories[file_type][content_subtype]
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                         sf = sf_item['saveframe']
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        if content_subtype == 'fchiral_restraint':
+                            set_sf_tag(sf, 'Stereo_assigned_count', sf_item['id'])
+                        # if __pynmrstar_v3_2__:
+                        #     lp = sf.get_loop(lp_category)
+                        # else:
+                        #     lp = sf.get_loop_by_category(lp_category)
                         master_entry.add_saveframe(sf)
                 else:
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:

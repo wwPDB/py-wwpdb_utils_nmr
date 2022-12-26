@@ -5656,9 +5656,10 @@ class NmrDpUtility:
         self.__remediation_loop_count = 0
 
         self.__nefT.set_remediation_mode(self.__remediation_mode)
-        self.__nefT.allow_missing_dist_restraint(self.__remediation_mode)
 
-        self.__allow_missing_dist_restraint = self.__allow_missing_legacy_dist_restraint = self.__remediation_mode
+        if not self.__allow_missing_legacy_dist_restraint and self.__remediation_mode:
+            self.__nefT.allow_missing_dist_restraint(True)
+            self.__allow_missing_dist_restraint = self.__allow_missing_legacy_dist_restraint = True
 
         self.__release_mode = 'release' in op
 
@@ -5949,7 +5950,7 @@ class NmrDpUtility:
                     if not os.path.basename(cs).startswith('bmr') and\
                             (self.__op == 'nmr-cs-mr-merge'
                              or get_type_of_star_file(cs) == 'cif'
-                             or self.__nefT.read_input_file(cs)[1] in ('Loop', 'Saveframe')):
+                             or self.__nefT.read_input_file(cs)[1] == 'Saveframe'):
 
                         input_source.setItemValue('original_file_name', os.path.basename(cs))
 
@@ -5993,7 +5994,7 @@ class NmrDpUtility:
                     if not os.path.basename(cs['file_name']).startswith('bmr') and\
                             (self.__op == 'nmr-cs-mr-merge'
                              or get_type_of_star_file(cs['file_name']) == 'cif'
-                             or self.__nefT.read_input_file(cs['file_name'])[1] in ('Loop', 'Saveframe')):
+                             or self.__nefT.read_input_file(cs['file_name'])[1] == 'Saveframe'):
 
                         if 'original_file_name' not in cs:
                             input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
@@ -6028,7 +6029,7 @@ class NmrDpUtility:
                     if isinstance(mr, str):
 
                         if get_type_of_star_file(mr) == 'cif'\
-                           or self.__nefT.read_input_file(mr)[1] in ('Loop', 'Saveframe'):
+                           or self.__nefT.read_input_file(mr)[1] == 'Saveframe':
 
                             input_source.setItemValue('original_file_name', os.path.basename(mr))
 
@@ -6048,7 +6049,7 @@ class NmrDpUtility:
                     else:
 
                         if get_type_of_star_file(mr['file_name']) == 'cif'\
-                           or self.__nefT.read_input_file(mr['file_name'])[1] in ('Loop', 'Saveframe'):
+                           or self.__nefT.read_input_file(mr['file_name'])[1] == 'Saveframe':
 
                             if 'original_file_name' not in mr:
                                 input_source.setItemValue('original_file_name', os.path.basename(mr['file_name']))
@@ -6503,7 +6504,7 @@ class NmrDpUtility:
 
                             if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
-                                if len(self.__star_data_type) == self.__file_path_list_len:
+                                if len(self.__star_data_type) > self.__file_path_list_len:
                                     del self.__star_data_type[-1]
                                     del self.__star_data[-1]
 
@@ -17995,16 +17996,17 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ KeyError  - {str(e)}\n")
 
-        except LookupError as e:
+        except LookupError:
+            # """
+            # self.report.error.appendDescription('missing_mandatory_item',
+            #                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+            #                                      'description': str(e).strip("'")})
+            # self.report.setError()
 
-            self.report.error.appendDescription('missing_mandatory_item',
-                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                 'description': str(e).strip("'")})
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ LookupError  - {str(e)}\n")
-
+            # if self.__verbose:
+            #     self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ LookupError  - {str(e)}\n")
+            # """
+            pass
         except ValueError as e:
 
             self.report.error.appendDescription('invalid_data',
@@ -21868,8 +21870,8 @@ class NmrDpUtility:
                         _auth_seq_id_1 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_1)
                         _auth_seq_id_2 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_2)
 
-                        _seq_key_1 = (_auth_chain_id_1, _auth_seq_id_1)
-                        _seq_key_2 = (_auth_chain_id_2, _auth_seq_id_2)
+                        _seq_key_1 = (_auth_chain_id_1, _auth_seq_id_1, row[2])
+                        _seq_key_2 = (_auth_chain_id_2, _auth_seq_id_2, row[2])
 
                         if _seq_key_1 not in auth_to_entity_type or _seq_key_2 not in auth_to_entity_type:
                             continue
@@ -22330,26 +22332,29 @@ class NmrDpUtility:
                         if auth_asym_id is not None:
                             sa = next((sa for sa in seq_align if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
                             if sa is not None:
-                                auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']) if test_seq_id == seq_id), None)
+                                _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                                auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id']) if test_seq_id == seq_id), None)
 
                     if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
                         auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
                         if auth_asym_id is not None:
                             sa = next((sa for sa in br_seq_align if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
                             if sa is not None:
-                                auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']) if test_seq_id == seq_id), None)
+                                _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                                auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id']) if test_seq_id == seq_id), None)
 
                     if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
                         auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
                         if auth_asym_id is not None:
                             sa = next((sa for sa in np_seq_align if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
                             if sa is not None:
-                                auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']) if test_seq_id == seq_id), None)
+                                _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                                auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id']) if test_seq_id == seq_id), None)
 
                     resolved = True
 
-                    if auth_asym_id is not None and auth_seq_id is not None and auth_comp_id is not None:
-                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                    if auth_asym_id is not None and auth_seq_id is not None:
+                        seq_key = (auth_asym_id, auth_seq_id, comp_id)
                         if seq_key in auth_to_star_seq:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                             _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
@@ -26177,8 +26182,9 @@ class NmrDpUtility:
                 sf_item['id'] = count
 
                 id_col = lp.tags.index('ID')
-                auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
-                auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
+                auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
+                auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
 
                 _protein_angles = 0
                 _other_angles = 0
@@ -26191,8 +26197,9 @@ class NmrDpUtility:
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
                     auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    auth_comp_id = row[auth_comp_id_col]
 
-                    seq_key = (auth_asym_id, auth_seq_id)
+                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                     if seq_key in auth_to_entity_type:
                         entity_type = auth_to_entity_type[seq_key]
@@ -26222,8 +26229,9 @@ class NmrDpUtility:
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
                     auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    auth_comp_id = row[auth_comp_id_col]
 
-                    seq_key = (auth_asym_id, auth_seq_id)
+                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                     if seq_key in auth_to_entity_type:
                         entity_type = auth_to_entity_type[seq_key]
@@ -26253,8 +26261,9 @@ class NmrDpUtility:
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
                     auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    auth_comp_id = row[auth_comp_id_col]
 
-                    seq_key = (auth_asym_id, auth_seq_id)
+                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                     if seq_key in auth_to_entity_type:
                         entity_type = auth_to_entity_type[seq_key]
@@ -44529,8 +44538,9 @@ class NmrDpUtility:
                 lp = sf_item['loop']
 
                 id_col = lp.tags.index('ID')
-                auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
-                auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
+                auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
+                auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                 angle_name_col = lp.tags.index('Torsion_angle_name')
 
                 _protein_angles = 0
@@ -44550,11 +44560,12 @@ class NmrDpUtility:
                         auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                     except (ValueError, TypeError):
                         continue
+                    auth_comp_id = row[auth_comp_id_col]
                     angle_name = row[angle_name_col]
                     if angle_name is None:
                         continue
 
-                    seq_key = (auth_asym_id, auth_seq_id)
+                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                     if seq_key in auth_to_entity_type:
                         entity_type = auth_to_entity_type[seq_key]
@@ -44595,8 +44606,9 @@ class NmrDpUtility:
 
                             _lp = _sf_item['loop']
 
-                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_1')
-                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_1')
+                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_2')
+                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_2')
+                            auth_comp_id_col = _lp.tags.index('Auth_comp_ID_2')
                             atom_id_1_col = _lp.tags.index('Atom_ID_1')
                             atom_id_4_col = _lp.tags.index('Atom_ID_4')
 
@@ -44606,10 +44618,11 @@ class NmrDpUtility:
                                     auth_seq_id = int(_row[auth_seq_id_col])
                                 except (ValueError, TypeError):
                                     continue
+                                auth_comp_id = _row[auth_comp_id_col]
                                 atom_id_1 = _row[atom_id_1_col]
                                 atom_id_4 = _row[atom_id_4_col]
 
-                                seq_key = (auth_asym_id, auth_seq_id)
+                                seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                                 if seq_key in auth_to_entity_type:
                                     entity_type = auth_to_entity_type[seq_key]
@@ -44655,8 +44668,9 @@ class NmrDpUtility:
                 lp = sf_item['loop']
 
                 id_col = lp.tags.index('ID')
-                auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
-                auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
+                auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
+                auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                 angle_name_col = lp.tags.index('Torsion_angle_name')
 
                 _na_angles = 0
@@ -44673,11 +44687,12 @@ class NmrDpUtility:
                         auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                     except (ValueError, TypeError):
                         continue
+                    auth_comp_id = row[auth_comp_id_col]
                     angle_name = row[angle_name_col]
                     if angle_name is None:
                         continue
 
-                    seq_key = (auth_asym_id, auth_seq_id)
+                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                     if seq_key in auth_to_entity_type:
                         entity_type = auth_to_entity_type[seq_key]
@@ -44720,8 +44735,9 @@ class NmrDpUtility:
 
                             _lp = _sf_item['loop']
 
-                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_1')
-                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_1')
+                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_2')
+                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_2')
+                            auth_comp_id_col = _lp.tags.index('Auth_comp_ID_2')
 
                             for _row in _lp:
                                 auth_asym_id = _row[auth_asym_id_col]
@@ -44729,8 +44745,9 @@ class NmrDpUtility:
                                     auth_seq_id = int(_row[auth_seq_id_col])
                                 except (ValueError, TypeError):
                                     continue
+                                auth_comp_id = _row[auth_comp_id_col]
 
-                                seq_key = (auth_asym_id, auth_seq_id)
+                                seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                                 if seq_key in auth_to_entity_type:
                                     entity_type = auth_to_entity_type[seq_key]
@@ -44757,8 +44774,9 @@ class NmrDpUtility:
                 lp = sf_item['loop']
 
                 id_col = lp.tags.index('ID')
-                auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
-                auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
+                auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
+                auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                 angle_name_col = lp.tags.index('Torsion_angle_name')
 
                 _br_angles = 0
@@ -44775,11 +44793,12 @@ class NmrDpUtility:
                         auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                     except (ValueError, TypeError):
                         continue
+                    auth_comp_id = row[auth_comp_id_col]
                     angle_name = row[angle_name_col]
                     if angle_name is None:
                         continue
 
-                    seq_key = (auth_asym_id, auth_seq_id)
+                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                     if seq_key in auth_to_entity_type:
                         entity_type = auth_to_entity_type[seq_key]
@@ -44805,8 +44824,9 @@ class NmrDpUtility:
 
                             _lp = _sf_item['loop']
 
-                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_1')
-                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_1')
+                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_2')
+                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_2')
+                            auth_comp_id_col = _lp.tags.index('Auth_comp_ID_2')
 
                             for _row in _lp:
                                 auth_asym_id = _row[auth_asym_id_col]
@@ -44814,8 +44834,9 @@ class NmrDpUtility:
                                     auth_seq_id = int(_row[auth_seq_id_col])
                                 except (ValueError, TypeError):
                                     continue
+                                auth_comp_id = _row[auth_comp_id_col]
 
-                                seq_key = (auth_asym_id, auth_seq_id)
+                                seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                                 if seq_key in auth_to_entity_type:
                                     entity_type = auth_to_entity_type[seq_key]
@@ -45184,6 +45205,7 @@ class NmrDpUtility:
 
                 auth_asym_id_col = lp_tags.index('auth_asym_id') if 'auth_asym_id' in lp_tags else lp_tags.index('auth_asym_id_1')
                 auth_seq_id_col = lp_tags.index('auth_seq_id') if 'auth_seq_id' in lp_tags else lp_tags.index('auth_seq_id_1')
+                auth_comp_id_col = lp_tags.index('auth_comp_id') if 'auth_comp_id' in lp_tags else lp_tags.index('auth_comp_id_1')
 
                 for row in lp_data:
                     auth_asym_id = row[auth_asym_id_col]
@@ -45191,8 +45213,9 @@ class NmrDpUtility:
                         auth_seq_id = int(row[auth_seq_id_col])
                     except (ValueError, TypeError):
                         continue
+                    auth_comp_id = row[auth_comp_id_col]
 
-                    seq_key = (auth_asym_id, auth_seq_id)
+                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                     if seq_key in auth_to_entity_type:
                         entity_type = auth_to_entity_type[seq_key]
@@ -46084,8 +46107,9 @@ class NmrDpUtility:
                         lp = sf.get_loop_by_category(lp_category)
 
                     id_col = lp.tags.index('ID')
-                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
-                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
+                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
+                    auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                     angle_name_col = lp.tags.index('Torsion_angle_name')
 
                     _protein_angles = 0
@@ -46105,11 +46129,12 @@ class NmrDpUtility:
                             auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                         except (ValueError, TypeError):
                             continue
+                        auth_comp_id = row[auth_comp_id_col]
                         angle_name = row[angle_name_col]
                         if angle_name is None:
                             continue
 
-                        seq_key = (auth_asym_id, auth_seq_id)
+                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                         if seq_key in auth_to_entity_type:
                             entity_type = auth_to_entity_type[seq_key]
@@ -46168,8 +46193,9 @@ class NmrDpUtility:
                         lp = sf.get_loop_by_category(lp_category)
 
                     id_col = lp.tags.index('ID')
-                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
-                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
+                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
+                    auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                     angle_name_col = lp.tags.index('Torsion_angle_name')
 
                     _na_angles = 0
@@ -46186,11 +46212,12 @@ class NmrDpUtility:
                             auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                         except (ValueError, TypeError):
                             continue
+                        auth_comp_id = row[auth_comp_id_col]
                         angle_name = row[angle_name_col]
                         if angle_name is None:
                             continue
 
-                        seq_key = (auth_asym_id, auth_seq_id)
+                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                         if seq_key in auth_to_entity_type:
                             entity_type = auth_to_entity_type[seq_key]
@@ -46246,8 +46273,9 @@ class NmrDpUtility:
                         lp = sf.get_loop_by_category(lp_category)
 
                     id_col = lp.tags.index('ID')
-                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_1')
-                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_1')
+                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
+                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
+                    auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                     angle_name_col = lp.tags.index('Torsion_angle_name')
 
                     _br_angles = 0
@@ -46264,11 +46292,12 @@ class NmrDpUtility:
                             auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
                         except (ValueError, TypeError):
                             continue
+                        auth_comp_id = row[auth_comp_id_col]
                         angle_name = row[angle_name_col]
                         if angle_name is None:
                             continue
 
-                        seq_key = (auth_asym_id, auth_seq_id)
+                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
                         if seq_key in auth_to_entity_type:
                             entity_type = auth_to_entity_type[seq_key]

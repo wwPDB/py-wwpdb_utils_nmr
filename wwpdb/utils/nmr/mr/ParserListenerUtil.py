@@ -2200,8 +2200,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             for entity in entities:
                 entityId = int(entity['id'])
-                entityType = entity['type']
-                entitySrcMethod = entity['src_method']
+                entityType = entity['type'] if 'type' in entity else 'polymer'
+                entitySrcMethod = entity['src_method'] if 'src_method' in entity else '.'
                 entityDesc = entity['pdbx_description'] if 'pdbx_description' in entity else '.'
                 entityFW = float(entity['formula_weight']) if 'formula_weight' in entity else '.'
                 entityCopies = int(entity['pdbx_number_of_molecules']) if 'pdbx_number_of_molecules' in entity else '.'

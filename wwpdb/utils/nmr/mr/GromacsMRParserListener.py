@@ -328,7 +328,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             ai = int(str(ctx.Integer(0)))
@@ -537,7 +537,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             ai = int(str(ctx.Integer(0)))
@@ -750,7 +750,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             ai = int(str(ctx.Integer(0)))
@@ -1005,7 +1005,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             ai = int(str(ctx.Integer(0)))
@@ -1205,7 +1205,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             ai = int(str(ctx.Integer(0)))
@@ -1331,7 +1331,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             ai = int(str(ctx.Integer(0)))

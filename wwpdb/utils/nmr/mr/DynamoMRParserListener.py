@@ -592,7 +592,7 @@ class DynamoMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             lower_limit = self.numberSelection[0]
@@ -752,7 +752,7 @@ class DynamoMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             lower_limit = self.numberSelection[0]
@@ -905,7 +905,7 @@ class DynamoMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             lower_limit = self.numberSelection[0]
@@ -1733,7 +1733,7 @@ class DynamoMRParserListener(ParseTreeListener):
             compId4 = str(ctx.Simple_name(6)).upper()
             atomId4 = str(ctx.Simple_name(7)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target_value = None
@@ -1843,7 +1843,7 @@ class DynamoMRParserListener(ParseTreeListener):
             compId4 = str(ctx.Simple_name(10)).upper()
             atomId4 = str(ctx.Simple_name(11)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target_value = None
@@ -1953,7 +1953,7 @@ class DynamoMRParserListener(ParseTreeListener):
             atomId4 = str(ctx.Simple_name(10)).upper()
             chainId4 = str(ctx.Simple_name(11))
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target_value = None
@@ -2128,7 +2128,7 @@ class DynamoMRParserListener(ParseTreeListener):
             compId2 = str(ctx.Simple_name(2)).upper()
             atomId2 = str(ctx.Simple_name(3)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target = self.numberSelection[0]
@@ -2299,7 +2299,7 @@ class DynamoMRParserListener(ParseTreeListener):
             compId2 = str(ctx.Simple_name(4)).upper()
             atomId2 = str(ctx.Simple_name(5)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target = self.numberSelection[0]
@@ -2472,7 +2472,7 @@ class DynamoMRParserListener(ParseTreeListener):
             atomId2 = str(ctx.Simple_name(4)).upper()
             chainId2 = str(ctx.Simple_name(5))
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target = self.numberSelection[0]
@@ -2651,7 +2651,7 @@ class DynamoMRParserListener(ParseTreeListener):
             compId2 = str(ctx.Simple_name(2)).upper()
             atomId2 = str(ctx.Simple_name(3)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             # di
@@ -2923,7 +2923,7 @@ class DynamoMRParserListener(ParseTreeListener):
             compId4 = str(ctx.Simple_name(6)).upper()
             atomId4 = str(ctx.Simple_name(7)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             A = self.numberSelection[0]
@@ -3060,7 +3060,7 @@ class DynamoMRParserListener(ParseTreeListener):
             compId4 = str(ctx.Simple_name(10)).upper()
             atomId4 = str(ctx.Simple_name(11)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             A = self.numberSelection[0]
@@ -3197,7 +3197,7 @@ class DynamoMRParserListener(ParseTreeListener):
             atomId4 = str(ctx.Simple_name(10)).upper()
             chainId4 = str(ctx.Simple_name(11))
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             A = self.numberSelection[0]
@@ -3399,7 +3399,7 @@ class DynamoMRParserListener(ParseTreeListener):
             else:
                 compId = next(k for k, v in monDict3.items() if v == compId and len(k) == 3)
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             # phi
@@ -3576,7 +3576,7 @@ class DynamoMRParserListener(ParseTreeListener):
             else:
                 compId = next(k for k, v in monDict3.items() if v == compId and len(k) == 3)
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             # phi

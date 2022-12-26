@@ -114,14 +114,6 @@ class BMRBChemShiftStat:
         self.__cachedDictForNonRepMethylProtons = {}
         self.__cachedDictForProtonInSameGroup = {}
 
-    # """
-    # def isOk(self):
-    #     """ Return whether all BMRB chemical shift statistics are available.
-    #     """
-
-    #     return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and \
-    #         len(self.rna_filt) > 0 and len(self.rna_full) and (len(self.others) > 0 or self.lazy_others)
-    # """
     def hasCompId(self, comp_id):
         """ Return whether a given comp_id has BMRB chemical shift statistics.
         """
@@ -985,8 +977,10 @@ class BMRBChemShiftStat:
                         atm_list.append(_row)
 
                 elif not ((comp_id == 'HEM' and re.match(r'^HM[A-D][AB]$', _atom_id) is not None)
-                          or (comp_id == 'HEB' and (re.match(r'^HM[A-D][23]$', _atom_id) is not None or re.match(r'^HBB[23]', _atom_id) is not None))
-                          or (comp_id == 'HEC' and (re.match(r'^HM[A-D][123]$', _atom_id) is not None or re.match(r'^HB[BC][123]$', _atom_id) is not None))):
+                          or (comp_id == 'HEB' and (re.match(r'^HM[A-D][23]$', _atom_id) is not None
+                                                    or re.match(r'^HBB[23]', _atom_id) is not None))
+                          or (comp_id == 'HEC' and (re.match(r'^HM[A-D][123]$', _atom_id) is not None
+                                                    or re.match(r'^HB[BC][123]$', _atom_id) is not None))):
                     _row = {}
                     _row['comp_id'] = comp_id
                     _row['atom_id'] = _atom_id

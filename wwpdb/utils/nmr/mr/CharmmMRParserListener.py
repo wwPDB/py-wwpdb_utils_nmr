@@ -3176,7 +3176,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     print("  " * self.depth + f"--> {clauseName}")
                 if not self.__hasCoord:
                     return
-                if None in self.numberFSelection:
+                if len(self.numberFSelection) == 0 or None in self.numberFSelection:
                     return
                 around = self.numberFSelection[0]
                 _atomSelection = []
@@ -3420,7 +3420,7 @@ class CharmmMRParserListener(ParseTreeListener):
                 _attr_prop = str(ctx.Attr_properties())
                 attr_prop = _attr_prop.lower()
                 opCode = str(ctx.Comparison_ops()).lower()
-                if None in self.numberFSelection:
+                if len(self.numberFSelection) == 0 or None in self.numberFSelection:
                     return
                 attr_value = self.numberFSelection[0]
 

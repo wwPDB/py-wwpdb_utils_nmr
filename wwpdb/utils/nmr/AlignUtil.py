@@ -524,7 +524,8 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
                                   'comp_id': compId})
 
         for ps in polySeqRst:
-            seqIds = [seqId for seqId in ps['seq_id'] if not any(item for item in remapList if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)]
+            seqIds = [seqId for seqId in ps['seq_id']
+                      if not any(item for item in remapList if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)]
             minSeqId = min(seqIds)
             maxSeqId = max(seqIds)
 
@@ -553,7 +554,8 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
                 if seqId in ps['seq_id']:
                     authCompId = ps['auth_comp_id'][ps['seq_id'].index(seqId)]
                 else:
-                    authCompId = next(item['comp_id'] for item in remapList if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)
+                    authCompId = next(item['comp_id'] for item in remapList
+                                      if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)
                 if seqId > maxSeqId:
                     _endSeqIds.append(seqId)
                     _endCompIds.append(compId)
@@ -1324,7 +1326,8 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                 return seqId, compId, atomId
 
-            return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+            return item['auth_seq_id'], item['auth_comp_id'],\
+                item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
 
         if len(atomId) > 1:
 
@@ -1336,7 +1339,8 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return seqId, compId, atomId
 
-                return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+                return item['auth_seq_id'], item['auth_comp_id'],\
+                    item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
 
     if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
 
@@ -1387,7 +1391,8 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
                         total += 1
 
                 if total == 1:
-                    return item['auth_seq_id'], item['auth_comp_id'], next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
+                    return item['auth_seq_id'], item['auth_comp_id'],\
+                        next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
 
                 return seqId, compId, atomId
 
@@ -1401,7 +1406,8 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
                     total += 1
 
             if total == 1:
-                return mapping[0]['auth_seq_id'], mapping[0]['auth_comp_id'], next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(atomId))
+                return mapping[0]['auth_seq_id'], mapping[0]['auth_comp_id'],\
+                    next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(atomId))
 
         return seqId, compId, atomId
 
@@ -2093,7 +2099,8 @@ def retrieveRemappedChainId(chainIdRemap, seqId):
 def retrieveOriginalSeqIdFromMRMap(chainIdRemap, chainId, seqId):
     """ Retrieve the original seq_id from mapping dictionary based on sequence alignments.
     """
-    return next((_seqId for _seqId, remap in chainIdRemap.items() if remap['chain_id'] == chainId and remap['seq_id'] == seqId), seqId)
+    return next((_seqId for _seqId, remap in chainIdRemap.items()
+                 if remap['chain_id'] == chainId and remap['seq_id'] == seqId), seqId)
 
 
 def splitPolySeqRstForNonPoly(ccU, nonPolyModel, polySeqRst, seqAlign, chainAssign):

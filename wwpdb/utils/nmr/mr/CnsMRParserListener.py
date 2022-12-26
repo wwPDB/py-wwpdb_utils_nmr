@@ -1190,7 +1190,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target = self.numberSelection[0]
@@ -1613,7 +1613,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             energyConst = self.numberSelection[0]
@@ -1974,7 +1974,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             self.vector3D = [self.numberSelection[0], self.numberSelection[1], self.numberSelection[2]]
@@ -2035,7 +2035,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target = self.numberSelection[0]
@@ -2437,7 +2437,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target = self.numberSelection[0]
@@ -2658,7 +2658,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             ca_shift = self.numberSelection[0]
@@ -2761,7 +2761,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             rcoil_a = self.numberSelection[0]
@@ -2835,7 +2835,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             obs_value = self.numberSelection[0]
@@ -2930,7 +2930,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             rcoil = self.numberSelection[0]
@@ -3396,7 +3396,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         try:
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target = self.numberSelection[0]
@@ -5328,7 +5328,7 @@ class CnsMRParserListener(ParseTreeListener):
                     print("  " * self.depth + f"--> {clauseName}")
                 if not self.__hasCoord:
                     return
-                if None in self.numberFSelection:
+                if len(self.numberFSelection) == 0 or None in self.numberFSelection:
                     return
                 around = self.numberFSelection[0]
                 _atomSelection = []
@@ -5653,7 +5653,7 @@ class CnsMRParserListener(ParseTreeListener):
                 _attr_prop = str(ctx.Attr_properties())
                 attr_prop = _attr_prop.lower()
                 opCode = str(ctx.Comparison_ops())
-                if None in self.numberFSelection:
+                if len(self.numberFSelection) == 0 or None in self.numberFSelection:
                     return
                 attr_value = self.numberFSelection[0]
 
@@ -5891,7 +5891,7 @@ class CnsMRParserListener(ParseTreeListener):
                             "because the internal vector statement is not set.\n"
                         validProp = False
 
-                if validProp and len(self.factor['atom_selection']) == 0:
+                if validProp and 'atom_selection' in self.factor and len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
                     _absolute = ' abs' if absolute else ''
                     self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
@@ -6340,7 +6340,7 @@ class CnsMRParserListener(ParseTreeListener):
                     print("  " * self.depth + f"--> {clauseName}")
                 if not self.__hasCoord:
                     return
-                if None in self.numberFSelection:
+                if len(self.numberFSelection) == 0 or None in self.numberFSelection:
                     return
                 xmin = self.numberFSelection[0]
                 xmax = self.numberFSelection[1]
@@ -6610,12 +6610,12 @@ class CnsMRParserListener(ParseTreeListener):
                                 self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
 
                     self.inVector3D_tail = self.inVector3D_head = None
-                    if None in self.numberFSelection:
+                    if len(self.numberFSelection) == 0 or None in self.numberFSelection:
                         return
                     cut = self.numberFSelection[0]
 
                 else:
-                    if None in self.numberFSelection:
+                    if len(self.numberFSelection) == 0 or None in self.numberFSelection:
                         return
                     self.vector3D = [self.numberFSelection[0], self.numberFSelection[1], self.numberFSelection[2]]
                     cut = self.numberFSelection[3]

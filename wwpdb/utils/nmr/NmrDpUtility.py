@@ -5955,10 +5955,10 @@ class NmrDpUtility:
 
                         _cs = cs + '.cif2str'
 
-                        if not os.path.exists(_cs):
+                        # if not os.path.exists(_cs):
 
-                            if not self.__c2S.convert(cs, _cs):
-                                _cs = cs
+                        if not self.__c2S.convert(cs, _cs):
+                            _cs = cs
 
                         cs = _cs
 
@@ -6000,10 +6000,10 @@ class NmrDpUtility:
 
                         _cs = cs['file_name'] + '.cif2str'
 
-                        if not os.path.exists(_cs):
+                        # if not os.path.exists(_cs):
 
-                            if not self.__c2S.convert(cs['file_name'], _cs):
-                                _cs = cs['file_name']
+                        if not self.__c2S.convert(cs['file_name'], _cs):
+                            _cs = cs['file_name']
 
                         cs['file_name'] = _cs
 
@@ -6034,10 +6034,10 @@ class NmrDpUtility:
 
                             _mr = mr + '.cif2str'
 
-                            if not os.path.exists(_mr):
+                            # if not os.path.exists(_mr):
 
-                                if not self.__c2S.convert(mr, _mr):
-                                    _mr = mr
+                            if not self.__c2S.convert(mr, _mr):
+                                _mr = mr
 
                             mr = _mr
 
@@ -6055,10 +6055,10 @@ class NmrDpUtility:
 
                             _mr = mr['file_name'] + '.cif2str'
 
-                            if not os.path.exists(_mr):
+                            # if not os.path.exists(_mr):
 
-                                if not self.__c2S.convert(mr['file_name'], _mr):
-                                    _mr = mr['file_name']
+                            if not self.__c2S.convert(mr['file_name'], _mr):
+                                _mr = mr['file_name']
 
                             mr['file_name'] = _mr
 
@@ -6285,10 +6285,10 @@ class NmrDpUtility:
 
                     _csPath = csPath + '.cif2str'
 
-                    if not os.path.exists(_csPath):
+                    # if not os.path.exists(_csPath):
 
-                        if not self.__c2S.convert(csPath, _csPath):
-                            _csPath = csPath
+                    if not self.__c2S.convert(csPath, _csPath):
+                        _csPath = csPath
 
                     csPath = _csPath
 
@@ -18170,7 +18170,8 @@ class NmrDpUtility:
 
         try:
 
-            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
+            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items,
+                                             allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
                                              test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
                                              enforce_allowed_tags=(file_type == 'nmr-star'),
                                              excl_missing_data=self.__excl_missing_data)[0]
@@ -18318,7 +18319,8 @@ class NmrDpUtility:
 
             try:
 
-                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
+                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items,
+                                                 allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
                                                  excl_missing_data=self.__excl_missing_data)[0]
 
@@ -18689,7 +18691,8 @@ class NmrDpUtility:
 
                         try:
 
-                            aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                            aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items,
+                                                              allowed_tags, None, parent_pointer=parent_pointer,
                                                               test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False,
                                                               enforce_allowed_tags=(file_type == 'nmr-star'),
                                                               excl_missing_data=self.__excl_missing_data)[0]
@@ -19143,7 +19146,8 @@ class NmrDpUtility:
 
                             try:
 
-                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items,
+                                                                  allowed_tags, None, parent_pointer=parent_pointer,
                                                                   test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
                                                                   enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                   excl_missing_data=self.__excl_missing_data)[0]
@@ -19300,11 +19304,13 @@ class NmrDpUtility:
 
                                 try:
 
-                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items,
+                                                                      allowed_tags, None, parent_pointer=parent_pointer,
                                                                       enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                       excl_missing_data=self.__excl_missing_data)[0]
 
-                                    self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
+                                    self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                             'category': lp_category, 'data': aux_data})
 
                                     if content_subtype == 'spectral_peak':
                                         self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
@@ -19400,7 +19406,8 @@ class NmrDpUtility:
                             sp_freq = None if 'spectrometer_frequency' not in sp_dim else sp_dim['spectrometer_frequency']
                             abs[i - 1] = False if 'absolute_peak_positions' not in sp_dim else sp_dim['absolute_peak_positions']
 
-                            if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz' and sp_freq is not None and first_point is not None and sp_width is not None:
+                            if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz'\
+                               and sp_freq is not None and first_point is not None and sp_width is not None:
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
@@ -19415,7 +19422,8 @@ class NmrDpUtility:
                             sp_freq = None if 'Spectrometer_frequency' not in sp_dim else sp_dim['Spectrometer_frequency']
                             abs[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
-                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and sp_freq is not None and first_point is not None and sp_width is not None:
+                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
+                               and sp_freq is not None and first_point is not None and sp_width is not None:
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
@@ -19574,7 +19582,8 @@ class NmrDpUtility:
                         # acq = sp_dim['Acquisition']
                         abs[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
-                        if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and sp_freq is not None and first_point is not None and sp_width is not None:
+                        if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
+                           and sp_freq is not None and first_point is not None and sp_width is not None:
                             first_point /= sp_freq
                             sp_width /= sp_freq
 
@@ -19622,7 +19631,8 @@ class NmrDpUtility:
                     data_items = self.aux_data_items[file_type][content_subtype][_pk_char_category]
                     allowed_tags = self.aux_allowed_tags[file_type][content_subtype][_pk_char_category]
 
-                    _pk_char_data = self.__nefT.check_data(sf_data, _pk_char_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                    _pk_char_data = self.__nefT.check_data(sf_data, _pk_char_category, key_items, data_items,
+                                                           allowed_tags, None, parent_pointer=parent_pointer,
                                                            enforce_allowed_tags=(file_type == 'nmr-star'),
                                                            excl_missing_data=self.__excl_missing_data)[0]
 
@@ -19756,7 +19766,8 @@ class NmrDpUtility:
 
                     if self.__combined_mode and sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
 
-                        err = f"Saveframe tag prefix {sf_data.tag_prefix!r} did not match with {self.sf_tag_prefixes[file_type][content_subtype]!r} in {sf_framecode!r} saveframe."
+                        err = f"Saveframe tag prefix {sf_data.tag_prefix!r} did not match with "\
+                            f"{self.sf_tag_prefixes[file_type][content_subtype]!r} in {sf_framecode!r} saveframe."
 
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - " + err)
                         self.report.setError()
@@ -23232,7 +23243,8 @@ class NmrDpUtility:
 
                     try:
 
-                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items,
+                                                         allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
                                                          test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
                                                          enforce_allowed_tags=(file_type == 'nmr-star'),
                                                          excl_missing_data=self.__excl_missing_data)[0]
@@ -23363,7 +23375,8 @@ class NmrDpUtility:
                                 axis_codes.append(sp_dim['axis_code'])
                                 abs_pk_pos.append(False if 'absolute_peak_poistions' not in sp_dim else sp_dim['absolute_peak_positions'])
                                 sp_width = None if 'spectral_width' not in sp_dim or 'axis_unit' not in sp_dim else sp_dim['spectral_width']
-                                if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and sp_width is not None:
+                                if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz'\
+                                   and 'spectrometer_frequency' in sp_dim and sp_width is not None:
                                     sp_freq = sp_dim['spectrometer_frequency']
                                     sp_width /= sp_freq
                                 sp_widths.append(sp_width)
@@ -23373,7 +23386,8 @@ class NmrDpUtility:
                                 axis_codes.append(sp_dim['Axis_code'])
                                 abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions'])
                                 sp_width = None if 'Sweep_width' not in sp_dim or 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width']
-                                if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and sp_width is not None:
+                                if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
+                                   and 'Spectrometer_frequency' in sp_dim and sp_width is not None:
                                     sp_freq = sp_dim['Spectrometer_frequency']
                                     sp_width /= sp_freq
                                 sp_widths.append(sp_width)
@@ -24854,7 +24868,8 @@ class NmrDpUtility:
 
         try:
 
-            aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None, None,
+            aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items,
+                                              allowed_tags, None, None,
                                               enforce_allowed_tags=(file_type == 'nmr-star'),
                                               excl_missing_data=self.__excl_missing_data)[0]
 
@@ -25575,7 +25590,7 @@ class NmrDpUtility:
                                                 memberId += 1
                                                 _atom1, _atom2 = atom1, atom2
                                         sf_item['index_id'] += 1
-                                        _row = getRowForStrMr(content_subtype, Id, sf_item['idx'],
+                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
                                                               loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
                                         lp.add_data(_row)
@@ -33782,7 +33797,8 @@ class NmrDpUtility:
                                         'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code,
                                         'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
-                        if axis_unit == 'Hz' and sp_freq is not None and first_point is not None and center_point is not None and sp_width is not None:
+                        if axis_unit == 'Hz' and sp_freq is not None and first_point is not None\
+                           and center_point is not None and sp_width is not None:
                             first_point /= sp_freq
                             center_point /= sp_freq
                             sp_width /= sp_freq
@@ -33835,7 +33851,8 @@ class NmrDpUtility:
                                         if _center_point is None:
                                             _center_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width / 2.0)
 
-                                        if _axis_unit == 'Hz' and _sp_freq is not None and _first_point is not None and _center_point is not None and _sp_width is not None:
+                                        if _axis_unit == 'Hz' and _sp_freq is not None and _first_point is not None\
+                                           and _center_point is not None and _sp_width is not None:
                                             _first_point /= _sp_freq
                                             _center_point /= _sp_freq
                                             _sp_width /= _sp_freq
@@ -34957,8 +34974,10 @@ class NmrDpUtility:
 
             if self.__cR.hasCategory('pdbx_unobs_or_zero_occ_residues'):
 
-                unobs_has_label_seq = self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_asym_id') and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_seq_id')
-                unobs_has_auth_seq = self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_asym_id') and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_seq_id')
+                unobs_has_label_seq = self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_asym_id')\
+                    and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_seq_id')
+                unobs_has_auth_seq = self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_asym_id')\
+                    and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_seq_id')
 
                 if unobs_has_auth_seq and unobs_has_label_seq:
                     unobs = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
@@ -44989,8 +45008,12 @@ class NmrDpUtility:
                             if bonded_atom_id_1 is None:
                                 continue
                             if any(_row for _row in lp
-                                   if (int(_row[chain_id_1_col]) == chain_id_1 and int(_row[seq_id_1_col]) == seq_id_1 and _row[atom_id_1_col] == bonded_atom_id_1)
-                                   or (int(_row[chain_id_2_col]) == chain_id_1 and int(_row[seq_id_2_col]) == seq_id_1 and _row[atom_id_2_col] == bonded_atom_id_1)):
+                                   if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_1
+                                       and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_1
+                                       and _row[atom_id_1_col] == bonded_atom_id_1)
+                                   or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_1
+                                       and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_1
+                                       and _row[atom_id_2_col] == bonded_atom_id_1)):
                                 continue
                     if atom_id_2[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_2_col]):
@@ -44999,8 +45022,12 @@ class NmrDpUtility:
                             if bonded_atom_id_2 is None:
                                 continue
                             if any(_row for _row in lp
-                                   if (int(_row[chain_id_1_col]) == chain_id_2 and int(_row[seq_id_1_col]) == seq_id_2 and _row[atom_id_1_col] == bonded_atom_id_2)
-                                   or (int(_row[chain_id_2_col]) == chain_id_2 and int(_row[seq_id_2_col]) == seq_id_2 and _row[atom_id_2_col] == bonded_atom_id_2)):
+                                   if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_2
+                                       and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_2
+                                       and _row[atom_id_1_col] == bonded_atom_id_2)
+                                   or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_2
+                                       and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_2
+                                       and _row[atom_id_2_col] == bonded_atom_id_2)):
                                 continue
                     p1 = (chain_id_1, seq_id_1, atom_id_1)
                     p2 = (chain_id_2, seq_id_2, atom_id_2)
@@ -45053,8 +45080,12 @@ class NmrDpUtility:
                             if bonded_atom_id_1 is None:
                                 continue
                             if any(_row for _row in lp
-                                   if (int(_row[chain_id_1_col]) == chain_id_1 and int(_row[seq_id_1_col]) == seq_id_1 and _row[atom_id_1_col] == bonded_atom_id_1)
-                                   or (int(_row[chain_id_2_col]) == chain_id_1 and int(_row[seq_id_2_col]) == seq_id_1 and _row[atom_id_2_col] == bonded_atom_id_1)):
+                                   if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_1
+                                       and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_1
+                                       and _row[atom_id_1_col] == bonded_atom_id_1)
+                                   or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_1
+                                       and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_1
+                                       and _row[atom_id_2_col] == bonded_atom_id_1)):
                                 continue
                     if atom_id_2[0] in protonBeginCode:
                         if self.__ccU.updateChemCompDict(row[comp_id_2_col]):
@@ -45063,8 +45094,12 @@ class NmrDpUtility:
                             if bonded_atom_id_2 is None:
                                 continue
                             if any(_row for _row in lp
-                                   if (int(_row[chain_id_1_col]) == chain_id_2 and int(_row[seq_id_1_col]) == seq_id_2 and _row[atom_id_1_col] == bonded_atom_id_2)
-                                   or (int(_row[chain_id_2_col]) == chain_id_2 and int(_row[seq_id_2_col]) == seq_id_2 and _row[atom_id_2_col] == bonded_atom_id_2)):
+                                   if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_2
+                                       and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_2
+                                       and _row[atom_id_1_col] == bonded_atom_id_2)
+                                   or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_2
+                                       and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_2
+                                       and _row[atom_id_2_col] == bonded_atom_id_2)):
                                 continue
                     p1 = (chain_id_1, seq_id_1, atom_id_1)
                     p2 = (chain_id_2, seq_id_2, atom_id_2)
@@ -45481,7 +45516,8 @@ class NmrDpUtility:
 
                 for parent_pointer, cst_sf in enumerate(cst_sfs, start=1):
 
-                    self.__nefT.check_data(cst_sf, lp_category, key_items, data_items, allowed_tags, None, parent_pointer=parent_pointer,
+                    self.__nefT.check_data(cst_sf, lp_category, key_items, data_items,
+                                           allowed_tags, None, parent_pointer=parent_pointer,
                                            enforce_allowed_tags=(file_type == 'nmr-star'),
                                            excl_missing_data=self.__excl_missing_data)
 

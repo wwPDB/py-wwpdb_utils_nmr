@@ -9350,6 +9350,7 @@ class NEFTranslator:
 
     def star_data_to_nmrstar(self, star_data, output_file_path=None, input_source_id=None, report=None, leave_unmatched=False):
         """ Convert PyNMRSTAR data object (Entry/Saveframe/Loop) to complete NMR-STAR (Entry) file.
+            @deprecated: Comprehensive solution has been integrated in NmrDpUtility class.
             @author: Masashi Yokochi
             @param data_type: input PyNMRSTAR data object type, one of Entry/Saveframe/Loop
             @param star_data: input PyNMRSTAR data object

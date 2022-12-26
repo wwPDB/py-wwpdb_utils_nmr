@@ -491,7 +491,7 @@ class SybylMRParserListener(ParseTreeListener):
             if atomId1 is None or atomId2 is None:  # syntax error
                 return
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target_value = None

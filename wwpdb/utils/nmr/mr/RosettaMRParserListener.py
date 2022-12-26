@@ -1874,7 +1874,7 @@ class RosettaMRParserListener(ParseTreeListener):
             atomId2 = str(ctx.Simple_name(2)).upper()
             _seqId2 = str(ctx.Simple_name(3)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             cartX = self.numberSelection[0]
@@ -2000,7 +2000,7 @@ class RosettaMRParserListener(ParseTreeListener):
             atomId3 = str(ctx.Simple_name(2)).upper()
             atomId4 = str(ctx.Simple_name(3)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             cartX = self.numberSelection[0]
@@ -2275,7 +2275,7 @@ class RosettaMRParserListener(ParseTreeListener):
             seqId1 = int(str(ctx.Integer(0)))
             seqId2 = int(str(ctx.Integer(1)))
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target_value = self.numberSelection[0]
@@ -2376,7 +2376,7 @@ class RosettaMRParserListener(ParseTreeListener):
             seqId = int(str(ctx.Simple_name()))
             binChar = str(ctx.Simple_name())
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             sDev = self.numberSelection[0]
@@ -2523,7 +2523,7 @@ class RosettaMRParserListener(ParseTreeListener):
             func = {}
             valid = True
 
-            if None in self.numberFSelection:
+            if len(self.numberFSelection) == 0 or None in self.numberFSelection:
                 return
 
             if ctx.CIRCULARHARMONIC() or ctx.HARMONIC() or ctx.SIGMOID() or ctx.SQUARE_WELL():
@@ -3339,7 +3339,7 @@ class RosettaMRParserListener(ParseTreeListener):
             seqId2 = int(str(ctx.Integer(1)))
             atomId2 = str(ctx.Simple_name(1)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             target_value = self.numberSelection[0]

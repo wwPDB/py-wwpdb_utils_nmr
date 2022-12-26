@@ -700,7 +700,7 @@ class CyanaMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 if self.__cur_subtype == 'dist':
                     self.distRestraints -= 1
                 elif self.__cur_subtype == 'jcoup':
@@ -1201,7 +1201,7 @@ class CyanaMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 if self.__cur_subtype == 'dist':
                     self.distRestraints -= 1
                 elif self.__cur_subtype == 'jcoup':
@@ -2953,7 +2953,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         try:
 
-            compId = str(ctx.Simple_name(0)).upper()
+            _compId = str(ctx.Simple_name(0)).upper()
+            compId = translateToStdResName(_compId, self.__ccU)
             if self.__cur_subtype_altered:  # invoked from exitCco_restraint()
                 seqId = int(str(ctx.Integer()))
                 chainId = str(ctx.Simple_name(1)).upper()
@@ -2962,7 +2963,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 seqId = int(str(ctx.Integer(0)))
                 angleName = str(ctx.Simple_name(1)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1
                 return
 
@@ -3026,7 +3027,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
                     self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                        f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {compId!r}, "\
+                        f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}, "\
                         "of which CYANA residue library should be uploaded.\n"
                     return
 
@@ -3070,7 +3071,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                             if atomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId}:{compId} is not present in the coordinates.\n"
+                                    f"{seqId}:{_compId} is not present in the coordinates.\n"
                                 return
 
                 self.__retrieveLocalSeqScheme()
@@ -3082,7 +3083,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if len(chainAssign) == 0:
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{compId} is not present in the coordinates.\n"
+                        f"{seqId}:{_compId} is not present in the coordinates.\n"
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -3106,7 +3107,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         pass
                     else:
                         self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                            f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {compId!r}, "\
+                            f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}, "\
                             "of which CYANA residue library should be uploaded.\n"
                         return
 
@@ -3188,7 +3189,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
+                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
                                 return
 
                         prevCifAtomId = cifAtomId
@@ -3248,7 +3249,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if len(chainAssign) == 0:
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{compId} is not present in the coordinates.\n"
+                        f"{seqId}:{_compId} is not present in the coordinates.\n"
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -3263,7 +3264,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         pass
                     else:
                         self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                            f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {compId!r}.\n"
+                            f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {_compId!r}.\n"
                         return
 
                     for atomId, offset in zip(atomNames, seqOffset):
@@ -3293,7 +3294,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
+                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
@@ -3469,7 +3470,7 @@ class CyanaMRParserListener(ParseTreeListener):
             compId2 = str(ctx.Simple_name(2)).upper()
             atomId2 = str(ctx.Simple_name(3)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.rdcRestraints -= 1
                 return
 
@@ -3775,7 +3776,7 @@ class CyanaMRParserListener(ParseTreeListener):
             compId = str(ctx.Simple_name(0)).upper()
             atomId = str(ctx.Simple_name(1)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.pcsRestraints -= 1
                 return
 
@@ -3952,7 +3953,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 if self.__cur_subtype == 'dist':
                     self.distRestraints -= 1
                 else:
@@ -4195,7 +4196,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 if self.__cur_subtype == 'dist':
                     self.distRestraints -= 1
                 else:
@@ -4510,7 +4511,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 if self.__cur_subtype == 'dist':
                     self.distRestraints -= 1
                 else:
@@ -4738,7 +4739,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 if self.__cur_subtype == 'dist':
                     self.distRestraints -= 1
                 else:
@@ -4981,7 +4982,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 if self.__cur_subtype == 'dist':
                     self.distRestraints -= 1
                 else:
@@ -5296,7 +5297,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             omit_dist_limit_outlier = self.__reasons is not None and self.__omitDistLimitOutlier
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 if self.__cur_subtype == 'dist':
                     self.distRestraints -= 1
                 else:
@@ -5519,7 +5520,7 @@ class CyanaMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
             value = self.numberSelection[0]
@@ -5722,7 +5723,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
                 return
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.distRestraints -= 1
                 return
 
@@ -6138,9 +6139,10 @@ class CyanaMRParserListener(ParseTreeListener):
             chainId = str(ctx.Simple_name(0))
             seqId = int(str(ctx.Integer()))
             compId = str(ctx.Simple_name(1)).upper()
+            _compId = translateToStdResName(compId, self.__ccU)
             angleName = str(ctx.Simple_name(2)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1
                 return
 
@@ -6204,7 +6206,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
                     self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                        f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {compId!r}, "\
+                        f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}, "\
                         "of which CYANA residue library should be uploaded.\n"
                     return
 
@@ -6248,7 +6250,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                             if atomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId}:{compId} is not present in the coordinates.\n"
+                                    f"{seqId}:{_compId} is not present in the coordinates.\n"
                                 return
 
                 self.__retrieveLocalSeqScheme()
@@ -6257,7 +6259,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if len(chainAssign) == 0:
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{compId} is not present in the coordinates.\n"
+                        f"{seqId}:{_compId} is not present in the coordinates.\n"
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -6278,7 +6280,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         pass
                     else:
                         self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                            f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {compId!r}, "\
+                            f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}, "\
                             "of which CYANA residue library should be uploaded.\n"
                         return
 
@@ -6360,7 +6362,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
+                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
                                 return
 
                         prevCifAtomId = cifAtomId
@@ -6420,7 +6422,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if len(chainAssign) == 0:
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{compId} is not present in the coordinates.\n"
+                        f"{seqId}:{_compId} is not present in the coordinates.\n"
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -6435,7 +6437,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         pass
                     else:
                         self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                            f"The angle identifier {str(ctx.Simple_name(2))!r} did not match with residue {compId!r}.\n"
+                            f"The angle identifier {str(ctx.Simple_name(2))!r} did not match with residue {_compId!r}.\n"
                         return
 
                     for atomId, offset in zip(atomNames, seqOffset):
@@ -6465,7 +6467,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if cifAtomId is None:
                                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
+                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
@@ -6531,7 +6533,7 @@ class CyanaMRParserListener(ParseTreeListener):
             atomId1 = str(ctx.Simple_name(1)).upper()
             atomId2 = str(ctx.Simple_name(2)).upper()
 
-            if None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.jcoupRestraints -= 1
                 return
 
@@ -6961,7 +6963,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 return
 
             # circular shift
-            if 'seq_id_remap' in self.__reasons and len(chainAssign1) == 1 and len(chainAssign2) == 1 and {atomId1, atomId2} == {'N', 'C'}:
+            if self.__reasons is not None and 'seq_id_remap' in self.__reasons and len(chainAssign1) == 1 and len(chainAssign2) == 1 and {atomId1, atomId2} == {'N', 'C'}:
                 chainId1 = chainAssign1[0][0]
                 chainId2 = chainAssign2[0][0]
                 if chainId1 == chainId2:

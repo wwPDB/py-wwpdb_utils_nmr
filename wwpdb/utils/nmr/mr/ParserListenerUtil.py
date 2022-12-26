@@ -1519,7 +1519,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                 return 'H' + atomId[2:]
 
         # BIOSYM atom nomenclature
-        if (atomId[-1] in ('R', 'S', 'Z', 'E') or (atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
+        if (atomId[-1] in ('R', 'S', 'Z', 'E') or (len(atomId) > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
             if refCompId in ('CYS', 'ASP', 'HIS', 'SER'):
                 if atomId == 'HBR':
                     return 'HB3'
@@ -1754,7 +1754,7 @@ def translateToStdResName(compId, ccU=None):
     if compId in ('HIE', 'HIP', 'HID'):
         return 'HIS'
 
-    if compId.startswith('CY'):
+    if compId.startswith('CY') and ccU is not None:
         if ccU.updateChemCompDict(compId):
             if ccU.lastChemCompDict['_chem_comp.type'] == 'L-PEPTIDE LINKING'\
                and 'CYSTEINE' in ccU.lastChemCompDict['_chem_comp.name']:
@@ -3377,7 +3377,7 @@ def contentSubtypeOf(mrSubtype):
     """ Return legitimate content subtype of NmrDpUtility.py for a given internal restraint subtype.
     """
 
-    if mrSubtype in ('dist', 'dihed', 'rdc', 'jcoup', 'hvycs', 'procs', 'csa', 'fchiral'):
+    if mrSubtype in ('dist', 'dihed', 'rdc', 'noepk', 'jcoup', 'hvycs', 'procs', 'csa', 'fchiral'):
         return mrSubtype + '_restraint'
 
     if mrSubtype == 'hbond':
@@ -3387,13 +3387,13 @@ def contentSubtypeOf(mrSubtype):
         return 'dist_restraint'
 
     if mrSubtype == 'prdc':
-        return 'rdc_restraints'
+        return 'rdc_restraint'
 
     if mrSubtype == 'pcs':
-        return 'csp_restraints'
+        return 'csp_restraint'
 
     if mrSubtype == 'pre':
-        return 'auto_realx_restraint'
+        return 'auto_relax_restraint'
 
     if mrSubtype == 'pccr':
         return 'ccr_dd_restraint'
@@ -3527,13 +3527,13 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
             sf.add_tag(tag_item_name, 'ppm')
         elif tag_item_name == 'Units' and (mrSubtype.startswith('hvycs') or mrSubtype.startswith('procs')):
             sf.add_tag(tag_item_name, 'ppm')
-        elif tag_item_name == 'Type' and mrSubtype in ('pcs', 'csp_restraints'):
+        elif tag_item_name == 'Type' and mrSubtype in ('pcs', 'csp_restraint'):
             sf.add_tag(tag_item_name, 'paramagnetic ligand binding')
-        elif tag_item_name == 'Common_relaxation_type_name' and mrSubtype in ('pre', 'auto_realx_restraint'):
+        elif tag_item_name == 'Common_relaxation_type_name' and mrSubtype in ('pre', 'auto_relax_restraint'):
             sf.add_tag(tag_item_name, 'paramagnetic relaxation enhancement')
-        elif tag_item_name == 'Relaxation_coherence_type' and mrSubtype in ('pre', 'auto_realx_restraint'):
+        elif tag_item_name == 'Relaxation_coherence_type' and mrSubtype in ('pre', 'auto_relax_restraint'):
             sf.add_tag(tag_item_name, "S+")
-        elif tag_item_name == 'Relaxation_val_units' and mrSubtype in ('pre', 'auto_realx_restraint'):
+        elif tag_item_name == 'Relaxation_val_units' and mrSubtype in ('pre', 'auto_relax_restraint'):
             sf.add_tag(tag_item_name, 's-1')
         elif tag_item_name == 'Definition' and contentSubtype == 'other_restraint' and constraintType is not None:
             sf.add_tag(tag_item_name, constraintType)
@@ -3549,7 +3549,7 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
             sf.add_tag(tag_item_name, cyanaParameter['rhombicity'])
         elif tag_item_name == 'Details' and mrSubtype.startswith('rdc') and mrSubtype != 'rdc_raw_data' and rdcCode is not None:
             sf.add_tag(tag_item_name, rdcCode)
-        elif tag_item_name == 'Details' and mrSubtype in ('pcs', 'csp_restraints') and cyanaParameter is not None:
+        elif tag_item_name == 'Details' and mrSubtype in ('pcs', 'csp_restraint') and cyanaParameter is not None:
             sf.add_tag(tag_item_name, f"Tensor_magnitude {cyanaParameter['magnitude']}, "
                        f"Tensor_rhombicity {cyanaParameter['rhombicity']}, "
                        f"Paramagnetic_center_seq_ID {cyanaParameter['orientation_center_seq_id']}")
@@ -3676,6 +3676,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
 
     row[0] = id
 
+    star_atom1 = star_atom2 = star_atom3 = star_atom4 = star_atom4 = star_atom5 = None
+
     if atom1 is not None:
         star_atom1 = getStarAtom(authToStarSeq, atom1)
         if 'atom_id' not in atom1:
@@ -3701,17 +3703,17 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
         row[1], row[2], row[3], row[4], row[5] =\
             star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
     elif mrSubtype != 'fchiral':
-        if atom1 is not None:
+        if star_atom1 is not None:
             row[1], row[2], row[3], row[4], row[5] =\
                 star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['atom_id']
-        if atom2 is not None:
+        if star_atom2 is not None:
             row[6], row[7], row[8], row[9], row[10] =\
                 star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
     else:
-        if atom1 is not None:
+        if star_atom1 is not None:
             row[1], row[2], row[3], row[4], row[5] =\
                 star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['auth_atom_id']
-        if atom2 is not None:
+        if star_atom2 is not None:
             row[6], row[7], row[8], row[9], row[10] =\
                 star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['auth_atom_id']
 
@@ -3757,16 +3759,16 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             row[key_size + 21] = atom2['auth_atom_id']
 
     elif mrSubtype == 'dihed':
-        if atom1 is not None:
+        if atom1 is not None and star_atom3 is not None:
             row[11], row[12], row[13], row[14], row[15] =\
                 star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
-        elif atom5 is not None:  # PPA, phase angle of pseudorotation
+        elif star_atom5 is not None:  # PPA, phase angle of pseudorotation
             row[11], row[12], row[13], row[14] =\
                 star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id']
-        if atom2 is not None:
+        if atom2 is not None and star_atom4 is not None:
             row[16], row[17], row[18], row[19], row[20] =\
                 star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
-        elif atom5 is not None:  # PPA, phase angle of pseudorotation
+        elif star_atom5 is not None:  # PPA, phase angle of pseudorotation
             row[16], row[17], row[18], row[19] =\
                 star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id']
 
@@ -3889,10 +3891,12 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             row[10] = row[key_size + 12] = atom1['auth_atom_id']
 
     elif mrSubtype == 'jcoup':
-        row[11], row[12], row[13], row[14], row[15] =\
-            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
-        row[16], row[17], row[18], row[19], row[20] =\
-            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+        if star_atom3 is not None:
+            row[11], row[12], row[13], row[14], row[15] =\
+                star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        if star_atom4 is not None:
+            row[16], row[17], row[18], row[19], row[20] =\
+                star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size] = dstFunc['target_value']
@@ -3937,12 +3941,15 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     elif mrSubtype == 'hvycs':
-        row[11], row[12], row[13], row[14], row[15] =\
-            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
-        row[16], row[17], row[18], row[19], row[20] =\
-            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
-        row[21], row[22], row[23], row[24], row[25] =\
-            star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id'], star_atom5['atom_id']
+        if star_atom3 is not None:
+            row[11], row[12], row[13], row[14], row[15] =\
+                star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        if star_atom4 is not None:
+            row[16], row[17], row[18], row[19], row[20] =\
+                star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+        if star_atom5 is not None:
+            row[21], row[22], row[23], row[24], row[25] =\
+                star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id'], star_atom5['atom_id']
 
         row[key_size] = dstFunc['ca_shift']
         # CA_chem_shift_val_err
@@ -4004,10 +4011,12 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     elif mrSubtype == 'pccr':
-        row[11], row[12], row[13], row[14], row[15] =\
-            star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
-        row[16], row[17], row[18], row[19], row[20] =\
-            star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+        if star_atom3 is not None:
+            row[11], row[12], row[13], row[14], row[15] =\
+                star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+        if star_atom4 is not None:
+            row[16], row[17], row[18], row[19], row[20] =\
+                star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
         row[key_size] = atom1['atom_id']
         # Dipole_1_atom_isotope_number_1
@@ -4129,17 +4138,17 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
         row[1], row[2], row[3], row[4], row[5] =\
             star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
     elif contentSubtype != 'fchiral_restraint':
-        if atom1 is not None:
+        if star_atom1 is not None:
             row[1], row[2], row[3], row[4], row[5] =\
                 star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['atom_id']
-        if atom2 is not None:
+        if star_atom2 is not None:
             row[6], row[7], row[8], row[9], row[10] =\
                 star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
     else:
-        if atom1 is not None:
+        if star_atom1 is not None:
             row[1], row[2], row[3], row[4], row[5] =\
                 star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['auth_atom_id']
-        if atom2 is not None:
+        if star_atom2 is not None:
             row[6], row[7], row[8], row[9], row[10] =\
                 star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['auth_atom_id']
 

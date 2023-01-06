@@ -35984,7 +35984,7 @@ class NmrDpUtility:
                                             auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                             if seq_id1[i] != auth_seq_id:
                                                 cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme)"
-                                        except (IndexError, KeyError):
+                                        except (IndexError, ValueError):
                                             pass
 
                             elif nmr_comp_id != cif_comp_id and aligned[i]:
@@ -36007,7 +36007,7 @@ class NmrDpUtility:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                         if seq_id1[i] != auth_seq_id:
                                             cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
-                                    except (IndexError, KeyError):
+                                    except (IndexError, ValueError):
                                         pass
 
                         if len(unmapped) > 0:
@@ -36251,7 +36251,7 @@ class NmrDpUtility:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id2[i])]
                                         if seq_id2[i] != auth_seq_id:
                                             cif_seq_code += f", or {auth_chain_id2}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
-                                    except (IndexError, KeyError):
+                                    except (IndexError, ValueError):
                                         pass
 
                                 err = f"Sequence alignment error between the NMR data ({nmr_seq_code}) and the coordinate ({cif_seq_code}). "\
@@ -36545,7 +36545,7 @@ class NmrDpUtility:
                                             auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                             if seq_id1[i] != auth_seq_id:
                                                 cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme)"
-                                        except (IndexError, KeyError):
+                                        except (IndexError, ValueError):
                                             pass
 
                                     warn = f"{cif_seq_code} is not present in the NMR data (chain_id {chain_id2})."
@@ -36577,7 +36577,7 @@ class NmrDpUtility:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                         if seq_id1[i] != auth_seq_id:
                                             cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
-                                    except (IndexError, KeyError):
+                                    except (IndexError, ValueError):
                                         pass
 
                                 err = f"Sequence alignment error between the coordinate ({cif_seq_code}) and the NMR data ({nmr_seq_code}). "\
@@ -39229,7 +39229,7 @@ class NmrDpUtility:
                     try:
                         auth_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]
                         self.authSeqMap[(star_chain, star_seq)] = (seq_align['test_chain_id'], auth_seq)
-                    except (IndexError, KeyError):
+                    except (IndexError, ValueError):
                         pass
 
         if len(self.authSeqMap) == 0:

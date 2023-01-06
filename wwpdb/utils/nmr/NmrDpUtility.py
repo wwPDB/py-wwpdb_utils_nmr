@@ -508,7 +508,7 @@ def detect_encoding(line):
     try:
         result = chardet.detect(line.encode('utf-8'))
         return result['encoding']
-    except:  # noqa: E722 pylint: disable=bare-except
+    except Exception:
         return 'binary'
 
 
@@ -572,7 +572,7 @@ def get_type_of_star_file(fPath):
         if _fPath is not None:
             try:
                 os.remove(_fPath)
-            except:  # noqa: E722 pylint: disable=bare-except
+            except OSError:
                 pass
 
 
@@ -6148,7 +6148,7 @@ class NmrDpUtility:
                             self.report.setDiamagnetic(False)
                             break
 
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             pass
 
     def __validateInputSource(self, srcPath=None):
@@ -6243,7 +6243,7 @@ class NmrDpUtility:
             if _srcPath is not None:
                 try:
                     os.remove(_srcPath)
-                except:  # noqa: E722 pylint: disable=bare-except
+                except OSError:
                     pass
 
         else:
@@ -6360,12 +6360,12 @@ class NmrDpUtility:
 
                         if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
-                            if len(self.__star_data_type) == self.__file_path_list_len:
-                                del self.__star_data_type[-1]
-                                del self.__star_data[-1]
-
-                            self.__star_data_type.append(star_data_type)
-                            self.__star_data.append(star_data)
+                            if len(self.__star_data_type) > csListId:
+                                self.__star_data_type[csListId] = star_data_type
+                                self.__star_data[csListId] = star_data
+                            else:
+                                self.__star_data_type.append(star_data_type)
+                                self.__star_data.append(star_data)
 
                             self.__rescueFormerNef(csListId)
                             self.__rescueImmatureStr(csListId)
@@ -6376,7 +6376,7 @@ class NmrDpUtility:
                 if _csPath is not None:
                     try:
                         os.remove(_csPath)
-                    except:  # noqa: E722 pylint: disable=bare-except
+                    except OSError:
                         pass
 
             mr_file_path_list = 'restraint_file_path_list'
@@ -6410,7 +6410,7 @@ class NmrDpUtility:
                     if _mrPath is not None:
                         try:
                             os.remove(_mrPath)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except OSError:
                             pass
 
                 has_atypical_restraint = False
@@ -6504,15 +6504,12 @@ class NmrDpUtility:
 
                             if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
-                                if len(self.__star_data_type) > self.__file_path_list_len:
-                                    del self.__star_data_type[-1]
-                                    del self.__star_data[-1]
-
-                                self.__star_data_type.append(star_data_type)
-                                self.__star_data.append(star_data)
-
-                                self.__rescueFormerNef(file_path_list_len)
-                                self.__rescueImmatureStr(file_path_list_len)
+                                if len(self.__star_data_type) > file_path_list_len:
+                                    self.__star_data_type[file_path_list_len] = star_data_type
+                                    self.__star_data[file_path_list_len] = star_data
+                                else:
+                                    self.__rescueFormerNef(file_path_list_len)
+                                    self.__rescueImmatureStr(file_path_list_len)
 
                             if not _is_done:
                                 is_done = False
@@ -6525,7 +6522,7 @@ class NmrDpUtility:
                     if _mrPath is not None:
                         try:
                             os.remove(_mrPath)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except OSError:
                             pass
 
             if ar_file_path_list in self.__inputParamDict:
@@ -6568,7 +6565,7 @@ class NmrDpUtility:
                     if arPath_ is not None:
                         try:
                             os.remove(arPath_)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except OSError:
                             pass
 
         return is_done
@@ -7485,11 +7482,11 @@ class NmrDpUtility:
                 rescued = self.__has_legacy_sf_issue and is_done and star_data_type == 'Entry'
 
                 if len(self.__star_data_type) > file_list_id:
-                    del self.__star_data_type[-1]
-                    del self.__star_data[-1]
-
-                self.__star_data_type.append(star_data_type)
-                self.__star_data.append(star_data)
+                    self.__star_data_type[file_list_id] = star_data_type
+                    self.__star_data[file_list_id] = star_data
+                else:
+                    self.__star_data_type.append(star_data_type)
+                    self.__star_data.append(star_data)
 
                 self.__rescueFormerNef(file_list_id)
                 self.__rescueImmatureStr(file_list_id)
@@ -7552,7 +7549,7 @@ class NmrDpUtility:
                     if os.path.exists(tmpPath):
                         os.remove(tmpPath)
 
-        except:  # noqa: E722 pylint: disable=bare-except
+        except OSError:
             pass
 
         return is_done
@@ -7683,13 +7680,13 @@ class NmrDpUtility:
         """ Rescue former NEF version prior to 1.0.
         """
 
-        try:
+        if isinstance(sf_data, pynmrstar.Loop):
+            loop = sf_data
+        else:
             if __pynmrstar_v3_2__:
                 loop = sf_data.get_loop(lp_category)
             else:
                 loop = sf_data.get_loop_by_category(lp_category)
-        except:  # noqa: E722 pylint: disable=bare-except
-            loop = sf_data
 
         try:
 
@@ -8039,13 +8036,13 @@ class NmrDpUtility:
         """ Rescue immature NMR-STAR.
         """
 
-        try:
+        if isinstance(sf_data, pynmrstar.Loop):
+            loop = sf_data
+        else:
             if __pynmrstar_v3_2__:
                 loop = sf_data.get_loop(lp_category)
             else:
                 loop = sf_data.get_loop_by_category(lp_category)
-        except:  # noqa: E722 pylint: disable=bare-except
-            loop = sf_data
 
         try:
 
@@ -12956,7 +12953,7 @@ class NmrDpUtility:
                         if _mrPath is not None:
                             try:
                                 os.remove(_mrPath)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except OSError:
                                 pass
 
                 elif has_cif_format and not has_mr_header:
@@ -13121,7 +13118,7 @@ class NmrDpUtility:
                         if _mrPath is not None:
                             try:
                                 os.remove(_mrPath)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except OSError:
                                 pass
 
             except Exception as e:
@@ -13647,7 +13644,7 @@ class NmrDpUtility:
                             if _mrPath is not None:
                                 try:
                                     os.remove(_mrPath)
-                                except:  # noqa: E722 pylint: disable=bare-except
+                                except OSError:
                                     pass
 
                             continue
@@ -13768,7 +13765,7 @@ class NmrDpUtility:
                             if _mrPath is not None:
                                 try:
                                     os.remove(_mrPath)
-                                except:  # noqa: E722 pylint: disable=bare-except
+                                except OSError:
                                     pass
 
                             continue
@@ -18328,7 +18325,7 @@ class NmrDpUtility:
 
                 self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-            except:  # noqa: E722 pylint: disable=bare-except
+            except Exception:
                 pass
 
         except Exception as e:
@@ -18589,15 +18586,15 @@ class NmrDpUtility:
 
                 idx_msg = index_tag + ' '
                 if index_tag in lp_data[0]:
-                    for id in id_set:  # pylint: disable=redefined-builtin
-                        idx_msg += f"{lp_data[id][index_tag]} vs "
+                    for row_id in id_set:
+                        idx_msg += f"{lp_data[row_id][index_tag]} vs "
                 else:
-                    for id in id_set:  # pylint: disable=redefined-builtin
-                        idx_msg += f"{id + 1} vs "
+                    for row_id in id_set:
+                        idx_msg += f"{row_id + 1} vs "
                 idx_msg = idx_msg[:-4] + ', '
                 idx_msg += id_tag + ' '
-                for id in id_set:
-                    idx_msg += f"{lp_data[id][id_tag]} vs "
+                for row_id in id_set:
+                    idx_msg += f"{lp_data[row_id][id_tag]} vs "
 
                 warn = f"[Check rows of {idx_msg[:-4]}] Found redundant restraints for the same {data_unit_name} ({msg})."
 
@@ -19320,7 +19317,7 @@ class NmrDpUtility:
                                         self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category,
                                                                                              aux_data, sf_data, parent_pointer)
 
-                                except:  # noqa: E722 pylint: disable=bare-except
+                                except Exception:
                                     pass
 
                             except Exception as e:
@@ -19391,7 +19388,7 @@ class NmrDpUtility:
                 max_points = [None] * num_dim
                 min_limits = [None] * num_dim
                 max_limits = [None] * num_dim
-                abs = [None] * num_dim  # pylint: disable=redefined-builtin
+                abs_positions = [None] * num_dim
 
                 for i in range(1, max_dim):
 
@@ -19406,7 +19403,7 @@ class NmrDpUtility:
                             sp_width = None if 'spectral_width' not in sp_dim else sp_dim['spectral_width']
                             # acq = sp_dim['is_acquisition']
                             sp_freq = None if 'spectrometer_frequency' not in sp_dim else sp_dim['spectrometer_frequency']
-                            abs[i - 1] = False if 'absolute_peak_positions' not in sp_dim else sp_dim['absolute_peak_positions']
+                            abs_positions[i - 1] = False if 'absolute_peak_positions' not in sp_dim else sp_dim['absolute_peak_positions']
 
                             if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz'\
                                and sp_freq is not None and first_point is not None and sp_width is not None:
@@ -19422,7 +19419,7 @@ class NmrDpUtility:
                             sp_width = None if 'Sweep_width' not in sp_dim else sp_dim['Sweep_width']
                             # acq = sp_dim['Acquisition']
                             sp_freq = None if 'Spectrometer_frequency' not in sp_dim else sp_dim['Spectrometer_frequency']
-                            abs[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
+                            abs_positions[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
                             if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
                                and sp_freq is not None and first_point is not None and sp_width is not None:
@@ -19439,8 +19436,8 @@ class NmrDpUtility:
                             last_point = first_point - sp_width
 
                             # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
-                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)
-                            max_point = first_point + (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)
+                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
+                            max_point = first_point + (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
 
                             min_limit = min_point
                             max_limit = max_point
@@ -19489,7 +19486,7 @@ class NmrDpUtility:
                             if position < min_points[j] or position > max_points[j]:
 
                                 err = f"[Check row of {index_tag} {row[index_tag]}] {position_names[j]} {position} is not within expected range "\
-                                    f"(min_position {min_points[j]}, max_position {max_points[j]}, absolute_peak_positions {abs[j]}). "\
+                                    f"(min_position {min_points[j]}, max_position {max_points[j]}, absolute_peak_positions {abs_positions[j]}). "\
                                     "Please check for reference frequency and spectral width."
 
                                 self.report.warning.appendDescription('anomalous_data',
@@ -19506,7 +19503,7 @@ class NmrDpUtility:
                             if position < min_limits[j] or position > max_limits[j]:
 
                                 err = f"[Check row of {index_tag} {row[index_tag]}] {position_names[j]} {position} is not within expected range "\
-                                    f"(min_position {min_limits[j]}, max_position {max_limits[j]}, absolute_peak_positions {abs[j]}), "\
+                                    f"(min_position {min_limits[j]}, max_position {max_limits[j]}, absolute_peak_positions {abs_positions[j]}), "\
                                     f"which exceeds limit of current probe design ({self.hard_probe_limit / 1000.0} kHz). "\
                                     "Please check for reference frequency and spectral width."
 
@@ -19569,7 +19566,7 @@ class NmrDpUtility:
                 max_points = [None] * num_dim
                 min_limits = [None] * num_dim
                 max_limits = [None] * num_dim
-                abs = [None] * num_dim  # pylint: disable=redefined-builtin
+                abs_positions = [None] * num_dim
 
                 for i in range(1, max_dim):
 
@@ -19582,7 +19579,7 @@ class NmrDpUtility:
                         sp_width = None if 'Sweep_width' not in sp_dim else sp_dim['Sweep_width']
                         sp_freq = None if 'Spectrometer_frequency' not in sp_dim else sp_dim['Spectrometer_frequency']
                         # acq = sp_dim['Acquisition']
-                        abs[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
+                        abs_positions[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
                         if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
                            and sp_freq is not None and first_point is not None and sp_width is not None:
@@ -19599,8 +19596,8 @@ class NmrDpUtility:
                             last_point = first_point - sp_width
 
                             # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
-                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)
-                            max_point = first_point + (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)
+                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
+                            max_point = first_point + (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
 
                             min_limit = min_point
                             max_limit = max_point
@@ -19656,7 +19653,7 @@ class NmrDpUtility:
                         if position < min_points[j] or position > max_points[j]:
 
                             warn = f"[Check row of {pk_id_name} {row[pk_id_name]}] {position_name} {position} is not within expected range "\
-                                f"(min_position {min_points[j]}, max_position {max_points[j]}, absolute_peak_positions {abs[j]}). "\
+                                f"(min_position {min_points[j]}, max_position {max_points[j]}, absolute_peak_positions {abs_positions[j]}). "\
                                 "Please check for reference frequency and spectral width."
 
                             self.report.warning.appendDescription('anomalous_data',
@@ -19673,7 +19670,7 @@ class NmrDpUtility:
                         if position < min_limits[j] or position > max_limits[j]:
 
                             err = f"[Check row of {pk_id_name} {row[pk_id_name]}] {position_name} {position} is not within expected range "\
-                                f"(min_position {min_limits[j]}, max_position {max_limits[j]}, absolute_peak_positions {abs[j]}), "\
+                                f"(min_position {min_limits[j]}, max_position {max_limits[j]}, absolute_peak_positions {abs_positions[j]}), "\
                                 f"which exceeds limit of current probe design ({self.hard_probe_limit / 1000.0} kHz). "\
                                 "Please check for reference frequency and spectral width."
 
@@ -19884,7 +19881,7 @@ class NmrDpUtility:
 
                             self.__sf_tag_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': sf_tag_data})
 
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except Exception:
                             pass
 
                     except Exception as e:
@@ -20095,14 +20092,17 @@ class NmrDpUtility:
                                if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode)
 
             else:
+
                 key_items = self.key_items[file_type][content_subtype]
                 data_items = self.data_items[file_type][content_subtype]
 
                 try:
+
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                      enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
-                except:  # noqa: E722 pylint: disable=bare-except
+
+                except Exception:
                     return False
 
             chk_row_tmp = f"[Check row of {chain_id_name} %s, {seq_id_name} %s, {comp_id_name} %s, {atom_id_name} %s"
@@ -23197,29 +23197,29 @@ class NmrDpUtility:
                         atom_id = row[atom_id_col]
                         value = row[value_col]
 
-                        _missing_cs_atoms = [map for map in missing_cs_atoms
-                                             if map['chain_id'] == chain_id
-                                             and map['seq_id'] == seq_id
-                                             and map['comp_id'] == comp_id
-                                             and map['src_atom_id'] == atom_id]
+                        _missing_cs_atoms = [missing_cs_atom for missing_cs_atom in missing_cs_atoms
+                                             if missing_cs_atom['chain_id'] == chain_id
+                                             and missing_cs_atom['seq_id'] == seq_id
+                                             and missing_cs_atom['comp_id'] == comp_id
+                                             and missing_cs_atom['src_atom_id'] == atom_id]
 
                         if len(_missing_cs_atoms) == 0:
                             continue
 
-                        _subtype_name = ' and '.join([map['content_subtype_name'] for map in _missing_cs_atoms])
+                        _subtype_name = ' and '.join([missing_cs_atom['content_subtype_name'] for missing_cs_atom in _missing_cs_atoms])
 
-                        map = _missing_cs_atoms[0]  # pylint: disable=redefined-builtin
+                        missing_cs_atom = _missing_cs_atoms[0]
 
                         _row = copy.copy(row)
-                        _row[atom_id_col] = map['dst_atom_id']
+                        _row[atom_id_col] = missing_cs_atom['dst_atom_id']
                         lp.data.append(_row)
 
                         warn = "The unbound resonance assignment "\
                             + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
-                                                            cs_comp_id_name, comp_id, cs_atom_id_name, map['dst_atom_id'])\
+                                                            cs_comp_id_name, comp_id, cs_atom_id_name, missing_cs_atom['dst_atom_id'])\
                             + f" in {_subtype_name} has been added to the assigned chemical shifts by referring to "\
                             + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
-                                                            cs_comp_id_name, comp_id, cs_atom_id_name, map['src_atom_id'])\
+                                                            cs_comp_id_name, comp_id, cs_atom_id_name, missing_cs_atom['src_atom_id'])\
                             + f", {value} ppm."
 
                         self.report.warning.appendDescription('complemented_chemical_shift',
@@ -23313,8 +23313,10 @@ class NmrDpUtility:
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                 try:
+
                     cs_list = get_first_sf_tag(sf_data, self.cs_list_sf_tag_name[file_type])
-                except:  # noqa: E722 pylint: disable=bare-except
+
+                except Exception:
                     continue
 
                 try:
@@ -23832,7 +23834,7 @@ class NmrDpUtility:
                             cs_file_name = cs_input_source_dic['file_name']
                             csFileListId = 0
 
-                except:  # noqa: E722 pylint: disable=bare-except
+                except Exception:
                     pass
 
                 if cs_data is None:
@@ -24371,11 +24373,11 @@ class NmrDpUtility:
 
                         if self.__exptl_method == 'SOLID-STATE NMR' and self.__symmetric is None:
 
-                            id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+                            src_id = self.report.getInputSourceIdOfCoord()
 
-                            if id >= 0:
+                            if src_id >= 0:
 
-                                cif_input_source = self.report.input_sources[id]
+                                cif_input_source = self.report.input_sources[src_id]
                                 cif_input_source_dic = cif_input_source.get()
 
                                 has_cif_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
@@ -24757,12 +24759,12 @@ class NmrDpUtility:
         """ Perform consistency test on residue variants.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        cif_input_source = self.report.input_sources[id]
+        cif_input_source = self.report.input_sources[src_id]
         cif_input_source_dic = cif_input_source.get()
 
         cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
@@ -24825,12 +24827,12 @@ class NmrDpUtility:
                 if ref_chain_id not in nmr2ca:
                     nmr2ca[ref_chain_id] = []
 
-                complex = {'seq_align': result}  # DAOTHER-7465  # pylint: disable=redefined-builtin
+                sa = {'seq_align': result}  # DAOTHER-7465
 
                 if 'unmapped_sequence' in ca:
-                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in ca['unmapped_sequence']]
+                    sa['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in ca['unmapped_sequence']]
 
-                nmr2ca[ref_chain_id].append(complex)
+                nmr2ca[ref_chain_id].append(sa)
 
             if self.__star_data_type[fileListId] == 'Loop':
                 sf_data = self.__star_data[fileListId]
@@ -25180,12 +25182,12 @@ class NmrDpUtility:
         if mr_file_path_list not in self.__inputParamDict:
             return True
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -26378,12 +26380,12 @@ class NmrDpUtility:
         if mr_file_path_list not in self.__inputParamDict:
             return True
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         list_id = 1
@@ -26447,12 +26449,12 @@ class NmrDpUtility:
         if ar_file_path_list not in self.__inputParamDict:
             return True
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -28548,12 +28550,12 @@ class NmrDpUtility:
         if mr_file_path_list not in self.__inputParamDict:
             return True
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -34445,7 +34447,7 @@ class NmrDpUtility:
 
             return True
 
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             return False
 
     def __parseCoordFilePath(self):
@@ -34498,7 +34500,7 @@ class NmrDpUtility:
                     if self.__cR.parse(fPath):
                         return True
 
-            except:  # noqa: E722 pylint: disable=bare-except
+            except Exception:
                 pass
 
             finally:
@@ -34526,12 +34528,12 @@ class NmrDpUtility:
         """ Detect content subtype of coordinate file.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         if has_key_value(input_source_dic, 'content_subtype'):
@@ -34580,12 +34582,12 @@ class NmrDpUtility:
         """ Extract reference polymer sequence of coordinate file.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
@@ -34669,9 +34671,9 @@ class NmrDpUtility:
 
                 if 'type' in ps:
 
-                    type = ps['type']  # pylint: disable=redefined-builtin
+                    poly_type = ps['type']
 
-                    if 'polypeptide' in type:
+                    if 'polypeptide' in poly_type:
                         rmsd_label = 'ca_rmsd'
 
                         if not self.__combined_mode:
@@ -34690,7 +34692,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
                                 self.__suspended_warnings_for_lazy_eval = []
 
-                    elif 'ribonucleotide' in type:
+                    elif 'ribonucleotide' in poly_type:
                         rmsd_label = 'p_rmsd'
                     else:
                         continue
@@ -34860,15 +34862,15 @@ class NmrDpUtility:
         """ Extract atom_site of coordinate file.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
         if self.__coord_atom_site is not None:
             return True
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -35058,14 +35060,14 @@ class NmrDpUtility:
         """ Extract polymer sequence in interesting loops of coordinate file.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
         __errors = self.report.getTotalErrors()
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
@@ -35175,12 +35177,12 @@ class NmrDpUtility:
 
         common_poly_seq = {}
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -35260,12 +35262,12 @@ class NmrDpUtility:
         """ Extract non-standard residue of coordinate file.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         # file_name = input_source_dic['file_name']
@@ -35319,14 +35321,14 @@ class NmrDpUtility:
         """ Append polymer sequence alignment between coordinate and NMR data.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
         # sequence alignment inside coordinate file
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -35730,12 +35732,12 @@ class NmrDpUtility:
         """ Assign polymer sequences of coordinate file.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        cif_input_source = self.report.input_sources[id]
+        cif_input_source = self.report.input_sources[src_id]
         cif_input_source_dic = cif_input_source.get()
 
         cif_file_name = cif_input_source_dic['file_name']
@@ -35982,7 +35984,7 @@ class NmrDpUtility:
                                             auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                             if seq_id1[i] != auth_seq_id:
                                                 cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme)"
-                                        except:  # noqa: E722 pylint: disable=bare-except
+                                        except (IndexError, KeyError):
                                             pass
 
                             elif nmr_comp_id != cif_comp_id and aligned[i]:
@@ -36005,7 +36007,7 @@ class NmrDpUtility:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                         if seq_id1[i] != auth_seq_id:
                                             cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                    except (IndexError, KeyError):
                                         pass
 
                         if len(unmapped) > 0:
@@ -36249,7 +36251,7 @@ class NmrDpUtility:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id2[i])]
                                         if seq_id2[i] != auth_seq_id:
                                             cif_seq_code += f", or {auth_chain_id2}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                    except (IndexError, KeyError):
                                         pass
 
                                 err = f"Sequence alignment error between the NMR data ({nmr_seq_code}) and the coordinate ({cif_seq_code}). "\
@@ -36543,7 +36545,7 @@ class NmrDpUtility:
                                             auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                             if seq_id1[i] != auth_seq_id:
                                                 cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme)"
-                                        except:  # noqa: E722 pylint: disable=bare-except
+                                        except (IndexError, KeyError):
                                             pass
 
                                     warn = f"{cif_seq_code} is not present in the NMR data (chain_id {chain_id2})."
@@ -36575,7 +36577,7 @@ class NmrDpUtility:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                         if seq_id1[i] != auth_seq_id:
                                             cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                    except (IndexError, KeyError):
                                         pass
 
                                 err = f"Sequence alignment error between the coordinate ({cif_seq_code}) and the NMR data ({nmr_seq_code}). "\
@@ -36676,12 +36678,12 @@ class NmrDpUtility:
         """ Perform consistency test on atom names of coordinate file.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        cif_input_source = self.report.input_sources[id]
+        cif_input_source = self.report.input_sources[src_id]
         cif_input_source_dic = cif_input_source.get()
 
         cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
@@ -36730,12 +36732,12 @@ class NmrDpUtility:
                 if ref_chain_id not in nmr2ca:
                     nmr2ca[ref_chain_id] = []
 
-                complex = {'seq_align': result}  # DAOTHER-7465  # pylint: disable=redefined-builtin
+                sa = {'seq_align': result}  # DAOTHER-7465
 
                 if 'unmapped_sequence' in ca:
-                    complex['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in ca['unmapped_sequence']]
+                    sa['seq_unmap'] = [unmapped['ref_seq_id'] for unmapped in ca['unmapped_sequence']]
 
-                nmr2ca[ref_chain_id].append(complex)
+                nmr2ca[ref_chain_id].append(sa)
 
             if nmr_input_source_dic['content_subtype'] is None:
                 continue
@@ -36857,10 +36859,12 @@ class NmrDpUtility:
                     data_items = self.aux_data_items[file_type][content_subtype][lp_category]
 
             try:
+
                 lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
                                                  excl_missing_data=self.__excl_missing_data)[0]
-            except:  # noqa: E722 pylint: disable=bare-except
+
+            except Exception:
                 return False
 
         if lp_data is None:
@@ -37320,7 +37324,7 @@ class NmrDpUtility:
                                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                     excl_missing_data=self.__excl_missing_data)[0]
 
-                    except:  # noqa: E722 pylint: disable=bare-except
+                    except Exception:
                         pass
 
         return True
@@ -37400,7 +37404,7 @@ class NmrDpUtility:
                                 for lid in conflict_id:
                                     del _loop.data[lid]
 
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except Exception:
                             pass
 
         return True
@@ -37791,11 +37795,14 @@ class NmrDpUtility:
                                  if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
 
             if orig_lp_data is None:
+
                 try:
+
                     orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                           enforce_allowed_tags=(file_type == 'nmr-star'),
                                                           excl_missing_data=self.__excl_missing_data)[0]
-                except:  # noqa: E722 pylint: disable=bare-except
+
+                except Exception:
                     pass
 
             if orig_lp_data is not None and len(orig_lp_data) > 0:
@@ -39222,7 +39229,7 @@ class NmrDpUtility:
                     try:
                         auth_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]
                         self.authSeqMap[(star_chain, star_seq)] = (seq_align['test_chain_id'], auth_seq)
-                    except:  # noqa: E722 pylint: disable=bare-except
+                    except (IndexError, KeyError):
                         pass
 
         if len(self.authSeqMap) == 0:
@@ -39947,12 +39954,12 @@ class NmrDpUtility:
         """ Extract disulfide bond of coordinate file.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
 
         chain_assign_dic = self.report.chain_assignment.get()
 
@@ -40303,7 +40310,7 @@ class NmrDpUtility:
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                except:  # noqa: E722 pylint: disable=bare-except
+                except Exception:
                     pass
 
             if lp_data is not None:
@@ -40337,12 +40344,12 @@ class NmrDpUtility:
         """ Extract other bond (neither disulfide nor covalent bond) of coordinate file.
         """
 
-        id = self.report.getInputSourceIdOfCoord()  # pylint: disable=redefined-builtin
+        src_id = self.report.getInputSourceIdOfCoord()
 
-        if id < 0:
+        if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[id]
+        input_source = self.report.input_sources[src_id]
 
         chain_assign_dic = self.report.chain_assignment.get()
 
@@ -40694,7 +40701,7 @@ class NmrDpUtility:
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                except:  # noqa: E722 pylint: disable=bare-except
+                except Exception:
                     pass
 
             if lp_data is not None:
@@ -41631,7 +41638,7 @@ class NmrDpUtility:
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                    except:  # noqa: E722 pylint: disable=bare-except
+                    except Exception:
                         pass
 
                 if lp_data is not None:
@@ -42211,7 +42218,7 @@ class NmrDpUtility:
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
-                                                except:  # noqa: E722 pylint: disable=bare-except
+                                                except Exception:
                                                     pass
 
                                             if lp_data is not None:
@@ -42278,7 +42285,7 @@ class NmrDpUtility:
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
-                                                except:  # noqa: E722 pylint: disable=bare-except
+                                                except Exception:
                                                     pass
 
                                             if lp_data is not None:
@@ -42839,7 +42846,7 @@ class NmrDpUtility:
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                    except:  # noqa: E722 pylint: disable=bare-except
+                    except Exception:
                         pass
 
                 if lp_data is not None:
@@ -43793,7 +43800,7 @@ class NmrDpUtility:
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                except:  # noqa: E722 pylint: disable=bare-except
+                except Exception:
                     pass
 
             if lp_data is not None:
@@ -44016,7 +44023,7 @@ class NmrDpUtility:
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                except:  # noqa: E722 pylint: disable=bare-except
+                except Exception:
                     pass
 
             if lp_data is not None:
@@ -45546,7 +45553,7 @@ class NmrDpUtility:
 
                 return True
 
-            except:  # noqa: E722 pylint: disable=bare-except
+            except Exception:
                 for cst_sf in reversed(cst_sfs):
                     del master_entry[cst_sf]
 
@@ -47001,7 +47008,7 @@ class NmrDpUtility:
 
             return True
 
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             raise KeyError("+NmrDpUtility.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
 
         return False
@@ -47029,7 +47036,8 @@ class NmrDpUtility:
 
         try:
 
-            is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, fPath, report=self.report)  # (None if self.__alt_chain else self.report))
+            is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, fPath,
+                                                           report=self.report)  # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and self.__tmpPath is not None:
                 os.remove(self.__tmpPath)
@@ -47108,7 +47116,7 @@ class NmrDpUtility:
 
             return True
 
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             raise KeyError("+NmrDpUtility.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
 
         return False

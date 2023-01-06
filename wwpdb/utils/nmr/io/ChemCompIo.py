@@ -138,7 +138,7 @@ class ChemCompReader:
                     self.__lfh.write(f"+ERROR- PdbxChemCompReader.setFilePath() Missing file {self.__filePath}\n")
                 return False
             return True
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             if self.__verbose:
                 self.__lfh.write(f"+ERROR- PdbxChemCompReader.setFilePath() Missing file {self.__filePath}\n")
             return False
@@ -162,7 +162,7 @@ class ChemCompReader:
             self.__getComp()
             dL = self.__getDictList(catName='chem_comp')
             return dL[0]
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             return {}
 
     def __getComp(self):
@@ -176,7 +176,7 @@ class ChemCompReader:
             block = self.__getDataBlock(self.__filePath, self.__ccU)
             return self.__setDataBlock(block)
 
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             traceback.print_exc(file=sys.stdout)
             return False
 
@@ -205,7 +205,7 @@ class ChemCompReader:
                         return block
 
             return None
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             traceback.print_exc(file=self.__lfh)
             return None
 
@@ -220,7 +220,7 @@ class ChemCompReader:
                 ok = True
             else:
                 self.__dBlock = None
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             pass
 
         return ok

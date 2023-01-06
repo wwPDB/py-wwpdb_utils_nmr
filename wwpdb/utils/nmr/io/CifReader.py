@@ -217,7 +217,7 @@ class CifReader:
                 return False
             block = self.__getDataBlock()
             return self.__setDataBlock(block)
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             if self.__verbose:
                 self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
             return False
@@ -256,7 +256,7 @@ class CifReader:
                 ok = True
             else:
                 self.__dBlock = None
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception:
             pass
 
         return ok
@@ -635,7 +635,7 @@ class CifReader:
 
         return ret
 
-    def __calculateRMSD(self, chain_id, length, total_models=1, atom_sites=None, randomM=None):  # pylint: disable=unused-argument
+    def __calculateRMSD(self, chain_id, length, total_models=1, atom_sites=None, randomM=None):
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 

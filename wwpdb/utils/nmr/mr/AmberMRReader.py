@@ -290,7 +290,8 @@ class AmberMRReader:
             if self.__verbose:
                 self.__lfh.write(f"+AmberMRReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
-            """
+            # pylint: disable=unreachable
+            """ debug code
         except Exception as e:
             if self.__verbose and isFilePath:
                 self.__lfh.write(f"+AmberMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")

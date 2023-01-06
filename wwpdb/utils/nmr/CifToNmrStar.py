@@ -423,7 +423,10 @@ class CifToNmrStar:
             if changed and maxRepeat > 0:
                 return self.convert(_cifPath, strPath, datablockName, maxRepeat=maxRepeat - 1)
 
-            os.remove(_cifPath)
+            try:
+                os.remove(_cifPath)
+            except OSError:
+                pass
 
             self.__lfh.write(f"+ERROR- CifToNmrStar.convert() {str(e)}\n")
 

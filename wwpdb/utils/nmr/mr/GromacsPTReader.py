@@ -170,7 +170,8 @@ class GromacsPTReader:
             if self.__verbose:
                 self.__lfh.write(f"+GromacsPTReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
-            """
+            # pylint: disable=unreachable
+            """ debug code
         except Exception as e:
             if self.__verbose and isFilePath:
                 self.__lfh.write(f"+GromacsPTReader.parse() ++ Error - {ptFilePath!r} - {str(e)}\n")

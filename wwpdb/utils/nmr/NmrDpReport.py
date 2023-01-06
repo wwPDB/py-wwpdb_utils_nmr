@@ -184,15 +184,15 @@ class NmrDpReport:
 
         return self.__report['information']['cyclic_polymer']
 
-    def getInputSourceDict(self, id):  # pylint: disable=redefined-builtin
+    def getInputSourceDict(self, src_id):
         """ Return input source dictionary of a given index.
             @return: input source of a given index, None otherwise
         """
 
-        if id < 0 or id >= len(self.input_sources):
+        if src_id < 0 or src_id >= len(self.input_sources):
             return None
 
-        return self.input_sources[id].get()
+        return self.input_sources[src_id].get()
 
     def getInputSourceIdOfNmrData(self):
         """ Return input_source_id of NMR data file.
@@ -235,11 +235,11 @@ class NmrDpReport:
 
         return {k: v for k, v in content_subtype.items() if v > 0}
 
-    def getNmrLegacyContentSubTypes(self, id):  # pylint: disable=redefined-builtin
+    def getNmrLegacyContentSubTypes(self, src_id):
         """ Return effective NMR content subtypes.
         """
 
-        content_subtype = get_value_safe(self.getInputSourceDict(id), 'content_subtype')
+        content_subtype = get_value_safe(self.getInputSourceDict(src_id), 'content_subtype')
 
         if content_subtype is None:
             return None
@@ -252,11 +252,11 @@ class NmrDpReport:
 
         return get_value_safe(get_value_safe(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'stats_of_exptl_data'), content_subtype)
 
-    def getNmrLegacyStatsOfExptlData(self, id, content_subtype):  # pylint: disable=redefined-builtin
+    def getNmrLegacyStatsOfExptlData(self, src_id, content_subtype):
         """ Return stats of experimental data of a given content subtype.
         """
 
-        return get_value_safe(get_value_safe(self.getInputSourceDict(id), 'stats_of_exptl_data'), content_subtype)
+        return get_value_safe(get_value_safe(self.getInputSourceDict(src_id), 'stats_of_exptl_data'), content_subtype)
 
     def getNmrRestraints(self):
         """ Return stats of NMR restraints.
@@ -269,9 +269,9 @@ class NmrDpReport:
 
         restraints = []
 
-        sid = self.getInputSourceIdOfNmrData()
+        src_id = self.getInputSourceIdOfNmrData()
 
-        nmr_input_source_dic = self.getInputSourceDict(sid)
+        nmr_input_source_dic = self.getInputSourceDict(src_id)
 
         if nmr_input_source_dic is None:
             return None
@@ -957,15 +957,15 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence having a given chain_id.
         """
 
-        sid = self.getInputSourceIdOfNmrData()
+        src_id = self.getInputSourceIdOfNmrData()
 
-        if sid < 0:
+        if src_id < 0:
             ids = self.getInputSourceIdsOfNmrLegacyData()
             if len(ids) == 0:
                 return None
-            sid = ids[0]
+            src_id = ids[0]
 
-        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(sid)
+        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(src_id)
 
         if nmr_polymer_sequence is None:
             return None
@@ -989,15 +989,15 @@ class NmrDpReport:
         """ Return mapping of chain_id in the NMR data, which share the same entity.
         """
 
-        sid = self.getInputSourceIdOfNmrData()
+        src_id = self.getInputSourceIdOfNmrData()
 
-        if sid < 0:
+        if src_id < 0:
             ids = self.getInputSourceIdsOfNmrLegacyData()
             if len(ids) == 0:
                 return None
-            sid = ids[0]
+            src_id = ids[0]
 
-        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(sid)
+        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(src_id)
 
         if nmr_polymer_sequence is None:
             return None
@@ -1037,15 +1037,15 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence (1-letter code) having a given chain_id.
         """
 
-        sid = self.getInputSourceIdOfNmrData()
+        src_id = self.getInputSourceIdOfNmrData()
 
-        if sid < 0:
+        if src_id < 0:
             ids = self.getInputSourceIdsOfNmrLegacyData()
             if len(ids) == 0:
                 return None
-            sid = ids[0]
+            src_id = ids[0]
 
-        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(sid)
+        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(src_id)
 
         if nmr_polymer_sequence is None:
             return None

@@ -761,10 +761,10 @@ class NEFTranslator:
                         tags = star_data.get_tags([_tag[0]])
                         if len(tags[_tag[0]]) == 0 and _tag[0][1:].split('.')[0] in sf_list:
                             missing_sf_tags.append(_tag[0])
-                    except:  # ValueError:  # noqa: E722 pylint: disable=bare-except
+                    except Exception:  # ValueError:
                         missing_lp_tags.append(_tag[0])
 
-        except:  # ValueError:  # noqa: E722 pylint: disable=bare-except
+        except Exception:  # ValueError:
 
             try:
                 star_data = pynmrstar.Saveframe.from_file(in_file)
@@ -777,10 +777,10 @@ class NEFTranslator:
                             tag = star_data.get_tag(_tag[0])
                             if len(tag) == 0 and _tag[0][1:].split('.')[0] == star_data.category:
                                 missing_sf_tags.append(_tag[0])
-                        except:  # ValueError:  # noqa: E722 pylint: disable=bare-except
+                        except Exception:  # ValueError:
                             missing_lp_tags.append(_tag[0])
 
-            except:  # ValueError:  # noqa: E722 pylint: disable=bare-except
+            except Exception:  # ValueError:
 
                 try:
                     star_data = pynmrstar.Loop.from_file(in_file)
@@ -791,10 +791,10 @@ class NEFTranslator:
 
                             try:
                                 get_lp_tag(star_data, _tag[0])
-                            except:  # ValueError:  # noqa: E722 pylint: disable=bare-except
+                            except Exception:  # ValueError:
                                 missing_lp_tags.append(_tag[0])
 
-                except:  # ValueError:  # noqa: E722 pylint: disable=bare-except
+                except Exception:  # ValueError:
                     pass
 
         return missing_sf_tags, missing_lp_tags
@@ -5142,7 +5142,7 @@ class NEFTranslator:
                             offset = _cif_seq - _nef_seq
                         if cif_ps is not None:
                             _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
-                    except:  # noqa: E722 pylint: disable=bare-except
+                    except IndexError:
                         pass
 
                 nef_seq = str(_nef_seq)
@@ -5337,7 +5337,7 @@ class NEFTranslator:
                             offset = _cif_seq - _star_seq
                         if cif_ps is not None:
                             _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
-                    except:  # noqa: E722 pylint: disable=bare-except
+                    except IndexError:
                         pass
 
                 star_seq = str(_star_seq)
@@ -5454,7 +5454,7 @@ class NEFTranslator:
                             offset = _cif_seq - _in_star_seq
                         if cif_ps is not None:
                             _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
-                    except:  # noqa: E722 pylint: disable=bare-except
+                    except IndexError:
                         pass
 
                 in_star_seq = str(_in_star_seq)
@@ -6356,9 +6356,9 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:  # pylint: disable=redefined-builtin
+        for row_id in id_list:
 
-            in_row = [row for row in loop_data if row[id_index] == str(id)]
+            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
             buf_row = []
 
@@ -6514,9 +6514,9 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:  # pylint: disable=redefined-builtin
+        for row_id in id_list:
 
-            in_row = [row for row in loop_data if row[id_index] == str(id)]
+            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
             buf_row = []
 
@@ -6673,9 +6673,9 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:  # pylint: disable=redefined-builtin
+        for row_id in id_list:
 
-            in_row = [row for row in loop_data if row[id_index] == str(id)]
+            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
             buf_row = []
 
@@ -6841,9 +6841,9 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:  # pylint: disable=redefined-builtin
+        for row_id in id_list:
 
-            in_row = [row for row in loop_data if row[id_index] == str(id)]
+            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
             buf_row = []
 
@@ -7028,9 +7028,9 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:  # pylint: disable=redefined-builtin
+        for row_id in id_list:
 
-            in_row = [row for row in loop_data if row[id_index] == str(id)]
+            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
             buf_row = []
 
@@ -7201,9 +7201,9 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:  # pylint: disable=redefined-builtin
+        for row_id in id_list:
 
-            in_row = [row for row in loop_data if row[id_index] == str(id)]
+            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
             buf_row = []
 
@@ -7346,9 +7346,9 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:  # pylint: disable=redefined-builtin
+        for row_id in id_list:
 
-            in_row = [row for row in loop_data if row[id_index] == str(id)]
+            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
             buf_row = []
 
@@ -7484,9 +7484,9 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:  # pylint: disable=redefined-builtin
+        for row_id in id_list:
 
-            in_row = [row for row in loop_data if row[id_index] == str(id)]
+            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
             buf_row = []
 
@@ -7701,9 +7701,9 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:  # pylint: disable=redefined-builtin
+        for row_id in id_list:
 
-            in_row = [row for row in loop_data if row[id_index] == str(id)]
+            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
             buf_row = []
 
@@ -7839,9 +7839,9 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:  # pylint: disable=redefined-builtin
+        for row_id in id_list:
 
-            in_row = [row for row in loop_data if row[id_index] == str(id)]
+            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
             buf_row = []
 
@@ -8438,7 +8438,7 @@ class NEFTranslator:
 
         try:
             star_data = pynmrstar.Entry.from_scratch(nef_data.entry_id)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
+        except Exception:  # AttributeError:
             star_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
             # warning.append('Not a complete Entry')
 
@@ -8947,7 +8947,7 @@ class NEFTranslator:
 
         try:
             nef_data = pynmrstar.Entry.from_scratch(star_data.entry_id)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
+        except Exception:  # AttributeError:
             nef_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
             # warning.append('Not a complete Entry.')
 
@@ -9368,7 +9368,7 @@ class NEFTranslator:
 
         try:
             out_data = pynmrstar.Entry.from_scratch(star_data.entry_id)
-        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
+        except Exception:  # AttributeError:
             out_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
             # warning.append('Not a complete Entry.')
 
@@ -9412,7 +9412,7 @@ class NEFTranslator:
                         _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]  # label_seq_id
                         if cif_ps is not None:
                             _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
-                    except:  # noqa: E722 pylint: disable=bare-except
+                    except IndexError:
                         pass
 
                 self.authSeqMap[(star_chain, star_seq)] = (star_chain, star_seq)

@@ -129,12 +129,12 @@ class NmrStarToCif:
 
                             try:
                                 entry_id = next(row[entry_id_tag] for row in dList if row[entry_id_tag] not in emptyValue)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except (StopIteration, KeyError):
                                 entry_id = '?'
 
                             try:
                                 list_id = next(row[list_id_tags[content_subtype]] for row in dList if row[list_id_tags[content_subtype]] not in emptyValue)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except (StopIteration, KeyError):
                                 list_id = '?'
 
                             if content_subtype == 'chem_shift':
@@ -246,12 +246,12 @@ class NmrStarToCif:
 
                             try:
                                 entry_id = next(row[entry_id_tag] for row in dList if row[entry_id_tag] not in emptyValue)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except (StopIteration, KeyError):
                                 entry_id = '?'
 
                             try:
                                 list_id = next(row[list_id_tag] for row in dList if row[list_id_tag] not in emptyValue)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except (StopIteration, KeyError):
                                 list_id = '?'
 
                             cifObj.AddCategory(k, cs_list_cif, ['entry_id', 'id', 'data_file_name'])

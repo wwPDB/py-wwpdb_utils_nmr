@@ -1166,7 +1166,7 @@ class NmrDpUtility:
                              self.__extractCoordOtherBond,
                              self.__validateStrMr,
                              self.__validateLegacyMr,
-                             # self.__validateStrPk,
+                             self.__validateStrPk,
                              self.__calculateStatsOfExptlData,
                              self.__updateConstraintStats,
                              self.__detectSimpleDistanceRestraint
@@ -21671,6 +21671,41 @@ class NmrDpUtility:
                     np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], ps, conservative=False)
                     np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], ps, np_seq_align)
 
+        def get_auth_seq_scheme(chain_id, seq_id):
+            auth_asym_id = auth_seq_id = None
+
+            if chain_assign is not None:
+                auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
+                if auth_asym_id is not None:
+                    sa = next((sa for sa in seq_align
+                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                    if sa is not None:
+                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                            if test_seq_id == seq_id), None)
+
+            if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
+                if auth_asym_id is not None:
+                    sa = next((sa for sa in br_seq_align
+                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                    if sa is not None:
+                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                            if test_seq_id == seq_id), None)
+
+            if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
+                if auth_asym_id is not None:
+                    sa = next((sa for sa in np_seq_align
+                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                    if sa is not None:
+                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                            if test_seq_id == seq_id), None)
+
+            return auth_asym_id, auth_seq_id
+
         if __pynmrstar_v3_2__:
             loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
         else:
@@ -22165,7 +22200,7 @@ class NmrDpUtility:
                                     _row[0] = index
                                     _row[6] = atom_ids[-1]
 
-                    elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_seq_id:
+                    elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
                         try:
                             _auth_seq_id = int(auth_seq_id)
                             seq_key = (auth_asym_id, _auth_seq_id, auth_comp_id)
@@ -22325,31 +22360,7 @@ class NmrDpUtility:
                     # if chain_id in emptyValue:
                     #     chain_id = ps[0]['chain_id']
 
-                    auth_asym_id = auth_seq_id = None
-
-                    if chain_assign is not None:
-                        auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
-                        if auth_asym_id is not None:
-                            sa = next((sa for sa in seq_align if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
-                            if sa is not None:
-                                _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                                auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id']) if test_seq_id == seq_id), None)
-
-                    if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
-                        auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
-                        if auth_asym_id is not None:
-                            sa = next((sa for sa in br_seq_align if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
-                            if sa is not None:
-                                _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                                auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id']) if test_seq_id == seq_id), None)
-
-                    if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
-                        auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
-                        if auth_asym_id is not None:
-                            sa = next((sa for sa in np_seq_align if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
-                            if sa is not None:
-                                _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                                auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id']) if test_seq_id == seq_id), None)
+                    auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
                     resolved = True
 
@@ -28586,11 +28597,6 @@ class NmrDpUtility:
 
             file_name = input_source_dic['file_name']
 
-            original_file_name = file_name.replace('-corrected', '')
-            if 'original_file_name' in input_source_dic:
-                if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
-
             if input_source_dic['content_subtype'] is None:
                 continue
 
@@ -28622,7 +28628,7 @@ class NmrDpUtility:
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    self.__validateStrPk__(fileListId, file_type, original_file_name, content_subtype, list_id, sf_data, sf_framecode, lp_category)
+                    self.__validateStrPk__(fileListId, file_type, content_subtype, list_id, sf_data, sf_framecode, lp_category)
 
                     list_id += 1
 
@@ -28631,15 +28637,373 @@ class NmrDpUtility:
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                        self.__validateStrPk__(fileListId, file_type, original_file_name, content_subtype, list_id, sf_data, sf_framecode, lp_category)
+                        self.__validateStrPk__(fileListId, file_type, content_subtype, list_id, sf_data, sf_framecode, lp_category)
 
                         list_id += 1
 
         return True
 
-    def __validateStrPk__(self, file_list_id, file_type, original_file_name, content_subtype, list_id, sf_data, sf_framecode, lp_category):
+    def __validateStrPk__(self, file_list_id, file_type, content_subtype, list_id, sf_data, sf_framecode, lp_category):
         """ Validate spectral peak lists in NMR-STAR restraint files.
         """
+
+        _num_dim = get_first_sf_tag(sf_data, self.num_dim_items[file_type])
+        num_dim = int(_num_dim)
+
+        if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
+            return False
+
+        max_dim = num_dim + 1
+
+        lp_category = '_Peak_row_format' if content_subtype == 'spectral_peak' else '_Assigned_peak_chem_shift'
+
+        try:
+
+            if __pynmrstar_v3_2__:
+                loop = sf_data.get_loop(lp_category)
+            else:
+                loop = sf_data.get_loop_by_category(lp_category)
+
+        except KeyError:
+            return False
+
+        input_source = self.report.input_sources[file_list_id]
+        input_source_dic = input_source.get()
+
+        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+
+        if not has_poly_seq_in_loop:
+            return False
+
+        if self.__caC is None:
+            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__cR, None)
+
+        auth_to_star_seq = self.__caC['auth_to_star_seq']
+
+        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+
+        seq_align = chain_assign = None
+        br_seq_align = br_chain_assign = None
+        np_seq_align = np_chain_assign = None
+
+        if content_subtype in polymer_sequence_in_loop:
+            ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == sf_framecode), None)
+
+            if ps_in_loop is not None:
+                ps = ps_in_loop['polymer_sequence']
+
+                seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['polymer_sequence'], ps, conservative=False)
+                chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['polymer_sequence'], ps, seq_align)
+
+                if self.__caC['branched'] is not None:
+                    br_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['branched'], ps, conservative=False)
+                    br_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['branched'], ps, br_seq_align)
+
+                if self.__caC['non_polymer'] is not None:
+                    np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], ps, conservative=False)
+                    np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], ps, np_seq_align)
+
+        def get_auth_seq_scheme(chain_id, seq_id):
+            auth_asym_id = auth_seq_id = None
+
+            if chain_assign is not None:
+                auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
+                if auth_asym_id is not None:
+                    sa = next((sa for sa in seq_align
+                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                    if sa is not None:
+                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                            if test_seq_id == seq_id), None)
+
+            if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
+                if auth_asym_id is not None:
+                    sa = next((sa for sa in br_seq_align
+                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                    if sa is not None:
+                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                            if test_seq_id == seq_id), None)
+
+            if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
+                if auth_asym_id is not None:
+                    sa = next((sa for sa in np_seq_align
+                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                    if sa is not None:
+                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                            if test_seq_id == seq_id), None)
+
+            return auth_asym_id, auth_seq_id
+
+        list_items = ['Details', 'Entry_ID', 'Spectral_peak_list_ID']
+
+        if content_subtype == 'spectral_peak':
+
+            core_items = ['Index_ID', 'ID', 'Volume', 'Volume_uncertainty', 'Height', 'Height_uncertainty']
+            aux_items = [item for item in ['Figure_of_merit', 'Restraint'] if item in loop.tags]
+
+            position_item_temps = ['Position_%s', 'Position_uncertainty_%s', 'Line_width_%s', 'Line_width_uncertainty_%s']
+
+            position_items = []
+
+            for dim in range(1, max_dim):
+                for idx, position_item_temp in enumerate(position_item_temps):
+                    position_item = position_item_temp % dim
+                    if idx == 0:
+                        position_items.append(position_item)
+                    elif position_item in loop.tags:
+                        position_items.append(position_item)
+
+            assign_item_temps = ['Entity_assembly_ID_%s', 'Entity_ID_%s', 'Comp_index_ID_%s', 'Seq_ID_%s', 'Comp_ID_%s', 'Atom_ID_%s']
+            ambigutity_item_temps = ['Ambiguity_code_%s', 'Ambiguity_set_ID_%s']
+
+            assign_items = []
+
+            for dim in range(1, max_dim):
+                for assign_item_temp in assign_item_temps:
+                    assign_items.append(assign_item_temp % dim)
+                for ambigutity_item_temp in ambigutity_item_temps:
+                    ambigutity_item = ambigutity_item_temp % dim
+                    if ambigutity_item in loop.tags:
+                        assign_items.append(ambigutity_item)
+
+            auth_assign_item_temps = ['Auth_asym_ID_%s', 'Auth_seq_ID_%s', 'Auth_comp_ID_%s', 'Auth_atom_ID_%s']
+
+            auth_assign_items = []
+
+            for dim in range(1, max_dim):
+                for auth_assign_item_temp in auth_assign_item_temps:
+                    auth_assign_items.append(auth_assign_item_temp % dim)
+
+        else:
+
+            core_items = ['Peak_ID', 'Spectral_dim_ID', 'Set_ID', 'Magnetization_linkage_ID', 'Val']
+            aux_items = [item for item in ['Contribution_fractional_val', 'Figure_of_merit', 'Assigned_chem_shift_list_ID', 'Atom_chem_shift_ID']
+                         if item in loop.tags]
+
+            assign_items = ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID']
+            ambigutity_items = ['Ambiguity_code', 'Ambiguity_set_ID']
+            for ambiguity_item in ambigutity_items:
+                if ambiguity_item in loop.tags:
+                    assign_items.append(ambiguity_item)
+
+            auth_assign_items = ['Auth_entity_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID']
+
+        items = core_items
+        if len(aux_items) > 0:
+            items.extend(aux_items)
+        items.extend(assign_items)
+        items.extend(auth_assign_items)
+        items.extend(list_items)
+
+        lp = pynmrstar.Loop.from_scratch(lp_category)
+
+        tags = [lp_category + '.' + item for item in items]
+
+        for tag in tags:
+            lp.add_tag(tag)
+
+        index = 1
+
+        for idx, row in enumerate(loop):
+
+            _row = [None] * len(tags)
+
+            for col, item in enumerate(loop.tags):
+                if item in items:
+                    _row[items.index(item)] = row[col]
+
+            if content_subtype == 'spectral_peak':
+
+                _row[0] = index
+
+                for dim in range(1, max_dim):
+                    has_auth_seq = valid_auth_seq = True
+                    for auth_assign_item_temp in auth_assign_item_temps:
+                        auth_assign_item = auth_assign_item_temp % dim
+                        if auth_assign_item not in loop.tags:
+                            has_auth_seq = valid_auth_seq = False
+                            break
+                    if has_auth_seq:
+                        try:
+                            seq_key = (row[loop.tags.index(auth_assign_item_temps[0] % dim)],
+                                       int(row[loop.tags.index(auth_assign_item_temps[1] % dim)]),
+                                       row[loop.tags.index(auth_assign_item_temps[2] % dim)])
+                            if seq_key not in auth_to_star_seq:
+                                valid_auth_seq = False
+                        except ValueError:
+                            has_auth_seq = valid_auth_seq = False
+
+                    if valid_auth_seq:
+                        entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+
+                        for col, assign_item_temp in enumerate(assign_item_temps):
+                            assign_item = assign_item_temp % dim
+                            if col == 0:
+                                _row[items.index(assign_item)] = entity_assembly_id
+                            elif col == 1:
+                                _row[items.index(assign_item)] = entity_id
+                            elif col in (2, 3):
+                                _row[items.index(assign_item)] = seq_id
+                            else:
+                                break
+
+                    else:
+
+                        chain_id = seq_id = comp_id = atom_id = None
+
+                        for col, assign_item_temp in enumerate(assign_item_temps):
+                            assign_item = assign_item_temp % dim
+                            if col == 0:
+                                chain_id = row[loop.tags.index(assign_item)]
+                            elif col == 1:
+                                continue
+                            elif col == 2:
+                                try:
+                                    seq_id = int(row[loop.tags.index(assign_item)])
+                                except ValueError:
+                                    pass
+                            elif col == 3:
+                                if seq_id is None:
+                                    try:
+                                        seq_id = int(row[loop.tags.index(assign_item)])
+                                    except ValueError:
+                                        pass
+                            elif col == 4:
+                                comp_id = row[loop.tags.index(assign_item)]
+                                if comp_id not in emptyValue:
+                                    comp_id = comp_id.upper()
+                            else:
+                                atom_id = row[loop.tags.index(assign_item)]
+
+                        auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+
+                        if auth_asym_id is not None and auth_seq_id is not None:
+                            seq_key = (auth_asym_id, auth_seq_id, comp_id)
+                            if seq_key in auth_to_star_seq:
+                                entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+
+                                for col, assign_item_temp in enumerate(assign_item_temps):
+                                    assign_item = assign_item_temp % dim
+                                    if col == 0:
+                                        _row[items.index(assign_item)] = entity_assembly_id
+                                    elif col == 1:
+                                        _row[items.index(assign_item)] = entity_id
+                                    elif col in (2, 3):
+                                        _row[items.index(assign_item)] = seq_id
+                                    elif col == 4:
+                                        _row[items.index(assign_item)] = comp_id
+                                        break
+
+                                for col, auth_assign_item_temp in enumerate(auth_assign_item_temps):
+                                    auth_assign_item = auth_assign_item_temp % dim
+                                    if col == 0:
+                                        _row[items.index(auth_assign_item)] = auth_asym_id
+                                    elif col == 1:
+                                        _row[items.index(auth_assign_item)] = auth_seq_id
+                                    elif col == 2:
+                                        _row[items.index(auth_assign_item)] = comp_id
+                                    else:
+                                        _row[items.index(auth_assign_item)] = atom_id
+
+            else:
+
+                has_auth_seq = valid_auth_seq = True
+                for auth_assign_item in auth_assign_items:
+                    if auth_assign_item not in loop.tags:
+                        has_auth_seq = valid_auth_seq = False
+                        break
+                if has_auth_seq:
+                    try:
+                        seq_key = (row[loop.tags.index(auth_assign_items[0])],
+                                   int(row[loop.tags.index(auth_assign_items[1])]),
+                                   row[loop.tags.index(auth_assign_items[2])])
+                        if seq_key not in auth_to_star_seq:
+                            valid_auth_seq = False
+                    except ValueError:
+                        has_auth_seq = valid_auth_seq = False
+
+                if valid_auth_seq:
+                    entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+
+                    for col, assign_item in enumerate(assign_items):
+                        if col == 0:
+                            _row[items.index(assign_item)] = entity_assembly_id
+                        elif col == 1:
+                            _row[items.index(assign_item)] = entity_id
+                        elif col == 2:
+                            _row[items.index(assign_item)] = seq_id
+                            break
+
+                else:
+
+                    chain_id = seq_id = comp_id = atom_id = None
+
+                    for col, assign_item in enumerate(assign_items):
+                        if col == 0:
+                            chain_id = row[loop.tags.index(assign_item)]
+                        elif col == 1:
+                            continue
+                        elif col == 2:
+                            try:
+                                seq_id = int(row[loop.tags.index(assign_item)])
+                            except ValueError:
+                                pass
+                        elif col == 3:
+                            comp_id = row[loop.tags.index(assign_item)]
+                            if comp_id not in emptyValue:
+                                comp_id = comp_id.upper()
+                        else:
+                            atom_id = row[loop.tags.index(assign_item)]
+
+                    auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+
+                    if auth_asym_id is not None and auth_seq_id is not None:
+                        seq_key = (auth_asym_id, auth_seq_id, comp_id)
+                        if seq_key in auth_to_star_seq:
+                            entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+
+                            for col, assign_item in enumerate(assign_items):
+                                if col == 0:
+                                    _row[items.index(assign_item)] = entity_assembly_id
+                                elif col == 1:
+                                    _row[items.index(assign_item)] = entity_id
+                                elif col == 2:
+                                    _row[items.index(assign_item)] = seq_id
+                                elif col == 3:
+                                    _row[items.index(assign_item)] = comp_id
+                                    break
+
+                            for col, auth_assign_item in enumerate(auth_assign_items):
+                                if col == 0:
+                                    _row[items.index(auth_assign_item)] = auth_asym_id
+                                elif col == 1:
+                                    _row[items.index(auth_assign_item)] = auth_seq_id
+                                elif col == 2:
+                                    _row[items.index(auth_assign_item)] = comp_id
+                                else:
+                                    _row[items.index(auth_assign_item)] = atom_id
+
+            _row[-2] = self.__entry_id
+            _row[-1] = list_id
+
+            lp.add_data(_row)
+
+            index += 1
+
+        del sf_data[loop]
+
+        sf_data.add_loop(lp)
+
+        self.__c2S.set_entry_id(sf_data, self.__entry_id)
+        self.__c2S.set_local_sf_id(sf_data, list_id)
+
+        return True
 
     def __calculateStatsOfExptlData(self):
         """ Calculate statistics of experimental data.
@@ -37109,6 +37473,11 @@ class NmrDpUtility:
                                 else:
                                     loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
                                 modified = True
+
+                    elif self.__nonblk_bad_nterm\
+                       and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__coord_unobs_res)\
+                       and atom_id_ == 'P':
+                        continue
 
                     elif ca['conflict'] == 0:  # no conflict in sequenc alignment
 

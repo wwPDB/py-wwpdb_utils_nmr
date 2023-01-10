@@ -571,7 +571,7 @@ def is_good_data(array):
         @return: True for good data in the array, False otherwise
     """
 
-    return not any(d in emptyValue or badPattern.match(d) for d in array)
+    return not any(d in emptyValue or (isinstance(d, str) and badPattern.match(d)) for d in array)
 
 
 class NEFTranslator:
@@ -1996,7 +1996,8 @@ class NEFTranslator:
                 sorted_ist = sorted(set((row[0], int(row[1])) for row in a_type_data),
                                     key=lambda x: (x[0], x[1]))
                 sorted_atm = sorted(set((row[0], row[2]) for row in a_type_data
-                                        if not (row[2] in emptyValue or badPattern.match(row[2]))), key=lambda x: (x[0], x[1]))  # DAOTHER-7389, issue #3
+                                        if not (row[2] in emptyValue or (isinstance(row[2], str) and badPattern.match(row[2])))),
+                                    key=lambda x: (x[0], x[1]))  # DAOTHER-7389, issue #3
 
                 for t in a_types:
                     ist_dict[t] = [x[1] for x in sorted_ist if x[0] == t]
@@ -2123,8 +2124,8 @@ class NEFTranslator:
                 raise UserWarning(warn)
 
             _ambig_data = [row for row in ambig_data
-                           if not (row[0] in emptyValue or badPattern.match(row[0]))
-                           and not (row[1] in emptyValue or badPattern.match(row[1]))]  # DAOTHER-7389, issue #3
+                           if not (row[0] in emptyValue or (isinstance(row[0], str) and badPattern.match(row[0])))
+                           and not (row[1] in emptyValue or (isinstance(row[1], str) and badPattern.match(row[1])))]  # DAOTHER-7389, issue #3
 
             if len(_ambig_data) == 0:
                 continue
@@ -3030,7 +3031,7 @@ class NEFTranslator:
                                     val = val.upper()
                                 row[j] = ent[name] = val
                             if ('remove-bad-pattern' in k and k['remove-bad-pattern']) or ('clear-bad-pattern' in k and k['clear-bad-pattern']):
-                                if badPattern.match(val):
+                                if isinstance(val, str) and badPattern.match(val):
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
@@ -3337,7 +3338,7 @@ class NEFTranslator:
                                                          + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                 else:
                                     if ('remove-bad-pattern' in d and d['remove-bad-pattern']) or ('clear-bad-pattern' in d and d['clear-bad-pattern']):
-                                        if badPattern.match(val):
+                                        if isinstance(val, str) and badPattern.match(val):
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 remove_bad_pattern = True
                                                 continue
@@ -3684,7 +3685,7 @@ class NEFTranslator:
 
             for idx, row in enumerate(get_lp_tag(loop, key_names)):
 
-                if any(badPattern.match(dat) for dat in row):
+                if any(isinstance(dat, str) and badPattern.match(dat) for dat in row):
                     if idx < len_loop:
                         bad_ids.add(idx)
                 else:

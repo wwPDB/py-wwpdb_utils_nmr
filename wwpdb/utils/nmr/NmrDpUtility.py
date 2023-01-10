@@ -1071,6 +1071,9 @@ class NmrDpUtility:
         # whether entity category exists (nmr-star specific)
         self.__has_star_entity = False
 
+        # whether a CS loop is in the primary NMR-STAR file (used only during NMR restraint remediation)
+        self.__has_star_chem_shift = True
+
         # whether allow missing distance restraints (NMR unified deposition, DAOTHER-8088 1.b, 8108)
         self.__allow_missing_dist_restraint = True
         # whether allow missing distance restraints (NMR legacy deposition, DAOTHER-8088 1.b, 8108)
@@ -5598,6 +5601,7 @@ class NmrDpUtility:
         if op == 'nmr-cs-mr-merge':
 
             self.__remediation_mode = True
+            self.__has_star_chem_shift = True
 
             if self.__inputParamDictCopy is None:
                 self.__inputParamDictCopy = copy.deepcopy(self.__inputParamDict)
@@ -6599,12 +6603,24 @@ class NmrDpUtility:
                             if 'No such file or directory' not in err_message:
                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+                if not self.__remediation_mode or not missing_loop or file_list_id > 0:
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+                    self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+
+                else:
+
+                    self.__has_star_chem_shift = False
+
+                    self.__suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
+                                                                  {'file_name': file_name, 'description': err}})
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
 
             if not self.__has_legacy_sf_issue and fileSubType in ('S', 'R', 'O'):
                 return False
@@ -7527,14 +7543,26 @@ class NmrDpUtility:
                         if 'No such file or directory' not in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-            self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
-                                                {'file_name': file_name, 'description': err})
-            self.report.setError()
+            if not self.__remediation_mode or not missing_loop or file_list_id > 0:
 
-            if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+                self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
 
-            is_done = False
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+
+                is_done = False
+
+            else:
+
+                self.__has_star_chem_shift = False
+
+                self.__suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
+                                                              {'file_name': file_name, 'description': err}})
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
 
         try:
 
@@ -8409,6 +8437,31 @@ class NmrDpUtility:
 
                     for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                        if content_subtype == 'chem_shift' and not self.__has_star_chem_shift:
+                            if self.__star_data[0] is None:
+                                self.__star_data[0] = pynmrstar.Entry.from_scratch(self.__entry_id)
+                                self.__star_data_type[0] = 'Entry'
+
+                            self.__star_data[0].add_saveframe(sf_data)
+
+                            input_source_ = self.report.input_sources[0]
+                            input_source_dic_ = input_source_.get()
+                            content_subtypes_ = input_source_dic_['content_subtype']
+
+                            if content_subtypes_ is None:
+                                content_subtypes_ = {content_subtype: 0}
+
+                            content_subtypes_[content_subtype] += 1
+
+                            input_source_.setItemValue('content_subtype', content_subtypes_)
+
+                            for idx, msg in enumerate(self.__suspended_errors_for_lazy_eval):
+                                for k, v in msg.items():
+                                    if k == 'missing_mandatory_content':
+                                        del self.__suspended_errors_for_lazy_eval[idx]
+                                        break
+
                         self.__star_data[file_list_id].remove_saveframe(sf_framecode)
 
                     lp_counts[content_subtype] = 0
@@ -12882,7 +12935,7 @@ class NmrDpUtility:
 
                         is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
 
-                        if not is_valid:
+                        if not is_valid or not self.__has_star_chem_shift:
                             _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
                             if _is_valid:
                                 has_cs_str = True
@@ -13052,7 +13105,7 @@ class NmrDpUtility:
 
                         is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
 
-                        if not is_valid:
+                        if not is_valid or not self.__has_star_chem_shift:
                             _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
                             if _is_valid:
                                 has_cs_str = True
@@ -13578,7 +13631,7 @@ class NmrDpUtility:
 
                             is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
 
-                            if not is_valid:
+                            if not is_valid or not self.__has_star_chem_shift:
                                 _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
                                 if _is_valid:
                                     has_cs_str = True
@@ -13699,7 +13752,7 @@ class NmrDpUtility:
 
                             is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
 
-                            if not is_valid:
+                            if not is_valid or not self.__has_star_chem_shift:
                                 _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
                                 if _is_valid:
                                     has_cs_str = True
@@ -28797,6 +28850,8 @@ class NmrDpUtility:
         items = core_items
         if len(aux_items) > 0:
             items.extend(aux_items)
+        if content_subtype == 'spectral_peak':
+            items.extend(position_items)
         items.extend(assign_items)
         items.extend(auth_assign_items)
         items.extend(list_items)
@@ -37475,8 +37530,8 @@ class NmrDpUtility:
                                 modified = True
 
                     elif self.__nonblk_bad_nterm\
-                       and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__coord_unobs_res)\
-                       and atom_id_ == 'P':
+                            and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__coord_unobs_res)\
+                            and atom_id_ == 'P':
                         continue
 
                     elif ca['conflict'] == 0:  # no conflict in sequenc alignment

@@ -8443,24 +8443,25 @@ class NmrDpUtility:
                                 self.__star_data[0] = pynmrstar.Entry.from_scratch(self.__entry_id)
                                 self.__star_data_type[0] = 'Entry'
 
-                            self.__star_data[0].add_saveframe(sf_data)
+                            if sf_data not in self.__star_data[0].frame_list:
+                                self.__star_data[0].add_saveframe(sf_data)
 
-                            input_source_ = self.report.input_sources[0]
-                            input_source_dic_ = input_source_.get()
-                            content_subtypes_ = input_source_dic_['content_subtype']
+                                input_source_ = self.report.input_sources[0]
+                                input_source_dic_ = input_source_.get()
+                                content_subtypes_ = input_source_dic_['content_subtype']
 
-                            if content_subtypes_ is None:
-                                content_subtypes_ = {content_subtype: 0}
+                                if content_subtypes_ is None:
+                                    content_subtypes_ = {content_subtype: 0}
 
-                            content_subtypes_[content_subtype] += 1
+                                content_subtypes_[content_subtype] += 1
 
-                            input_source_.setItemValue('content_subtype', content_subtypes_)
+                                input_source_.setItemValue('content_subtype', content_subtypes_)
 
-                            for idx, msg in enumerate(self.__suspended_errors_for_lazy_eval):
-                                for k, v in msg.items():
-                                    if k == 'missing_mandatory_content':
-                                        del self.__suspended_errors_for_lazy_eval[idx]
-                                        break
+                                for idx, msg in enumerate(self.__suspended_errors_for_lazy_eval):
+                                    for k, v in msg.items():
+                                        if k == 'missing_mandatory_content':
+                                            del self.__suspended_errors_for_lazy_eval[idx]
+                                            break
 
                         self.__star_data[file_list_id].remove_saveframe(sf_framecode)
 

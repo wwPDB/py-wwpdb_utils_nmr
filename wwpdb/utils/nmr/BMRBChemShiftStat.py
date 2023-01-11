@@ -228,7 +228,7 @@ class BMRBChemShiftStat:
             return self.__cachedDictForSimilarCompId[key]
 
         aa_bb = {'C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'}
-        dn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", 'P'}
+        dn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", "H2'1", "H2'2", 'P'}
         rn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", "H5'1", "H5'2", "H2'1", "HO'2", 'P', "O2'"}
         ch_bb = {'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H61', 'H62'}
 
@@ -493,13 +493,25 @@ class BMRBChemShiftStat:
 
         try:
 
+            is_proton = atom_id[0] in protonBeginCode
+
             d = next(item['desc'] for item in cs_stat if item['atom_id'] == atom_id)
 
-            if d == 'methyl-geminal' and atom_id[0] in protonBeginCode:
+            if d == 'methyl-geminal' and is_proton:
                 return next(item['atom_id'] for item in cs_stat
                             if item['desc'] == d and item['atom_id'] != atom_id and item['atom_id'][:-2] == atom_id[:-2] and item['atom_id'][-1] == atom_id[-1])
 
-            if 'geminal' in d or d == 'aroma-opposite':
+            if d == 'aroma-opposite':
+                return next(item['atom_id'] for item in cs_stat
+                            if item['desc'] == d and item['atom_id'] != atom_id and item['atom_id'][:-1] == atom_id[:-1])
+
+            if 'geminal' in d:
+
+                if is_proton:
+
+                    _atom_id = self.getProtonsInSameGroup(comp_id, atom_id, excl_self=True)
+
+                    return _atom_id[0] if len(_atom_id) > 0 else None
 
                 if not atom_id.endswith("'"):
                     return next(item['atom_id'] for item in cs_stat

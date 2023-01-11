@@ -125,6 +125,10 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('VAL', 'CG2'), 'CG1')
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('LEU', 'HD12'), 'HD22')
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('TYR', 'HD2'), 'HD1')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('DG', 'H21'), 'H22')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('DG', 'H22'), 'H21')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('DG', "H2'"), "H2''")
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('DG', "H2''"), "H2'")
 
     def test_maxambigcode(self):
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('ARG', 'HB2'), 2)

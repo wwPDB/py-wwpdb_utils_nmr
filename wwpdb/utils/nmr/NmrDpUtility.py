@@ -8605,6 +8605,26 @@ class NmrDpUtility:
                     with open(os.path.join(dir_path, '.entry_with_pk'), 'w') as ofp:
                         ofp.write('')
 
+        if self.__combined_mode:
+
+            mr_loops = 0
+
+            for content_subtype in self.mr_content_subtypes:
+                if content_subtype in lp_counts:
+                    mr_loops += lp_counts[content_subtype]
+
+            if mr_loops == 0:
+
+                err = "Deposition of NMR restraints used for the structure determination is mandatory. "\
+                    f"Please re-upload the {file_type.upper()} file."
+
+                self.report.error.appendDescription('missing_mandatory_content',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
         if not self.__combined_mode and self.__remediation_mode and file_list_id == 0 and file_type == 'nmr-star':

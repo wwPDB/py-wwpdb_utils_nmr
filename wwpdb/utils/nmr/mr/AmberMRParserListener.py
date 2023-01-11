@@ -3136,7 +3136,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if compId in monDict3 or coordAtomSite is None:
                     atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
                 else:
-                    atomId = translateToStdAtomName(atomId, compId, coordAtomSite['atom_id'])
+                    atomId = translateToStdAtomName(atomId, compId, coordAtomSite['atom_id'], ccU=self.__ccU)
 
                 atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
 
@@ -3282,7 +3282,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if compId in monDict3 or coordAtomSite is None:
                             atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
                         else:
-                            atomId = translateToStdAtomName(atomId, compId, coordAtomSite['atom_id'])
+                            atomId = translateToStdAtomName(atomId, compId, coordAtomSite['atom_id'], ccU=self.__ccU)
 
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
 

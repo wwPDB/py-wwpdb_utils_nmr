@@ -1431,7 +1431,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
         if atomId in refAtomIdList:
             return atomId
 
-    elif refCompId is not None and ccU is not None:
+    if refCompId is not None and ccU is not None:
         refCompId = translateToStdResName(refCompId, ccU)
         if ccU.updateChemCompDict(refCompId):
             refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
@@ -1446,6 +1446,10 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                     return "H2'1"
                 if atomId == "H2''" and "H2'2" in refAtomIdList:  # DCZ, THM
                     return "H2'2"
+                if atomId == "H2''1" and "H2'1" in refAtomIdList:  # 4EN
+                    return "H2'1"
+                if atomId == "H2''2" and "H2'2" in refAtomIdList:  # 4EN
+                    return "H2'2"
             elif atomId.startswith("H4'"):
                 if atomId == "H4''" and "H4'A" in refAtomIdList:  # 4DG
                     return "H4'A"
@@ -1456,6 +1460,10 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                     return "H5'2"
                 if atomId == "H5''" and "H5'A" in refAtomIdList:  # 4DG, 23G
                     return "H5'A"
+                if atomId == "H5''1" and "H5'1" in refAtomIdList:  # 4EN
+                    return "H5'1"
+                if atomId == "H5''2" and "H5'2" in refAtomIdList:  # 4EN
+                    return "H5'2"
             elif atomId.startswith('M'):  # methyl group
                 if 'H' + atomId[1:] + '1' in refAtomIdList:
                     return 'H' + atomId[1:]

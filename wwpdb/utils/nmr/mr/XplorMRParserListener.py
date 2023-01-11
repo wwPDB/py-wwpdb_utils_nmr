@@ -8029,7 +8029,7 @@ class XplorMRParserListener(ParseTreeListener):
                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             realAtomId = cca[self.__ccU.ccaAtomId]
                             if lenAtomIds == 1:
-                                atomId = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList)
+                                atomId = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
                                 _, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
                                 if details is not None:
                                     _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -8041,8 +8041,8 @@ class XplorMRParserListener(ParseTreeListener):
                                     _atomIdSelect.add(realAtomId)
                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
                             elif lenAtomIds == 2:
-                                atomId1 = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList)
-                                atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList)
+                                atomId1 = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
+                                atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
                                 _, _, details = self.__nefT.get_valid_star_atom(compId, atomId1, leave_unmatched=True)
                                 if details is not None:
                                     _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId1, leave_unmatched=True)
@@ -8104,7 +8104,7 @@ class XplorMRParserListener(ParseTreeListener):
                             if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                 realAtomId = cca[self.__ccU.ccaAtomId]
                                 if lenAtomIds == 1:
-                                    atomId = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList)
+                                    atomId = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
                                     _, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
                                     if details is not None:
                                         _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -8116,8 +8116,8 @@ class XplorMRParserListener(ParseTreeListener):
                                         _atomIdSelect.add(realAtomId)
                                         _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                 elif lenAtomIds == 2:
-                                    atomId1 = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList)
-                                    atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList)
+                                    atomId1 = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
+                                    atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
                                     _, _, details = self.__nefT.get_valid_star_atom(compId, atomId1, leave_unmatched=True)
                                     if details is not None:
                                         _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId1, leave_unmatched=True)

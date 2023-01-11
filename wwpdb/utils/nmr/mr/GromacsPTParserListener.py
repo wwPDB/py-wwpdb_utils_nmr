@@ -267,7 +267,7 @@ class GromacsPTParserListener(ParseTreeListener):
                                     if 'atom_type' in atomNum:
                                         del atomNum['atom_type']
                                 else:
-                                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds)
+                                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
                                     if atomId in chemCompAtomIds:
                                         atomNum['atom_id'] = atomId
                                         if 'atom_type' in atomNum:
@@ -290,7 +290,7 @@ class GromacsPTParserListener(ParseTreeListener):
                                         if 'atom_type' in atomNum:
                                             del atomNum['atom_type']
                                     elif chemCompAtomIds is not None:
-                                        atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds)
+                                        atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds, ccU=self.__ccU)
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
                                             if 'atom_type' in atomNum:
@@ -319,7 +319,7 @@ class GromacsPTParserListener(ParseTreeListener):
                                     if 'atom_type' in atomNum:
                                         del atomNum['atom_type']
                                 elif chemCompAtomIds is not None:
-                                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds)
+                                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds, ccU=self.__ccU)
                                     if atomId in chemCompAtomIds:
                                         atomNum['atom_id'] = atomId
                                         if 'atom_type' in atomNum:
@@ -342,7 +342,7 @@ class GromacsPTParserListener(ParseTreeListener):
                 if self.__ccU.updateChemCompDict(compId):
                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
 
-                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds)
+                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds, ccU=self.__ccU)
 
                     if atomId is not None and atomId in chemCompAtomIds:
                         atomNum['atom_id'] = atomId
@@ -353,7 +353,7 @@ class GromacsPTParserListener(ParseTreeListener):
                         if self.__ccU.updateChemCompDict(authCompId):
                             chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
 
-                            atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds)
+                            atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
 
                             if atomId is not None and atomId in chemCompAtomIds:
                                 atomNum['atom_id'] = atomId
@@ -362,7 +362,7 @@ class GromacsPTParserListener(ParseTreeListener):
             else:
                 authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                 if self.__ccU.updateChemCompDict(authCompId):
-                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId)
+                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, ccU=self.__ccU)
                     atomIds = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomId)[0]
                     if len(atomIds) == 1:
                         atomNum['atom_id'] = atomIds[0]
@@ -384,7 +384,7 @@ class GromacsPTParserListener(ParseTreeListener):
                         authCompId = cmap['auth_comp_id']
                         if self.__ccU.updateChemCompDict(authCompId):
                             chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                            atomNum['atom_id'] = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds)
+                            atomNum['atom_id'] = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
                             del atomNum['atom_type']
 
         for atomNum in self.__atomNumberDict.values():

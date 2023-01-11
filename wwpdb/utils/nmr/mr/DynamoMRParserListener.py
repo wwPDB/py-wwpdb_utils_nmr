@@ -56,6 +56,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
                                            protonBeginCode,
+                                           aminoProtonCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -114,6 +115,7 @@ except ImportError:
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
                                protonBeginCode,
+                               aminoProtonCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -1379,7 +1381,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     # """
 
         if len(chainAssign) == 0:
-            if seqId == 1 and atomId in ('H', 'HN'):
+            if (seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes) and atomId in aminoProtonCode:
                 return self.assignCoordPolymerSequence(refChainId, seqId, compId, 'H1')
             if seqId < 1 and len(self.__polySeq) == 1:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
@@ -1429,6 +1431,8 @@ class DynamoMRParserListener(ParseTreeListener):
             if details is not None:
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
                 if _atomId_ != atomId:
+                    if atomId.startswith('HT') and len(_atomId_) == 2:
+                        _atomId_ = 'H'
                     __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
                         _atomId = __atomId
@@ -1492,6 +1496,8 @@ class DynamoMRParserListener(ParseTreeListener):
             if details is not None:
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
                 if _atomId_ != atomId:
+                    if atomId.startswith('HT') and len(_atomId_) == 2:
+                        _atomId_ = 'H'
                     __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
                         _atomId = __atomId
@@ -1665,7 +1671,7 @@ class DynamoMRParserListener(ParseTreeListener):
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                if seqId == 1 and atomId in ('H', 'HN'):
+                if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and atomId in aminoProtonCode:
                     self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return
                 if atomId[0] in protonBeginCode:

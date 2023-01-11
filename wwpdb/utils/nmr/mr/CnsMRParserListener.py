@@ -70,6 +70,7 @@ try:
                                            MAX_MAG_IDENT_ASYM_ID,
                                            monDict3,
                                            protonBeginCode,
+                                           aminoProtonCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -139,6 +140,7 @@ except ImportError:
                                MAX_MAG_IDENT_ASYM_ID,
                                monDict3,
                                protonBeginCode,
+                               aminoProtonCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -4942,7 +4944,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             if self.__cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
-                                                if seqId == 1 and _atomId in ('H', 'HN'):
+                                                if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
@@ -4977,6 +4979,10 @@ class CnsMRParserListener(ParseTreeListener):
                                                             self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                                 f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
+                                        if coordAtomSite is not None:
+                                            if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
+                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                                    continue
                                         # """
                                         # if self.__reasons is None and seqKey in self.__authToLabelSeq:
                                         #     _, _seqId = self.__authToLabelSeq[seqKey]
@@ -5080,6 +5086,8 @@ class CnsMRParserListener(ParseTreeListener):
         if details is not None:
             _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
             if _atomId != atomId:
+                if atomId.startswith('HT') and len(_atomId) == 2:
+                    _atomId = 'H'
                 atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
         self.__cachedDictForAtomIdList[key] = atomIds
         return atomIds

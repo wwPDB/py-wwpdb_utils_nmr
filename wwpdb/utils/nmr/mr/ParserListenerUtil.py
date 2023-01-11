@@ -20,6 +20,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            emptyValue,
                                            protonBeginCode,
+                                           aminoProtonCode,
                                            LARGE_ASYM_ID,
                                            LEN_LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID)
@@ -27,6 +28,7 @@ except ImportError:
     from nmr.AlignUtil import (monDict3,
                                emptyValue,
                                protonBeginCode,
+                               aminoProtonCode,
                                LARGE_ASYM_ID,
                                LEN_LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID)
@@ -4903,7 +4905,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                 chainAssign.add((chainId, _seqId, cifCompId, True))
 
     if len(chainAssign) == 0:
-        if seqId == 1 and atomId in ('H', 'HN'):
+        if (seqId == 1 or (refChainId, seqId - 1) in caC['coord_unobs_res']) and atomId in aminoProtonCode:
             return assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 'H1')
 
         if seqId < 1 and len(polySeq) == 1:
@@ -4941,6 +4943,8 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=T
         if details is not None:
             _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=nefT.get_ccu())
             if _atomId_ != atomId:
+                if atomId.startswith('HT') and len(_atomId_) == 2:
+                    _atomId_ = 'H'
                 __atomId = nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                 if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
                     _atomId = __atomId

@@ -59,6 +59,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
                                            protonBeginCode,
+                                           aminoProtonCode,
                                            updatePolySeqRstFromAtomSelectionSet,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -109,6 +110,7 @@ except ImportError:
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
                                protonBeginCode,
+                               aminoProtonCode,
                                updatePolySeqRstFromAtomSelectionSet,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -3212,7 +3214,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 factor['auth_atom_id'] = authAtomId
                                 if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                     checked = False
-                                    if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                    if (factor['seq_id'] == 1 or (chainId, factor['seq_id'] - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                         if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                             checked = True
                                     if _atomId[0] in protonBeginCode:
@@ -3358,7 +3360,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['auth_atom_id'] = authAtomId
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                            if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                                 if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
@@ -3562,7 +3564,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[iat] = factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                            if (factor['seq_id'] == 1 or (chainId, factor['seq_id'] - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                                 if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
@@ -3646,7 +3648,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                            if (_factor['seq_id'] == 1 or (chainId, _factor['seq_id'] - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                                 if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
@@ -3770,7 +3772,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[iat] = factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                            if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                                 if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
@@ -3854,7 +3856,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                            if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                                 if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
@@ -4036,7 +4038,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__sanderAtomNumberDict[iat] = factor
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
-                                                if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                                if (factor['seq_id'] == 1 or (chainId, factor['seq_id'] - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
@@ -4120,7 +4122,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__sanderAtomNumberDict[igr] = _factor
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
-                                                if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                                if (_factor['seq_id'] == 1 or (chainId, _factor['seq_id'] - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
@@ -4227,7 +4229,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__sanderAtomNumberDict[iat] = factor
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
-                                                if factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                                if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
@@ -4311,7 +4313,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__sanderAtomNumberDict[igr] = _factor
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
-                                                if _factor['seq_id'] == 1 and _atomId in ('H', 'HN'):
+                                                if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
@@ -7635,6 +7637,8 @@ class AmberMRParserListener(ParseTreeListener):
                         if details is not None:
                             _atomId_ = translateToStdAtomName(atomName, cifCompId, ccU=self.__ccU)
                             if _atomId_ != atomName:
+                                if atomName.startswith('HT') and len(_atomId_) == 2:
+                                    _atomId_ = 'H'
                                 _atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
 
                         for cifAtomId in _atomId:
@@ -7740,7 +7744,7 @@ class AmberMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
         if len(chainAssign) == 0:
-            if seqId == 1 and atomId is not None and atomId in ('H', 'HN'):
+            if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and atomId is not None and atomId in aminoProtonCode:
                 return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
                 self.warningMessage += f"[Atom not found] "\
@@ -7781,6 +7785,8 @@ class AmberMRParserListener(ParseTreeListener):
             if details is not None:
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
                 if _atomId_ != atomId:
+                    if atomId.startswith('HT') and len(_atomId_) == 2:
+                        _atomId_ = 'H'
                     __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
                         _atomId = __atomId
@@ -7881,7 +7887,7 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                if seqId == 1 and atomId in ('H', 'HN'):
+                if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and atomId in aminoProtonCode:
                     self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return
                 if atomId[0] in protonBeginCode:

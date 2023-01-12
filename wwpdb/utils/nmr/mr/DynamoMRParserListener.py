@@ -1434,8 +1434,13 @@ class DynamoMRParserListener(ParseTreeListener):
                     if atomId.startswith('HT') and len(_atomId_) == 2:
                         _atomId_ = 'H'
                     __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
-                    if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
-                        _atomId = __atomId
+                    if coordAtomSite is not None:
+                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
+                            _atomId = __atomId
+                        elif __atomId[0][0] in protonBeginCode:
+                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId[0])
+                            if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
+                                _atomId = __atomId
                 elif coordAtomSite is not None:
                     _atomId = []
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
@@ -1499,8 +1504,15 @@ class DynamoMRParserListener(ParseTreeListener):
                     if atomId.startswith('HT') and len(_atomId_) == 2:
                         _atomId_ = 'H'
                     __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
-                    if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
-                        _atomId = __atomId
+                    if coordAtomSite is not None:
+                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
+                            _atomId = __atomId
+                        elif __atomId[0][0] in protonBeginCode:
+                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId[0])
+                            if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
+                                _atomId = __atomId
+                elif coordAtomSite is not None:
+                    _atomId = []
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
 
             if coordAtomSite is not None\
@@ -1675,11 +1687,9 @@ class DynamoMRParserListener(ParseTreeListener):
                     self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return
                 if atomId[0] in protonBeginCode:
-                    ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                    if ccb is not None:
-                        bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
-                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                    bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
+                    if len(bondedTo) > 0:
+                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint(n=index,g=group)}"\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file.\n"
@@ -2240,9 +2250,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -2409,19 +2417,15 @@ class DynamoMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an RDC vector over multiple covalent bonds; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
@@ -2582,19 +2586,15 @@ class DynamoMRParserListener(ParseTreeListener):
                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                 return
 
-            else:
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+                if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
+                            "Found an RDC vector over multiple covalent bonds; "\
+                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        return
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
@@ -2766,9 +2766,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\

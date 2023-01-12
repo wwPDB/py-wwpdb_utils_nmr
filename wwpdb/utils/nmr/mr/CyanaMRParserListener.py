@@ -895,9 +895,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                        if not any(b for b in self.__ccU.lastBonds
-                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                        if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                             if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 isRdc = False
@@ -1148,10 +1146,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if isLongRangeRestraint([atom1, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     self.__ccU.updateChemCompDict(atom1['comp_id'])
-                    atom2_can = [(ccb[self.__ccU.ccbAtomId1] if atom1['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
-                                 for ccb in self.__ccU.lastBonds if atom1['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
-                    atom3_can = [(ccb[self.__ccU.ccbAtomId1] if atom4['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
-                                 for ccb in self.__ccU.lastBonds if atom4['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
+                    atom2_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
+                    atom3_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
                     atom_id_2 = atom_id_3 = None
                     for ccb in self.__ccU.lastBonds:
                         if ccb[self.__ccU.ccbAtomId1] in atom2_can and ccb[self.__ccU.ccbAtomId2] in atom3_can:
@@ -1396,9 +1392,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                        if not any(b for b in self.__ccU.lastBonds
-                                   if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                       or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                        if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                             if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 isRdc = False
@@ -1649,10 +1643,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if isLongRangeRestraint([atom1, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     self.__ccU.updateChemCompDict(atom1['comp_id'])
-                    atom2_can = [(ccb[self.__ccU.ccbAtomId1] if atom1['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
-                                 for ccb in self.__ccU.lastBonds if atom1['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
-                    atom3_can = [(ccb[self.__ccU.ccbAtomId1] if atom4['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
-                                 for ccb in self.__ccU.lastBonds if atom4['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
+                    atom2_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
+                    atom3_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
                     atom_id_2 = atom_id_3 = None
                     for ccb in self.__ccU.lastBonds:
                         if ccb[self.__ccU.ccbAtomId1] in atom2_can and ccb[self.__ccU.ccbAtomId2] in atom3_can:
@@ -2718,13 +2710,18 @@ class CyanaMRParserListener(ParseTreeListener):
                     _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None:
-                _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
+                _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:
                         _atomId_ = 'H'
                     __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
-                    if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
-                        _atomId = __atomId
+                    if coordAtomSite is not None:
+                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
+                            _atomId = __atomId
+                        elif __atomId[0][0] in protonBeginCode:
+                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId[0])
+                            if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
+                                _atomId = __atomId
                 elif coordAtomSite is not None:
                     _atomId = []
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
@@ -2906,11 +2903,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return
                 if atomId[0] in protonBeginCode:
-                    ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                    if ccb is not None:
-                        bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
-                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                    bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
+                    if len(bondedTo) > 0:
+                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file.\n"
@@ -3594,9 +3589,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -4154,6 +4147,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
 
+                self.atomSelectionSet.clear()
+
                 int_col += 1
                 str_col += 3
 
@@ -4469,6 +4464,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
 
+                self.atomSelectionSet.clear()
+
                 int_col += 1
                 str_col += 3
 
@@ -4695,6 +4692,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
+
+                self.atomSelectionSet.clear()
 
                 int_col += 1
                 str_col += 3
@@ -4938,6 +4937,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
+
+                self.atomSelectionSet.clear()
 
                 int_col += 1
                 str_col += 2
@@ -5254,6 +5255,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
 
+                self.atomSelectionSet.clear()
+
                 int_col += 1
                 str_col += 2
 
@@ -5480,6 +5483,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
+
+                self.atomSelectionSet.clear()
 
                 int_col += 1
                 str_col += 2
@@ -5930,9 +5935,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                    if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                         if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             isRdc = False
@@ -6663,10 +6666,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if isLongRangeRestraint([atom1, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 self.__ccU.updateChemCompDict(atom1['comp_id'])
-                atom2_can = [(ccb[self.__ccU.ccbAtomId1] if atom1['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
-                             for ccb in self.__ccU.lastBonds if atom1['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
-                atom3_can = [(ccb[self.__ccU.ccbAtomId1] if atom4['atom_id'] != ccb[self.__ccU.ccbAtomId1] else ccb[self.__ccU.ccbAtomId2])
-                             for ccb in self.__ccU.lastBonds if atom4['atom_id'] in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])]
+                atom2_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
+                atom3_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
                 atom_id_2 = atom_id_3 = None
                 for ccb in self.__ccU.lastBonds:
                     if ccb[self.__ccU.ccbAtomId1] in atom2_can and ccb[self.__ccU.ccbAtomId2] in atom3_can:

@@ -20,7 +20,9 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            emptyValue,
                                            protonBeginCode,
+                                           pseProBeginCode,
                                            aminoProtonCode,
+                                           indexToLetter,
                                            LARGE_ASYM_ID,
                                            LEN_LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID)
@@ -28,7 +30,9 @@ except ImportError:
     from nmr.AlignUtil import (monDict3,
                                emptyValue,
                                protonBeginCode,
+                               pseProBeginCode,
                                aminoProtonCode,
+                               indexToLetter,
                                LARGE_ASYM_ID,
                                LEN_LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID)
@@ -1669,6 +1673,61 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
             if atomId == 'CA':
                 return 'CH3'
 
+        if refCompId in ('HEB', 'HEC'):
+            if atomId[0] in pseProBeginCode:
+                if atomId == 'QM1':
+                    return 'HMB'
+                if atomId == 'QT2':
+                    return 'HBB'
+                if atomId.startswith('HT2') and refCompId == 'HEC':
+                    return 'HAB'
+                if atomId in ('HT2', 'HA2', 'HA21', 'HA22') and refCompId == 'HEB':
+                    return 'HAB'
+                if atomId == 'HA23' and refCompId == 'HEB':
+                    return 'HAB2'
+                if atomId == 'QM3':
+                    return 'HMC'
+                if atomId == 'QT4':
+                    return 'HBC'
+                if atomId.startswith('HT4'):
+                    return 'HAC'
+                if atomId == 'QM5':
+                    return 'HMD'
+                if atomId == 'HA62':
+                    return 'HAD1'
+                if atomId == 'HA63':
+                    return 'HAD2'
+                if atomId == 'HB62':
+                    return 'HBD1'
+                if atomId == 'HB63':
+                    return 'HBD2'
+                if atomId == 'HA72':
+                    return 'HAA1'
+                if atomId == 'HA73':
+                    return 'HAA2'
+                if atomId == 'HB72':
+                    return 'HBA1'
+                if atomId == 'HB73':
+                    return 'HBA2'
+                if atomId == 'HA6':
+                    return 'HAD'
+                if atomId == 'HB6':
+                    return 'HBD'
+                if atomId == 'HA7':
+                    return 'HAA'
+                if atomId == 'HB7':
+                    return 'HBA'
+                if atomId == 'QM8':
+                    return 'HMA'
+                if atomId == 'HAM':
+                    return 'HHA'
+                if atomId == 'HBM':
+                    return 'HHB'
+                if atomId in ('HGM', 'HCM'):
+                    return 'HHC'
+                if atomId == 'HDM':
+                    return 'HHD'
+
     if atomId.endswith("O'1"):
         atomId = atomId[:len(atomId) - 3] + "O1'"
     elif atomId.endswith("O'2"):
@@ -1788,6 +1847,11 @@ def translateToStdResName(compId, ccU=None):
         return 'G'
     if compId == 'URA':
         return 'U'
+
+    if compId == 'HEMB':
+        return 'HEB'
+    if compId == 'HEMC':
+        return 'HEC'
 
     return compId
 
@@ -3890,15 +3954,10 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             row[key_size + 3] = dstFunc['upper_limit']
             float_row_idx.append(key_size + 3)
 
-        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 8] =\
+        row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        row[key_size + 9], row[key_size + 10], row[key_size + 11], row[key_size + 12] =\
+        row[key_size + 8], row[key_size + 9], row[key_size + 10], row[key_size + 11] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-
-        if hasKeyValue(atom1, 'auth_atom_id'):
-            row[5] = row[key_size + 8] = atom1['auth_atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
-            row[10] = row[key_size + 12] = atom1['auth_atom_id']
 
     elif mrSubtype == 'jcoup':
         if star_atom3 is not None:
@@ -4368,16 +4427,11 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
             float_row_idx.append(key_size + 3)
 
         if atom1 is not None:
-            row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 8] =\
+            row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         if atom2 is not None:
-            row[key_size + 9], row[key_size + 10], row[key_size + 11], row[key_size + 12] =\
+            row[key_size + 8], row[key_size + 9], row[key_size + 10], row[key_size + 11] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-
-        if hasKeyValue(atom1, 'auth_atom_id'):
-            row[5] = row[key_size + 8] = atom1['auth_atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
-            row[10] = row[key_size + 12] = atom2['auth_atom_id']
 
     elif contentSubtype == 'jcoup_restraint':
         if star_atom3 is not None:
@@ -4941,13 +4995,19 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=T
                 _atomId = [_atomId[int(atomId[-1]) - 1]]
 
         if details is not None:
-            _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=nefT.get_ccu())
+            ccU = nefT.get_ccu()
+            _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=ccU)
             if _atomId_ != atomId:
                 if atomId.startswith('HT') and len(_atomId_) == 2:
                     _atomId_ = 'H'
                 __atomId = nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
-                if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
-                    _atomId = __atomId
+                if coordAtomSite is not None:
+                    if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
+                        _atomId = __atomId
+                    elif __atomId[0][0] in protonBeginCode:
+                        __bondedTo = ccU.getBondedAtoms(cifCompId, __atomId[0])
+                        if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
+                            _atomId = __atomId
             elif coordAtomSite is not None:
                 _atomId = []
 
@@ -5096,11 +5156,9 @@ def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey,
                 testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                 return None
             if atomId[0] in protonBeginCode:
-                ccb = next((ccb for ccb in ccU.lastBonds
-                            if atomId in (ccb[ccU.ccbAtomId1], ccb[ccU.ccbAtomId2])), None)
-                if ccb is not None:
-                    bondedTo = ccb[ccU.ccbAtomId2] if ccb[ccU.ccbAtomId1] == atomId else ccb[ccU.ccbAtomId1]
-                    if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[ccU.ccaLeavingAtomFlag] != 'Y':
+                bondedTo = ccU.getBondedAtoms(compId, atomId)
+                if len(bondedTo) > 0:
+                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[ccU.ccaLeavingAtomFlag] != 'Y':
                         return f"[Hydrogen not instantiated] "\
                             f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                             "Please re-upload the model file."

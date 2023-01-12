@@ -2803,11 +2803,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
-                                                    ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                                                if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                                    if ccb is not None:
-                                                        bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                                    bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
+                                                    if len(bondedTo) > 0:
+                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
                                                             if len(origAtomId) == 1:
                                                                 _atomSelection[-1]['hydrogen_not_instantiated'] = True

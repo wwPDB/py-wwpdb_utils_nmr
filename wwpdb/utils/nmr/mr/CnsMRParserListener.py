@@ -2185,9 +2185,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         if atom_id_1[0] in protonBeginCode and atom_id_2[0] in protonBeginCode:
@@ -2543,9 +2541,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                 elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                    if not any(b for b in self.__ccU.lastBonds
-                               if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                   or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                    if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                         if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -3300,9 +3296,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -3485,9 +3479,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                if not any(b for b in self.__ccU.lastBonds
-                           if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                               or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
@@ -4948,11 +4940,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                     if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
-                                                    ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                                                if _atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                                    if ccb is not None:
-                                                        bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == _atomId else ccb[self.__ccU.ccbAtomId1]
-                                                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                                    bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
+                                                    if len(bondedTo) > 0:
+                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
                                                             if len(origAtomId) == 1:
                                                                 _atomSelection[-1]['hydrogen_not_instantiated'] = True

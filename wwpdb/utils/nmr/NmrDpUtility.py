@@ -22145,50 +22145,69 @@ class NmrDpUtility:
                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                         _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
-                        if not has_orig_seq:
-                            orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                            if orig_seq_id in emptyValue:
-                                orig_seq_id = auth_seq_id
-                            if orig_comp_id in emptyValue:
-                                orig_comp_id = comp_id
-                            _row[20], _row[21], _row[22], _row[23] =\
-                                auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                        elif any(d in emptyValue for d in orig_dat[idx]):
-                            ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                            if ambig_code > 0:
+                        if seq_key in auth_to_orig_seq:
+                            if not has_orig_seq:
                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                 if orig_seq_id in emptyValue:
                                     orig_seq_id = auth_seq_id
                                 if orig_comp_id in emptyValue:
                                     orig_comp_id = comp_id
-                                _row[20], _row[21], _row[22] =\
-                                    auth_asym_id, orig_seq_id, orig_comp_id
-                                if atom_id[0] not in protonBeginCode:
-                                    _row[23] = atom_id
-                                else:
-                                    len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
-                                    if len_in_grp == 2:
-                                        _row[23] = (atom_id[0:-1] + '1')\
-                                            if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
-                                    elif len_in_grp == 3:
-                                        _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                            if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                    else:
+                                _row[20], _row[21], _row[22], _row[23] =\
+                                    auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
+                            elif any(d in emptyValue for d in orig_dat[idx]):
+                                ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                if ambig_code > 0:
+                                    orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                    if orig_seq_id in emptyValue:
+                                        orig_seq_id = auth_seq_id
+                                    if orig_comp_id in emptyValue:
+                                        orig_comp_id = comp_id
+                                    _row[20], _row[21], _row[22] =\
+                                        auth_asym_id, orig_seq_id, orig_comp_id
+                                    if atom_id[0] not in protonBeginCode:
                                         _row[23] = atom_id
+                                    else:
+                                        len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                        if len_in_grp == 2:
+                                            _row[23] = (atom_id[0:-1] + '1')\
+                                                if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
+                                        elif len_in_grp == 3:
+                                            _row[23] = (atom_id[-1] + atom_id[0:-1])\
+                                                if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                        else:
+                                            _row[23] = atom_id
+
+                        else:
+                            seq_key = next((k for k, v in auth_to_star_seq.items()
+                                            if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+
+                            _row[20], _row[21], _row[22], _row[23] =\
+                                row[auth_asym_id_col], row[auth_seq_id_col],\
+                                row[auth_comp_id_col], row[auth_atom_id_col]
+
+                            if seq_key is not None:
+                                _row[16], _row[17], _row[18], _row[19] =\
+                                    seq_key[0], seq_key[1], seq_key[2], None
 
                         if seq_key in coord_atom_site:
                             _coord_atom_site = coord_atom_site[seq_key]
                             _row[5] = _coord_atom_site['comp_id']
                             if atom_id in _coord_atom_site['atom_id']:
                                 _row[6] = atom_id
+                                if _row[19] is None:
+                                    _row[19] = _row[6]
                                 _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                             else:
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                                if len(atom_ids) == 0:
+                                    atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                                 len_atom_ids = len(atom_ids)
                                 if len_atom_ids == 0:
                                     _row[6] = atom_id
+                                    if _row[19] is None:
+                                        _row[19] = _row[6]
                                     _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
@@ -22210,16 +22229,20 @@ class NmrDpUtility:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
                                     if len_atom_ids > 1:
-                                        lp.add_data(_row)
-
                                         __row = copy.copy(_row)
+                                        if __row[19] is None:
+                                            __row[19] = __row[6]
+                                        lp.add_data(__row)
 
                                         for _atom_id in atom_ids[1:-1]:
+                                            __row = copy.copy(_row)
 
                                             index += 1
 
                                             __row[0] = index
                                             __row[6] = _atom_id
+                                            if __row[19] is None:
+                                                __row[19] = __row[6]
 
                                             lp.add_data(__row)
 
@@ -22228,13 +22251,20 @@ class NmrDpUtility:
                                         _row[0] = index
                                         _row[6] = atom_ids[-1]
 
+                                    if _row[19] is None:
+                                        _row[19] = _row[6]
+
                         else:
 
                             _row[5] = comp_id
                             atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                            if len(atom_ids) == 0:
+                                atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                             len_atom_ids = len(atom_ids)
                             if len_atom_ids == 0:
                                 _row[6] = atom_id
+                                if _row[19] is None:
+                                    _row[19] = _row[6]
                                 _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
@@ -22256,16 +22286,20 @@ class NmrDpUtility:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
                                 if len_atom_ids > 1:
-                                    lp.add_data(_row)
-
                                     __row = copy.copy(_row)
+                                    if __row[19] is None:
+                                        __row[19] = __row[6]
+                                    lp.add_data(__row)
 
                                     for _atom_id in atom_ids[1:-1]:
+                                        __row = copy.copy(_row)
 
                                         index += 1
 
                                         __row[0] = index
                                         __row[6] = _atom_id
+                                        if __row[19] is None:
+                                            __row[19] = __row[6]
 
                                         lp.add_data(__row)
 
@@ -22273,6 +22307,9 @@ class NmrDpUtility:
 
                                     _row[0] = index
                                     _row[6] = atom_ids[-1]
+
+                                if _row[19] is None:
+                                    _row[19] = _row[6]
 
                     elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
                         try:
@@ -22282,50 +22319,69 @@ class NmrDpUtility:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                 _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
-                                if not has_orig_seq:
-                                    orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                    if orig_seq_id in emptyValue:
-                                        orig_seq_id = auth_seq_id
-                                    if orig_comp_id in emptyValue:
-                                        orig_comp_id = comp_id
-                                    _row[20], _row[21], _row[22], _row[23] =\
-                                        auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                                elif any(d in emptyValue for d in orig_dat[idx]):
-                                    ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                                    if ambig_code > 0:
+                                if seq_key in auth_to_orig_seq:
+                                    if not has_orig_seq:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                         if orig_seq_id in emptyValue:
                                             orig_seq_id = auth_seq_id
                                         if orig_comp_id in emptyValue:
                                             orig_comp_id = comp_id
-                                        _row[20], _row[21], _row[22] =\
-                                            auth_asym_id, orig_seq_id, orig_comp_id
-                                        if atom_id[0] not in protonBeginCode:
-                                            _row[23] = atom_id
-                                        else:
-                                            len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
-                                            if len_in_grp == 2:
-                                                _row[23] = (atom_id[0:-1] + '1')\
-                                                    if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
-                                            elif len_in_grp == 3:
-                                                _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                    if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                            else:
+                                        _row[20], _row[21], _row[22], _row[23] =\
+                                            auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
+                                    elif any(d in emptyValue for d in orig_dat[idx]):
+                                        ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                        if ambig_code > 0:
+                                            orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                            if orig_seq_id in emptyValue:
+                                                orig_seq_id = auth_seq_id
+                                            if orig_comp_id in emptyValue:
+                                                orig_comp_id = comp_id
+                                            _row[20], _row[21], _row[22] =\
+                                                auth_asym_id, orig_seq_id, orig_comp_id
+                                            if atom_id[0] not in protonBeginCode:
                                                 _row[23] = atom_id
+                                            else:
+                                                len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                                if len_in_grp == 2:
+                                                    _row[23] = (atom_id[0:-1] + '1')\
+                                                        if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
+                                                elif len_in_grp == 3:
+                                                    _row[23] = (atom_id[-1] + atom_id[0:-1])\
+                                                        if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                                else:
+                                                    _row[23] = atom_id
+
+                                else:
+                                    seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                    if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+
+                                    _row[20], _row[21], _row[22], _row[23] =\
+                                        row[auth_asym_id_col], row[auth_seq_id_col],\
+                                        row[auth_comp_id_col], row[auth_atom_id_col]
+
+                                    if seq_key is not None:
+                                        _row[16], _row[17], _row[18], _row[19] =\
+                                            seq_key[0], seq_key[1], seq_key[2], None
 
                                 if seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[seq_key]
                                     _row[5] = _coord_atom_site['comp_id']
                                     if atom_id in _coord_atom_site['atom_id']:
                                         _row[6] = atom_id
+                                        if _row[19] is None:
+                                            _row[19] = _row[6]
                                         _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:
                                         atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                                        if len(atom_ids) == 0:
+                                            atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                                         len_atom_ids = len(atom_ids)
                                         if len_atom_ids == 0:
                                             _row[6] = atom_id
+                                            if _row[19] is None:
+                                                _row[19] = _row[6]
                                             _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
@@ -22347,16 +22403,20 @@ class NmrDpUtility:
                                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
                                             if len_atom_ids > 1:
-                                                lp.add_data(_row)
-
                                                 __row = copy.copy(_row)
+                                                if __row[19] is None:
+                                                    __row[19] = __row[6]
+                                                lp.add_data(__row)
 
                                                 for _atom_id in atom_ids[1:-1]:
+                                                    __row = copy.copy(_row)
 
                                                     index += 1
 
                                                     __row[0] = index
                                                     __row[6] = _atom_id
+                                                    if __row[19] is None:
+                                                        __row[19] = __row[6]
 
                                                     lp.add_data(__row)
 
@@ -22365,13 +22425,20 @@ class NmrDpUtility:
                                                 _row[0] = index
                                                 _row[6] = atom_ids[-1]
 
+                                            if _row[19] is None:
+                                                _row[19] = _row[6]
+
                                 else:
 
                                     _row[5] = comp_id
                                     atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                                    if len(atom_ids) == 0:
+                                        atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                                     len_atom_ids = len(atom_ids)
                                     if len_atom_ids == 0:
                                         _row[6] = atom_id
+                                        if _row[19] is None:
+                                            _row[19] = _row[6]
                                         _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
@@ -22393,16 +22460,20 @@ class NmrDpUtility:
                                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
                                         if len_atom_ids > 1:
-                                            lp.add_data(_row)
-
                                             __row = copy.copy(_row)
+                                            if __row[19] is None:
+                                                __row[19] = __row[6]
+                                            lp.add_data(__row)
 
                                             for _atom_id in atom_ids[1:-1]:
+                                                __row = copy.copy(_row)
 
                                                 index += 1
 
                                                 __row[0] = index
                                                 __row[6] = _atom_id
+                                                if __row[19] is None:
+                                                    __row[19] = __row[6]
 
                                                 lp.add_data(__row)
 
@@ -22410,6 +22481,9 @@ class NmrDpUtility:
 
                                             _row[0] = index
                                             _row[6] = atom_ids[-1]
+
+                                        if _row[19] is None:
+                                            _row[19] = _row[6]
 
                             else:
                                 resolved = False
@@ -22444,50 +22518,69 @@ class NmrDpUtility:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                             _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
-                            if not has_orig_seq:
-                                orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                if orig_seq_id in emptyValue:
-                                    orig_seq_id = auth_seq_id
-                                if orig_comp_id in emptyValue:
-                                    orig_comp_id = comp_id
-                                _row[20], _row[21], _row[22], _row[23] =\
-                                    auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                            elif any(d in emptyValue for d in orig_dat[idx]):
-                                ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                                if ambig_code > 0:
+                            if seq_key in auth_to_orig_seq:
+                                if not has_orig_seq:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                     if orig_seq_id in emptyValue:
                                         orig_seq_id = auth_seq_id
                                     if orig_comp_id in emptyValue:
                                         orig_comp_id = comp_id
-                                    _row[20], _row[21], _row[22] =\
-                                        auth_asym_id, orig_seq_id, orig_comp_id
-                                    if atom_id[0] not in protonBeginCode:
-                                        _row[23] = atom_id
-                                    else:
-                                        len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
-                                        if len_in_grp == 2:
-                                            _row[23] = (atom_id[0:-1] + '1')\
-                                                if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
-                                        elif len_in_grp == 3:
-                                            _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                        else:
+                                    _row[20], _row[21], _row[22], _row[23] =\
+                                        auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
+                                elif any(d in emptyValue for d in orig_dat[idx]):
+                                    ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                    if ambig_code > 0:
+                                        orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                        if orig_seq_id in emptyValue:
+                                            orig_seq_id = auth_seq_id
+                                        if orig_comp_id in emptyValue:
+                                            orig_comp_id = comp_id
+                                        _row[20], _row[21], _row[22] =\
+                                            auth_asym_id, orig_seq_id, orig_comp_id
+                                        if atom_id[0] not in protonBeginCode:
                                             _row[23] = atom_id
+                                        else:
+                                            len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                            if len_in_grp == 2:
+                                                _row[23] = (atom_id[0:-1] + '1')\
+                                                    if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
+                                            elif len_in_grp == 3:
+                                                _row[23] = (atom_id[-1] + atom_id[0:-1])\
+                                                    if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                            else:
+                                                _row[23] = atom_id
+
+                            else:
+                                seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+
+                                _row[20], _row[21], _row[22], _row[23] =\
+                                    row[auth_asym_id_col], row[auth_seq_id_col],\
+                                    row[auth_comp_id_col], row[auth_atom_id_col]
+
+                                if seq_key is not None:
+                                    _row[16], _row[17], _row[18], _row[19] =\
+                                        seq_key[0], seq_key[1], seq_key[2], None
 
                             if seq_key in coord_atom_site:
                                 _coord_atom_site = coord_atom_site[seq_key]
                                 _row[5] = _coord_atom_site['comp_id']
                                 if atom_id in _coord_atom_site['atom_id']:
                                     _row[6] = atom_id
+                                    if _row[19] is None:
+                                        _row[19] = _row[6]
                                     _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                 else:
                                     atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                                    if len(atom_ids) == 0:
+                                        atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                                     len_atom_ids = len(atom_ids)
                                     if len_atom_ids == 0:
                                         _row[6] = atom_id
+                                        if _row[19] is None:
+                                            _row[19] = _row[6]
                                         _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
@@ -22509,16 +22602,20 @@ class NmrDpUtility:
                                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
                                         if len_atom_ids > 1:
-                                            lp.add_data(_row)
-
                                             __row = copy.copy(_row)
+                                            if __row[19] is None:
+                                                __row[19] = __row[6]
+                                            lp.add_data(__row)
 
                                             for _atom_id in atom_ids[1:-1]:
+                                                __row = copy.copy(_row)
 
                                                 index += 1
 
                                                 __row[0] = index
                                                 __row[6] = _atom_id
+                                                if __row[19] is None:
+                                                    __row[19] = __row[6]
 
                                                 lp.add_data(__row)
 
@@ -22527,10 +22624,15 @@ class NmrDpUtility:
                                             _row[0] = index
                                             _row[6] = atom_ids[-1]
 
+                                        if _row[19] is None:
+                                            _row[19] = _row[6]
+
                             else:
 
                                 _row[5] = comp_id
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                                if len(atom_ids) == 0:
+                                    atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                                 len_atom_ids = len(atom_ids)
                                 if len_atom_ids == 0:
                                     _row[6] = atom_id
@@ -22555,11 +22657,11 @@ class NmrDpUtility:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
                                     if len_atom_ids > 1:
-                                        lp.add_data(_row)
-
                                         __row = copy.copy(_row)
+                                        lp.add_data(__row)
 
                                         for _atom_id in atom_ids[1:-1]:
+                                            __row = copy.copy(_row)
 
                                             index += 1
 
@@ -22583,6 +22685,8 @@ class NmrDpUtility:
                         _row[1], _row[2], _row[3], _row[4], _row[5] = chain_id, None, seq_id, seq_id, comp_id
 
                         atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                        if len(atom_ids) == 0:
+                            atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                         len_atom_ids = len(atom_ids)
                         if len_atom_ids == 0:
                             _row[6] = atom_id
@@ -22607,11 +22711,11 @@ class NmrDpUtility:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
                             if len_atom_ids > 1:
-                                lp.add_data(_row)
-
-                                __row = copy.copy(_row)
+                                __row = copy.copy(__row)
+                                lp.add_data(__row)
 
                                 for _atom_id in atom_ids[1:-1]:
+                                    __row = copy.copy(_row)
 
                                     index += 1
 
@@ -22647,6 +22751,8 @@ class NmrDpUtility:
 
                     elif ambig_id in (4, 5, 6, 9):
                         has_genuine_ambig_code = True
+
+                chain_id = row[chain_id_col]
 
                 lp.add_data(_row)
 
@@ -24567,9 +24673,7 @@ class NmrDpUtility:
 
                         if self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                            if not any(b for b in self.__ccU.lastBonds
-                                       if ((b[self.__ccU.ccbAtomId1] == atom_id_1 and b[self.__ccU.ccbAtomId2] == atom_id_2)
-                                           or (b[self.__ccU.ccbAtomId1] == atom_id_2 and b[self.__ccU.ccbAtomId2] == atom_id_1))):
+                            if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                                 if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
 
@@ -25108,11 +25212,9 @@ class NmrDpUtility:
                                     checked = False
                                     if atom_id_[0] in protonBeginCode:
                                         cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id_), None)
-                                        ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                                    if atom_id_ in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                        if cca is not None and ccb is not None:
-                                            bonded_to = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atom_id_ else ccb[self.__ccU.ccbAtomId1]
-                                            if coord_atom_site_ is not None and bonded_to in coord_atom_site_['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                        bonded_to = self.__ccU.getBondedAtoms(comp_id, atom_id_)
+                                        if cca is not None and len(bonded_to) > 0:
+                                            if coord_atom_site_ is not None and bonded_to[0] in coord_atom_site_['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                 checked = True
                                                 err = "Atom ("\
                                                     + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -37563,11 +37665,9 @@ class NmrDpUtility:
                             if atom_id_[0] in protonBeginCode:
                                 self.__ccU.updateChemCompDict(comp_id)
                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id_), None)
-                                ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                            if atom_id_ in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                                if cca is not None and ccb is not None:
-                                    bonded_to = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atom_id_ else ccb[self.__ccU.ccbAtomId1]
-                                    if coord_atom_site_ is not None and bonded_to in coord_atom_site_['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                bonded_to = self.__ccU.getBondedAtoms(comp_id, atom_id_)
+                                if cca is not None and len(bonded_to) > 0:
+                                    if coord_atom_site_ is not None and bonded_to[0] in coord_atom_site_['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                         checked = True
                                         err = idx_msg + "Atom ("\
                                             + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
@@ -45470,37 +45570,37 @@ class NmrDpUtility:
                         seq_id_2 = int(row[seq_id_2_col])
                     except (ValueError, TypeError):
                         continue
+                    comp_id_1 = row[comp_id_1_col]
+                    comp_id_2 = row[comp_id_2_col]
                     atom_id_1 = row[atom_id_1_col]
                     atom_id_2 = row[atom_id_2_col]
                     if atom_id_1 is None or atom_id_2 is None:
                         continue
                     if atom_id_1[0] in protonBeginCode:
-                        if self.__ccU.updateChemCompDict(row[comp_id_1_col]):
-                            bonded_atom_id_1 = next(((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_1 else b[self.__ccU.ccbAtomId2])
-                                                     for b in self.__ccU.lastBonds if atom_id_1 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
-                            if bonded_atom_id_1 is None:
+                        if self.__ccU.updateChemCompDict(comp_id_1):
+                            bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
+                            if len(bonded_atom_id_1) == 0:
                                 continue
                             if any(_row for _row in lp
                                    if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_1
                                        and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_1
-                                       and _row[atom_id_1_col] == bonded_atom_id_1)
+                                       and _row[atom_id_1_col] == bonded_atom_id_1[0])
                                    or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_1
                                        and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_1
-                                       and _row[atom_id_2_col] == bonded_atom_id_1)):
+                                       and _row[atom_id_2_col] == bonded_atom_id_1[0])):
                                 continue
                     if atom_id_2[0] in protonBeginCode:
-                        if self.__ccU.updateChemCompDict(row[comp_id_2_col]):
-                            bonded_atom_id_2 = next(((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_2 else b[self.__ccU.ccbAtomId2])
-                                                     for b in self.__ccU.lastBonds if atom_id_2 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
-                            if bonded_atom_id_2 is None:
+                        if self.__ccU.updateChemCompDict(comp_id_2):
+                            bonded_atom_id_2 = self.__ccU.getBondedAtoms(comp_id_2, atom_id_2)
+                            if len(bonded_atom_id_2) == 0:
                                 continue
                             if any(_row for _row in lp
                                    if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_2
                                        and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_2
-                                       and _row[atom_id_1_col] == bonded_atom_id_2)
+                                       and _row[atom_id_1_col] == bonded_atom_id_2[0])
                                    or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_2
                                        and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_2
-                                       and _row[atom_id_2_col] == bonded_atom_id_2)):
+                                       and _row[atom_id_2_col] == bonded_atom_id_2[0])):
                                 continue
                     p1 = (chain_id_1, seq_id_1, atom_id_1)
                     p2 = (chain_id_2, seq_id_2, atom_id_2)
@@ -45542,37 +45642,37 @@ class NmrDpUtility:
                         seq_id_2 = int(row[seq_id_2_col])
                     except (ValueError, TypeError):
                         continue
+                    comp_id_1 = row[comp_id_1_col]
+                    comp_id_2 = row[comp_id_2_col]
                     atom_id_1 = row[atom_id_1_col]
                     atom_id_2 = row[atom_id_2_col]
                     if atom_id_1 is None or atom_id_2 is None:
                         continue
                     if atom_id_1[0] in protonBeginCode:
-                        if self.__ccU.updateChemCompDict(row[comp_id_1_col]):
-                            bonded_atom_id_1 = next(((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_1 else b[self.__ccU.ccbAtomId2])
-                                                     for b in self.__ccU.lastBonds if atom_id_1 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
-                            if bonded_atom_id_1 is None:
+                        if self.__ccU.updateChemCompDict(comp_id_1):
+                            bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
+                            if len(bonded_atom_id_1) == 0:
                                 continue
                             if any(_row for _row in lp
                                    if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_1
                                        and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_1
-                                       and _row[atom_id_1_col] == bonded_atom_id_1)
+                                       and _row[atom_id_1_col] == bonded_atom_id_1[0])
                                    or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_1
                                        and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_1
-                                       and _row[atom_id_2_col] == bonded_atom_id_1)):
+                                       and _row[atom_id_2_col] == bonded_atom_id_1[0])):
                                 continue
                     if atom_id_2[0] in protonBeginCode:
-                        if self.__ccU.updateChemCompDict(row[comp_id_2_col]):
-                            bonded_atom_id_2 = next(((b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_2 else b[self.__ccU.ccbAtomId2])
-                                                     for b in self.__ccU.lastBonds if atom_id_2 in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
-                            if bonded_atom_id_2 is None:
+                        if self.__ccU.updateChemCompDict(comp_id_2):
+                            bonded_atom_id_2 = self.__ccU.getBondedAtoms(comp_id_2, atom_id_2)
+                            if len(bonded_atom_id_2) == 0:
                                 continue
                             if any(_row for _row in lp
                                    if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_2
                                        and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_2
-                                       and _row[atom_id_1_col] == bonded_atom_id_2)
+                                       and _row[atom_id_1_col] == bonded_atom_id_2[0])
                                    or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_2
                                        and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_2
-                                       and _row[atom_id_2_col] == bonded_atom_id_2)):
+                                       and _row[atom_id_2_col] == bonded_atom_id_2[0])):
                                 continue
                     p1 = (chain_id_1, seq_id_1, atom_id_1)
                     p2 = (chain_id_2, seq_id_2, atom_id_2)

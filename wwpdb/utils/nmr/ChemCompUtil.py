@@ -171,7 +171,7 @@ class ChemCompUtil:
         """ Return atoms in methyl group of a given comp_id.
         """
 
-        if not self.updateChemCompDict(compId):
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
             return []
 
         atmList = []
@@ -220,11 +220,21 @@ class ChemCompUtil:
 
         return [a for a in self.getMethylAtoms(compId) if a[0] in ('H', '2', '3') and a not in repList]
 
+    def getBondedAtoms(self, compId, atomId):
+        """ Return bonded atoms to a given atom.
+        """
+
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+            return []
+
+        return [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != atomId else b[self.ccbAtomId2])
+                for b in self.lastBonds if atomId in (b[self.ccbAtomId1], b[self.ccbAtomId2])]
+
     def getProtonsInSameGroup(self, compId, atomId, exclSelf=False):
         """ Return protons in the same group of a given comp_id and atom_id.
         """
 
-        if not self.updateChemCompDict(compId):
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
             return []
 
         allProtons = [a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'H']
@@ -232,13 +242,15 @@ class ChemCompUtil:
         if atomId not in allProtons:
             return []
 
-        bondedTo = next((b[self.ccbAtomId1] if b[self.ccbAtomId1] != atomId else b[self.ccbAtomId2])
-                        for b in self.lastBonds if atomId in (b[self.ccbAtomId1], b[self.ccbAtomId2]))
-
-        attached = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != bondedTo else b[self.ccbAtomId2])
-                    for b in self.lastBonds if bondedTo in (b[self.ccbAtomId1], b[self.ccbAtomId2])]
+        bondedTo = self.getBondedAtoms(compId, atomId)[0]
+        attached = self.getBondedAtoms(compId, bondedTo)
 
         return [p for p in attached if p in allProtons and ((exclSelf and p != atomId) or not exclSelf)]
+
+    def hasBond(self, compId, atomId1, atomId2):
+        """ Return whether given two atoms are connected by a covalent bond.
+        """
+        return atomId2 in self.getBondedAtoms(compId, atomId1)
 
     def write_std_dict_as_pickle(self):
         """ Write dictionary for standard residues as pickle file.

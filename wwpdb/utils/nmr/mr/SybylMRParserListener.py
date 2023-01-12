@@ -957,8 +957,13 @@ class SybylMRParserListener(ParseTreeListener):
                     if atomId.startswith('HT') and len(_atomId_) == 2:
                         _atomId_ = 'H'
                     __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
-                    if coordAtomSite is not None and any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
-                        _atomId = __atomId
+                    if coordAtomSite is not None:
+                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
+                            _atomId = __atomId
+                        elif __atomId[0][0] in protonBeginCode:
+                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId[0])
+                            if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
+                                _atomId = __atomId
                 elif coordAtomSite is not None:
                     _atomId = []
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
@@ -1138,11 +1143,9 @@ class SybylMRParserListener(ParseTreeListener):
                     self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return
                 if atomId[0] in protonBeginCode:
-                    ccb = next((ccb for ccb in self.__ccU.lastBonds
-                                if atomId in (ccb[self.__ccU.ccbAtomId1], ccb[self.__ccU.ccbAtomId2])), None)
-                    if ccb is not None:
-                        bondedTo = ccb[self.__ccU.ccbAtomId2] if ccb[self.__ccU.ccbAtomId1] == atomId else ccb[self.__ccU.ccbAtomId1]
-                        if coordAtomSite is not None and bondedTo in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                    bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
+                    if len(bondedTo) > 0:
+                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file.\n"

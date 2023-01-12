@@ -22711,7 +22711,7 @@ class NmrDpUtility:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
                             if len_atom_ids > 1:
-                                __row = copy.copy(__row)
+                                __row = copy.copy(_row)
                                 lp.add_data(__row)
 
                                 for _atom_id in atom_ids[1:-1]:

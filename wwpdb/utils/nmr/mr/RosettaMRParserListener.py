@@ -38,6 +38,7 @@ try:
                                                        getRow,
                                                        getDistConstraintType,
                                                        getPotentialType,
+                                                       getDstFuncForSsBond,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -57,6 +58,7 @@ try:
                                            monDict3,
                                            protonBeginCode,
                                            aminoProtonCode,
+                                           rdcBbPairCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -95,6 +97,7 @@ except ImportError:
                                            getRow,
                                            getDistConstraintType,
                                            getPotentialType,
+                                           getDstFuncForSsBond,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -114,6 +117,7 @@ except ImportError:
                                monDict3,
                                protonBeginCode,
                                aminoProtonCode,
+                               rdcBbPairCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -3429,8 +3433,8 @@ class RosettaMRParserListener(ParseTreeListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in ('N', 'H', 'CA'))
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('N', 'H', 'CA') and atom_id_2 == 'C')):
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')):
                     pass
 
                 else:
@@ -3642,7 +3646,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberId, memberLogicCode,
-                                 sf['list_id'], self.__entryId, None, self.__authToStarSeq, atom1, atom2)
+                                 sf['list_id'], self.__entryId, getDstFuncForSsBond(atom1, atom2), self.__authToStarSeq, atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:

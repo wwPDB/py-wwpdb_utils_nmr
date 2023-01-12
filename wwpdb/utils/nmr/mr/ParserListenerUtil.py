@@ -22,7 +22,6 @@ try:
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
-                                           indexToLetter,
                                            LARGE_ASYM_ID,
                                            LEN_LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID)
@@ -32,7 +31,6 @@ except ImportError:
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
-                               indexToLetter,
                                LARGE_ASYM_ID,
                                LEN_LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID)
@@ -4143,6 +4141,69 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
                     row[idx] = row[idx][0:first_digit + 1]
 
     return row
+
+
+def getDstFuncForHBond(atom1, atom2):
+    """ Return default upper/lower limits for a hydrogen bond.
+    """
+
+    dstFunc = {"weight": "1.0"}
+
+    atom_id_1_ = atom1['atom_id'][0]
+    atom_id_2_ = atom2['atom_id'][0]
+
+    if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+        dstFunc['lower_limit'] = "1.2"
+        dstFunc['upper_limit'] = "1.5"
+
+    elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+        dstFunc['lower_limit'] = "2.2"
+        dstFunc['upper_limit'] = "2.5"
+
+    elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+        dstFunc['lower_limit'] = "1.5"
+        dstFunc['upper_limit'] = "2.5"
+
+    elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+        dstFunc['lower_limit'] = "2.5"
+        dstFunc['upper_limit'] = "3.5"
+
+    elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+        dstFunc['lower_limit'] = "2.5"
+        dstFunc['upper_limit'] = "3.5"
+
+    elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+        dstFunc['lower_limit'] = "1.5"
+        dstFunc['upper_limit'] = "2.5"
+
+    elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+        dstFunc['lower_limit'] = "2.5"
+        dstFunc['upper_limit'] = "3.5"
+
+    return dstFunc
+
+
+def getDstFuncForSsBond(atom1, atom2):
+    """ Return default upper/lower limits for a disulfide bond.
+    """
+
+    dstFunc = {"weight": "1.0"}
+
+    atom_id_1 = atom1['atom_id']
+    atom_id_2 = atom2['atom_id']
+
+    atom_id_1_ = atom_id_1[0]
+    atom_id_2_ = atom_id_2[0]
+
+    if atom_id_1_ == 'S' and atom_id_2_ == 'S' and not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
+        dstFunc['lower_limit'] = "1.9"
+        dstFunc['upper_limit'] = "2.3"
+
+    elif atom_id_1.startswith('SE') and atom_id_2.startswith('SE'):
+        dstFunc['lower_limit'] = "2.1"
+        dstFunc['upper_limit'] = "2.6"
+
+    return dstFunc
 
 
 def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listId, entryId,

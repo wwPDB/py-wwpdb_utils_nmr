@@ -2994,6 +2994,9 @@ class AmberMRParserListener(ParseTreeListener):
         dobsl = self.dobsl[n]
         dobsu = self.dobsu[n]
 
+        if dobsl is not None and dobsu is not None and dobsl > dobsu:
+            dobsl, dobsu = dobsu, dobsl
+
         validRange = True
         dstFunc = {'weight': wt}
 
@@ -3039,6 +3042,9 @@ class AmberMRParserListener(ParseTreeListener):
 
         cobsl = self.cobsl[n]
         cobsu = self.cobsu[n]
+
+        if cobsl is not None and cobsu is not None and cobsl > cobsu:
+            cobsl, cobsu = cobsu, cobsl
 
         validRange = True
         dstFunc = {'weight': wt}

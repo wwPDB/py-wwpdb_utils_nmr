@@ -1452,7 +1452,7 @@ class NmrDpUtility:
                                            'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                                            'ccr_dd_restraint': '_Cross_correlation_DD',
                                            'fchiral_restraint': '_Floating_chirality',
-                                           'saxs_restraint': 'SAXS_constraint',
+                                           'saxs_restraint': '_SAXS_constraint',
                                            'other_restraint': '_Other_data'
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
@@ -28854,6 +28854,8 @@ class NmrDpUtility:
             _q_value = 0.0
             _row = None
 
+            lp_count = 0
+
             with open(file_path, 'r') as ifp:
                 for line in ifp:
 
@@ -28907,6 +28909,7 @@ class NmrDpUtility:
 
                             if len(sf_item) > 0 and sf_item['id'] > 0:
                                 self.__mr_sf_dict_holder[content_subtype].append(sf_item)
+                                lp_count += 1
 
                             self.__list_id_counter = incListIdCounter(content_subtype, self.__list_id_counter, reduced=False)
 
@@ -28960,6 +28963,9 @@ class NmrDpUtility:
 
             if len(sf_item) > 0 and sf_item['id'] > 0:
                 self.__mr_sf_dict_holder[content_subtype].append(sf_item)
+
+                lp_count += 1
+                input_source.setItemValue('content_subtype', {'saxs_restraint': lp_count})
 
         if len(self.__mr_sf_dict_holder[content_subtype]) == 0:
             del self.__mr_sf_dict_holder[content_subtype]

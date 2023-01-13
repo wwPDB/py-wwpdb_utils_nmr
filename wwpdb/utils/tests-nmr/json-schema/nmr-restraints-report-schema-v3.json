@@ -221,6 +221,11 @@
               "type": "integer",
               "minimum": 1
             },
+            "saxs_restraint": {
+              "description": "The number of lists associated with small angle X-ray scattering restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
             "other_restraint": {
               "description": "The number of lists associated with other restraints.",
               "type": "integer",

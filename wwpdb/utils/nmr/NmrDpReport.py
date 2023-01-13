@@ -74,6 +74,7 @@
 # 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (DAOTHER-8059, NMR restraint remediation)
 # 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (DAOTHER-8058, NMR restraint remediation)
 # 24-Oct-2022  M. Yokochi - add support for floating chiral stereo assignments (NMR restraint remediation)
+# 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1706,7 +1707,8 @@ class NmrDpReportInputSource:
                                  'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
                                  'hbond_restraint', 'ssbond_restraint', 'geo_restraint', 'noepk_restraint',
                                  'rdc_raw_data', 'ddc_restraint', 'csp_restraint', 'auto_relax_restraint',
-                                 'ccr_d_csa_restraint', 'ccr_dd_restraint', 'fchiral_restraint', 'other_restraint',
+                                 'ccr_d_csa_restraint', 'ccr_dd_restraint',
+                                 'fchiral_restraint', 'saxs_restraint', 'other_restraint',
                                  'spectral_peak', 'spectral_peak_alt', 'topology')
 
         self.__contents = {item: None for item in self.items}

@@ -257,6 +257,7 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                             'ccr_dd_restraint': '_Cross_correlation_DD_list',
                             'fchiral_restraint': '_Floating_chirality_assign',
+                            'saxs_restraint': '_SAXS_constraint_list',
                             'other_restraint': '_Other_data_type_list'
                             }
 
@@ -275,6 +276,7 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                           'fchiral_restraint': 'floating_chiral_stereo_assign',
+                          'saxs_restraint': 'saxs_constraints',
                           'other_restraint': 'other_data_types'
                           }
 
@@ -446,6 +448,12 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                ],
+                         'saxs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
                          'other_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                              {'name': 'Definition', 'type': 'str', 'mandatory': True},
@@ -470,6 +478,7 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                           'ccr_dd_restraint': '_Cross_correlation_DD',
                           'fchiral_restraint': '_Floating_chirality',
+                          'saxs_restraint': '_SAXS_constraint',
                           'other_restraint': '_Other_data'
                           }
 
@@ -688,6 +697,9 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                                {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                {'name': 'Atom_ID_2', 'type': 'str'}
                                                ],
+                         'saxs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                            {'name': 'Q_value', 'type': 'positive-float'}
+                                            ],
                          'other_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                              {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
                                              {'name': 'Entity_ID', 'type': 'positive-int'},
@@ -1334,6 +1346,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                  'default': '1', 'default-from': 'parent'},
                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                 ],
+                          'saxs_restraint': [{'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
+                                             {'name': 'Intensity_val_err', 'type': 'float', 'mandatory': True},
+                                             {'name': 'Weight_val', 'type': 'range-float', 'mandatory': False,
+                                              'range': WEIGHT_RANGE},
+                                             {'name': 'SAXS_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                              'default': '1', 'default-from': 'parent'},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
                           'other_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                'enforce-enum': True},
@@ -3441,6 +3461,8 @@ def getRestraintName(mrSubtype, title=False):
         return "Coordinate geometry restraints" if title else "coordinate geometry restraints"
     if mrSubtype.startswith('noepk'):
         return "NOESY peak volume restraints"
+    if mrSubtype.startswith('saxs'):
+        return "Small angle X-ray scattering restraints" if title else "small angle X-ray scattering restraints"
 
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
@@ -3449,7 +3471,7 @@ def contentSubtypeOf(mrSubtype):
     """ Return legitimate content subtype of NmrDpUtility.py for a given internal restraint subtype.
     """
 
-    if mrSubtype in ('dist', 'dihed', 'rdc', 'noepk', 'jcoup', 'hvycs', 'procs', 'csa', 'fchiral'):
+    if mrSubtype in ('dist', 'dihed', 'rdc', 'noepk', 'jcoup', 'hvycs', 'procs', 'csa', 'fchiral', 'saxs'):
         return mrSubtype + '_restraint'
 
     if mrSubtype == 'hbond':
@@ -3496,6 +3518,7 @@ def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
                          'ccr_d_csa_restraint': 0,
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
+                         'saxs_restraint': 0,
                          'other_restraint': 0
                          }
 
@@ -3529,6 +3552,7 @@ def decListIdCounter(mrSubtype, listIdCounter, reduced=True):
                          'ccr_d_csa_restraint': 0,
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
+                         'saxs_restraint': 0,
                          'other_restraint': 0
                          }
 
@@ -4118,6 +4142,15 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
         row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
 
+    elif mrSubtype == 'saxs':
+        row[1] = code
+        if hasKeyValue(dstFunc, 'target_value'):
+            row[key_size] = dstFunc['target_value']
+        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+            row[key_size + 1] = dstFunc['target_value_uncertainty']
+        if hasKeyValue(dstFunc, 'weight'):
+            row[key_size + 2] = dstFunc['weight']
+
     if len(float_row_idx) > 0:
         max_eff_digits = 0
         for idx in float_row_idx:
@@ -4206,7 +4239,7 @@ def getDstFuncForSsBond(atom1, atom2):
     return dstFunc
 
 
-def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listId, entryId,
+def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
                    originalTagNames, originalRow, authToStarSeq,
                    atoms):
     """ Return row data for a given constraint subtype and corresponding NMR-STAR row.
@@ -4305,7 +4338,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
             row[key_size + 1] = val
 
         row[key_size + 2] = memberId
-        row[key_size + 3] = memberLogicCode
+        row[key_size + 3] = code
 
         val = getRowValue('Target_val')
         if val is not None:
@@ -4812,6 +4845,18 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, memberLogicCode, listI
         if atom2 is not None:
             row[key_size + 5], row[key_size + 6], row[key_size + 7], row[key_size + 8] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['auth_atom_id']
+
+    elif contentSubtype == 'saxs_restraint':
+        row[1] = code
+        val = getRowValue('Intensity_val')
+        if val is not None:
+            row[key_size] = val
+        val = getRowValue('Intensity_err_val')
+        if val is not None:
+            row[key_size + 1] = val
+        val = getRowValue('Weight_val')
+        if val is not None:
+            row[key_size + 2] = str(abs(float(val)))
 
     elif contentSubtype == 'other_restraint':
         if atom1 is not None:

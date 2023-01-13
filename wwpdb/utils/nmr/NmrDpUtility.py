@@ -165,6 +165,7 @@
 # 20-Oct-2022  M. Yokochi - report recommendation message when there is no distance restraints for NMR deposition, instead of blocker (DAOTHER-8088 1.b, 8108)
 # 24-Oct-2022  M. Yokochi - add support for floating chiral stereo assignments (NMR restraint remediation)
 # 15-Dec-2022  M. Yokochi - merge CS and MR as a single NMR data file in CIF format with comprehensive molecular assembly information (DAOTHER-7407, NMR restraint remediation)
+# 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1314,7 +1315,7 @@ class NmrDpUtility:
                                      'hvycs_restraint', 'procs_restraint',
                                      'csp_restraint', 'auto_relax_restraint',
                                      'ccr_d_csa_restraint', 'ccr_dd_restraint',
-                                     'fchiral_restraint', 'other_restraint')
+                                     'fchiral_restraint', 'saxs_restraint', 'other_restraint')
 
         self.mr_content_subtypes = ['dist_restraint', 'dihed_restraint', 'rdc_restraint',
                                     'noepk_restraint', 'jcoup_restraint', 'rdc_raw_data',
@@ -1322,7 +1323,7 @@ class NmrDpUtility:
                                     'hvycs_restraint', 'procs_restraint',
                                     'csp_restraint', 'auto_relax_restraint',
                                     'ccr_d_csa_restraint', 'ccr_dd_restraint',
-                                    'fchiral_restraint', 'other_restraint']
+                                    'fchiral_restraint', 'saxs_restraint', 'other_restraint']
 
         self.pk_content_subtypes = ('spectral_peak', 'spectral_peak_alt')
 
@@ -1370,6 +1371,7 @@ class NmrDpUtility:
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
+                                      'saxs_restraint': None,
                                       'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': 'entry_information',
@@ -1394,6 +1396,7 @@ class NmrDpUtility:
                                            'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                                            'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                                            'fchiral_restraint': 'floating_chiral_stereo_assign',
+                                           'saxs_restraint': 'saxs_constraints',
                                            'other_restraint': 'other_data_types'
                                            }
                               }
@@ -1421,6 +1424,7 @@ class NmrDpUtility:
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
+                                      'saxs_restraint': None,
                                       'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': '_Software_applied_methods',
@@ -1445,6 +1449,7 @@ class NmrDpUtility:
                                            'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                                            'ccr_dd_restraint': '_Cross_correlation_DD',
                                            'fchiral_restraint': '_Floating_chirality',
+                                           'saxs_restraint': 'SAXS_constraint',
                                            'other_restraint': '_Other_data'
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
@@ -1521,6 +1526,7 @@ class NmrDpUtility:
                                    'ccr_d_csa_restraint': None,
                                    'ccr_dd_restraint': None,
                                    'fchiral_restraint': None,
+                                   'saxs_restraint': None,
                                    'other_restraint': None
                                    },
                            'nmr-star': {'entry_info': None,
@@ -1545,6 +1551,7 @@ class NmrDpUtility:
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
+                                        'saxs_restraint': None,
                                         'other_restraint': None
                                         },
                            'pdbx': {'poly_seq': None,
@@ -1577,6 +1584,7 @@ class NmrDpUtility:
                                     'ccr_d_csa_restraint': None,
                                     'ccr_dd_restraint': None,
                                     'fchiral_restraint': None,
+                                    'saxs_restraint': None,
                                     'other_restraint': None
                                     },
                             'nmr-star': {'entry_info': None,
@@ -1601,6 +1609,7 @@ class NmrDpUtility:
                                          'ccr_d_csa_restraint': None,
                                          'ccr_dd_restraint': None,
                                          'fchiral_restraint': None,
+                                         'saxs_restraint': 'Weight_val',
                                          'other_restraint': None
                                          },
                             'pdbx': {'poly_seq': None,
@@ -1633,6 +1642,7 @@ class NmrDpUtility:
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
+                                        'saxs_restraint': None,
                                         'other_restraint': None
                                         },
                                 'nmr-star': {'dist_restraint': 'ID',
@@ -1652,6 +1662,7 @@ class NmrDpUtility:
                                              'ccr_d_csa_restraint': 'ID',
                                              'ccr_dd_restraint': 'ID',
                                              'fchiral_restraint': 'ID',
+                                             'saxs_restraint': 'ID',
                                              'other_restraint': 'ID'
                                              }
                                 }
@@ -1750,6 +1761,7 @@ class NmrDpUtility:
                                   'ccr_d_csa_restraint': None,
                                   'ccr_dd_restraint': None,
                                   'fchiral_restraint': None,
+                                  'saxs_restraint': None,
                                   'other_restraint': None
                                   },
                           'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID'},
@@ -1954,6 +1966,9 @@ class NmrDpUtility:
                                                              {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                              {'name': 'Atom_ID_2', 'type': 'str'}
                                                              ],
+                                       'saxs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                          {'name': 'Q_value', 'type': 'positive-float'}
+                                                          ],
                                        'other_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                            {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
                                                            {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
@@ -2065,6 +2080,7 @@ class NmrDpUtility:
                                           'ccr_d_csa_restraint': None,
                                           'ccr_dd_restraint': None,
                                           'fchiral_restraint': None,
+                                          'saxs_restraint': None,
                                           'other_restraint': None
                                           },
                                   'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
@@ -2298,6 +2314,7 @@ class NmrDpUtility:
                                                                      {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                      {'name': 'Atom_ID_2', 'type': 'str'}
                                                                      ],
+                                               'saxs_restraint': [{'name': 'Q_value', 'type': 'positive-float'}],
                                                'other_restraint': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str',
                                                                     'default': '1'},
                                                                    {'name': 'Comp_index_ID', 'type': 'int',
@@ -2490,6 +2507,7 @@ class NmrDpUtility:
                                    'ccr_d_csa_restraint': None,
                                    'ccr_dd_restraint': None,
                                    'fchiral_restraint': None,
+                                   'saxs_restraint': None,
                                    'other_restraint': None
                                    },
                            'nmr-star': {'poly_seq': [{'name': 'Entity_ID', 'type': 'positive-int', 'mandatory': False},
@@ -3196,6 +3214,11 @@ class NmrDpUtility:
                                                               {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                               {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
                                                               ],
+                                        'saxs_restraint': [{'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
+                                                           {'name': 'Intensity_val_err', 'type': 'float', 'mandatory': True},
+                                                           {'name': 'Weight_val', 'type': 'range-float', 'mandatory': False,
+                                                            'range': WEIGHT_RANGE}
+                                                           ],
                                         'other_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                              'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                              'enforce-enum': True},
@@ -3329,6 +3352,7 @@ class NmrDpUtility:
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
                                            'fchiral_restraint': None,
+                                           'saxs_restraint': None,
                                            'other_restraint': None
                                            },
                                    'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -3493,6 +3517,7 @@ class NmrDpUtility:
                                                 'ccr_d_csa_restraint': None,
                                                 'ccr_dd_restraint': None,
                                                 'fchiral_restraint': None,
+                                                'saxs_restraint': None,
                                                 'other_restraint': None
                                                 }
                                    }
@@ -3638,6 +3663,7 @@ class NmrDpUtility:
                                      'ccr_d_csa_restraint': None,
                                      'ccr_dd_restraint': None,
                                      'fchiral_restraint': None,
+                                     'saxs_restraint': None,
                                      'other_restraint': None
                                      },
                              'nmr-star': {'entry_info': ['Software_ID', 'Software_label', 'Methods_ID', 'Methods_label', 'Software_name',
@@ -3927,6 +3953,8 @@ class NmrDpUtility:
                                                                 'Auth_asym_ID_1', 'Auth_entity_assembly_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
                                                                 'Auth_asym_ID_2', 'Auth_entity_assembly_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
                                                                 'Sf_ID', 'Entry_ID', 'Floating_chirality_assign_ID'],
+                                          'saxs_restraint': ['ID', 'Q_value', 'Intensity_val', 'Intensity_val_err', 'Weight_val',
+                                                             'Sf_ID', 'Entry_ID', 'SAXS_constraint_list_ID'],
                                           'other_restraint': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
                                                               'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
                                                               'Val', 'Val_err', 'Resonance_ID',
@@ -3971,6 +3999,7 @@ class NmrDpUtility:
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
+                                        'saxs_restraint': None,
                                         'other_restraint': None
                                         },
                                 'nmr-star': {'entry_info': '_Entry',
@@ -3995,6 +4024,7 @@ class NmrDpUtility:
                                              'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                                              'ccr_dd_restraint': '_Cross_correlation_DD_list',
                                              'fchiral_restraint': '_Floating_chirality_assign',
+                                             'saxs_restraint': '_SAXS_constraint_list',
                                              'other_restraint': '_Other_data_type_list'
                                              }
                                 }
@@ -4089,6 +4119,7 @@ class NmrDpUtility:
                                      'ccr_d_csa_restraint': None,
                                      'ccr_dd_restraint': None,
                                      'fchiral_restraint': None,
+                                     'saxs_restraint': None,
                                      'other_restraint': None
                                      },
                              'nmr-star': {'entry_info': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -4279,6 +4310,9 @@ class NmrDpUtility:
                                                                 {'name': 'Stereo_count', 'type': 'int', 'mandatory': False},
                                                                 {'name': 'Stereo_assigned_count', 'type': 'int', 'mandatory': True}
                                                                 ],
+                                          'saxs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True}
+                                                             ],
                                           'other_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Definition', 'type': 'str', 'mandatory': True}
@@ -4309,6 +4343,7 @@ class NmrDpUtility:
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
+                                      'saxs_restraint': None,
                                       'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': None,
@@ -4333,6 +4368,7 @@ class NmrDpUtility:
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
                                            'fchiral_restraint': None,
+                                           'saxs_restraint': None,
                                            'other_restraint': None
                                            }
                               }
@@ -4364,6 +4400,7 @@ class NmrDpUtility:
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
+                                        'saxs_restraint': None,
                                         'other_restraint': None
                                         },
                                 'nmr-star': {'entry_info': ['Sf_category', 'Sf_framecode', 'Sf_ID', 'ID', 'Title', 'Type',
@@ -4478,6 +4515,8 @@ class NmrDpUtility:
                                                                   'Val_units', 'Details', 'Text_data_format', 'Text_data'],
                                              'fchiral_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
                                                                    'Details', 'Stereo_count', 'Stereo_assigned_count'],
+                                             'saxs_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                                'Sample_condition_list_ID', 'Sample_condition_list_label', 'Details', 'Text_data_format', 'Text_data'],
                                              'other_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Definition', 'Data_file_name',
                                                                  'Sample_condition_list_ID', 'Sample_condition_list_label', 'Details', 'Text_data_format', 'Text_data']
                                              }
@@ -4509,6 +4548,7 @@ class NmrDpUtility:
                                           'ccr_d_csa_restraint': None,
                                           'ccr_dd_restraint': None,
                                           'fchiral_restraint': None,
+                                          'saxs_restraint': None,
                                           'other_restraint': None
                                           },
                                   'nmr-star': {'entry_info': None,
@@ -4533,6 +4573,7 @@ class NmrDpUtility:
                                                'ccr_d_csa_restraint': None,
                                                'ccr_dd_restraint': None,
                                                'fchiral_restraint': None,
+                                               'saxs_restraint': None,
                                                'other_restraint': None
                                                }
                                   }
@@ -4560,6 +4601,7 @@ class NmrDpUtility:
                                              'ccr_d_csa_restraint': [],
                                              'ccr_dd_restraint': [],
                                              'fchiral_restraint': [],
+                                             'saxs_restraint': [],
                                              'other_restraint': []
                                              },
                                      'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author',
@@ -4716,6 +4758,7 @@ class NmrDpUtility:
                                                                           'Cross_correlation_D_CSA'],
                                                   'ccr_dd_restraint': ['Cross_correlation_DD_experiment', 'Cross_correlation_DD_software', 'Cross_correlation_DD'],
                                                   'fchiral_restraint': ['Floating_chirality_software', 'Floating_chirality'],
+                                                  'saxs_restraint': ['SAXS_constraint_expt', 'SAXS_constraint_software', 'SAXS_constraint'],
                                                   'other_restraint': ['Other_data_experiment', 'Other_data_software', 'Other_data']
                                                   }
                                      }
@@ -4763,6 +4806,7 @@ class NmrDpUtility:
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
+                                      'saxs_restraint': None,
                                       'other_restraint': None
                                       },
                               'nmr-star': {'entry_info': None,
@@ -4835,6 +4879,7 @@ class NmrDpUtility:
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
                                            'fchiral_restraint': None,
+                                           'saxs_restraint': None,
                                            'other_restraint': None
                                            }
                               }
@@ -4890,6 +4935,7 @@ class NmrDpUtility:
                                        'ccr_d_csa_restraint': None,
                                        'ccr_dd_restraint': None,
                                        'fchiral_restraint': None,
+                                       'saxs_restraint': None,
                                        'other_restraint': None
                                        },
                                'nmr-star': {'entry_info': None,
@@ -5032,6 +5078,7 @@ class NmrDpUtility:
                                             'ccr_d_csa_restraint': None,
                                             'ccr_dd_restraint': None,
                                             'fchiral_restraint': None,
+                                            'saxs_restraint': None,
                                             'other_restraint': None
                                             }
                                }
@@ -5069,6 +5116,7 @@ class NmrDpUtility:
                                          'ccr_d_csa_restraint': None,
                                          'ccr_dd_restraint': None,
                                          'fchiral_restraint': None,
+                                         'saxs_restraint': None,
                                          'other_restraint': None
                                          },
                                  'nmr-star': {'entry_info': None,
@@ -5142,6 +5190,7 @@ class NmrDpUtility:
                                               'ccr_d_csa_restraint': None,
                                               'ccr_dd_restraint': None,
                                               'fchiral_restraint': None,
+                                              'saxs_restraint': None,
                                               'other_restraint': None
                                               }
                                  }
@@ -5348,6 +5397,7 @@ class NmrDpUtility:
                           'ccr_d_csa_restraint': [],
                           'ccr_dd_restraint': [],
                           'fchiral_restraint': [],
+                          'saxs_restraint': [],
                           'other_restraint': []
                           }
 
@@ -5374,6 +5424,7 @@ class NmrDpUtility:
                            'ccr_d_csa_restraint': [],
                            'ccr_dd_restraint': [],
                            'fchiral_restraint': [],
+                           'saxs_restraint': [],
                            'other_restraint': []
                            }
 
@@ -5400,6 +5451,7 @@ class NmrDpUtility:
                               'ccr_d_csa_restraint': [],
                               'ccr_dd_restraint': [],
                               'fchiral_restraint': [],
+                              'saxs_restraint': [],
                               'other_restraint': []
                               }
 

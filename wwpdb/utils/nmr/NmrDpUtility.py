@@ -237,6 +237,7 @@ try:
                                                        incListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
+                                                       getRow,
                                                        getRowForStrMr,
                                                        assignCoordPolymerSequenceWithChainId,
                                                        selectCoordAtoms,
@@ -326,6 +327,7 @@ except ImportError:
                                            incListIdCounter,
                                            getSaveframe,
                                            getLoop,
+                                           getRow,
                                            getRowForStrMr,
                                            assignCoordPolymerSequenceWithChainId,
                                            selectCoordAtoms,
@@ -1170,6 +1172,7 @@ class NmrDpUtility:
                              self.__extractCoordOtherBond,
                              self.__validateStrMr,
                              self.__validateLegacyMr,
+                             self.__validateSaxsMr,
                              self.__validateStrPk,
                              self.__calculateStatsOfExptlData,
                              self.__updateConstraintStats,
@@ -8725,7 +8728,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type in ('nm-res-mr', 'nm-pea-any'):
+            if file_type in ('nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
                 md5_list.append(None)
                 continue
 
@@ -10082,7 +10085,7 @@ class NmrDpUtility:
 
                 fileListId += 1
 
-                if file_type in ('nm-res-mr', 'nmr-star', 'nm-pea-any'):
+                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
                     continue
 
                 if (content_subtype is not None and 'dist_restraint' in content_subtype) or file_type in ('nm-aux-amb', 'nm-aux-gro'):
@@ -12803,7 +12806,7 @@ class NmrDpUtility:
 
             for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
                                'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
-                               'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
+                               'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-sax'):
 
                 sel_res_file = src_basename + f'-selected-as-res-{_file_type[-3:]}.mr'
 
@@ -13302,6 +13305,28 @@ class NmrDpUtility:
 
                             continue
 
+                        designated = False
+
+                        for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
+                                           'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
+                                           'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-sax'):
+
+                            sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
+
+                            if os.path.exists(sel_res_file):
+                                _ar = ar.copy()
+
+                                _ar['file_name'] = dst_file
+                                _ar['file_type'] = _file_type
+                                split_file_list.append(_ar)
+
+                                designated = True
+
+                                break
+
+                        if designated:
+                            continue
+
                         _ar = ar.copy()
 
                         _ar['file_name'] = dst_file
@@ -13609,7 +13634,7 @@ class NmrDpUtility:
 
                     for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
                                        'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
-                                       'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
+                                       'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-sax'):
 
                         sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -13920,7 +13945,7 @@ class NmrDpUtility:
 
                         for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
                                            'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
-                                           'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
+                                           'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-sax'):
 
                             sel_res_file = _dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -26923,7 +26948,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-pea-any'):
+            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
                 continue
 
             file_name = input_source_dic['file_name']
@@ -28776,6 +28801,170 @@ class NmrDpUtility:
             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
         return not self.report.isError()
+
+    def __validateSaxsMr(self):
+        """ Validate SAXS restraint files.
+        """
+
+        if self.__combined_mode:
+            return True
+
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        if ar_file_path_list not in self.__inputParamDict:
+            return True
+
+        content_subtype = 'saxs_restraint'
+
+        if self.__list_id_counter is None:
+            self.__list_id_counter = {}
+        if self.__mr_sf_dict_holder is None:
+            self.__mr_sf_dict_holder = {}
+
+        if content_subtype not in self.__mr_sf_dict_holder:
+            self.__mr_sf_dict_holder[content_subtype] = []
+
+        fileListId = self.__file_path_list_len
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            file_path = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+
+            fileListId += 1
+
+            if file_type != 'nm-res-sax':
+                continue
+
+            file_name = input_source_dic['file_name']
+
+            original_file_name = file_name.replace('-corrected', '')
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+
+            sf_item = {}
+
+            title = original_file_name
+
+            _q_value = 0.0
+            _row = None
+
+            with open(file_path, 'r') as ifp:
+                for line in ifp:
+
+                    line = ' '.join(line.split())
+
+                    _line = line.split()
+
+                    len_line = len(_line)
+
+                    if len_line == 0:
+                        continue
+
+                    if line.startswith('#') or line.startswith('!'):
+
+                        if len(line) == 1:
+                            continue
+
+                        __line = line[1:].split(' ')
+
+                        if len(__line) == 0 or line[1].startswith('#') or line[1].startswith('!'):
+                            continue
+
+                        title_can = __line[0]
+
+                        try:
+                            float(title_can)
+                            continue
+                        except ValueError:
+                            if len(title_can) > 1\
+                               and '(' not in title_can and ')' not in title_can\
+                               and '[' not in title_can and ']' not in title_can:
+                                title = title_can
+                            _row = None
+
+                        continue
+
+                    if len_line != 3:
+                        continue
+
+                    try:
+
+                        q_value = float(_line[0])
+                        float(_line[1])
+                        float(_line[2])
+
+                        dstFunc = {'weight': '1.0',
+                                   'target_value': _line[1].replace('E', 'e'),
+                                   'target_value_uncertainty': _line[2].replace('E', 'e')}
+
+                        if _q_value == 0.0:
+
+                            if len(sf_item) > 0 and sf_item['id'] > 0:
+                                self.__mr_sf_dict_holder[content_subtype].append(sf_item)
+
+                            self.__list_id_counter = incListIdCounter(content_subtype, self.__list_id_counter, reduced=False)
+
+                            list_id = self.__list_id_counter[content_subtype]
+
+                            restraint_name = getRestraintName(content_subtype)
+
+                            sf_framecode = restraint_name.replace(' ', '_').lower() + f'_{list_id}'
+
+                            sf = getSaveframe(content_subtype, sf_framecode, list_id, self.__entry_id, title, reduced=False)
+
+                            _restraint_name = restraint_name.split()
+
+                            sf_item = {'file_type': file_type, 'saveframe': sf, 'list_id': list_id,
+                                       'id': 0, 'index_id': 0,
+                                       'constraint_type': ' '.join(_restraint_name[:-1])}
+
+                            lp = getLoop(content_subtype, reduced=False)
+
+                            sf.add_loop(lp)
+                            sf_item['loop'] = lp
+
+                            if _row is not None:
+
+                                sf_item['loop'].add_data(_row)
+
+                                sf_item['id'] = sf_item['index_id'] = 1
+
+                                _row = None
+
+                        if q_value > _q_value:
+
+                            sf_item['id'] += 1
+                            sf_item['index_id'] += 1
+
+                            row = getRow('saxs', sf_item['id'], sf_item['index_id'], None, None, _line[0].replace('E', 'e'),
+                                         sf_item['list_id'], self.__entry_id, dstFunc, None, None)
+                            sf_item['loop'].add_data(row)
+
+                            _q_value = q_value
+
+                        else:
+
+                            _row = getRow('saxs', 1, 1, None, None, _line[0].replace('E', 'e'),
+                                          sf_item['list_id'] + 1, self.__entry_id, dstFunc, None, None)
+
+                            _q_value = 0.0
+
+                    except ValueError:
+                        continue
+
+            if len(sf_item) > 0 and sf_item['id'] > 0:
+                self.__mr_sf_dict_holder[content_subtype].append(sf_item)
+
+        if len(self.__mr_sf_dict_holder[content_subtype]) == 0:
+            del self.__mr_sf_dict_holder[content_subtype]
+
+        return True
 
     def __validateStrPk(self):
         """ Validate spectral peak lists in NMR-STAR restraint files.
@@ -45927,6 +46116,8 @@ class NmrDpUtility:
                     constraint_subtype = get_first_sf_tag(sf, 'Constraint_type') if content_subtype != 'other_restraint' else get_first_sf_tag(sf, 'Definition')
                     if len(constraint_subtype) == 0:
                         constraint_subtype = None
+                    if sf_item['file_type'] == 'nm-res-sax':
+                        constraint_subtype = 'SAXS'
                     constraint_subsubtype = sf_item['constraint_subsubtype'] if 'constraint_subsubtype' in sf_item else None
                     row[6], row[7], row[8], row[9] =\
                         constraint_type, constraint_subtype, constraint_subsubtype, sf_item['id']

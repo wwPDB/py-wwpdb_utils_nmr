@@ -4844,7 +4844,7 @@ class NmrDpUtility:
                                            },
                                            'entity': None,
                                            'chem_shift': {
-                                               '_Ambiguous_atom_chem_shift': [{'name': 'Ambiguous_shift_set_ID', 'type': 'index-int', 'mandatory': True,
+                                               '_Ambiguous_atom_chem_shift': [{'name': 'Ambiguous_shift_set_ID', 'type': 'positive-int', 'mandatory': True,
                                                                                'default-from': 'self'},
                                                                               {'name': 'Atom_chem_shift_ID', 'type': 'positive-int', 'mandatory': True}
                                                                               ]

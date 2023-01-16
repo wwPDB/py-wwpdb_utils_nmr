@@ -1482,6 +1482,10 @@ class NEFTranslator:
                         seq_data += seq_data_
 
                 if not _tags_exist:
+                    if seq_id == 'Comp_index_ID' and 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags:
+                        return self.get_star_seq(star_data, lp_category, 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_asym_ID',
+                                                 alt_seq_id, alt_seq_id_offset, alt_chain_id, allow_empty, allow_gap)
+
                     missing_tags = list(set(tags) - set(loop.tags))
                     raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
@@ -1512,6 +1516,10 @@ class NEFTranslator:
                             f"#_of_row {idx + 1}, data_of_row {r}.\n"
 
             if len(warn) > 0:
+                if seq_id == 'Comp_index_ID' and 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags:
+                    return self.get_star_seq(star_data, lp_category, 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_asym_ID',
+                                             alt_seq_id, alt_seq_id_offset, alt_chain_id, allow_empty, allow_gap)
+
                 raise UserWarning(warn)
 
             try:

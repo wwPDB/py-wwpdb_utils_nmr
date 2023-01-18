@@ -4131,8 +4131,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         if ('atom_id' in _factor and _factor['atom_id'][0] is None)\
            or ('atom_selection' in _factor and len(_factor['atom_selection']) == 0):
-            _factor = {'atom_selection': []}
-            return _factor
+            return {'atom_selection': []}
 
         if not any(key for key in _factor if not(key == 'atom_selection' or key.startswith('auth'))):
             return _factor
@@ -4647,8 +4646,6 @@ class CnsMRParserListener(ParseTreeListener):
         _atomSelection = []
 
         self.__with_axis = self.__cur_subtype in ('rdc', 'diff')
-        
-        print(_factor)
 
         if _factor['atom_id'][0] is not None:
             foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True)

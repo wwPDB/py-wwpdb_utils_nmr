@@ -21506,16 +21506,23 @@ class NmrDpUtility:
 
                                 if len(ambig_set) == 0:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                        + f"] {ambig_code_name} {str(ambig_code)!r} requires other rows sharing {ambig_set_id_name} {ambig_set_id}."
+                                    if ambig_code == 4:
+                                        ambig_desc = 'of intra-residue atoms '
+                                    elif ambig_code == 5:
+                                        ambig_desc = 'of inter-residue atoms '
+                                    else:
+                                        ambig_desc = ''
 
-                                    self.report.error.appendDescription('missing_data',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': err})
-                                    self.report.setError()
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                        + f"] {ambig_code_name} {str(ambig_code)!r} requires other rows {ambig_desc}sharing {ambig_set_id_name} {ambig_set_id}."
+
+                                    self.report.warning.appendDescription('missing_data',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                           'description': warn})
+                                    self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
                                 # Intra-residue ambiguities
                                 elif ambig_code == 4:

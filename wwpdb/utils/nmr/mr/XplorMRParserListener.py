@@ -355,6 +355,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # union expression
     __cur_union_expr = False
+    __con_union_expr = False
+    __top_union_expr = False
 
     depth = 0
 
@@ -364,6 +366,7 @@ class XplorMRParserListener(ParseTreeListener):
     stackVflc = None  # stack of Vflc
 
     factor = None
+    unionFactor = None
 
     # distance
     noePotential = 'biharmonic'
@@ -7561,6 +7564,100 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__sel_expr_debug:
             print("  " * self.depth + "exit_selection")
 
+        if 'or' in self.stackSelections:
+            top_union_exprs = self.stackSelections.count('or')
+
+            unionSelections = []
+            unionSelections.append(None)
+            unionId = 0
+
+            for _selection in self.stackSelections:
+
+                if _selection is None:
+                    continue
+
+                if isinstance(_selection, str) and _selection == 'or':
+
+                    if unionId == top_union_exprs - 1:
+                        break
+
+                    unionSelections.append(None)
+                    unionId += 1
+
+                    continue
+
+                if unionSelections[unionId] is None:
+                    unionSelections[unionId] = []
+
+                unionSelections[unionId].append(_selection)
+
+            self.stackSelections.clear()
+
+            unionAtomSelection = []
+
+            for stackSelections in unionSelections:
+
+                if stackSelections is None:
+                    continue
+
+                if 'and' not in stackSelections:
+
+                    atomSelection = stackSelections.pop() if stackSelections else []
+
+                    while stackSelections:
+                        _selection = stackSelections.pop()
+                        if _selection is not None:
+                            atomSelection = self.__intersectionAtom_selections(_selection, atomSelection)
+
+                else:
+
+                    blockSelections = []
+                    blockSelections.append(None)
+                    blockId = 0
+
+                    for _selection in stackSelections:
+
+                        if _selection is None:
+                            continue
+
+                        if isinstance(_selection, str) and _selection == 'and':
+                            blockSelections.append(None)
+                            blockId += 1
+                            continue
+
+                        if blockSelections[blockId] is None:
+                            blockSelections[blockId] = _selection
+
+                        else:
+                            for _atom in _selection:
+                                if _atom not in blockSelections[blockId]:
+                                    blockSelections[blockId].append(_atom)
+
+                    stackSelections.clear()
+
+                    atomSelection = blockSelections.pop()
+
+                    while blockSelections:
+                        atomSelection = self.__intersectionAtom_selections(blockSelections.pop(), atomSelection)
+
+                if len(atomSelection) > 0:
+                    unionAtomSelection.extend(atomSelection)
+
+            atomSelection = unionAtomSelection
+
+            if '*' in atomSelection:
+                atomSelection.remove('*')
+
+            if self.__createSfDict:
+                atomSelection = sorted(atomSelection, key=lambda x: (x['chain_id'], x['seq_id'], x['atom_id']))
+
+            if self.__sel_expr_debug:
+                print("  " * self.depth + f"atom selection: {atomSelection}")
+
+            self.atomSelectionSet.append(atomSelection)
+
+            return
+
         if 'and' not in self.stackSelections:
 
             atomSelection = self.stackSelections.pop() if self.stackSelections else []
@@ -7568,7 +7665,7 @@ class XplorMRParserListener(ParseTreeListener):
             while self.stackSelections:
                 _selection = self.stackSelections.pop()
                 if _selection is not None:
-                    if self.__cur_union_expr:
+                    if self.__con_union_expr:
                         for _atom in _selection:
                             if _atom not in atomSelection:
                                 atomSelection.append(_atom)
@@ -7639,7 +7736,12 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#selection_expression.
     def enterSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):
-        self.__cur_union_expr = bool(ctx.Or_op(0))
+        self.__cur_union_expr = self.__con_union_expr = bool(ctx.Or_op(0))
+        if self.depth == 0:
+            self.__top_union_expr = self.__cur_union_expr
+
+        if self.depth > 0 and self.__cur_union_expr:
+            self.unionFactor = {}
 
         if self.__sel_expr_debug:
             print("  " * self.depth + f"enter_sel_expr, union: {self.__cur_union_expr}")
@@ -7650,8 +7752,6 @@ class XplorMRParserListener(ParseTreeListener):
             if 'atom_selection' in self.factor:
                 self.stackSelections.append(self.factor['atom_selection'])
                 self.stackSelections.append('and')  # intersection
-
-        self.factor = {}
 
         self.depth += 1
 
@@ -7672,9 +7772,14 @@ class XplorMRParserListener(ParseTreeListener):
         if len(atomSelection) > 0:
             self.stackSelections.append(atomSelection)
 
-        self.factor = {}
+        if self.depth == 0 or not self.__top_union_expr:
+            self.factor = {}
 
-        self.__cur_union_expr = bool(ctx.Or_op(0))
+        if self.__cur_union_expr:
+            self.__cur_union_expr = False
+        if self.__con_union_expr and self.depth == 0:
+            self.__con_union_expr = False
+            self.unionFactor = None
 
     # Enter a parse tree produced by XplorMRParser#term.
     def enterTerm(self, ctx: XplorMRParser.TermContext):
@@ -7692,9 +7797,53 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__sel_expr_debug:
             print("  " * self.depth + "exit_term")
 
-        while self.stackFactors:
-            _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=True)
-            self.factor = self.__intersectionFactor_expressions(self.factor, None if 'atom_selection' not in _factor else _factor['atom_selection'])
+        if self.depth == 1 and self.__top_union_expr:
+
+            while self.stackFactors:
+                _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=True)
+                self.factor = self.__intersectionFactor_expressions(self.factor, None if 'atom_selection' not in _factor else _factor['atom_selection'])
+
+            if 'atom_selection' in self.factor:
+                self.stackTerms.append(self.factor['atom_selection'])
+
+            atomSelection = []
+            while self.stackTerms:
+                _term = self.stackTerms.pop()
+                if _term is not None:
+                    for _atom in _term:
+                        if _atom not in atomSelection:
+                            atomSelection.append(_atom)
+
+            if len(atomSelection) > 0:
+                self.stackSelections.append(atomSelection)
+
+            self.stackSelections.append('or')  # union
+
+            self.stackTerms = []
+            self.stackFactors = []
+            self.factor = {}
+
+            return
+
+        if self.depth == 1 or not self.__top_union_expr:
+            while self.stackFactors:
+                _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=True)
+                self.factor = self.__intersectionFactor_expressions(self.factor, None if 'atom_selection' not in _factor else _factor['atom_selection'])
+
+        if self.unionFactor is not None and len(self.unionFactor) > 0:
+            if 'atom_selection' not in self.unionFactor:
+                self.unionFactor = self.__consumeFactor_expressions(self.unionFactor, cifCheck=True)
+            if 'atom_selection' in self.unionFactor:
+                _atomSelection = self.unionFactor['atom_selection']
+                del self.unionFactor['atom_selection']
+                __factor = self.__consumeFactor_expressions(self.unionFactor, cifCheck=True)
+                if 'atom_selection' in __factor:
+                    for _atom in __factor['atom_selection']:
+                        if _atom not in _atomSelection:
+                            _atomSelection.append(_atom)
+                if len(_atomSelection) > 0:
+                    self.factor['atom_selection'] = _atomSelection
+            self.unionFactor = None
 
         if 'atom_selection' in self.factor:
             self.stackTerms.append(self.factor['atom_selection'])
@@ -7764,7 +7913,7 @@ class XplorMRParserListener(ParseTreeListener):
             if 'atom_selection' not in _factor:
                 key = str(_factor)
                 if key in self.__cachedDictForFactor:
-                    return self.__cachedDictForFactor[key]
+                    return copy.deepcopy(self.__cachedDictForFactor[key])
                 ambigAtomSelect = True
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
@@ -8331,7 +8480,8 @@ class XplorMRParserListener(ParseTreeListener):
             del _factor['alt_atom_id']
 
         if ambigAtomSelect:
-            self.__cachedDictForFactor[key] = _factor
+            if key not in self.__cachedDictForFactor:
+                self.__cachedDictForFactor[key] = copy.deepcopy(_factor)
 
         return _factor
 
@@ -8674,6 +8824,9 @@ class XplorMRParserListener(ParseTreeListener):
                             if not isPolySeq and 'alt_auth_seq_id' in ps and _seqId in ps['auth_seq_id'] and _seqId not in ps['alt_auth_seq_id']:
                                 continue
 
+                            if isinstance(origAtomId, str) and origAtomId.startswith('*'):
+                                continue
+
                             if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and _atomId not in XPLOR_NITROXIDE_NAMES:
                                 _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
                                 if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
@@ -8694,6 +8847,8 @@ class XplorMRParserListener(ParseTreeListener):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
+                                        if _atomId.startswith('HOP') and isinstance(origAtomId, str) and '*' in origAtomId:
+                                            continue
                                         _atomSelection.append(selection)
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             if self.__cur_subtype != 'plane' and coordAtomSite is not None:
@@ -9023,8 +9178,16 @@ class XplorMRParserListener(ParseTreeListener):
 
             # concatenation
             if ctx.factor() and self.stackSelections:
-                self.stackFactors.pop()
-                self.factor = {'atom_selection': self.stackSelections.pop()}
+                if self.__con_union_expr and not self.__cur_union_expr and ctx.Not_op():
+                    if len(self.stackFactors) > 0:
+                        self.stackFactors.pop()
+                        self.factor['atom_selection'] = self.stackSelections[-1]
+                        self.stackSelections.append('and')  # intersection
+
+                elif not self.__top_union_expr:
+                    if len(self.stackFactors) > 0:
+                        self.stackFactors.pop()
+                        self.factor = {'atom_selection': self.stackSelections.pop()}
 
             if ctx.All() or ctx.Known():
                 clauseName = 'all' if ctx.All() else 'known'
@@ -10173,30 +10336,51 @@ class XplorMRParserListener(ParseTreeListener):
                 if not self.__hasCoord:
                     return
 
-                try:
+                if 'atom_selection' in self.factor and ('atom_id' in self.factor or 'atom_ids' in self.factor):
+                    _refAtomSelection = self.factor['atom_selection']
+                    del self.factor['atom_selection']
+                    if self.stackFactors:
+                        self.stackFactors.pop()
+                    self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
+                    if 'atom_selection' in self.factor:
+                        self.factor['atom_selection'] = [atom for atom in _refAtomSelection
+                                                         if not any(_atom for _atom in self.factor['atom_selection']
+                                                                    if _atom['chain_id'] == atom['chain_id']
+                                                                    and _atom['seq_id'] == atom['seq_id']
+                                                                    and _atom['atom_id'] == atom['atom_id'])]
+                    else:
+                        self.factor['atom_selection'] = _refAtomSelection
+                    if len(self.factor['atom_selection']) == 0:
+                        self.factor['atom_id'] = [None]
+                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                            "The 'not' clause has no effect.\n"
 
-                    _atomSelection =\
-                        self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
-                                                        [{'name': self.__modelNumName, 'type': 'int',
-                                                          'value': self.__representativeModelId},
-                                                         {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
-                                                         ])
-
-                except Exception as e:
-                    if self.__verbose:
-                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
-
-                if 'atom_selection' not in self.factor:
+                elif 'atom_selection' not in self.factor:
                     self.factor['atom_id'] = [None]
                     self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
                         "The 'not' clause has no effect.\n"
+
                 else:
+
+                    try:
+
+                        _atomSelection =\
+                            self.__cR.getDictListWithFilter('atom_site',
+                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                             ],
+                                                            [{'name': self.__modelNumName, 'type': 'int',
+                                                              'value': self.__representativeModelId},
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': ('A')}
+                                                             ])
+
+                    except Exception as e:
+                        if self.__verbose:
+                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+
                     _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
                     self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
 
@@ -10768,7 +10952,10 @@ class XplorMRParserListener(ParseTreeListener):
             elif ctx.Acceptor():
                 self.acceptor_columnSel = len(self.atomSelectionSet)
 
-            self.stackFactors.append(self.factor)
+            if self.depth > 0 and self.__cur_union_expr:
+                self.unionFactor = self.factor
+            else:
+                self.stackFactors.append(self.factor)
 
         finally:
             self.numberFSelection.clear()

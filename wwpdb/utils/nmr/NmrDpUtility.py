@@ -21853,35 +21853,37 @@ class NmrDpUtility:
         def get_auth_seq_scheme(chain_id, seq_id):
             auth_asym_id = auth_seq_id = None
 
-            if chain_assign is not None:
-                auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
-                if auth_asym_id is not None:
-                    sa = next((sa for sa in seq_align
-                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
-                    if sa is not None:
-                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
-                                            if test_seq_id == seq_id), None)
+            if seq_id is not None:
 
-            if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
-                auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
-                if auth_asym_id is not None:
-                    sa = next((sa for sa in br_seq_align
-                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
-                    if sa is not None:
-                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
-                                            if test_seq_id == seq_id), None)
+                if chain_assign is not None:
+                    auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
+                    if auth_asym_id is not None:
+                        sa = next((sa for sa in seq_align
+                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                        if sa is not None:
+                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                if test_seq_id == seq_id), None)
 
-            if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
-                auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
-                if auth_asym_id is not None:
-                    sa = next((sa for sa in np_seq_align
-                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
-                    if sa is not None:
-                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
-                                            if test_seq_id == seq_id), None)
+                if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                    auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
+                    if auth_asym_id is not None:
+                        sa = next((sa for sa in br_seq_align
+                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                        if sa is not None:
+                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                if test_seq_id == seq_id), None)
+
+                if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                    auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
+                    if auth_asym_id is not None:
+                        sa = next((sa for sa in np_seq_align
+                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                        if sa is not None:
+                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                if test_seq_id == seq_id), None)
 
             return auth_asym_id, auth_seq_id
 
@@ -22609,7 +22611,10 @@ class NmrDpUtility:
                     if chain_id in copied_chain_ids:
                         continue
 
-                    seq_id = int(row[seq_id_col])
+                    try:
+                        seq_id = int(row[seq_id_col])
+                    except ValueError:
+                        seq_id = None
 
                     # if chain_id in emptyValue:
                     #     chain_id = ps[0]['chain_id']
@@ -29445,35 +29450,37 @@ class NmrDpUtility:
         def get_auth_seq_scheme(chain_id, seq_id):
             auth_asym_id = auth_seq_id = None
 
-            if chain_assign is not None:
-                auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
-                if auth_asym_id is not None:
-                    sa = next((sa for sa in seq_align
-                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
-                    if sa is not None:
-                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
-                                            if test_seq_id == seq_id), None)
+            if seq_id is not None:
 
-            if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
-                auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
-                if auth_asym_id is not None:
-                    sa = next((sa for sa in br_seq_align
-                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
-                    if sa is not None:
-                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
-                                            if test_seq_id == seq_id), None)
+                if chain_assign is not None:
+                    auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
+                    if auth_asym_id is not None:
+                        sa = next((sa for sa in seq_align
+                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                        if sa is not None:
+                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                if test_seq_id == seq_id), None)
 
-            if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
-                auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
-                if auth_asym_id is not None:
-                    sa = next((sa for sa in np_seq_align
-                               if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
-                    if sa is not None:
-                        _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                        auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
-                                            if test_seq_id == seq_id), None)
+                if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                    auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
+                    if auth_asym_id is not None:
+                        sa = next((sa for sa in br_seq_align
+                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                        if sa is not None:
+                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                if test_seq_id == seq_id), None)
+
+                if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                    auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
+                    if auth_asym_id is not None:
+                        sa = next((sa for sa in np_seq_align
+                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                        if sa is not None:
+                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                if test_seq_id == seq_id), None)
 
             return auth_asym_id, auth_seq_id
 

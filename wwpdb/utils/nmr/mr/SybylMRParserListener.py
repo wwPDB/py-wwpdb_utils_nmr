@@ -904,8 +904,9 @@ class SybylMRParserListener(ParseTreeListener):
                     # """
 
         if len(chainAssign) == 0:
-            if (seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes) and atomId in aminoProtonCode:
-                return self.assignCoordPolymerSequence(seqId, compId, 'H1')
+            if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
+                if atomId in aminoProtonCode and atomId != 'H1':
+                    return self.assignCoordPolymerSequence(seqId, compId, 'H1')
             if seqId < 1 and len(self.__polySeq) == 1:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                     f"{_seqId}:{compId}:{atomId} is not present in the coordinates. "\
@@ -1139,20 +1140,26 @@ class SybylMRParserListener(ParseTreeListener):
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and atomId in aminoProtonCode:
-                    self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
-                    return
-                if atomId[0] in protonBeginCode:
-                    bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
-                    if len(bondedTo) > 0:
-                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
-                                "Please re-upload the model file.\n"
-                            return
-                if chainId in LARGE_ASYM_ID:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                checked = False
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and ps['auth_seq_id'][0] == seqId):
+                    if atomId in aminoProtonCode and atomId != 'H1':
+                        self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
+                        return
+                    if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
+                        checked = True
+                if not checked:
+                    if atomId[0] in protonBeginCode:
+                        bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
+                        if len(bondedTo) > 0:
+                            if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
+                                    f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
+                                    "Please re-upload the model file.\n"
+                                return
+                    if chainId in LARGE_ASYM_ID:
+                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
+                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)

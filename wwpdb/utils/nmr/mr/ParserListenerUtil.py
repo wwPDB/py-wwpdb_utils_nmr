@@ -5065,8 +5065,9 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                 chainAssign.add((chainId, _seqId, cifCompId, True))
 
     if len(chainAssign) == 0:
-        if (seqId == 1 or (refChainId, seqId - 1) in caC['coord_unobs_res']) and atomId in aminoProtonCode:
-            return assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 'H1')
+        if seqId == 1 or (refChainId, seqId - 1) in caC['coord_unobs_res']:
+            if atomId in aminoProtonCode and atomId != 'H1':
+                return assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 'H1')
 
         if seqId < 1 and len(polySeq) == 1:
             warningMessage = f"[Atom not found] "\
@@ -5258,20 +5259,26 @@ def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey,
     if ccU.updateChemCompDict(compId):
         cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
         if cca is not None and seqKey not in caC['coord_unobs_res'] and ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-            if seqId == 1 and atomId in ('H', 'HN'):
-                testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
-                return None
-            if atomId[0] in protonBeginCode:
-                bondedTo = ccU.getBondedAtoms(compId, atomId)
-                if len(bondedTo) > 0:
-                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[ccU.ccaLeavingAtomFlag] != 'Y':
-                        return f"[Hydrogen not instantiated] "\
-                            f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
-                            "Please re-upload the model file."
-            if enableWarning:
-                if chainId in LARGE_ASYM_ID:
-                    return f"[Atom not found] "\
-                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates."
+            checked = False
+            ps = next((ps for ps in caC['polymer_sequence'] if ps['auth_chain_id'] == chainId), None)
+            if seqId == 1 or (chainId, seqId - 1) in caC['coord_unobs_res'] or (ps is not None and ps['auth_seq_id'][0] == seqId):
+                if aminoProtonCode and atomId != 'H1':
+                    testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
+                    return None
+                if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
+                    checked = True
+            if not checked:
+                if atomId[0] in protonBeginCode:
+                    bondedTo = ccU.getBondedAtoms(compId, atomId)
+                    if len(bondedTo) > 0:
+                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[ccU.ccaLeavingAtomFlag] != 'Y':
+                            return f"[Hydrogen not instantiated] "\
+                                f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
+                                "Please re-upload the model file."
+                if enableWarning:
+                    if chainId in LARGE_ASYM_ID:
+                        return f"[Atom not found] "\
+                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates."
 
     return None
 

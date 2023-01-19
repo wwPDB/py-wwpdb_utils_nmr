@@ -3221,8 +3221,9 @@ class AmberMRParserListener(ParseTreeListener):
                                 factor['auth_atom_id'] = authAtomId
                                 if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                     checked = False
-                                    if (factor['seq_id'] == 1 or (chainId, factor['seq_id'] - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
-                                        if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                    _seqId = factor['seq_id']
+                                    if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == ps['auth_seq_id'][0]:
+                                        if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                             checked = True
                                     if _atomId[0] in protonBeginCode:
                                         bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -3365,8 +3366,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['auth_atom_id'] = authAtomId
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
-                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == ps['auth_seq_id'][0]:
+                                                if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -3567,8 +3568,9 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[iat] = factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if (factor['seq_id'] == 1 or (chainId, factor['seq_id'] - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
-                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                            _seqId = factor['seq_id']
+                                            if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == ps['auth_seq_id'][0]:
+                                                if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -3649,8 +3651,9 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if (_factor['seq_id'] == 1 or (chainId, _factor['seq_id'] - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
-                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                            _seqId = _factor['seq_id']
+                                            if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == ps['auth_seq_id'][0]:
+                                                if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -3771,8 +3774,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[iat] = factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
-                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == np['auth_seq_id'][0]:
+                                                if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -3853,8 +3856,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
-                                                if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == np['auth_seq_id'][0]:
+                                                if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -4033,8 +4036,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__sanderAtomNumberDict[iat] = factor
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
-                                                if (factor['seq_id'] == 1 or (chainId, factor['seq_id'] - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
-                                                    if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                                _seqId = factor['seq_id']
+                                                if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == ps['auth_seq_id'][0]:
+                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -4115,8 +4119,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__sanderAtomNumberDict[igr] = _factor
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
-                                                if (_factor['seq_id'] == 1 or (chainId, _factor['seq_id'] - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
-                                                    if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                                _seqId = _factor['seq_id']
+                                                if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == ps['auth_seq_id'][0]:
+                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -4220,8 +4225,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__sanderAtomNumberDict[iat] = factor
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
-                                                if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
-                                                    if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == np['auth_seq_id'][0]:
+                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -4302,8 +4307,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__sanderAtomNumberDict[igr] = _factor
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
-                                                if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and _atomId in aminoProtonCode:
-                                                    if coordAtomSite is not None and 'H1' in coordAtomSite['atom_id']:
+                                                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == np['auth_seq_id'][0]:
+                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedTo(compId, _atomId)
@@ -7725,8 +7730,9 @@ class AmberMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
         if len(chainAssign) == 0:
-            if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and atomId is not None and atomId in aminoProtonCode:
-                return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
+            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes:
+                if atomId is not None and atomId in aminoProtonCode and atomId != 'H1':
+                    return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
                 self.warningMessage += f"[Atom not found] "\
                     f"{_seqId}:{atomId} is not present in the coordinates. "\
@@ -7873,22 +7879,28 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                if (seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes) and atomId in aminoProtonCode:
-                    self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
-                    return
-                if atomId[0] in protonBeginCode:
-                    bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
-                    if len(bondedTo) > 0:
-                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                            if enableWarning:
-                                self.warningMessage += f"[Hydrogen not instantiated] "\
-                                    f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
-                                    "Please re-upload the model file.\n"
-                                return
-                if enableWarning:
-                    if chainId in LARGE_ASYM_ID:
-                        self.warningMessage += f"[Atom not found] "\
-                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                checked = False
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and ps['auth_seq_id'][0] == seqId):
+                    if atomId in aminoProtonCode and atomId != 'H1':
+                        self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
+                        return
+                    if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
+                        checked = True
+                if not checked:
+                    if atomId[0] in protonBeginCode:
+                        bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
+                        if len(bondedTo) > 0:
+                            if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                if enableWarning:
+                                    self.warningMessage += f"[Hydrogen not instantiated] "\
+                                        f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
+                                        "Please re-upload the model file.\n"
+                                    return
+                    if enableWarning:
+                        if chainId in LARGE_ASYM_ID:
+                            self.warningMessage += f"[Atom not found] "\
+                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
     def __getCurrentRestraint(self, dataset=None, n=None):
         if self.__cur_subtype == 'dist':

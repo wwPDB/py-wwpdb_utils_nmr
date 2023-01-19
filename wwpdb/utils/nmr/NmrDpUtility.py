@@ -14653,6 +14653,7 @@ class NmrDpUtility:
             #     self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequenceInLoop() ++ LookupError  - {str(e)}\n")
             # """
             pass
+
         except ValueError as e:
 
             self.report.error.appendDescription('invalid_data',
@@ -17009,27 +17010,27 @@ class NmrDpUtility:
 
             if not has_poly_seq_in_loop:
                 continue
+            # """
+            # polymer_sequence = input_source_dic['polymer_sequence']
 
-            polymer_sequence = input_source_dic['polymer_sequence']
+            # first_comp_ids = set()
 
-            first_comp_ids = set()
+            # if polymer_sequence is not None:
+            #     for s in polymer_sequence:
+            #         first_comp_id = s['comp_id'][0]
 
-            if polymer_sequence is not None:
-                for s in polymer_sequence:
-                    first_comp_id = s['comp_id'][0]
+            #         if self.__csStat.peptideLike(first_comp_id):
+            #             first_comp_ids.add(first_comp_id)
 
-                    if self.__csStat.peptideLike(first_comp_id):
-                        first_comp_ids.add(first_comp_id)
+            #         if s['seq_id'][0] < 1:
 
-                    if s['seq_id'][0] < 1:
-
-                        for comp_id, seq_id in zip(s['comp_id'], s['seq_id']):
-                            if seq_id != 1:
-                                continue
-                            if self.__csStat.peptideLike(comp_id):
-                                first_comp_ids.add(comp_id)
-                                break
-
+            #             for comp_id, seq_id in zip(s['comp_id'], s['seq_id']):
+            #                 if seq_id != 1:
+            #                     continue
+            #                 if self.__csStat.peptideLike(comp_id):
+            #                     first_comp_ids.add(comp_id)
+            #                     break
+            # """
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
             content_subtypes = ['poly_seq']
@@ -17053,13 +17054,13 @@ class NmrDpUtility:
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
-                    self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, first_comp_ids)
+                    self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)  # , first_comp_ids)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, first_comp_ids)
+                    self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)  # , first_comp_ids)
 
                 else:
 
@@ -17069,7 +17070,7 @@ class NmrDpUtility:
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
 
-                        self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, first_comp_ids)
+                        self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)  # , first_comp_ids)
 
         return not self.report.isError()
 
@@ -17117,7 +17118,7 @@ class NmrDpUtility:
 
         return self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
 
-    def __validateAtomNomenclature__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, first_comp_ids):
+    def __validateAtomNomenclature__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category):  # , first_comp_ids):
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
 
@@ -17146,7 +17147,7 @@ class NmrDpUtility:
 
                             if len(_atom_id) == 0:
 
-                                if self.__nonblk_bad_nterm and atom_id == 'H1' and comp_id in first_comp_ids:
+                                if self.__nonblk_bad_nterm and atom_id == 'H1':  # and comp_id in first_comp_ids:
                                     continue
 
                                 err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id}) in a loop {lp_category}."
@@ -17215,7 +17216,7 @@ class NmrDpUtility:
                                 # self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_2, _atom_id_2: _atom_id_3})
                                 self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_3})
 
-                            elif self.__nonblk_bad_nterm and atom_id == 'H1' and comp_id in first_comp_ids:
+                            elif self.__nonblk_bad_nterm and atom_id == 'H1':  # and comp_id in first_comp_ids:
                                 pass
 
                             else:
@@ -17335,7 +17336,7 @@ class NmrDpUtility:
 
                                 else:
 
-                                    if self.__nonblk_bad_nterm and _auth_atom_id == 'H1' and comp_id in first_comp_ids:
+                                    if self.__nonblk_bad_nterm and _auth_atom_id == 'H1':  # and comp_id in first_comp_ids:
                                         continue
 
                                     auth_atom_ids = self.__getAtomIdListInXplor(comp_id, _auth_atom_id)
@@ -17362,7 +17363,7 @@ class NmrDpUtility:
                                 if not self.__nefT.validate_comp_atom(comp_id,
                                                                       translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)):
 
-                                    if self.__nonblk_bad_nterm and auth_atom_id == 'H1' and comp_id in first_comp_ids:
+                                    if self.__nonblk_bad_nterm and auth_atom_id == 'H1':  # and comp_id in first_comp_ids:
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
@@ -17392,7 +17393,7 @@ class NmrDpUtility:
 
                                     for auth_atom_id in (set(auth_atom_ids) | set(atom_ids)) - set(atom_ids):
 
-                                        if self.__nonblk_bad_nterm and auth_atom_id == 'H1' and comp_id in first_comp_ids:
+                                        if self.__nonblk_bad_nterm and auth_atom_id == 'H1':  # and comp_id in first_comp_ids:
                                             continue
 
                                         warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
@@ -17411,7 +17412,7 @@ class NmrDpUtility:
 
                                 for auth_atom_id in auth_atom_ids:
 
-                                    if self.__nonblk_bad_nterm and auth_atom_id == 'H1' and comp_id in first_comp_ids:
+                                    if self.__nonblk_bad_nterm and auth_atom_id == 'H1':  # and comp_id in first_comp_ids:
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
@@ -18174,6 +18175,7 @@ class NmrDpUtility:
             #     self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ LookupError  - {str(e)}\n")
             # """
             pass
+
         except ValueError as e:
 
             self.report.error.appendDescription('invalid_data',
@@ -22250,6 +22252,7 @@ class NmrDpUtility:
 
                     if valid_auth_seq:
                         seq_key = (auth_asym_id, int(auth_seq_id), auth_comp_id)
+                        _seq_key = (seq_key[0], seq_key[1])
                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                         _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
@@ -22288,6 +22291,8 @@ class NmrDpUtility:
                         else:
                             seq_key = next((k for k, v in auth_to_star_seq.items()
                                             if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                            if seq_key is not None:
+                                _seq_key = (seq_key[0], seq_key[1])
 
                             _row[20], _row[21], _row[22], _row[23] =\
                                 row[auth_asym_id_col], row[auth_seq_id_col],\
@@ -22297,8 +22302,8 @@ class NmrDpUtility:
                                 _row[16], _row[17], _row[18], _row[19] =\
                                     seq_key[0], seq_key[1], seq_key[2], None
 
-                        if seq_key in coord_atom_site:
-                            _coord_atom_site = coord_atom_site[seq_key]
+                        if _seq_key in coord_atom_site:
+                            _coord_atom_site = coord_atom_site[_seq_key]
                             _row[5] = _coord_atom_site['comp_id']
                             if atom_id in _coord_atom_site['atom_id']:
                                 _row[6] = atom_id
@@ -22308,6 +22313,10 @@ class NmrDpUtility:
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                             else:
+                                if atom_id == 'H1' and 'H' in _coord_atom_site['atom_id']:
+                                    atom_id = _row[19] = 'H'
+                                elif atom_id == 'H' and 'H1' in _coord_atom_site['atom_id']:
+                                    atom_id = _row[19] = 'H1'
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                                 if len(atom_ids) == 0:
                                     atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
@@ -22420,9 +22429,11 @@ class NmrDpUtility:
                                     _row[19] = _row[6]
 
                     elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
+
                         try:
                             _auth_seq_id = int(auth_seq_id)
                             seq_key = (auth_asym_id, _auth_seq_id, auth_comp_id)
+                            _seq_key = (seq_key[0], seq_key[1])
                             if seq_key in auth_to_star_seq:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                 _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
@@ -22462,6 +22473,8 @@ class NmrDpUtility:
                                 else:
                                     seq_key = next((k for k, v in auth_to_star_seq.items()
                                                     if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                    if seq_key is not None:
+                                        _seq_key = (seq_key[0], seq_key[1])
 
                                     _row[20], _row[21], _row[22], _row[23] =\
                                         row[auth_asym_id_col], row[auth_seq_id_col],\
@@ -22471,8 +22484,8 @@ class NmrDpUtility:
                                         _row[16], _row[17], _row[18], _row[19] =\
                                             seq_key[0], seq_key[1], seq_key[2], None
 
-                                if seq_key in coord_atom_site:
-                                    _coord_atom_site = coord_atom_site[seq_key]
+                                if _seq_key in coord_atom_site:
+                                    _coord_atom_site = coord_atom_site[_seq_key]
                                     _row[5] = _coord_atom_site['comp_id']
                                     if atom_id in _coord_atom_site['atom_id']:
                                         _row[6] = atom_id
@@ -22482,6 +22495,10 @@ class NmrDpUtility:
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:
+                                        if atom_id == 'H1' and 'H' in _coord_atom_site['atom_id']:
+                                            atom_id = _row[19] = 'H'
+                                        elif atom_id == 'H' and 'H1' in _coord_atom_site['atom_id']:
+                                            atom_id = _row[19] = 'H1'
                                         atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                                         if len(atom_ids) == 0:
                                             atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
@@ -22625,6 +22642,7 @@ class NmrDpUtility:
 
                     if auth_asym_id is not None and auth_seq_id is not None:
                         seq_key = (auth_asym_id, auth_seq_id, comp_id)
+                        _seq_key = (seq_key[0], seq_key[1])
                         if seq_key in auth_to_star_seq:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                             _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
@@ -22664,6 +22682,8 @@ class NmrDpUtility:
                             else:
                                 seq_key = next((k for k, v in auth_to_star_seq.items()
                                                 if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                if seq_key is not None:
+                                    _seq_key = (seq_key[0], seq_key[1])
 
                                 _row[20], _row[21], _row[22], _row[23] =\
                                     row[auth_asym_id_col], row[auth_seq_id_col],\
@@ -22673,8 +22693,8 @@ class NmrDpUtility:
                                     _row[16], _row[17], _row[18], _row[19] =\
                                         seq_key[0], seq_key[1], seq_key[2], None
 
-                            if seq_key in coord_atom_site:
-                                _coord_atom_site = coord_atom_site[seq_key]
+                            if _seq_key in coord_atom_site:
+                                _coord_atom_site = coord_atom_site[_seq_key]
                                 _row[5] = _coord_atom_site['comp_id']
                                 if atom_id in _coord_atom_site['atom_id']:
                                     _row[6] = atom_id
@@ -22684,6 +22704,10 @@ class NmrDpUtility:
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                 else:
+                                    if atom_id == 'H1' and 'H' in _coord_atom_site['atom_id']:
+                                        atom_id = _row[19] = 'H'
+                                    elif atom_id == 'H' and 'H1' in _coord_atom_site['atom_id']:
+                                        atom_id = _row[19] = 'H1'
                                     atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                                     if len(atom_ids) == 0:
                                         atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
@@ -22798,6 +22822,8 @@ class NmrDpUtility:
 
                                 seq_key = next((k for k, v in auth_to_star_seq.items()
                                                 if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                if seq_key is not None:
+                                    _seq_key = (seq_key[0], seq_key[1])
 
                                 _row[20], _row[21], _row[22], _row[23] =\
                                     row[auth_asym_id_col], row[auth_seq_id_col],\
@@ -22807,8 +22833,8 @@ class NmrDpUtility:
                                     _row[16], _row[17], _row[18], _row[19] =\
                                         seq_key[0], seq_key[1], seq_key[2], None
 
-                                if seq_key in coord_atom_site:
-                                    _coord_atom_site = coord_atom_site[seq_key]
+                                if _seq_key in coord_atom_site:
+                                    _coord_atom_site = coord_atom_site[_seq_key]
                                     _row[5] = _coord_atom_site['comp_id']
                                     if atom_id in _coord_atom_site['atom_id']:
                                         _row[6] = atom_id
@@ -22818,6 +22844,10 @@ class NmrDpUtility:
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:
+                                        if atom_id == 'H1' and 'H' in _coord_atom_site['atom_id']:
+                                            atom_id = _row[19] = 'H'
+                                        elif atom_id == 'H' and 'H1' in _coord_atom_site['atom_id']:
+                                            atom_id = _row[19] = 'H1'
                                         atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                                         if len(atom_ids) == 0:
                                             atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
@@ -22942,6 +22972,8 @@ class NmrDpUtility:
 
                                     seq_key = next((k for k, v in auth_to_star_seq.items()
                                                     if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                    if seq_key is not None:
+                                        _seq_key = (seq_key[0], seq_key[1])
 
                                     _row[20], _row[21], _row[22], _row[23] =\
                                         row[auth_asym_id_col], row[auth_seq_id_col],\
@@ -22951,8 +22983,8 @@ class NmrDpUtility:
                                         _row[16], _row[17], _row[18], _row[19] =\
                                             seq_key[0], seq_key[1], seq_key[2], None
 
-                                    if seq_key in coord_atom_site:
-                                        _coord_atom_site = coord_atom_site[seq_key]
+                                    if _seq_key in coord_atom_site:
+                                        _coord_atom_site = coord_atom_site[_seq_key]
                                         _row[5] = _coord_atom_site['comp_id']
                                         if atom_id in _coord_atom_site['atom_id']:
                                             _row[6] = atom_id
@@ -22962,6 +22994,10 @@ class NmrDpUtility:
                                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                         else:
+                                            if atom_id == 'H1' and 'H' in _coord_atom_site['atom_id']:
+                                                atom_id = _row[19] = 'H'
+                                            elif atom_id == 'H' and 'H1' in _coord_atom_site['atom_id']:
+                                                atom_id = _row[19] = 'H1'
                                             atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                                             if len(atom_ids) == 0:
                                                 atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))

@@ -29173,14 +29173,16 @@ class NmrDpUtility:
 
             file_name = input_source_dic['file_name']
 
-            original_file_name = file_name.replace('-corrected', '')
-            if 'original_file_name' in input_source_dic:
-                if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+            original_file_name = os.path.basename(file_name).replace('-corrected', '').replace('-selected-as-res-sax', '')
+            if '-div_' in original_file_name:
+                original_file_name = None
+                # if 'original_file_name' in input_source_dic:
+                #     if input_source_dic['original_file_name'] is not None:
+                #         original_file_name = os.path.basename(input_source_dic['original_file_name'])
 
             sf_item = {}
 
-            title = original_file_name
+            title = None
 
             _q_value = 0.0
             _row = None
@@ -29210,6 +29212,8 @@ class NmrDpUtility:
                             continue
 
                         title_can = __line[0]
+                        if len(title_can) == 0 and len(__line) > 1:
+                            title_can = __line[1]
 
                         try:
                             float(title_can)
@@ -29218,7 +29222,8 @@ class NmrDpUtility:
                             if len(title_can) > 1\
                                and '(' not in title_can and ')' not in title_can\
                                and '[' not in title_can and ']' not in title_can:
-                                title = title_can
+                                if len(title_can) > 0:
+                                    title = title_can
                             _row = None
 
                         continue
@@ -29249,6 +29254,9 @@ class NmrDpUtility:
                             restraint_name = getRestraintName(content_subtype)
 
                             sf_framecode = restraint_name.replace(' ', '_').lower() + f'_{list_id}'
+
+                            if original_file_name is not None:
+                                title = original_file_name
 
                             sf = getSaveframe(content_subtype, sf_framecode, list_id, self.__entry_id, title, reduced=False)
 
@@ -39099,10 +39107,10 @@ class NmrDpUtility:
             if isinstance(item['entity_copies'], int):
                 components_ex_water += item['entity_copies']
 
-        ligand_total = sum([len(item['label_asym_id'].split(',')) for item in self.__caC['entity_assembly']
-                            if item['entity_type'] == 'non-polymer' and 'ION' not in item['entity_desc']])
-        ion_total = sum([len(item['label_asym_id'].split(',')) for item in self.__caC['entity_assembly']
-                         if item['entity_type'] == 'non-polymer' and 'ION' in item['entity_desc']])
+        ligand_total = sum(len(item['label_asym_id'].split(',')) for item in self.__caC['entity_assembly']
+                           if item['entity_type'] == 'non-polymer' and 'ION' not in item['entity_desc'])
+        ion_total = sum(len(item['label_asym_id'].split(',')) for item in self.__caC['entity_assembly']
+                        if item['entity_type'] == 'non-polymer' and 'ION' in item['entity_desc'])
 
         chem_comp = self.__cR.getDictList('chem_comp')
 

@@ -39099,9 +39099,9 @@ class NmrDpUtility:
             if isinstance(item['entity_copies'], int):
                 components_ex_water += item['entity_copies']
 
-        ligand_total = len([item for item in self.__caC['entity_assembly']
+        ligand_total = sum([len(item['label_asym_id'].split(',')) for item in self.__caC['entity_assembly']
                             if item['entity_type'] == 'non-polymer' and 'ION' not in item['entity_desc']])
-        ion_total = len([item for item in self.__caC['entity_assembly']
+        ion_total = sum([len(item['label_asym_id'].split(',')) for item in self.__caC['entity_assembly']
                          if item['entity_type'] == 'non-polymer' and 'ION' in item['entity_desc']])
 
         chem_comp = self.__cR.getDictList('chem_comp')

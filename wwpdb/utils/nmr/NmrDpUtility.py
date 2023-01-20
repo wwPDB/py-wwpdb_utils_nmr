@@ -17147,7 +17147,7 @@ class NmrDpUtility:
 
                             if len(_atom_id) == 0:
 
-                                if self.__nonblk_bad_nterm and atom_id == 'H1':  # and comp_id in first_comp_ids:
+                                if self.__nonblk_bad_nterm and atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                     continue
 
                                 err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id}) in a loop {lp_category}."
@@ -17216,7 +17216,7 @@ class NmrDpUtility:
                                 # self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_2, _atom_id_2: _atom_id_3})
                                 self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_3})
 
-                            elif self.__nonblk_bad_nterm and atom_id == 'H1':  # and comp_id in first_comp_ids:
+                            elif self.__nonblk_bad_nterm and atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                 pass
 
                             else:
@@ -17336,7 +17336,7 @@ class NmrDpUtility:
 
                                 else:
 
-                                    if self.__nonblk_bad_nterm and _auth_atom_id == 'H1':  # and comp_id in first_comp_ids:
+                                    if self.__nonblk_bad_nterm and _auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                         continue
 
                                     auth_atom_ids = self.__getAtomIdListInXplor(comp_id, _auth_atom_id)
@@ -17363,7 +17363,7 @@ class NmrDpUtility:
                                 if not self.__nefT.validate_comp_atom(comp_id,
                                                                       translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)):
 
-                                    if self.__nonblk_bad_nterm and auth_atom_id == 'H1':  # and comp_id in first_comp_ids:
+                                    if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
@@ -17393,7 +17393,7 @@ class NmrDpUtility:
 
                                     for auth_atom_id in (set(auth_atom_ids) | set(atom_ids)) - set(atom_ids):
 
-                                        if self.__nonblk_bad_nterm and auth_atom_id == 'H1':  # and comp_id in first_comp_ids:
+                                        if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                             continue
 
                                         warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
@@ -17412,7 +17412,7 @@ class NmrDpUtility:
 
                                 for auth_atom_id in auth_atom_ids:
 
-                                    if self.__nonblk_bad_nterm and auth_atom_id == 'H1':  # and comp_id in first_comp_ids:
+                                    if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
@@ -22313,9 +22313,9 @@ class NmrDpUtility:
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                             else:
-                                if atom_id == 'H1' and 'H' in _coord_atom_site['atom_id']:
+                                if atom_id in ('H1', 'HT1') and 'H' in _coord_atom_site['atom_id']:
                                     atom_id = _row[19] = 'H'
-                                elif atom_id == 'H' and 'H1' in _coord_atom_site['atom_id']:
+                                elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']:
                                     atom_id = _row[19] = 'H1'
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                                 if len(atom_ids) == 0:
@@ -22495,9 +22495,9 @@ class NmrDpUtility:
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:
-                                        if atom_id == 'H1' and 'H' in _coord_atom_site['atom_id']:
+                                        if atom_id in ('H1', 'HT1') and 'H' in _coord_atom_site['atom_id']:
                                             atom_id = _row[19] = 'H'
-                                        elif atom_id == 'H' and 'H1' in _coord_atom_site['atom_id']:
+                                        elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']:
                                             atom_id = _row[19] = 'H1'
                                         atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                                         if len(atom_ids) == 0:
@@ -22704,9 +22704,9 @@ class NmrDpUtility:
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                 else:
-                                    if atom_id == 'H1' and 'H' in _coord_atom_site['atom_id']:
+                                    if atom_id in ('H1', 'HT1') and 'H' in _coord_atom_site['atom_id']:
                                         atom_id = _row[19] = 'H'
-                                    elif atom_id == 'H' and 'H1' in _coord_atom_site['atom_id']:
+                                    elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']:
                                         atom_id = _row[19] = 'H1'
                                     atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                                     if len(atom_ids) == 0:
@@ -22844,9 +22844,9 @@ class NmrDpUtility:
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:
-                                        if atom_id == 'H1' and 'H' in _coord_atom_site['atom_id']:
+                                        if atom_id in ('H1', 'HT1') and 'H' in _coord_atom_site['atom_id']:
                                             atom_id = _row[19] = 'H'
-                                        elif atom_id == 'H' and 'H1' in _coord_atom_site['atom_id']:
+                                        elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']:
                                             atom_id = _row[19] = 'H1'
                                         atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                                         if len(atom_ids) == 0:
@@ -22994,9 +22994,9 @@ class NmrDpUtility:
                                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                         else:
-                                            if atom_id == 'H1' and 'H' in _coord_atom_site['atom_id']:
+                                            if atom_id in ('H1', 'HT1') and 'H' in _coord_atom_site['atom_id']:
                                                 atom_id = _row[19] = 'H'
-                                            elif atom_id == 'H' and 'H1' in _coord_atom_site['atom_id']:
+                                            elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']:
                                                 atom_id = _row[19] = 'H1'
                                             atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                                             if len(atom_ids) == 0:

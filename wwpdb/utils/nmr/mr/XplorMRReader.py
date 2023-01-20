@@ -209,6 +209,11 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6th8/allnoe.tbl-corrected',
+                 '../../tests-nmr/mock-data-remediation/6th8/6th8.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mjk/2mjk-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2mjk/2mjk.cif')
 

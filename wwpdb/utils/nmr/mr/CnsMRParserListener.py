@@ -4678,9 +4678,10 @@ class CnsMRParserListener(ParseTreeListener):
             _factor['atom_selection'] = _atomSelection
 
         if len(_factor['atom_selection']) == 0:
-            if self.__with_axis and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+            _atomId = _factor['atom_id'][0].upper() if len(_factor['atom_id'][0]) <= 2 else _factor['atom_id'][0][:2].upper()
+            if self.__with_axis and _atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
-            if self.__cur_subtype == 'dist' and _factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+            if self.__cur_subtype == 'dist' and _atomId in XPLOR_NITROXIDE_NAMES:
                 return _factor
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
@@ -4847,8 +4848,9 @@ class CnsMRParserListener(ParseTreeListener):
                         updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
 
                     for atomId in _factor['atom_id']:
+                        _atomId = atomId.upper() if len(atomId) <= 2 else atomId[:2].upper()
                         if self.__with_axis:
-                            if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                            if _atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                 continue
                             updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
 
@@ -6659,12 +6661,13 @@ class CnsMRParserListener(ParseTreeListener):
                             f"The symbol {symbol_name!r} is not defined.\n"
 
                 if eval_factor and 'atom_selection' in self.factor:
-                    if len(self.factor['atom_selection']) == 0:
-                        if self.__with_axis and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                    if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        if self.__with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
-                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                        elif self.__cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
                             pass
                         else:
                             _factor = copy.copy(self.factor)
@@ -6957,12 +6960,13 @@ class CnsMRParserListener(ParseTreeListener):
                             f"The symbol {symbol_name!r} is not defined.\n"
 
                 if eval_factor and 'atom_selection' in self.factor:
-                    if len(self.factor['atom_selection']) == 0:
-                        if self.__with_axis and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                    if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        if self.__with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
-                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                        elif self.__cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
                             pass
                         else:
                             _factor = copy.copy(self.factor)
@@ -7010,12 +7014,13 @@ class CnsMRParserListener(ParseTreeListener):
                             f"The symbol {symbol_name!r} is not defined.\n"
 
                 if eval_factor and 'atom_selection' in self.factor:
-                    if len(self.factor['atom_selection']) == 0:
-                        if self.__with_axis and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                    if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        if self.__with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
-                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                        elif self.__cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
                             pass
                         else:
                             _factor = copy.copy(self.factor)
@@ -7126,12 +7131,13 @@ class CnsMRParserListener(ParseTreeListener):
                             self.factor['alt_chain_id'] = chainId
 
                 if eval_factor and 'atom_selection' in self.factor:
-                    if len(self.factor['atom_selection']) == 0:
-                        if self.__with_axis and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                    if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        if self.__with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
-                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                        elif self.__cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
                             pass
                         else:
                             _factor = copy.copy(self.factor)

@@ -8427,13 +8427,14 @@ class XplorMRParserListener(ParseTreeListener):
             _factor['atom_selection'] = _atomSelection
 
         if len(_factor['atom_selection']) == 0:
-            if self.__with_axis and _factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+            _atomId = _factor['atom_id'][0].upper() if len(_factor['atom_id'][0]) <= 2 else _factor['atom_id'][0][:2].upper()
+            if self.__with_axis and _atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                 return _factor
-            if self.__with_para and (('comp_id' in _factor and _factor['atom_id'][0] == _factor['comp_id'][0] and _factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                     or _factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS
-                                     or _factor['atom_id'][0] in LANTHANOID_ELEMENTS):
+            if self.__with_para and (('comp_id' in _factor and _factor['atom_id'][0] == _factor['comp_id'][0] and _atomId in PARAMAGNETIC_ELEMENTS)
+                                     or _atomId in FERROMAGNETIC_ELEMENTS
+                                     or _atomId in LANTHANOID_ELEMENTS):
                 return _factor
-            if self.__cur_subtype == 'dist' and _factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+            if self.__cur_subtype == 'dist' and _atomId in XPLOR_NITROXIDE_NAMES:
                 return _factor
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
@@ -8600,13 +8601,13 @@ class XplorMRParserListener(ParseTreeListener):
                         updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
 
                     for atomId in _factor['atom_id']:
+                        _atomId = atomId.upper() if len(atomId) <= 2 else atomId[:2].upper()
                         if self.__with_axis:
-                            if atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                            if _atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                 continue
                         if self.__with_para:
-                            if ((atomId == compId and atomId in PARAMAGNETIC_ELEMENTS) or atomId in FERROMAGNETIC_ELEMENTS or atomId in LANTHANOID_ELEMENTS):
+                            if ((atomId == compId and _atomId in PARAMAGNETIC_ELEMENTS) or _atomId in FERROMAGNETIC_ELEMENTS or _atomId in LANTHANOID_ELEMENTS):
                                 continue
-
                         if self.__with_axis or self.__with_para:
                             updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
 
@@ -10312,15 +10313,16 @@ class XplorMRParserListener(ParseTreeListener):
                             f"The symbol {symbol_name!r} is not defined.\n"
 
                 if eval_factor and 'atom_selection' in self.factor:
-                    if len(self.factor['atom_selection']) == 0:
-                        if self.__with_axis and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                    if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        if self.__with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
-                        if self.__with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                                 or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
+                        elif self.__with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __atomId in PARAMAGNETIC_ELEMENTS)
+                                                   or __atomId in FERROMAGNETIC_ELEMENTS or __atomId in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
-                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                        elif self.__cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
                             pass
                         else:
                             _factor = copy.copy(self.factor)
@@ -10608,16 +10610,16 @@ class XplorMRParserListener(ParseTreeListener):
                             f"The symbol {symbol_name!r} is not defined.\n"
 
                 if eval_factor and 'atom_selection' in self.factor:
-                    if len(self.factor['atom_selection']) == 0:
-                        if self.__with_axis and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                    if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        if self.__with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
-                        if self.__with_para and 'atom_id' in __factor\
-                           and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
+                        elif self.__with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __atomId in PARAMAGNETIC_ELEMENTS)
+                                                   or __atomId in FERROMAGNETIC_ELEMENTS or __atomId in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
-                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                        elif self.__cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
                             pass
                         else:
                             _factor = copy.copy(self.factor)
@@ -10665,16 +10667,16 @@ class XplorMRParserListener(ParseTreeListener):
                             f"The symbol {symbol_name!r} is not defined.\n"
 
                 if eval_factor and 'atom_selection' in self.factor:
-                    if len(self.factor['atom_selection']) == 0:
-                        if self.__with_axis and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                    if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        if self.__with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
-                        if self.__with_para and 'atom_id' in __factor\
-                           and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
+                        elif self.__with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __atomId in PARAMAGNETIC_ELEMENTS)
+                                                   or __atomId in FERROMAGNETIC_ELEMENTS or __atomId in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
-                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                        elif self.__cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
                             pass
                         else:
                             _factor = copy.copy(self.factor)
@@ -10785,16 +10787,16 @@ class XplorMRParserListener(ParseTreeListener):
                             self.factor['alt_chain_id'] = chainId
 
                 if eval_factor and 'atom_selection' in self.factor:
-                    if len(self.factor['atom_selection']) == 0:
-                        if self.__with_axis and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                    if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        if self.__with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
-                        if self.__with_para and 'atom_id' in __factor\
-                           and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS)
-                                or __factor['atom_id'][0] in FERROMAGNETIC_ELEMENTS or __factor['atom_id'][0] in LANTHANOID_ELEMENTS):
+                        elif self.__with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __atomId in PARAMAGNETIC_ELEMENTS)
+                                                   or __atomId in FERROMAGNETIC_ELEMENTS or __atomId in LANTHANOID_ELEMENTS):
                             pass
                         elif self.__cur_subtype == 'plane':
                             pass
-                        elif self.__cur_subtype == 'dist' and 'atom_id' in __factor and __factor['atom_id'][0] in XPLOR_NITROXIDE_NAMES:
+                        elif self.__cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
                             pass
                         else:
                             _factor = copy.copy(self.factor)

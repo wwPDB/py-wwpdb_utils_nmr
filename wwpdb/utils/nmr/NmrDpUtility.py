@@ -14251,9 +14251,7 @@ class NmrDpUtility:
                         auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
 
                         for ps in poly_seq:
-                            chain_id = ps['chain_id']
-                            seq_ids = ps['seq_id']
-                            comp_ids = ps['comp_id']
+                            chain_id, seq_ids, comp_ids = ps['chain_id'], ps['seq_id'], ps['comp_id']
 
                             for aps in auth_poly_seq:
 
@@ -14261,9 +14259,8 @@ class NmrDpUtility:
                                     continue
 
                                 _seq_ids = aps['seq_id']
-                                auth_asym_ids = aps['auth_asym_id']
-                                auth_seq_ids = aps['auth_seq_id']
-                                auth_comp_ids = aps['auth_comp_id']
+
+                                auth_asym_ids, auth_seq_ids, auth_comp_ids = aps['auth_asym_id'], aps['auth_seq_id'], aps['auth_comp_id']
 
                                 auth_asym_id_set = sorted(set(auth_asym_ids))
 
@@ -14530,9 +14527,7 @@ class NmrDpUtility:
                     auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
 
                     for ps in poly_seq:
-                        chain_id = ps['chain_id']
-                        seq_ids = ps['seq_id']
-                        comp_ids = ps['comp_id']
+                        chain_id, seq_ids, comp_ids = ps['chain_id'], ps['seq_id'], ps['comp_id']
 
                         for aps in auth_poly_seq:
 
@@ -14540,9 +14535,8 @@ class NmrDpUtility:
                                 continue
 
                             _seq_ids = aps['seq_id']
-                            auth_asym_ids = aps['auth_asym_id']
-                            auth_seq_ids = aps['auth_seq_id']
-                            auth_comp_ids = aps['auth_comp_id']
+
+                            auth_asym_ids, auth_seq_ids, auth_comp_ids = aps['auth_asym_id'], aps['auth_seq_id'], aps['auth_comp_id']
 
                             auth_asym_id_set = sorted(set(auth_asym_ids))
 
@@ -14944,17 +14938,8 @@ class NmrDpUtility:
                                             if comp_id != '.':
 
                                                 if self.__target_framecode not in emptyValue:
-                                                    print(sf_framecode2)
-                                                    print(s1['chain_id'])
-                                                    print(s1['seq_id'])
-                                                    print(s1['comp_id'])
-
-                                                    print(s2['chain_id'])
-                                                    print(s2['seq_id'])
-                                                    print(s2['comp_id'])
-
-                                                    print(f"{seq_id} {comp_id}")
-
+                                                    print(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
+                                                          f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}")
                                                     sys.exit(1)
 
                                                 if (min(set(s2['seq_id']) - set(s1['seq_id'])) > 0 and seq_id > 0) or not self.__nonblk_bad_nterm:
@@ -14989,17 +14974,8 @@ class NmrDpUtility:
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
                                                 if self.__target_framecode not in emptyValue:
-                                                    print(sf_framecode2)
-                                                    print(s1['chain_id'])
-                                                    print(s1['seq_id'])
-                                                    print(s1['comp_id'])
-
-                                                    print(s2['chain_id'])
-                                                    print(s2['seq_id'])
-                                                    print(s2['comp_id'])
-
-                                                    print(f"{seq_id} {comp_id}")
-
+                                                    print(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
+                                                          f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}")
                                                     sys.exit(1)
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
@@ -15963,7 +15939,7 @@ class NmrDpUtility:
                                 map_chain_ids[sf_framecode2][chain_id] = __chain_id
 
                                 if sf_framecode2 == self.__target_framecode:
-                                    print(f"#1 {chain_id} -> {__chain_id}, {__length} {__matched} {__unmapped} {__conflict} {__offset_1} {__offset_2}")
+                                    print(f"#1 {chain_id} -> {__chain_id}, {__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}")
 
                                 length = __length
                                 _matched = __matched
@@ -15996,7 +15972,7 @@ class NmrDpUtility:
                                 map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
 
                                 if sf_framecode2 == self.__target_framecode:
-                                    print(f"#2 {s2['chain_id']} -> {chain_id}, {length} {_matched} {unmapped} {conflict} {offset_1} {offset_2}")
+                                    print(f"#2 {s2['chain_id']} -> {chain_id}, {length=} {_matched=} {unmapped=} {conflict=} {offset_1=} {offset_2=}")
 
                                 alt_chain = True
 
@@ -16066,7 +16042,7 @@ class NmrDpUtility:
                                             chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
 
                                         if sf_framecode2 == self.__target_framecode:
-                                            print(f"#a {chain_id2} {_matched} {offset_1} {offset_2} {seq_id_conv_dict}")
+                                            print(f"#a {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}")
 
                                         if sf_framecode2 not in proc_chain_ids:
                                             proc_chain_ids[sf_framecode2] = set()
@@ -16282,7 +16258,7 @@ class NmrDpUtility:
                                 map_chain_ids[sf_framecode2][chain_id] = __chain_id
 
                                 if sf_framecode2 == self.__target_framecode:
-                                    print(f"#3 {chain_id} -> {__chain_id}, {__length} {__matched} {__unmapped} {__conflict} {__offset_1} {__offset_2}")
+                                    print(f"#3 {chain_id} -> {__chain_id}, {__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}")
 
                                 length = __length
                                 _matched = __matched
@@ -16474,7 +16450,7 @@ class NmrDpUtility:
                                             break
 
                             if sf_framecode2 == self.__target_framecode:
-                                print(f"chain_mapping {mapping} cross {cross} cicular {circular}")
+                                print(f"{mapping=} {cross=} {circular=}")
 
                             for s1 in polymer_sequence:
                                 chain_id = s1['chain_id']
@@ -16556,7 +16532,7 @@ class NmrDpUtility:
                                                     chain_id2 = next(k for k, v in mapping.items() if v == chain_id)
 
                                                 if sf_framecode2 == self.__target_framecode:
-                                                    print(f"#c {chain_id2} {_matched} {offset_1} {offset_2} {seq_id_conv_dict}")
+                                                    print(f"#c {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}")
 
                                                 if sf_framecode2 not in proc_chain_ids:
                                                     proc_chain_ids[sf_framecode2] = set()
@@ -37176,6 +37152,8 @@ class NmrDpUtility:
 
                 # from nmr to model
 
+                ca_idx = 0
+
                 mat = []
                 indices = []
 
@@ -37370,10 +37348,13 @@ class NmrDpUtility:
                                         warn = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id} is not present in the coordinate (chain_id {chain_id2}). "\
                                             "Please update the sequence in the Macromolecules page."
 
+                                        self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
+                                                                                        {'ca_idx': ca_idx, 'file_name': nmr_file_name, 'description': warn}})
+                                        """
                                         self.report.warning.appendDescription('sequence_mismatch',
                                                                               {'file_name': nmr_file_name, 'description': warn})
                                         self.report.setWarning()
-
+                                        """
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
 
@@ -37404,18 +37385,24 @@ class NmrDpUtility:
                                     "Please verify the two sequences and re-upload the correct file(s)."
 
                                 if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(cif_comp_id, nmr_comp_id):
+                                    self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
+                                                                                    {'ca_idx': ca_idx, 'file_name': nmr_file_name, 'description': err}})
+                                    """
                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                           {'file_name': nmr_file_name, 'description': err})
                                     self.report.setWarning()
-
+                                    """
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
 
                                 else:
+                                    self.__suspended_errors_for_lazy_eval.append({'sequence_mismatch':
+                                                                                  {'ca_idx': ca_idx, 'file_name': nmr_file_name, 'description': err}})
+                                    """
                                     self.report.error.appendDescription('sequence_mismatch',
                                                                         {'file_name': nmr_file_name, 'description': err})
                                     self.report.setError()
-
+                                    """
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - {err}\n")
 
@@ -37438,10 +37425,48 @@ class NmrDpUtility:
                                 _result['unmapped'] = ca['unmapped']
 
                     chain_assign.append(ca)
+                    ca_idx += 1
 
                 if len(chain_assign) > 0 and fileListId == 0:
 
                     if len(cif_polymer_sequence) > 1:
+
+                        if len(self.__suspended_errors_for_lazy_eval) + len(self.__suspended_warnings_for_lazy_eval) > 0:
+
+                            _del_ca_idx = []
+
+                            for ca_idx, ca in enumerate(chain_assign):
+
+                                if ca['conflict'] == 0:
+                                    continue
+
+                                ref_chain_id = ca['ref_chain_id']
+                                test_chain_id = ca['test_chain_id']
+
+                                if any(_ca for _ca in chain_assign if _ca['ref_chain_id'] == ref_chain_id and _ca['test_chain_id'] != test_chain_id and _ca['conflict'] == 0):
+                                    _del_ca_idx.append(ca_idx)
+
+                            if len(_del_ca_idx) > 0:
+                                for ca_idx in reversed(_del_ca_idx):
+                                    del chain_assign[ca_idx]
+                                if len(self.__suspended_errors_for_lazy_eval) > 0:
+                                    _del_msg_idx = set()
+                                    for msg_idx, msg in enumerate(self.__suspended_errors_for_lazy_eval):
+                                        for k, v in msg.items():
+                                            if v['ca_idx'] in _del_ca_idx:
+                                                _del_msg_idx.add(msg_idx)
+                                    if len(_del_msg_idx) > 0:
+                                        for msg_idx in reversed(list(_del_msg_idx)):
+                                            del self.__suspended_errors_for_lazy_eval[msg_idx]
+                                if len(self.__suspended_warnings_for_lazy_eval) > 0:
+                                    _del_msg_idx = set()
+                                    for msg_idx, msg in enumerate(self.__suspended_warnings_for_lazy_eval):
+                                        for k, v in msg.items():
+                                            if v['ca_idx'] in _del_ca_idx:
+                                                _del_msg_idx.add(msg_idx)
+                                    if len(_del_msg_idx) > 0:
+                                        for msg_idx in reversed(list(_del_msg_idx)):
+                                            del self.__suspended_warnings_for_lazy_eval[msg_idx]
 
                         if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
@@ -37473,7 +37498,25 @@ class NmrDpUtility:
 
                     self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign)
 
+                    if len(self.__suspended_errors_for_lazy_eval) > 0:
+                        for msg in self.__suspended_errors_for_lazy_eval:
+                            for k, v in msg.items():
+                                del v['ca_idx']
+                                self.report.error.appendDescription(k, v)
+                                self.report.setError()
+                        self.__suspended_errors_for_lazy_eval = []
+
+                    if len(self.__suspended_warnings_for_lazy_eval) > 0:
+                        for msg in self.__suspended_warnings_for_lazy_eval:
+                            for k, v in msg.items():
+                                del v['ca_idx']
+                                self.report.warning.appendDescription(k, v)
+                                self.report.setWarning()
+                        self.__suspended_warnings_for_lazy_eval = []
+
                 # from model to nmr (final)
+
+                ca_idx = 0
 
                 mat = []
                 indices = []
@@ -37696,10 +37739,13 @@ class NmrDpUtility:
 
                                     warn = f"{cif_seq_code} is not present in the NMR data (chain_id {chain_id2})."
 
+                                    self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
+                                                                                    {'ca_idx': ca_idx, 'file_name': cif_file_name, 'description': warn}})
+                                    """
                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                           {'file_name': cif_file_name, 'description': warn})
                                     self.report.setWarning()
-
+                                    """
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
 
@@ -37730,18 +37776,24 @@ class NmrDpUtility:
                                     "Please verify the two sequences and re-upload the correct file(s)."
 
                                 if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(nmr_comp_id, cif_comp_id):
+                                    self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
+                                                                                    {'ca_idx': ca_idx, 'file_name': cif_file_name, 'description': err}})
+                                    """
                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                           {'file_name': cif_file_name, 'description': err})
                                     self.report.setWarning()
-
+                                    """
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
 
                                 else:
+                                    self.__suspended_errors_for_lazy_eval.append({'sequence_mismatch':
+                                                                                  {'ca_idx': ca_idx, 'file_name': cif_file_name, 'description': err}})
+                                    """
                                     self.report.error.appendDescription('sequence_mismatch',
                                                                         {'file_name': cif_file_name, 'description': err})
                                     self.report.setError()
-
+                                    """
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - {err}\n")
 
@@ -37764,10 +37816,48 @@ class NmrDpUtility:
                                 _result['unmapped'] = ca['unmapped']
 
                     chain_assign.append(ca)
+                    ca_idx += 1
 
                 if len(chain_assign) > 0 and fileListId == 0:
 
                     if len(cif_polymer_sequence) > 1:
+
+                        if len(self.__suspended_errors_for_lazy_eval) + len(self.__suspended_warnings_for_lazy_eval) > 0:
+
+                            _del_ca_idx = []
+
+                            for ca_idx, ca in enumerate(chain_assign):
+
+                                if ca['conflict'] == 0:
+                                    continue
+
+                                ref_chain_id = ca['ref_chain_id']
+                                test_chain_id = ca['test_chain_id']
+
+                                if any(_ca for _ca in chain_assign if _ca['ref_chain_id'] == ref_chain_id and _ca['test_chain_id'] != test_chain_id and _ca['conflict'] == 0):
+                                    _del_ca_idx.append(ca_idx)
+
+                            if len(_del_ca_idx) > 0:
+                                for ca_idx in reversed(_del_ca_idx):
+                                    del chain_assign[ca_idx]
+                                if len(self.__suspended_errors_for_lazy_eval) > 0:
+                                    _del_msg_idx = set()
+                                    for msg_idx, msg in enumerate(self.__suspended_errors_for_lazy_eval):
+                                        for k, v in msg.items():
+                                            if v['ca_idx'] in _del_ca_idx:
+                                                _del_msg_idx.add(msg_idx)
+                                    if len(_del_msg_idx) > 0:
+                                        for msg_idx in reversed(list(_del_msg_idx)):
+                                            del self.__suspended_errors_for_lazy_eval[msg_idx]
+                                if len(self.__suspended_warnings_for_lazy_eval) > 0:
+                                    _del_msg_idx = set()
+                                    for msg_idx, msg in enumerate(self.__suspended_warnings_for_lazy_eval):
+                                        for k, v in msg.items():
+                                            if v['ca_idx'] in _del_ca_idx:
+                                                _del_msg_idx.add(msg_idx)
+                                    if len(_del_msg_idx) > 0:
+                                        for msg_idx in reversed(list(_del_msg_idx)):
+                                            del self.__suspended_warnings_for_lazy_eval[msg_idx]
 
                         if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
@@ -37798,6 +37888,22 @@ class NmrDpUtility:
                                     pass
 
                     self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', chain_assign)
+
+                    if len(self.__suspended_errors_for_lazy_eval) > 0:
+                        for msg in self.__suspended_errors_for_lazy_eval:
+                            for k, v in msg.items():
+                                del v['ca_idx']
+                                self.report.error.appendDescription(k, v)
+                                self.report.setError()
+                        self.__suspended_errors_for_lazy_eval = []
+
+                    if len(self.__suspended_warnings_for_lazy_eval) > 0:
+                        for msg in self.__suspended_warnings_for_lazy_eval:
+                            for k, v in msg.items():
+                                del v['ca_idx']
+                                self.report.warning.appendDescription(k, v)
+                                self.report.setWarning()
+                        self.__suspended_warnings_for_lazy_eval = []
 
                 chain_assign_dic = self.report.chain_assignment.get()
 

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://bmrbpub.pdbj.org/archive/combined_restraints/nmr-restraints-report-schema.json",
-  "title": "JSON Schema for NMR restraints report v2",
+  "title": "JSON Schema for NMR restraints report v3",
   "description": "The NMR restraints report provides restraint statistics and diagnostic information for NMR restraints with reference to associated atomic coordinates.",
   "definitions": {
     "input_source": {

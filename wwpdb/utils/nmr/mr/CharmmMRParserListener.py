@@ -390,6 +390,9 @@ class CharmmMRParserListener(ParseTreeListener):
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
 
+        self.__cachedDictForAtomIdList = {}
+        self.__cachedDictForFactor = {}
+
         self.distRestraints = 0      # CHARMM: Distance restraints
         self.dihedRestraints = 0     # CHARMM: Dihedral angle restraints
         self.geoRestraints = 0       # CHARMM: Harmonic coordinate/NCS restraints
@@ -2015,12 +2018,19 @@ class CharmmMRParserListener(ParseTreeListener):
         if not any(key for key in _factor if not(key == 'atom_selection' or key.startswith('auth'))):
             return _factor
 
-        if len(_factor) == 2 and 'chain_id' in _factor and len(_factor['chain_id']) == 0 and 'alt_chain_id' in _factor:
-            if self.__largeModel:
-                _factor['chain_id'] = [self.__representativeAsymId]
-            else:
+        if 'alt_chain_id' in _factor:
+            len_factor = len(_factor)
+
+            if len_factor == 2 and 'chain_id' in _factor and len(_factor['chain_id']) == 0:
+                if self.__largeModel:
+                    _factor['chain_id'] = [self.__representativeAsymId]
+                else:
+                    _factor['atom_selection'] = ['*']
+                    del _factor['chain_id']
+                    return _factor
+
+            elif len_factor == 1:
                 _factor['atom_selection'] = ['*']
-                del _factor['chain_id']
                 return _factor
 
         if len(self.atomSelectionSet) == 0:
@@ -2037,13 +2047,18 @@ class CharmmMRParserListener(ParseTreeListener):
         if 'atom_id' not in _factor and 'atom_ids' not in _factor\
            and 'type_symbol' not in _factor and 'type_symbols' not in _factor:
             _factor['atom_not_specified'] = True
+            if 'atom_selection' not in _factor:
+                ambigAtomSelect = True
 
         elif 'chain_id' not in _factor and 'seq_id' not in _factor and 'seq_ids' not in _factor:
             if 'atom_selection' not in _factor:
-                key = str(_factor)
-                if key in self.__cachedDictForFactor:
-                    return copy.deepcopy(self.__cachedDictForFactor[key])
                 ambigAtomSelect = True
+
+        key = str(_factor)
+        if key in self.__cachedDictForFactor:
+            return copy.deepcopy(self.__cachedDictForFactor[key])
+
+        len_warn_msg = len(self.warningMessage)
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
@@ -2599,7 +2614,7 @@ class CharmmMRParserListener(ParseTreeListener):
         if 'alt_atom_id' in _factor:
             del _factor['alt_atom_id']
 
-        if ambigAtomSelect:
+        if ambigAtomSelect or len(self.warningMessage) == len_warn_msg:
             if key not in self.__cachedDictForFactor:
                 self.__cachedDictForFactor[key] = copy.deepcopy(_factor)
 

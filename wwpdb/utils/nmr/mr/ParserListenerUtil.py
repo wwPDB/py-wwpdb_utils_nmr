@@ -224,7 +224,7 @@ XPLOR_RDC_PRINCIPAL_AXIS_NAMES = ('OO', 'X', 'Y', 'Z')
 
 XPLOR_ORIGIN_AXIS_COLS = [0, 1, 2, 3]
 
-XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NAI')
+XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI')
 
 LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDAT',
                       'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
@@ -1698,6 +1698,9 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
             elif atomId.startswith('2H'):
                 if atomId[1:] + '2' in refAtomIdList:
                     return atomId[1:] + '2'
+            elif atomId.startswith('3H'):
+                if atomId[1:] + '3' in refAtomIdList:
+                    return atomId[1:] + '3'
             elif atomId == "HX'":  # derived from 2mko AMBER RDC restraints
                 if "H4'" in refAtomIdList:
                     return "H4'"

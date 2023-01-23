@@ -22688,6 +22688,7 @@ class NmrDpUtility:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                 else:
                                     _row[6] = atom_ids[0]
+                                    _row[19] = None
                                     if self.__ccU.updateChemCompDict(comp_id):
                                         cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                         if cca is not None:
@@ -22745,6 +22746,7 @@ class NmrDpUtility:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                             else:
                                 _row[6] = atom_ids[0]
+                                _row[19] = None
                                 if self.__ccU.updateChemCompDict(comp_id):
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                     if cca is not None:
@@ -22870,6 +22872,7 @@ class NmrDpUtility:
                                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                         else:
                                             _row[6] = atom_ids[0]
+                                            _row[19] = None
                                             if self.__ccU.updateChemCompDict(comp_id):
                                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                                 if cca is not None:
@@ -22927,6 +22930,7 @@ class NmrDpUtility:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:
                                         _row[6] = atom_ids[0]
+                                        _row[19] = None
                                         if self.__ccU.updateChemCompDict(comp_id):
                                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                             if cca is not None:
@@ -23079,6 +23083,7 @@ class NmrDpUtility:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:
                                         _row[6] = atom_ids[0]
+                                        _row[19] = None
                                         if self.__ccU.updateChemCompDict(comp_id):
                                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                             if cca is not None:
@@ -23134,6 +23139,7 @@ class NmrDpUtility:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                 else:
                                     _row[6] = atom_ids[0]
+                                    _row[19] = None
                                     if self.__ccU.updateChemCompDict(comp_id):
                                         cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                         if cca is not None:
@@ -23219,6 +23225,7 @@ class NmrDpUtility:
                                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                         else:
                                             _row[6] = atom_ids[0]
+                                            _row[19] = None
                                             if self.__ccU.updateChemCompDict(comp_id):
                                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                                 if cca is not None:
@@ -23274,6 +23281,7 @@ class NmrDpUtility:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:
                                         _row[6] = atom_ids[0]
+                                        _row[19] = None
                                         if self.__ccU.updateChemCompDict(comp_id):
                                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                             if cca is not None:
@@ -23369,6 +23377,7 @@ class NmrDpUtility:
                                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                             else:
                                                 _row[6] = atom_ids[0]
+                                                _row[19] = None
                                                 if self.__ccU.updateChemCompDict(comp_id):
                                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                                     if cca is not None:
@@ -23424,6 +23433,7 @@ class NmrDpUtility:
                                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                         else:
                                             _row[6] = atom_ids[0]
+                                            _row[19] = None
                                             if self.__ccU.updateChemCompDict(comp_id):
                                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                                 if cca is not None:
@@ -23485,6 +23495,7 @@ class NmrDpUtility:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                         else:
                             _row[6] = atom_ids[0]
+                            _row[19] = None
                             if self.__ccU.updateChemCompDict(comp_id):
                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                 if cca is not None:

@@ -8704,7 +8704,7 @@ class XplorMRParserListener(ParseTreeListener):
                             elif compId == 'ASN' and 'ND2' in atomSiteAtomId:
                                 atomIds = ['ND2']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'LYZ' and 'NZ' in atomSiteAtomId:
+                            elif compId == 'LYS' and 'NZ' in atomSiteAtomId:
                                 atomIds = ['NZ']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
                             elif compId == 'THR' and 'OG1' in atomSiteAtomId:

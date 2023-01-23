@@ -4489,7 +4489,7 @@ class NmrDpUtility:
                                                               ],
                                           'rdc_raw_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                           {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                           {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                             'enforce-non-zero': True}
                                                            ],
                                           'csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -4501,7 +4501,7 @@ class NmrDpUtility:
                                                             ],
                                           'ddc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                            {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                            {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                             'enforce-non-zero': True},
                                                             {'name': 'Scaling_factor', 'type': 'positive-float', 'mandatory': False},
                                                             {'name': 'Fitting_procedure', 'type': 'str', 'mandatory': False}
@@ -4528,7 +4528,7 @@ class NmrDpUtility:
                                                                     'enum': ('single scan interleaving', 'temperature compensation block',
                                                                              'single scan interleaving and temperature compensation block',
                                                                              'no temperature control applied')},
-                                                                   {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                                   {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                                     'enforce-non-zero': True},
                                                                    {'name': 'Exact_field_strength', 'type': 'positive-float', 'mandatory': False,
                                                                     'enforce-non-zero': True},
@@ -4541,21 +4541,21 @@ class NmrDpUtility:
                                                                              'I+Sz', 'I-Sz', 'IzS+', 'IzS-', '(I+S+)+(I-S-)', 'I+S+', 'I-S-')},
                                                                    {'name': 'Relaxation_val_units', 'type': 'enum', 'mandatory': True,
                                                                     'enum': ('s-1', 'ms-1', 'us-1', 'ns-1', 'ps-1')},
-                                                                   {'name': 'Rex_val_units', 'type': 'enum', 'mandatory': False,
+                                                                   {'name': 'Rex_units', 'type': 'enum', 'mandatory': False,
                                                                     'enum': ('s-1', 'ms-1', 'us-1')},
                                                                    {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
                                                                     'enforce-non-zero': True}
                                                                    ],
                                           'heteronucl_noe_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                                   {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                                    'enforce-non-zero': True},
                                                                   {'name': 'Heteronuclear_NOE_val_type', 'type': 'enum', 'mandatory': True,
                                                                    'enum': ('peak height', 'peak integral', 'contour count', 'relative intensities', 'na')}
                                                                   ],
                                           'heteronucl_t1_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                                   'enforce-non-zero': True},
                                                                  {'name': 'T1_coherence_type', 'type': 'enum', 'mandatory': True,
                                                                   'enum': ('Iz', 'Sz', 'na')},
@@ -4570,7 +4570,7 @@ class NmrDpUtility:
                                                                   'enum': ('single scan interleaving', 'temperature compensation block',
                                                                            'single scan interleaving and temperature compensation block',
                                                                            'no temperature control applied')},
-                                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                                   'enforce-non-zero': True},
                                                                  {'name': 'T1_coherence_type', 'type': 'enum', 'mandatory': True,
                                                                   'enum': ('I(+,-)', 'S(+,-)', 'na')},
@@ -4587,7 +4587,7 @@ class NmrDpUtility:
                                                                    'enum': ('single scan interleaving', 'temperature compensation block',
                                                                             'single scan interleaving and temperature compensation block',
                                                                             'no temperature control applied')},
-                                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                                    'enforce-non-zero': True},
                                                                   {'name': 'T1rho_coherence_type', 'type': 'enum', 'mandatory': True,
                                                                    'enum': ('I(+,-)', 'S(+,-)', 'na')},
@@ -4598,14 +4598,14 @@ class NmrDpUtility:
                                                                   ],
                                           'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                                   {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                                    'enforce-non-zero': True},
                                                                   {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
                                                                    'enum': ('s-1', 'ms-1', 'us-1')}
                                                                   ],
                                           'ccr_dd_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                                {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                               {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                               {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                                 'enforce-non-zero': True},
                                                                {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
                                                                 'enum': ('s-1', 'ms-1', 'us-1')}
@@ -46986,6 +46986,8 @@ class NmrDpUtility:
                     constraint_subtype = get_first_sf_tag(sf, 'Constraint_type') if content_subtype != 'other_restraint' else get_first_sf_tag(sf, 'Definition')
                     if len(constraint_subtype) == 0:
                         constraint_subtype = None
+                    if content_subtype == 'auto_relax_restraint' and get_first_sf_tag(sf, 'Common_relaxation_type_name') == 'paramagnetic relaxation enhancement':
+                        constraint_subtype = 'PRE'
                     if sf_item['file_type'] == 'nm-res-sax':
                         constraint_subtype = 'SAXS'
                     constraint_subsubtype = sf_item['constraint_subsubtype'] if 'constraint_subsubtype' in sf_item else None

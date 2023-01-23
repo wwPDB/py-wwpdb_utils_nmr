@@ -368,7 +368,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                            ],
                          'ddc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                           {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                           {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                             'enforce-non-zero': True},
                                            {'name': 'Scaling_factor', 'type': 'positive-float', 'mandatory': False},
                                            {'name': 'Fitting_procedure', 'type': 'str', 'mandatory': False},
@@ -407,7 +407,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                    'enum': ('single scan interleaving', 'temperature compensation block',
                                                             'single scan interleaving and temperature compensation block',
                                                             'no temperature control applied')},
-                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                    'enforce-non-zero': True},
                                                   {'name': 'Exact_field_strength', 'type': 'positive-float', 'mandatory': False,
                                                    'enforce-non-zero': True},
@@ -420,7 +420,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                             'I+Sz', 'I-Sz', 'IzS+', 'IzS-', '(I+S+)+(I-S-)', 'I+S+', 'I-S-')},
                                                   {'name': 'Relaxation_val_units', 'type': 'enum', 'mandatory': True,
                                                    'enum': ('s-1', 'ms-1', 'us-1', 'ns-1', 'ps-1')},
-                                                  {'name': 'Rex_val_units', 'type': 'enum', 'mandatory': False,
+                                                  {'name': 'Rex_units', 'type': 'enum', 'mandatory': False,
                                                    'enum': ('s-1', 'ms-1', 'us-1')},
                                                   {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
                                                    'enforce-non-zero': True},
@@ -430,7 +430,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                   ],
                          'heteronucl_noe_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                   'enforce-non-zero': True},
                                                  {'name': 'Heteronuclear_NOE_val_type', 'type': 'enum', 'mandatory': True,
                                                   'enum': ('peak height', 'peak integral', 'contour count', 'relative intensities', 'na')},
@@ -440,7 +440,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                  ],
                          'heteronucl_t1_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                  'enforce-non-zero': True},
                                                 {'name': 'T1_coherence_type', 'type': 'enum', 'mandatory': True,
                                                  'enum': ('Iz', 'Sz', 'na')},
@@ -458,7 +458,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                  'enum': ('single scan interleaving', 'temperature compensation block',
                                                           'single scan interleaving and temperature compensation block',
                                                           'no temperature control applied')},
-                                                {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                  'enforce-non-zero': True},
                                                 {'name': 'T1_coherence_type', 'type': 'enum', 'mandatory': True,
                                                  'enum': ('I(+,-)', 'S(+,-)', 'na')},
@@ -478,7 +478,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                   'enum': ('single scan interleaving', 'temperature compensation block',
                                                            'single scan interleaving and temperature compensation block',
                                                            'no temperature control applied')},
-                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                   'enforce-non-zero': True},
                                                  {'name': 'T1rho_coherence_type', 'type': 'enum', 'mandatory': True,
                                                   'enum': ('I(+,-)', 'S(+,-)', 'na')},
@@ -492,7 +492,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                  ],
                          'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                   'enforce-non-zero': True},
                                                  {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
                                                   'enum': ('s-1', 'ms-1', 'us-1')},
@@ -502,7 +502,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                  ],
                          'ccr_dd_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                              {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': True,
+                                              {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                'enforce-non-zero': True},
                                               {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
                                                'enum': ('s-1', 'ms-1', 'us-1')},
@@ -3840,6 +3840,8 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
         elif tag_item_name == 'Relaxation_coherence_type' and mrSubtype in ('pre', 'auto_relax_restraint'):
             sf.add_tag(tag_item_name, "S+")
         elif tag_item_name == 'Relaxation_val_units' and mrSubtype in ('pre', 'auto_relax_restraint'):
+            sf.add_tag(tag_item_name, 's-1')
+        elif tag_item_name == 'Rex_units' and mrSubtype in ('pre', 'auto_relax_restraint'):
             sf.add_tag(tag_item_name, 's-1')
         elif tag_item_name == 'Definition' and contentSubtype == 'other_restraint' and constraintType is not None:
             sf.add_tag(tag_item_name, constraintType)

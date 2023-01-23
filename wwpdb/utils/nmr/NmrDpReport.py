@@ -75,6 +75,7 @@
 # 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (DAOTHER-8058, NMR restraint remediation)
 # 24-Oct-2022  M. Yokochi - add support for floating chiral stereo assignments (NMR restraint remediation)
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
+# 23-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho) (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1707,6 +1708,8 @@ class NmrDpReportInputSource:
                                  'pcs_restraint', 'prdc_restraint', 'pang_restraint', 'pccr_restraint',
                                  'hbond_restraint', 'ssbond_restraint', 'geo_restraint', 'noepk_restraint',
                                  'rdc_raw_data', 'ddc_restraint', 'csp_restraint', 'auto_relax_restraint',
+                                 'heteronucl_noe_data', 'heteronucl_t1_data',
+                                 'heteronucl_t2_data', 'heteronucl_t1r_data',
                                  'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                  'fchiral_restraint', 'saxs_restraint', 'other_restraint',
                                  'spectral_peak', 'spectral_peak_alt', 'topology')
@@ -1807,8 +1810,11 @@ class NmrDpReportSequenceAlignment:
                       'nmr_poly_seq_vs_rdc_raw_data', 'nmr_poly_seq_vs_csa_restraint',
                       'nmr_poly_seq_vs_ddc_restraint', 'nmr_poly_seq_vs_hvycs_restraint',
                       'nmr_poly_seq_vs_procs_restraint', 'nmr_poly_seq_vs_csp_restraint',
-                      'nmr_poly_seq_vs_auto_relax_restraint', 'nmr_poly_seq_vs_ccr_d_csa_restraint',
-                      'nmr_poly_seq_vs_ccr_dd_restraint', 'nmr_poly_seq_vs_fchiral_restraint', 'nmr_poly_seq_vs_other_restraint')
+                      'nmr_poly_seq_vs_auto_relax_restraint',
+                      'nmr_poly_seq_vs_heteronucl_noe_data', 'nmr_poly_seq_vs_heteronucl_t1_data',
+                      'nmr_poly_seq_vs_heteronucl_t2_data', 'nmr_poly_seq_vs_heteronucl_t1r_data',
+                      'nmr_poly_seq_vs_ccr_d_csa_restraint', 'nmr_poly_seq_vs_ccr_dd_restraint',
+                      'nmr_poly_seq_vs_fchiral_restraint', 'nmr_poly_seq_vs_other_restraint')
 
         self.__contents = {item: None for item in self.items}
 

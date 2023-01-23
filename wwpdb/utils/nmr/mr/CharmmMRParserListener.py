@@ -2734,6 +2734,8 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
 
+                    atomSiteAtomId = None if coordAtomSite is None else coordAtomSite['atom_id']
+
                     for atomId in _factor['atom_id']:
                         origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
 
@@ -2745,7 +2747,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             else:
                                 authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId_)]
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
-                            if coordAtomSite is not None and atomId not in coordAtomSite['atom_id']:
+                            if coordAtomSite is not None and atomId not in atomSiteAtomId:
                                 if self.__reasons is not None and 'branched_remap' in self.__reasons:
                                     _seqId_ = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, seqId)
                                     if _seqId_ != seqId:
@@ -2781,12 +2783,12 @@ class CharmmMRParserListener(ParseTreeListener):
                                         atomIds = self.__nefT.get_valid_star_atom(compId, _atomId)[0]
 
                         if coordAtomSite is not None\
-                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id']):
-                            if atomId in coordAtomSite['atom_id']:
+                           and not any(_atomId for _atomId in atomIds if _atomId in atomSiteAtomId):
+                            if atomId in atomSiteAtomId:
                                 atomIds = [atomId]
                             elif 'alt_atom_id' in _factor:
                                 _atomId_ = toNefEx(toRegEx(_factor['alt_atom_id']))
-                                _atomIds_ = [_atomId for _atomId in coordAtomSite['atom_id'] if re.match(_atomId_, _atomId)]
+                                _atomIds_ = [_atomId for _atomId in atomSiteAtomId if re.match(_atomId_, _atomId)]
                                 if len(_atomIds_) > 0:
                                     atomIds = _atomIds_
 
@@ -2796,10 +2798,10 @@ class CharmmMRParserListener(ParseTreeListener):
                             if cifCheck:
                                 _atom = None
                                 if coordAtomSite is not None:
-                                    if _atomId in coordAtomSite['atom_id']:
+                                    if _atomId in atomSiteAtomId:
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
-                                        _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['atom_id'].index(_atomId)]
+                                        _atom['type_symbol'] = coordAtomSite['type_symbol'][atomSiteAtomId.index(_atomId)]
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
@@ -2969,13 +2971,13 @@ class CharmmMRParserListener(ParseTreeListener):
                                             if self.__cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
                                                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == ps['auth_seq_id'][0]:
-                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id'])
+                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
                                                                                       or _atomId == 'P' or _atomId.startswith('HOP')):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                     if len(bondedTo) > 0:
-                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                                        if coordAtomSite is not None and bondedTo[0] in atomSiteAtomId and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
                                                             if len(origAtomId) == 1:
                                                                 _atomSelection[-1]['hydrogen_not_instantiated'] = True
@@ -3003,7 +3005,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                 f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == ps['auth_seq_id'][0]:
-                                            if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id'])
+                                            if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
                                                                               or _atomId == 'P' or _atomId.startswith('HOP')):
                                                 continue
                                         # """

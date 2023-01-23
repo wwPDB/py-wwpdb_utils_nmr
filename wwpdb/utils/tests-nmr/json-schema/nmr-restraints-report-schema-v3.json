@@ -4316,6 +4316,91 @@
                 ]
               }
             },
+            "nmr_poly_seq_vs_auto_relax_restraint": {
+              "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for auto-relaxtion (inc. PRE) restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_nmr"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "nmr_poly_seq_vs_heteronucl_noe_data": {
+              "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for heteronuclear NOE data.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_nmr"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "nmr_poly_seq_vs_heteronucl_t1_data": {
+              "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for heteronuclear T1 relaxation data.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_nmr"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "nmr_poly_seq_vs_heteronucl_t2_data": {
+              "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for heteronuclear T2 relaxation data.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_nmr"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "nmr_poly_seq_vs_heteronucl_t1r_data": {
+              "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for heteronuclear T1rho relaxation data.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_nmr"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
             "nmr_poly_seq_vs_ccr_d_csa_restraint": {
               "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for dipole-CSA cross correlation restraints.",
               "type": [

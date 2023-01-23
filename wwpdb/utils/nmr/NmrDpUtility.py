@@ -39572,7 +39572,7 @@ class NmrDpUtility:
 
         ec_numbers = []
         for item in self.__caC['entity_assembly']:
-            if 'entity_ec' in item and item['entity_ec'] not in emptyValue:
+            if 'entity_ec' in item and item['entity_ec'] not in emptyValue and item['entity_ec'] not in ec_numbers:
                 ec_numbers.append(item['entity_ec'])
         if len(ec_numbers) == 0:
             ec_number = '.'
@@ -39581,7 +39581,7 @@ class NmrDpUtility:
 
         details = ''
         for item in self.__caC['entity_assembly']:
-            if 'entity_details' in item and item['entity_details'] not in emptyValue:
+            if 'entity_details' in item and item['entity_details'] not in emptyValue and item['entity_details'] + '\n' not in details:
                 details += details + '\n'
         if len(details) == 0:
             details = '.'
@@ -39641,8 +39641,8 @@ class NmrDpUtility:
                             {'name': 'Entity_ID', 'type': 'positive-int', 'default': '1'},
                             {'name': 'Entity_label', 'type': 'str'},
                             ]
-            ea_data_items = [{'name': 'Asym_ID', 'type': 'str', 'mandatory': False},
-                             {'name': 'PDB_chain_ID', 'type': 'str', 'mandatory': False},
+            ea_data_items = [{'name': 'Asym_ID', 'type': 'str', 'mandatory': False},  # label_asym_id
+                             {'name': 'PDB_chain_ID', 'type': 'str', 'mandatory': False},  # auth_asym_id
                              {'name': 'Experimental_data_reported', 'type': 'enum', 'mandatory': False,
                               'enum': ('no', 'yes')},
                              {'name': 'Physical_state', 'type': 'enum', 'mandatory': False,

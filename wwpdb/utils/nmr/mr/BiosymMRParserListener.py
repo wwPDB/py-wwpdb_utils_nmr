@@ -10,6 +10,7 @@
 import sys
 import itertools
 import numpy
+import copy
 
 from antlr4 import ParseTreeListener
 
@@ -1100,6 +1101,12 @@ class BiosymMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                     f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
+        elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
+            _chainAssign = copy.copy(chainAssign)
+            for _ca in _chainAssign:
+                if _ca[0] != refChainId:
+                    chainAssign.remove(_ca)
+
         return list(chainAssign)
 
     def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, offset=0):
@@ -1184,6 +1191,10 @@ class BiosymMRParserListener(ParseTreeListener):
             if lenAtomId > 1 and not allowAmbig:
                 self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
                     f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
+                continue
+            if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
+                self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+                    f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
                 continue
 
             for cifAtomId in _atomId:

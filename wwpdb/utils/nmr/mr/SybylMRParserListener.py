@@ -997,6 +997,10 @@ class SybylMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
                     f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
                 continue
+            if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
+                self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+                    f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
+                continue
 
             for cifAtomId in _atomId:
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,

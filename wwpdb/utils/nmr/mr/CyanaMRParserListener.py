@@ -2300,6 +2300,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                         f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
 
+        elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
+            _chainAssign = copy.copy(chainAssign)
+            for _ca in _chainAssign:
+                if _ca[0] != refChainId:
+                    chainAssign.remove(_ca)
+
         return list(chainAssign)
 
     def assignCoordPolymerSequenceWithoutCompId(self, seqId, atomId=None):
@@ -2758,6 +2764,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 if enableWarning:
                     self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
                         f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
+                continue
+            if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
+                self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+                    f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
                 continue
 
             for cifAtomId in _atomId:
@@ -5894,8 +5904,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
             if len(chainAssign1) == 0 or len(chainAssign2) == 0:
                 return

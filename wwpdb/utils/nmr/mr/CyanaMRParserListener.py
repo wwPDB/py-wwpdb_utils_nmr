@@ -701,7 +701,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(compId1) == 1 and len(compId2) == 1 and compId1.isalpha() and compId2.isalpha():
                 atom_like = self.__csStat.getAtomLikeNameSet(True, True, 1)
                 if atomId1 in atom_like and atomId2 in atom_like:
-                    self.exitDistance_wo_comp_restraint(ctx)
+                    self.exitDistance_wo_comp_restraint(compId1, seqId1, atomId1, compId2, seqId2, atomId2)
                     return
 
             target_value = None
@@ -1190,16 +1190,9 @@ class CyanaMRParserListener(ParseTreeListener):
             self.genAtomNameSelection.clear()
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
-    def exitDistance_wo_comp_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
+    def exitDistance_wo_comp_restraint(self, chainId1, seqId1, atomId1, chainId2, seqId2, atomId2):
 
         try:
-
-            seqId1 = int(str(ctx.Integer(0)))
-            chainId1 = str(ctx.Simple_name(0)).upper()
-            atomId1 = str(ctx.Simple_name(1)).upper()
-            seqId2 = int(str(ctx.Integer(1)))
-            chainId2 = str(ctx.Simple_name(2)).upper()
-            atomId2 = str(ctx.Simple_name(3)).upper()
 
             target_value = None
             lower_limit = None

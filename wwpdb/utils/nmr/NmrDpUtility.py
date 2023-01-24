@@ -1322,7 +1322,7 @@ class NmrDpUtility:
                                      'csp_restraint', 'auto_relax_restraint',
                                      'heteronucl_noe_data', 'heteronucl_t1_data',
                                      'heteronucl_t2_data', 'heteronucl_t1r_data',
-                                     'order_param_data'
+                                     'order_param_data',
                                      'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                      'fchiral_restraint', 'saxs_restraint', 'other_restraint')
 
@@ -1336,6 +1336,9 @@ class NmrDpUtility:
                                     'order_param_data',
                                     'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                     'fchiral_restraint', 'saxs_restraint', 'other_restraint']
+
+        self.nmr_rep_content_subtypes = ['chem_shift', 'spectral_peak']
+        self.nmr_rep_content_subtypes.extend(self.mr_content_subtypes)
 
         self.pk_content_subtypes = ('spectral_peak', 'spectral_peak_alt')
 
@@ -4376,6 +4379,7 @@ class NmrDpUtility:
             return self.__c2S.category_order.index(self.sf_tag_prefixes['nmr-star'][content_subtype])
 
         self.mr_content_subtypes.sort(key=sf_key)
+        self.nmr_rep_content_subtypes.sort(key=sf_key)
 
         altPotentialType = {'?': 'undefined'}
 
@@ -47258,6 +47262,41 @@ class NmrDpUtility:
 
         self.__mergeStrPk()
 
+        # Update _Data_set loop
+
+        content_subtype = 'entry_info'
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = '_Data_set'
+
+        if sf_category in self.__sf_category_list:
+
+            sf_data = master_entry.get_saveframes_by_category(sf_category)[0]
+
+            loop = next((loop for loop in sf_data.loops if loop.category == lp_category), None)
+
+            if loop is not None:
+                del sf_data[loop]
+
+            lp = pynmrstar.Loop.from_scratch(lp_category)
+
+            items = ['Type', 'Count', 'Entry_ID']
+
+            tags = [lp_category + '.' + item for item in items]
+
+            for tag in tags:
+                lp.add_tag(tag)
+
+            for content_subtype in self.nmr_rep_content_subtypes:
+                sf_category = self.sf_categories[file_type][content_subtype]
+                count = sum(1 for sf in master_entry.frame_list if sf.category == sf_category)
+
+                if count > 0:
+                    row = [sf_category, count, self.__entry_id]
+                    lp.add_data(row)
+
+            sf_data.add_loop(lp)
+
         master_entry = self.__c2S.normalize_str(master_entry)
 
         if __pynmrstar_v3__:
@@ -48462,6 +48501,41 @@ class NmrDpUtility:
 
         if len(cf_loop) > 0:
             master_entry.add_saveframe(cst_sf)
+
+        # Update _Data_set loop
+
+        content_subtype = 'entry_info'
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = '_Data_set'
+
+        if sf_category in self.__sf_category_list:
+
+            sf_data = master_entry.get_saveframes_by_category(sf_category)[0]
+
+            loop = next((loop for loop in sf_data.loops if loop.category == lp_category), None)
+
+            if loop is not None:
+                del sf_data[loop]
+
+            lp = pynmrstar.Loop.from_scratch(lp_category)
+
+            items = ['Type', 'Count', 'Entry_ID']
+
+            tags = [lp_category + '.' + item for item in items]
+
+            for tag in tags:
+                lp.add_tag(tag)
+
+            for content_subtype in self.nmr_rep_content_subtypes:
+                sf_category = self.sf_categories[file_type][content_subtype]
+                count = sum(1 for sf in master_entry.frame_list if sf.category == sf_category)
+
+                if count > 0:
+                    row = [sf_category, count, self.__entry_id]
+                    lp.add_data(row)
+
+            sf_data.add_loop(lp)
 
         master_entry = self.__c2S.normalize_str(master_entry)
 

@@ -1205,6 +1205,11 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                     #
                 elif mr_comp_id != cif_comp_id and aligned[i]:
 
+                    comp_ids = [comp_id for seq_id, comp_id in zip(s1[_seq_id_name], s1['comp_id']) if seq_id == seq_id1[i]]
+
+                    if mr_comp_id in comp_ids:
+                        continue
+
                     conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
                                      'test_seq_id': seq_id2[i], 'test_comp_id': mr_comp_id})
 

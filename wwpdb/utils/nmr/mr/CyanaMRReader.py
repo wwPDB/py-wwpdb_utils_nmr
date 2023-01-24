@@ -211,6 +211,11 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2kym/2kym-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2kym/2kym.cif')
+
     reader = CyanaMRReader(True, file_ext='upv')
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5mcs/omcf_omcf320R.upv',

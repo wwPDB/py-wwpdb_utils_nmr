@@ -22792,7 +22792,7 @@ class NmrDpUtility:
 
                         if _seq_key in coord_atom_site:
                             _coord_atom_site = coord_atom_site[_seq_key]
-                            _row[5] = _coord_atom_site['comp_id']
+                            _row[5] = comp_id  # _coord_atom_site['comp_id']
                             if atom_id in _coord_atom_site['atom_id']:
                                 _row[6] = atom_id
                                 if _row[19] is None:
@@ -22976,7 +22976,7 @@ class NmrDpUtility:
 
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
-                                    _row[5] = _coord_atom_site['comp_id']
+                                    _row[5] = comp_id  # _coord_atom_site['comp_id']
                                     if atom_id in _coord_atom_site['atom_id']:
                                         _row[6] = atom_id
                                         if _row[19] is None:
@@ -23187,7 +23187,7 @@ class NmrDpUtility:
 
                             if _seq_key in coord_atom_site:
                                 _coord_atom_site = coord_atom_site[_seq_key]
-                                _row[5] = _coord_atom_site['comp_id']
+                                _row[5] = comp_id  # _coord_atom_site['comp_id']
                                 if atom_id in _coord_atom_site['atom_id']:
                                     _row[6] = atom_id
                                     if _row[19] is None:
@@ -23329,7 +23329,7 @@ class NmrDpUtility:
 
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
-                                    _row[5] = _coord_atom_site['comp_id']
+                                    _row[5] = comp_id  # _coord_atom_site['comp_id']
                                     if atom_id in _coord_atom_site['atom_id']:
                                         _row[6] = atom_id
                                         if _row[19] is None:
@@ -23481,7 +23481,7 @@ class NmrDpUtility:
 
                                     if _seq_key in coord_atom_site:
                                         _coord_atom_site = coord_atom_site[_seq_key]
-                                        _row[5] = _coord_atom_site['comp_id']
+                                        _row[5] = comp_id  # _coord_atom_site['comp_id']
                                         if atom_id in _coord_atom_site['atom_id']:
                                             _row[6] = atom_id
                                             if _row[19] is None:

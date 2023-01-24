@@ -1214,6 +1214,12 @@ class DynamoMRParserListener(ParseTreeListener):
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
+                if cifCompId != compId:
+                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                    if compId in compIds:
+                        cifCompId = compId
+                        origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                          if _seqId == seqId and _compId == compId)
                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -1252,6 +1258,12 @@ class DynamoMRParserListener(ParseTreeListener):
                             seqId_ = ps['auth_seq_id'][idx]
                             cifCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
+                            if cifCompId != compId:
+                                compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                                if compId in compIds:
+                                    cifCompId = compId
+                                    origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                      if _seqId == seqId and _compId == compId)
                             if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, self.__hasCoord)
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -1314,6 +1326,12 @@ class DynamoMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
+                        if cifCompId != compId:
+                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                            if compId in compIds:
+                                cifCompId = compId
+                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                  if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -1374,6 +1392,10 @@ class DynamoMRParserListener(ParseTreeListener):
                     continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    if cifCompId != compId:
+                        compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                        if compId in compIds:
+                            cifCompId = compId
                     chainAssign.add((chainId, _seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
@@ -1484,9 +1506,25 @@ class DynamoMRParserListener(ParseTreeListener):
                     f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
                 continue
             if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
-                self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-                    f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
-                continue
+                insCode = False
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                if ps is not None:
+                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == cifSeqId]
+                    if compId in compIds:
+                        insCode = True
+                        cifCompId = compId
+                if not insCode:
+                    if self.__preferAuthSeq:
+                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=False)
+                        if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                            if _atomId[0] in _coordAtomSite['atom_id']:
+                                self.__preferAuthSeq = False
+                                # self.__authSeqId = 'label_seq_id'
+                                self.__setLocalSeqScheme()
+                                continue
+                    self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+                        f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
+                    continue
 
             for cifAtomId in _atomId:
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,

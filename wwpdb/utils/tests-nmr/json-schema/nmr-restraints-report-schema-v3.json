@@ -4401,6 +4401,23 @@
                 ]
               }
             },
+            "nmr_poly_seq_vs_order_param_data": {
+              "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for order parameters.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_nmr"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
             "nmr_poly_seq_vs_ccr_d_csa_restraint": {
               "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for dipole-CSA cross correlation restraints.",
               "type": [

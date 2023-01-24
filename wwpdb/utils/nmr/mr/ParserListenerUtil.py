@@ -258,6 +258,7 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'heteronucl_t1_data': '_Heteronucl_T1_list',
                             'heteronucl_t2_data': '_Heteronucl_T2_list',
                             'heteronucl_t1r_data': '_Heteronucl_T1rho_list',
+                            'order_param_data': '_Order_parameter_list',
                             'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                             'ccr_dd_restraint': '_Cross_correlation_DD_list',
                             'fchiral_restraint': '_Floating_chirality_assign',
@@ -281,6 +282,7 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'heteronucl_t1_data': 'heteronucl_T1_relaxation',
                           'heteronucl_t2_data': 'heteronucl_T2_relaxation',
                           'heteronucl_t1r_data': 'heteronucl_T1rho_relaxation',
+                          'order_param_data': 'order_parameters',
                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                           'fchiral_restraint': 'floating_chiral_stereo_assign',
@@ -490,6 +492,22 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                  {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                  ],
+                         'order_param_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                              {'name': 'Tau_e_val_units', 'type': 'enum', 'mandatory': False,
+                                               'enum': ('s', 'ms', 'us', 'ns', 'ps')},
+                                              {'name': 'Tau_f_val_units', 'type': 'enum', 'mandatory': False,
+                                               'enum': ('s', 'ms', 'us', 'ns', 'ps')},
+                                              {'name': 'Tau_s_val_units', 'type': 'enum', 'mandatory': False,
+                                               'enum': ('s', 'ms', 'us', 'ns', 'ps')},
+                                              {'name': 'Rex_units', 'type': 'enum', 'mandatory': False,
+                                               'enum': ('s-1', 'ms-1', 'us-1')},
+                                              {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
+                                               'enforce-non-zero': True},
+                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                              ],
                          'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
@@ -549,6 +567,7 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'heteronucl_t1_data': '_T1',
                           'heteronucl_t2_data': '_T2',
                           'heteronucl_t1r_data': '_T1rho',
+                          'order_param_data': '_Order_param',
                           'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                           'ccr_dd_restraint': '_Cross_correlation_DD',
                           'fchiral_restraint': '_Floating_chirality',
@@ -748,6 +767,13 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                                  {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                  {'name': 'Atom_ID', 'type': 'str'}
                                                  ],
+                         'order_param_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                              {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                              {'name': 'Entity_ID', 'type': 'positive-int'},
+                                              {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                              {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                              {'name': 'Atom_ID', 'type': 'str'}
+                                              ],
                          'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                  {'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                  {'name': 'Dipole_entity_ID_1', 'type': 'positive-int'},
@@ -1356,7 +1382,7 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                   {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
                                                    'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                    'enforce-enum': True},
-                                                  {'name': 'Val', 'type': 'float', 'mandatory': False},
+                                                  {'name': 'Val', 'type': 'float', 'mandatory': True},
                                                   {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                    'range': {'min_inclusive': 0.0}},
                                                   {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
@@ -1377,7 +1403,7 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                  {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                   'enforce-enum': True},
-                                                 {'name': 'Val', 'type': 'float', 'mandatory': False},
+                                                 {'name': 'Val', 'type': 'float', 'mandatory': True},
                                                  {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                   'range': {'min_inclusive': 0.0}},
                                                  {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
@@ -1394,7 +1420,7 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                  {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                   'enforce-enum': True},
-                                                 {'name': 'T2_val', 'type': 'float', 'mandatory': False},
+                                                 {'name': 'T2_val', 'type': 'float', 'mandatory': True},
                                                  {'name': 'T2_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                   'range': {'min_inclusive': 0.0}},
                                                  {'name': 'Rex_val', 'type': 'float', 'mandatory': False},
@@ -1414,7 +1440,7 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                     {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
                                                      'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                      'enforce-enum': True},
-                                                    {'name': 'T1rho_val', 'type': 'float', 'mandatory': False},
+                                                    {'name': 'T1rho_val', 'type': 'float', 'mandatory': True},
                                                     {'name': 'T1rho_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                      'range': {'min_inclusive': 0.0}},
                                                     {'name': 'Rex_val', 'type': 'float', 'mandatory': False},
@@ -1428,6 +1454,55 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                      'default': '1', 'default-from': 'parent'},
                                                     {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                     ],
+                          'order_param_data': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                'enforce-enum': True},
+                                               {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                'enforce-enum': True},
+                                               {'name': 'Order_param_val', 'type': 'range-float', 'mandatory': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Order_param_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Tau_e_val', 'type': 'positive-float', 'mandatory': False},
+                                               {'name': 'Tau_e_val_fit_err', 'type': 'positive-float', 'mandatory': False},
+                                               {'name': 'Tau_f_val', 'type': 'positive-float', 'mandatory': False},
+                                               {'name': 'Tau_f_val_fit_err', 'type': 'positive-float', 'mandatory': False},
+                                               {'name': 'Tau_s_val', 'type': 'positive-float', 'mandatory': False},
+                                               {'name': 'Tau_s_val_fit_err', 'type': 'positive-float', 'mandatory': False},
+                                               {'name': 'Rex_val', 'type': 'range-float', 'mandatory': False,
+                                                'range': PRE_RESTRAINT_RANGE},
+                                               {'name': 'Rex_val_fit_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                'range': PRE_RESTRAINT_RANGE},
+                                               {'name': 'Model_free_sum_squared_errs', 'type': 'positive-float', 'mandatory': False},
+                                               {'name': 'Model_fit', 'type': 'enum', 'mandatory': False,
+                                                'enum': ('Rex', 'S2', 'S2, te', 'S2, Rex', 'S2, te, Rex', 'S2f, S2, ts', 'S2f, S2s, ts',
+                                                         'S2f, tf, S2, ts', 'S2f, tf, S2s, ts', 'S2f, S2, ts, Rex', 'S2f, S2s, ts, Rex',
+                                                         'S2f, tf, S2, ts, Rex', 'S2f, tf, S2s, ts, Rex', 'na')},
+                                               {'name': 'Sf2_val', 'type': 'range-float', 'mandatory': False,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Sf2_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Ss2_val', 'type': 'range-float', 'mandatory': False,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Ss2_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'SH2_val', 'type': 'range-float', 'mandatory': False,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'SH2_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'SN2_val', 'type': 'range-float', 'mandatory': False,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'SN2_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                               {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Order_parameter_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                'default': '1', 'default-from': 'parent'},
+                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                               ],
                           'ccr_d_csa_restraint': [{'name': 'Dipole_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
                                                    'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                    'enforce-enum': True},
@@ -3665,6 +3740,8 @@ def getRestraintName(mrSubtype, title=False):
         return "Heteronuclear T2 relaxation data" if title else "heteronuclear T2 relaxation data"
     if mrSubtype == 'heteronucl_t1r_data':
         return "Heteronuclear T1rho relaxation data" if title else "heteronuclear T1rho relaxation data"
+    if mrSubtype == 'order_param_data':
+        return "Order parameters" if title else "order parameters"
 
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
@@ -3721,6 +3798,7 @@ def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
                          'heteronucl_t1_data': 0,
                          'heteronucl_t2_data': 0,
                          'heteronucl_t1r_data': 0,
+                         'order_param_data': 0,
                          'ccr_d_csa_restraint': 0,
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
@@ -3759,6 +3837,7 @@ def decListIdCounter(mrSubtype, listIdCounter, reduced=True):
                          'heteronucl_t1_data': 0,
                          'heteronucl_t2_data': 0,
                          'heteronucl_t1r_data': 0,
+                         'order_param_data': 0,
                          'ccr_d_csa_restraint': 0,
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
@@ -5093,6 +5172,94 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
 
         if atom1 is not None:
             row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    elif contentSubtype == 'order_param_data':
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Order_param_val')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Order_param_fit_err')
+        if val is not None:
+            row[key_size + 3] = val
+            float_row_idx.append(key_size + 3)
+        val = getRowValue('Tau_e_val')
+        if val is not None:
+            row[key_size + 4] = val
+            float_row_idx.append(key_size + 4)
+        val = getRowValue('Tau_e_fit_err')
+        if val is not None:
+            row[key_size + 5] = val
+            float_row_idx.append(key_size + 5)
+        val = getRowValue('Tau_f_val')
+        if val is not None:
+            row[key_size + 6] = val
+            float_row_idx.append(key_size + 6)
+        val = getRowValue('Tau_f_fit_err')
+        if val is not None:
+            row[key_size + 7] = val
+            float_row_idx.append(key_size + 7)
+        val = getRowValue('Tau_s_val')
+        if val is not None:
+            row[key_size + 8] = val
+            float_row_idx.append(key_size + 8)
+        val = getRowValue('Tau_s_fit_err')
+        if val is not None:
+            row[key_size + 9] = val
+            float_row_idx.append(key_size + 9)
+        val = getRowValue('Rex_val')
+        if val is not None:
+            row[key_size + 10] = val
+            float_row_idx.append(key_size + 10)
+        val = getRowValue('Rex_fit_err')
+        if val is not None:
+            row[key_size + 11] = val
+            float_row_idx.append(key_size + 11)
+        val = getRowValue('Model_free_sum_squared_errs')
+        if val is not None:
+            row[key_size + 12] = val
+            float_row_idx.append(key_size + 12)
+        val = getRowValue('Model_fit')
+        if val is not None:
+            row[key_size + 13] = val
+        val = getRowValue('Sf2_val')
+        if val is not None:
+            row[key_size + 14] = val
+            float_row_idx.append(key_size + 14)
+        val = getRowValue('Sf2_fit_err')
+        if val is not None:
+            row[key_size + 15] = val
+            float_row_idx.append(key_size + 15)
+        val = getRowValue('Ss2_val')
+        if val is not None:
+            row[key_size + 16] = val
+            float_row_idx.append(key_size + 16)
+        val = getRowValue('Ss2_fit_err')
+        if val is not None:
+            row[key_size + 17] = val
+            float_row_idx.append(key_size + 17)
+        val = getRowValue('SH2_val')
+        if val is not None:
+            row[key_size + 18] = val
+            float_row_idx.append(key_size + 18)
+        val = getRowValue('SH2_fit_err')
+        if val is not None:
+            row[key_size + 19] = val
+            float_row_idx.append(key_size + 19)
+        val = getRowValue('SN2_val')
+        if val is not None:
+            row[key_size + 20] = val
+            float_row_idx.append(key_size + 20)
+        val = getRowValue('SN2_fit_err')
+        if val is not None:
+            row[key_size + 21] = val
+            float_row_idx.append(key_size + 21)
+
+        if atom1 is not None:
+            row[key_size + 22], row[key_size + 23], row[key_size + 24], row[key_size + 25] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     elif contentSubtype.startswith('ccr'):

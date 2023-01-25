@@ -11,6 +11,7 @@ import sys
 import itertools
 import numpy
 import copy
+import collections
 
 from antlr4 import ParseTreeListener
 
@@ -1494,6 +1495,30 @@ class DynamoMRParserListener(ParseTreeListener):
                     pass
 
             lenAtomId = len(_atomId)
+            if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
+                multiChain = insCode = False
+                if len(chainAssign) > 0:
+                    chainIds = [ca[0] for ca in chainAssign]
+                    multiChain = len(collections.Counter(chainIds).most_common()) > 1
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                if ps is not None:
+                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == cifSeqId]
+                    if compId in compIds:
+                        insCode = True
+                        cifCompId = compId
+                if not multiChain and not insCode:
+                    if self.__preferAuthSeq:
+                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=False)
+                        if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                            if lenAtomId > 0 and _atomId[0] in _coordAtomSite['atom_id']:
+                                # self.__preferAuthSeq = False
+                                # self.__authSeqId = 'label_seq_id'
+                                self.__setLocalSeqScheme()
+                                continue
+                    self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+                        f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
+                    continue
+
             if lenAtomId == 0:
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, index, group, offset=1)
@@ -1505,26 +1530,6 @@ class DynamoMRParserListener(ParseTreeListener):
                 self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint(n=index,g=group)}"\
                     f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
                 continue
-            if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
-                insCode = False
-                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
-                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == cifSeqId]
-                    if compId in compIds:
-                        insCode = True
-                        cifCompId = compId
-                if not insCode:
-                    if self.__preferAuthSeq:
-                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=False)
-                        if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
-                            if _atomId[0] in _coordAtomSite['atom_id']:
-                                self.__preferAuthSeq = False
-                                # self.__authSeqId = 'label_seq_id'
-                                self.__setLocalSeqScheme()
-                                continue
-                    self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-                        f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
-                    continue
 
             for cifAtomId in _atomId:
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,

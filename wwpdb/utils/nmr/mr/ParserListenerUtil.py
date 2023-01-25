@@ -5641,6 +5641,23 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=T
                     pass
 
         lenAtomId = len(_atomId)
+        if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
+            multiChain = insCode = False
+            if len(chainAssign) > 0:
+                chainIds = [ca[0] for ca in chainAssign]
+                multiChain = len(collections.Counter(chainIds).most_common()) > 1
+            ps = next((ps for ps in caC['polymer_sequence'] if ps['auth_chain_id'] == chainId), None)
+            if ps is not None:
+                compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == cifSeqId]
+                if compId in compIds:
+                    insCode = True
+                    cifCompId = compId
+            if not multiChain and not insCode:
+                if enableWarning:
+                    warningMessage = f"[Sequence mismatch] "\
+                        f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates."
+                continue
+
         if lenAtomId == 0:
             if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                 return selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, offset=1)
@@ -5653,18 +5670,6 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=T
                 warningMessage = f"[Invalid atom selection] "\
                     f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint."
             continue
-        if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
-            insCode = False
-            ps = next((ps for ps in caC['polymer_sequence'] if ps['auth_chain_id'] == chainId), None)
-            if ps is not None:
-                compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == cifSeqId]
-                if compId in compIds:
-                    insCode = True
-                    cifCompId = compId
-            if not insCode:
-                warningMessage += f"[Sequence mismatch] "\
-                    f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates."
-                continue
 
         for cifAtomId in _atomId:
             atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,

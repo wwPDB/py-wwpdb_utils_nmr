@@ -47264,38 +47264,48 @@ class NmrDpUtility:
 
         # Update _Data_set loop
 
-        content_subtype = 'entry_info'
+        try:
 
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = '_Data_set'
+            content_subtype = 'entry_info'
 
-        if sf_category in self.__sf_category_list:
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = '_Data_set'
 
-            sf_data = master_entry.get_saveframes_by_category(sf_category)[0]
+            if sf_category in self.__sf_category_list:
 
-            loop = next((loop for loop in sf_data.loops if loop.category == lp_category), None)
+                sf_data = master_entry.get_saveframes_by_category(sf_category)[0]
 
-            if loop is not None:
-                del sf_data[loop]
+                loop = next((loop for loop in sf_data.loops if loop.category == lp_category), None)
 
-            lp = pynmrstar.Loop.from_scratch(lp_category)
+                if loop is not None:
+                    del sf_data[loop]
 
-            items = ['Type', 'Count', 'Entry_ID']
+                lp = pynmrstar.Loop.from_scratch(lp_category)
 
-            tags = [lp_category + '.' + item for item in items]
+                items = ['Type', 'Count', 'Entry_ID']
 
-            for tag in tags:
-                lp.add_tag(tag)
+                tags = [lp_category + '.' + item for item in items]
 
-            for content_subtype in self.nmr_rep_content_subtypes:
-                sf_category = self.sf_categories[file_type][content_subtype]
-                count = sum(1 for sf in master_entry.frame_list if sf.category == sf_category)
+                for tag in tags:
+                    lp.add_tag(tag)
 
-                if count > 0:
-                    row = [sf_category, count, self.__entry_id]
-                    lp.add_data(row)
+                for content_subtype in self.nmr_rep_content_subtypes:
+                    sf_category = self.sf_categories[file_type][content_subtype]
+                    count = sum(1 for sf in master_entry.frame_list if sf.category == sf_category)
 
-            sf_data.add_loop(lp)
+                    if count > 0:
+                        row = [sf_category, count, self.__entry_id]
+                        lp.add_data(row)
+
+                sf_data.add_loop(lp)
+
+        except IndexError as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {str(e)}\n")
 
         master_entry = self.__c2S.normalize_str(master_entry)
 
@@ -48504,38 +48514,48 @@ class NmrDpUtility:
 
         # Update _Data_set loop
 
-        content_subtype = 'entry_info'
+        try:
 
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = '_Data_set'
+            content_subtype = 'entry_info'
 
-        if sf_category in self.__sf_category_list:
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = '_Data_set'
 
-            sf_data = master_entry.get_saveframes_by_category(sf_category)[0]
+            if sf_category in self.__sf_category_list:
 
-            loop = next((loop for loop in sf_data.loops if loop.category == lp_category), None)
+                sf_data = master_entry.get_saveframes_by_category(sf_category)[0]
 
-            if loop is not None:
-                del sf_data[loop]
+                loop = next((loop for loop in sf_data.loops if loop.category == lp_category), None)
 
-            lp = pynmrstar.Loop.from_scratch(lp_category)
+                if loop is not None:
+                    del sf_data[loop]
 
-            items = ['Type', 'Count', 'Entry_ID']
+                lp = pynmrstar.Loop.from_scratch(lp_category)
 
-            tags = [lp_category + '.' + item for item in items]
+                items = ['Type', 'Count', 'Entry_ID']
 
-            for tag in tags:
-                lp.add_tag(tag)
+                tags = [lp_category + '.' + item for item in items]
 
-            for content_subtype in self.nmr_rep_content_subtypes:
-                sf_category = self.sf_categories[file_type][content_subtype]
-                count = sum(1 for sf in master_entry.frame_list if sf.category == sf_category)
+                for tag in tags:
+                    lp.add_tag(tag)
 
-                if count > 0:
-                    row = [sf_category, count, self.__entry_id]
-                    lp.add_data(row)
+                for content_subtype in self.nmr_rep_content_subtypes:
+                    sf_category = self.sf_categories[file_type][content_subtype]
+                    count = sum(1 for sf in master_entry.frame_list if sf.category == sf_category)
 
-            sf_data.add_loop(lp)
+                    if count > 0:
+                        row = [sf_category, count, self.__entry_id]
+                        lp.add_data(row)
+
+                sf_data.add_loop(lp)
+
+        except IndexError as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateConstraintStats() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__updateConstraintStats() ++ Error  - {str(e)}\n")
 
         master_entry = self.__c2S.normalize_str(master_entry)
 

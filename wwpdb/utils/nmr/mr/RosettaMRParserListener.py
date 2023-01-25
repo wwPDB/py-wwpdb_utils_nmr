@@ -1182,6 +1182,10 @@ class RosettaMRParserListener(ParseTreeListener):
                and atomId in coordAtomSite['atom_id']:
                 _atomId = [atomId]
 
+            if authAtomId == 'CEN' and len(_atomId) == 0:
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
+                _atomId = self.__csStat.getCentroidAtoms(cifCompId, False, peptide, nucleotide, carbohydrate)
+
             if coordAtomSite is None and not isPolySeq and self.__hasNonPolySeq:
                 try:
                     for np in self.__nonPolySeq:

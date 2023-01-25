@@ -770,6 +770,37 @@ class BMRBChemShiftStat:
         return [item['atom_id'] for item in cs_stat
                 if item['atom_id'] not in bb_atoms and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
+    def getCentroidAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
+        """ Return ROSETTA 'CEN'troid atoms of a given comp_id.
+        """
+
+        if comp_id in emptyValue:
+            return []
+
+        if comp_id not in self.__std_comp_ids:
+            self.loadOtherStatFromCsvFiles(comp_id)
+
+        if comp_id not in self.__all_comp_ids:
+            self.__appendExtraFromCcd(comp_id)
+
+        if polypeptide_like is False and polynucleotide_like is False and carbohydrates_like is False:
+            polypeptide_like, polynucleotide_like, carbohydrates_like = self.getTypeOfCompId(comp_id)
+
+        bb_atoms = self.getBackBoneAtoms(comp_id, excl_minor_atom, polypeptide_like, polynucleotide_like, carbohydrates_like)
+
+        cs_stat = self.__get(comp_id)
+
+        if comp_id in self.__std_comp_ids or polypeptide_like:
+            return [item['atom_id'] for item in cs_stat
+                    if item['atom_id'] not in bb_atoms
+                    and item['atom_id'][0] not in protonBeginCode
+                    and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+
+        return [item['atom_id'] for item in cs_stat
+                if item['atom_id'] not in bb_atoms
+                and item['atom_id'][0] not in protonBeginCode
+                and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
+
     def getPseudoAtoms(self, comp_id, excl_minor_atom=False, primary=False):
         """ Return all pseudo atoms of a give comp_id.
         """

@@ -209,7 +209,7 @@ if __name__ == "__main__":
 
     reader = DynamoMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2ju5/2ju5-trimmed-div_dst.mr',
+    reader.parse('../../tests-nmr/mock-data-remediation/2ju5/2ju5-corrected-div_dst.mr',
                  '../../tests-nmr/mock-data-remediation/2ju5/2ju5.cif')
 
     reader = DynamoMRReader(True)

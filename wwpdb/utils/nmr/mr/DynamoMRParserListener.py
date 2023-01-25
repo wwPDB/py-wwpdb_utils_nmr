@@ -1159,7 +1159,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 _compId = next(k for k, v in monDict3.items() if v == oneLetterCode)
 
                 if _compId != translateToStdResName(compId, self.__ccU) and _compId != 'X':
-                    self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
+                    self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
                         f"Sequence alignment error between the sequence ({seqId}:{_compId}) "\
                         f"and data ({seqId}:{compId}). "\
                         "Please verify the consistency between the internally defined sequence and restraints and re-upload the restraint file(s).\n"

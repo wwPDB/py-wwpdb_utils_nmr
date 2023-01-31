@@ -481,7 +481,7 @@ class CifReader:
                         if any(s for s in labelSeqDict[c] if s not in self.emptyValue):
                             if c in labelSeqDict and all(isinstance(s, int) for s in labelSeqDict[c]):
                                 ent['auth_seq_id'] = seqDict[c]
-                                ent['label_seq_id'] = [s for s in labelSeqDict[c]]
+                                ent['label_seq_id'] = labelSeqDict[c]
                                 ent['seq_id'] = ent['label_seq_id']
 
                     if auth_seq_id_col != -1:

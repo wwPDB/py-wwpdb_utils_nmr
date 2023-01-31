@@ -23974,8 +23974,6 @@ class NmrDpUtility:
 
             data = get_lp_tag(loop, tags)
 
-            len_tags = len(tags)
-
             for row in data:
                 if row is not None:
                     if len(row) > 0:

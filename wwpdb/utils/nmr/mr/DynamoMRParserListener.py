@@ -3818,14 +3818,18 @@ class DynamoMRParserListener(ParseTreeListener):
 
     def __getCurrentRestraint(self, n=None, g=None):
         if self.__cur_subtype == 'dist':
+            if n is None or g is None:
+                return f"[Check the {self.distRestraints}th row of distance restraints] "
             return f"[Check the {self.distRestraints}th row of distance restraints (index={n}, group={g})] "
         if self.__cur_subtype == 'dihed':
-            if n is not None:
-                return f"[Check the {self.dihedRestraints}th row of torsion angle restraints (index={n})] "
-            return f"[Check the {self.dihedRestraints}th row of torsion angle restraints] "
+            if n is None:
+                return f"[Check the {self.dihedRestraints}th row of torsion angle restraints] "
+            return f"[Check the {self.dihedRestraints}th row of torsion angle restraints (index={n})] "
         if self.__cur_subtype == 'rdc':
             return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
         if self.__cur_subtype == 'jcoup':
+            if n is None:
+                return f"[Check the {self.jcoupRestraints}th row of scalar coupling constant restraints] "
             return f"[Check the {self.jcoupRestraints}th row of scalar coupling constant restraints (index={n})] "
         return ''
 

@@ -1426,12 +1426,16 @@ class GromacsMRParserListener(ParseTreeListener):
 
     def __getCurrentRestraint(self, dataset=None, n=None):
         if self.__cur_subtype == 'dist':
+            if n is None:
+                return f"[Check the {self.distRestraints}th row of distance restraints)] "
             return f"[Check the {self.distRestraints}th row of distance restraints (index={n})] "
         if self.__cur_subtype == 'ang':
             return f"[Check the {self.angRestraints}th row of angle restraints] "
         if self.__cur_subtype == 'dihed':
             return f"[Check the {self.dihedRestraints}th row of dihedral angle restraints] "
         if self.__cur_subtype == 'rdc':
+            if dataset is None:
+                return f"[Check the {n}th row of residual dipolar coupling restraints] "
             return f"[Check the {n}th row of residual dipolar coupling restraints (exp={dataset})] "
         if self.__cur_subtype == 'geo':
             return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "

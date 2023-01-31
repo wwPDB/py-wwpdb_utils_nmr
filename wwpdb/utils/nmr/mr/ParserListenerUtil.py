@@ -2466,8 +2466,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     lastSeqId = ps['auth_seq_id'][-1]
 
             for ps in polySeq:
-                if len(collections.Counter(ps['pdb_ins_code']).most_common()) == 1:
-                    del ps['pdb_ins_code']
+                if 'ins_code' in ps and len(collections.Counter(ps['ins_code']).most_common()) == 1:
+                    del ps['ins_code']
 
         except Exception as e:
             if verbose:
@@ -2517,8 +2517,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     if conflict:
                         np['alt_auth_seq_id'] = altAuthSeqIds
 
-                    if len(collections.Counter(np['pdb_ins_code']).most_common()) == 1:
-                        del np['pdb_ins_code']
+                    if 'ins_code' in np and len(collections.Counter(np['ins_code']).most_common()) == 1:
+                        del np['ins_code']
 
             except KeyError:
                 nonPoly = None
@@ -2567,8 +2567,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     if conflict:
                         bp['alt_auth_seq_id'] = altAuthSeqIds
 
-                    if len(collections.Counter(bp['pdb_ins_code']).most_common()) == 1:
-                        del bp['pdb_ins_code']
+                    if 'ins_code' in bp and len(collections.Counter(bp['ins_code']).most_common()) == 1:
+                        del bp['ins_code']
 
             except KeyError:
                 branched = None
@@ -3155,7 +3155,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         if verbose:
             log.write(f"+ParserListenerUtil.coordAssemblyChecker() ++ Error  - {str(e)}\n")
 
-    if len(authToInsCode) == 0:
+    if authToInsCode is not None and len(authToInsCode) == 0:
         authToInsCode = None
 
     if not changed:

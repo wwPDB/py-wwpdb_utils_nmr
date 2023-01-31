@@ -1224,6 +1224,7 @@ class NmrDpUtility:
                           self.__resetBoolValueInAuxLoop,
                           self.__appendParentSfTag,
                           self.__addUnnamedEntryId,
+                          self.__removeUnusedPdbInsCode,
                           self.__depositNmrData,
                           # re-setup for next
                           self.__initializeDpReportForNext,
@@ -22377,6 +22378,32 @@ class NmrDpUtility:
 
             return auth_asym_id, auth_seq_id
 
+        has_ins_code = False
+
+        if ps is not None:
+
+            for s in ps:
+
+                if has_ins_code:
+                    break
+
+                auth_asym_id, _ = get_auth_seq_scheme(s['chain_id'], s['seq_id'][0])
+
+                if self.__caC['polymer_sequence'] is not None\
+                   and any(cif_ps for cif_ps in self.__caC['polymer_sequence']
+                           if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
+                    has_ins_code = True
+
+                if self.__caC['branched'] is not None\
+                   and any(cif_ps for cif_ps in self.__caC['branched']
+                           if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
+                    has_ins_code = True
+
+                if self.__caC['non_polymer'] is not None\
+                   and any(cif_ps for cif_ps in self.__caC['non_polymer']
+                           if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
+                    has_ins_code = True
+
         if __pynmrstar_v3_2__:
             loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
         else:
@@ -22472,6 +22499,9 @@ class NmrDpUtility:
                      'Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name', 'Original_PDB_atom_name',
                      'Details', 'Entry_ID', 'Assigned_chem_shift_list_ID']
 
+            if has_ins_code:
+                items.append('PDB_ins_code')
+
             mandatory_items = [item['name'] for item in self.key_items[file_type][content_subtype]]
             for item in self.data_items[file_type][content_subtype]:
                 if item['mandatory']:
@@ -22485,6 +22515,7 @@ class NmrDpUtility:
 
             auth_to_star_seq = self.__caC['auth_to_star_seq']
             auth_to_orig_seq = self.__caC['auth_to_orig_seq']
+            auth_to_ins_code = self.__caC['auth_to_ins_code']
             coord_atom_site = self.__caC['coord_atom_site']
 
             has_auth_seq = valid_auth_seq = False
@@ -22744,6 +22775,9 @@ class NmrDpUtility:
                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                         _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
+                        if has_ins_code and seq_key in auth_to_ins_code:
+                            _row[27] = auth_to_ins_code[seq_key]
+
                         if seq_key in auth_to_orig_seq:
                             if not has_orig_seq:
                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
@@ -22789,6 +22823,9 @@ class NmrDpUtility:
                             if seq_key is not None:
                                 _row[16], _row[17], _row[18], _row[19] =\
                                     seq_key[0], seq_key[1], seq_key[2], None
+
+                                if has_ins_code and seq_key in auth_to_ins_code:
+                                    _row[27] = auth_to_ins_code[seq_key]
 
                         if _seq_key in coord_atom_site:
                             _coord_atom_site = coord_atom_site[_seq_key]
@@ -22928,6 +22965,9 @@ class NmrDpUtility:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                 _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
+                                if has_ins_code and seq_key in auth_to_ins_code:
+                                    _row[27] = auth_to_ins_code[seq_key]
+
                                 if seq_key in auth_to_orig_seq:
                                     if not has_orig_seq:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
@@ -22973,6 +23013,9 @@ class NmrDpUtility:
                                     if seq_key is not None:
                                         _row[16], _row[17], _row[18], _row[19] =\
                                             seq_key[0], seq_key[1], seq_key[2], None
+
+                                        if has_ins_code and seq_key in auth_to_ins_code:
+                                            _row[27] = auth_to_ins_code[seq_key]
 
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
@@ -23139,6 +23182,9 @@ class NmrDpUtility:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                             _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
+                            if has_ins_code and seq_key in auth_to_ins_code:
+                                _row[27] = auth_to_ins_code[seq_key]
+
                             if seq_key in auth_to_orig_seq:
                                 if not has_orig_seq:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
@@ -23184,6 +23230,9 @@ class NmrDpUtility:
                                 if seq_key is not None:
                                     _row[16], _row[17], _row[18], _row[19] =\
                                         seq_key[0], seq_key[1], seq_key[2], None
+
+                                    if has_ins_code and seq_key in auth_to_ins_code:
+                                        _row[27] = auth_to_ins_code[seq_key]
 
                             if _seq_key in coord_atom_site:
                                 _coord_atom_site = coord_atom_site[_seq_key]
@@ -23326,6 +23375,9 @@ class NmrDpUtility:
                                 if seq_key is not None:
                                     _row[16], _row[17], _row[18], _row[19] =\
                                         seq_key[0], seq_key[1], seq_key[2], None
+
+                                    if has_ins_code and seq_key in auth_to_ins_code:
+                                        _row[27] = auth_to_ins_code[seq_key]
 
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
@@ -23478,6 +23530,9 @@ class NmrDpUtility:
                                     if seq_key is not None:
                                         _row[16], _row[17], _row[18], _row[19] =\
                                             seq_key[0], seq_key[1], seq_key[2], None
+
+                                        if has_ins_code and seq_key in auth_to_ins_code:
+                                            _row[27] = auth_to_ins_code[seq_key]
 
                                     if _seq_key in coord_atom_site:
                                         _coord_atom_site = coord_atom_site[_seq_key]
@@ -23837,6 +23892,110 @@ class NmrDpUtility:
             sf_data.add_loop(aux_lp)
 
         return True
+
+    def __removeUnusedPdbInsCode(self):
+        """ Remove unused PDB_ind_code tags from loops.
+        """
+
+        __errors = self.report.getTotalErrors()
+
+        for fileListId in range(self.__file_path_list_len):
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+
+            if file_type != 'nmr-star':
+                continue
+
+            if input_source_dic['content_subtype'] is None:
+                continue
+
+            modified = False
+
+            for content_subtype in input_source_dic['content_subtype']:
+
+                if content_subtype not in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint'):
+                    continue
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                if self.__star_data_type[fileListId] == 'Loop':
+                    sf_data = self.__star_data[fileListId]
+
+                    modified |= self.__removeUnusedPdbInsCode__(fileListId, content_subtype, sf_data, lp_category)
+
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+                    sf_data = self.__star_data[fileListId]
+
+                    modified |= self.__removeUnusedPdbInsCode__(fileListId, content_subtype, sf_data, lp_category)
+
+                else:
+
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                        if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                            continue
+
+                        modified |= self.__removeUnusedPdbInsCode__(fileListId, content_subtype, sf_data, lp_category)
+
+            if modified:
+                self.__depositNmrData()
+
+        return self.report.getTotalErrors() == __errors
+
+    def __removeUnusedPdbInsCode__(self, file_list_id, content_subtype, sf_data, lp_category):
+        """ Remove unused PDB_ind_code tags from loops.
+        """
+
+        if __pynmrstar_v3_2__:
+            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+        else:
+            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+
+        if loop is None:
+            return False
+
+        if content_subtype == 'chem_shift':
+            tags = ['PDB_ins_code']
+        elif content_subtype in ('dist_restraint', 'rdc_restraint'):
+            tags = ['PDB_ins_code_1', 'PDB_ins_code_2']
+        elif content_subtype == 'dihed_restraint':
+            tags = ['PDB_ins_code_1', 'PDB_ins_code_2', 'PDB_ins_code_3', 'PDB_ins_code_4']
+        else:
+            return False
+
+        if set(tags) & set(loop.tags) != set(tags):
+            return False
+
+        try:
+
+            data = get_lp_tag(loop, tags)
+
+            len_tags = len(tags)
+
+            for row in data:
+                if row is not None:
+                    if len(row) > 0:
+                        for col in row:
+                            if col is not None and col not in emptyValue:
+                                return False
+
+            loop.remove_tag(tags)
+
+            return True
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeUnusedPdbInsCode() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__removeUnusedPdbInsCode() ++ Error  - {str(e)}\n")
+
+        return False
 
     def __syncMrLoop(self):
         """ Synchonize sequence scheme of restraint loop based on coordinates.
@@ -26447,6 +26606,8 @@ class NmrDpUtility:
 
                 polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
+                ps = None
+
                 seq_align = chain_assign = None
                 br_seq_align = br_chain_assign = None
                 np_seq_align = np_chain_assign = None
@@ -26469,7 +26630,70 @@ class NmrDpUtility:
                             np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], ps, conservative=False)
                             np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], ps, np_seq_align)
 
-                lp = getLoop(content_subtype, reduced=False)
+                def get_auth_seq_scheme(chain_id, seq_id):
+                    auth_asym_id = auth_seq_id = None
+
+                    if seq_id is not None:
+
+                        if chain_assign is not None:
+                            auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
+                            if auth_asym_id is not None:
+                                sa = next((sa for sa in seq_align
+                                           if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                                if sa is not None:
+                                    _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                                    auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                        if test_seq_id == seq_id), None)
+
+                        if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                            auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
+                            if auth_asym_id is not None:
+                                sa = next((sa for sa in br_seq_align
+                                           if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                                if sa is not None:
+                                    _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                                    auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                        if test_seq_id == seq_id), None)
+
+                        if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                            auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
+                            if auth_asym_id is not None:
+                                sa = next((sa for sa in np_seq_align
+                                           if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                                if sa is not None:
+                                    _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                                    auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                        if test_seq_id == seq_id), None)
+
+                    return auth_asym_id, auth_seq_id
+
+                has_ins_code = False
+
+                if ps is not None:
+
+                    for s in ps:
+
+                        if has_ins_code:
+                            break
+
+                        auth_asym_id, _ = get_auth_seq_scheme(s['chain_id'], s['seq_id'][0])
+
+                        if self.__caC['polymer_sequence'] is not None\
+                           and any(cif_ps for cif_ps in self.__caC['polymer_sequence']
+                                   if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
+                            has_ins_code = True
+
+                        if self.__caC['branched'] is not None\
+                           and any(cif_ps for cif_ps in self.__caC['branched']
+                                   if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
+                            has_ins_code = True
+
+                        if self.__caC['non_polymer'] is not None\
+                           and any(cif_ps for cif_ps in self.__caC['non_polymer']
+                                   if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
+                            has_ins_code = True
+
+                lp = getLoop(content_subtype, reduced=False, hasInsCode=has_ins_code)
 
                 sf.add_loop(lp)
                 sf_item['loop'] = lp
@@ -26517,6 +26741,7 @@ class NmrDpUtility:
                 auth_pdb_tags.extend(auth_atom_id_names)
 
                 auth_to_star_seq = self.__caC['auth_to_star_seq']
+                auth_to_ins_code = self.__caC['auth_to_ins_code'] if has_ins_code else None
 
                 has_key_seq = False
 
@@ -26717,7 +26942,7 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
                                         lp.add_data(_row)
                                 elif atom_sels[0] is not None:
                                     atom2 = None
@@ -26725,7 +26950,7 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
                                         lp.add_data(_row)
                                 elif atom_sels[1] is not None:
                                     atom1 = None
@@ -26733,14 +26958,14 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
                                         lp.add_data(_row)
                                 else:
                                     atom1 = atom2 = None
                                     sf_item['index_id'] += 1
                                     _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
-                                                          loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                                          loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
                                     lp.add_data(_row)
 
                             else:
@@ -26748,7 +26973,7 @@ class NmrDpUtility:
                                 sf_item['index_id'] += 1
                                 _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['idx'],
                                                       None, None, list_id, self.__entry_id,
-                                                      loop.tags, loop.data[idx], auth_to_star_seq, atom_sels)
+                                                      loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, atom_sels)
                                 lp.add_data(_row)
 
                     else:
@@ -26975,7 +27200,7 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
                                         lp.add_data(_row)
                                 elif atom_sels[0] is not None:
                                     atom2 = None
@@ -26983,7 +27208,7 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
                                         lp.add_data(_row)
                                 elif atom_sels[1] is not None:
                                     atom1 = None
@@ -26991,14 +27216,14 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
                                         lp.add_data(_row)
                                 else:
                                     atom1 = atom2 = None
                                     sf_item['index_id'] += 1
                                     _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
-                                                          loop.tags, loop.data[idx], auth_to_star_seq, [atom1, atom2])
+                                                          loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
                                     lp.add_data(_row)
 
                             else:
@@ -27006,7 +27231,7 @@ class NmrDpUtility:
                                 sf_item['index_id'] += 1
                                 _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
                                                       None, None, list_id, self.__entry_id,
-                                                      loop.tags, loop.data[idx], auth_to_star_seq, atom_sels)
+                                                      loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, atom_sels)
                                 lp.add_data(_row)
 
                 else:  # nothing to do because of insufficient sequence tags
@@ -29808,7 +30033,7 @@ class NmrDpUtility:
                             sf_item['index_id'] += 1
 
                             row = getRow('saxs', sf_item['id'], sf_item['index_id'], None, None, _line[0].replace('E', 'e'),
-                                         sf_item['list_id'], self.__entry_id, dstFunc, None, None)
+                                         sf_item['list_id'], self.__entry_id, dstFunc, None, None, None)
                             sf_item['loop'].add_data(row)
 
                             _q_value = q_value
@@ -29816,7 +30041,7 @@ class NmrDpUtility:
                         else:
 
                             _row = getRow('saxs', 1, 1, None, None, _line[0].replace('E', 'e'),
-                                          sf_item['list_id'] + 1, self.__entry_id, dstFunc, None, None)
+                                          sf_item['list_id'] + 1, self.__entry_id, dstFunc, None, None, None)
 
                             _q_value = 0.0
 
@@ -40478,6 +40703,8 @@ class NmrDpUtility:
 
         if not identical:
             self.__syncMrLoop()
+
+        self.__removeUnusedPdbInsCode()
 
         if file_type == 'nef':
             return True

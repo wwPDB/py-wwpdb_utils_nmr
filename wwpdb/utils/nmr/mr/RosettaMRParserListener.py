@@ -213,6 +213,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __authToStarSeq = None
+    __authToInsCode = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __hasPolySeq = False
@@ -296,6 +297,7 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
+            self.__authToInsCode = ret['auth_to_ins_code']
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
@@ -692,7 +694,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberId, memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.__authToInsCode,
+                                 atom1, atom2)
                     sf['loop'].add_data(row)
 
                     if sf['constraint_subsubtype'] == 'ambi':
@@ -1743,7 +1746,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              '.', None, angleName,
-                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
+                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.__authToInsCode,
+                             atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
     # Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
@@ -1847,7 +1851,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              1, None, angleName,
-                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2, atom3, atom4)
+                             sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.__authToInsCode,
+                             atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
 
         compId = self.atomSelectionSet[4][0]['comp_id']
@@ -3486,7 +3491,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
-                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, atom1, atom2)
+                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.__authToInsCode,
+                                 atom1, atom2)
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -3657,7 +3663,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberId, memberLogicCode,
-                                 sf['list_id'], self.__entryId, getDstFuncForSsBond(atom1, atom2), self.__authToStarSeq, atom1, atom2)
+                                 sf['list_id'], self.__entryId, getDstFuncForSsBond(atom1, atom2), self.__authToStarSeq, self.__authToInsCode,
+                                 atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:
@@ -3777,7 +3784,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         not_valid = True
 
-        lp = getLoop(self.__cur_subtype)
+        lp = getLoop(self.__cur_subtype, hasInsCode=(self.__authToInsCode is not None))
         if not isinstance(lp, dict):
             sf.add_loop(lp)
             not_valid = False

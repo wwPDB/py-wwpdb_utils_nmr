@@ -1636,8 +1636,222 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Other_data_type_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                'default': '1', 'default-from': 'parent'},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
-                                              ],
+                                              ]
                           }
+
+NMR_STAR_LP_DATA_ITEMS_INSCODE = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                                     {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                                                      'enforce-non-zero': True},
+                                                     {'name': 'Member_ID', 'type': 'positive-int', 'mandatory': False,
+                                                      'enforce-non-zero': True},
+                                                     {'name': 'Member_logic_code', 'type': 'enum', 'mandatory': False,
+                                                      'enum': ('OR', 'AND'),
+                                                      'enforce-enum': True},
+                                                     {'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                      'range': DIST_RESTRAINT_RANGE,
+                                                      'group': {'member-with': ['Lower_linear_limit',
+                                                                                'Upper_linear_limit',
+                                                                                'Distance_lower_bound_val',
+                                                                                'Distance_upper_bound_val'],
+                                                                'coexist-with': None,
+                                                                'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
+                                                                'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
+                                                     {'name': 'Target_val_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                      'range': DIST_UNCERTAINTY_RANGE},
+                                                     {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                      'range': DIST_RESTRAINT_RANGE,
+                                                      'group': {'member-with': ['Target_val',
+                                                                                'Upper_linear_limit',
+                                                                                'Distance_lower_bound_val',
+                                                                                'Distance_upper_bound_val'],
+                                                                'coexist-with': None,  # ['Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                'smaller-than': None,
+                                                                'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
+                                                     {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False,
+                                                      'group-mandatory': True, 'void-zero': True,
+                                                      'range': DIST_RESTRAINT_RANGE,
+                                                      'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
+                                                                'coexist-with': None,  # ['Distance_upper_bound_val'],
+                                                                'smaller-than': ['Lower_linear_limit'],
+                                                                'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
+                                                     {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False,
+                                                      'group-mandatory': True, 'void-zero': True,
+                                                      'range': DIST_RESTRAINT_RANGE,
+                                                      'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
+                                                                'coexist-with': None,  # ['Distance_lower_bound_val'],
+                                                                'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
+                                                                'larger-than': ['Upper_linear_limit']}},
+                                                     {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                      'range': DIST_RESTRAINT_RANGE,
+                                                      'group': {'member-with': ['Target_val',
+                                                                                'Lower_linear_limit',
+                                                                                'Distance_lower_bound_val',
+                                                                                'Distance_upper_bound_val'],
+                                                                'coexist-with': None,  # ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                'larger-than': None}},
+                                                     {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
+                                                      'range': WEIGHT_RANGE},
+                                                     # 'enforce-non-zero': True},
+                                                     {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
+                                                              'range': DIST_RESTRAINT_RANGE},
+                                                     {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                     {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Auth_atom_name_1', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                     {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Auth_atom_name_2', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'PDB_ins_code_1', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'PDB_ins_code_2', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                      'default': '1', 'default-from': 'parent'},
+                                                     {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                     ],
+                                  'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                                      {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                                                       'enforce-non-zero': True},
+                                                      {'name': 'Torsion_angle_name', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                       'range': ANGLE_RESTRAINT_RANGE,
+                                                       'group': {'member-with': ['Angle_lower_linear_limit',
+                                                                                 'Angle_upper_linear_limit',
+                                                                                 'Angle_lower_bound_val',
+                                                                                 'Angle_upper_bound_val'],
+                                                                 'coexist-with': None,
+                                                                 'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
+                                                                 'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
+                                                                 'circular-shift': 360.0}},
+                                                      {'name': 'Angle_target_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                       'range': ANGLE_UNCERTAINTY_RANGE},
+                                                      {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                       'range': ANGLE_RESTRAINT_RANGE,
+                                                       'group': {'member-with': ['Angle_target_val', 'Angle_upper_linear_limit',
+                                                                                 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                 'coexist-with': None,  # ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                 'smaller-than': None,
+                                                                 'larger-than': ['Angle_lower_bound_val', 'Angle_upper_bound', 'Angle_upper_linear_limit'],
+                                                                 'circular-shift': 360.0}},
+                                                      {'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                       'range': ANGLE_RESTRAINT_RANGE,
+                                                       'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
+                                                                                 'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
+                                                                 'coexist-with': None,  # ['Angle_upper_bound_val'],
+                                                                 'smaller-than': ['Angle_lower_linear_limit'],
+                                                                 'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
+                                                                 'circular-shift': 360.0}},
+                                                      {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                       'range': ANGLE_RESTRAINT_RANGE,
+                                                       'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
+                                                                                 'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
+                                                                 'coexist-with': None,  # ['Angle_lower_bound_val'],
+                                                                 'smaller-than': ['Angle_lower_bound_val', 'Angle_upper_linear_limit'],
+                                                                 'larger-than': ['Angle_upper_linear_limit'],
+                                                                 'circular-shift': 360.0}},
+                                                      {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                       'range': ANGLE_RESTRAINT_RANGE,
+                                                       'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
+                                                                                 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                 'coexist-with': None,  # ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                 'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                 'larger-than': None,
+                                                                 'circular-shift': 360.0}},
+                                                      {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
+                                                       'range': WEIGHT_RANGE},
+                                                      # 'enforce-non-zero': True},
+                                                      {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                      {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_atom_name_1', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                      {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_atom_name_2', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                                      {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_atom_name_3', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
+                                                      {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Auth_atom_name_4', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'PDB_ins_code_1', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'PDB_ins_code_2', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'PDB_ins_code_3', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'PDB_ins_code_4', 'type': 'str', 'mandatory': False},
+                                                      {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                       'default': '1', 'default-from': 'parent'},
+                                                      {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                      ],
+                                  'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                                    {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                                                     'enforce-non-zero': True},
+                                                    {'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                     'range': RDC_RESTRAINT_RANGE,
+                                                     'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                               'coexist-with': None,
+                                                               'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
+                                                               'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
+                                                    {'name': 'Target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                     'range': RDC_UNCERTAINTY_RANGE},
+                                                    {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                     'range': RDC_RESTRAINT_RANGE,
+                                                     'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                               'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                               'smaller-than': None,
+                                                               'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
+                                                    {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                     'range': RDC_RESTRAINT_RANGE,
+                                                     'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
+                                                               'coexist-with': None,  # ['RDC_upper_bound'],
+                                                               'smaller-than': ['RDC_lower_linear_limit'],
+                                                               'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
+                                                    {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                     'range': RDC_RESTRAINT_RANGE,
+                                                     'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
+                                                               'coexist-with': None,  # ['RDC_lower_bound'],
+                                                               'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
+                                                               'larger-than': ['RDC_upper_linear_limit']}},
+                                                    {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                     'range': RDC_RESTRAINT_RANGE,
+                                                     'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                               'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                               'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                               'larger-than': None}},
+                                                    {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
+                                                     'range': WEIGHT_RANGE},
+                                                    # 'enforce-non-zero': True},
+                                                    {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
+                                                     'range': RDC_RESTRAINT_RANGE},
+                                                    {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                     'range': RDC_UNCERTAINTY_RANGE},
+                                                    {'name': 'RDC_val_scale_factor', 'type': 'range-float', 'mandatory': False,
+                                                     'range': SCALE_RANGE,
+                                                     'enforce-non-zero': True},
+                                                    {'name': 'RDC_distant_dependent', 'type': 'bool', 'mandatory': False},
+                                                    {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                    {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                    {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                    {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                    {'name': 'Auth_atom_name_1', 'type': 'str', 'mandatory': False},
+                                                    {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                    {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                    {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                    {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                    {'name': 'Auth_atom_name_2', 'type': 'str', 'mandatory': False},
+                                                    {'name': 'PDB_ins_code_1', 'type': 'str', 'mandatory': False},
+                                                    {'name': 'PDB_ins_code_2', 'type': 'str', 'mandatory': False},
+                                                    {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                                    {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                    ]
+                                  }
 
 NMR_STAR_AUX_LP_CATEGORIES = {'dist_restraint': ['_Gen_dist_constraint_software_param']
                               }
@@ -2209,6 +2423,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
         try:
 
+            if cR.hasItem(lpCategory, 'pdb_ins_code'):
+                keyItems.append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
+
             try:
                 polySeq = cR.getPolymerSequence(lpCategory, keyItems,
                                                 withStructConf=False,
@@ -2221,6 +2438,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                 lpCategory = _lpCategories[contentSubtype]
                 keyItems = _keyItems[contentSubtype]
+
+                if cR.hasItem(lpCategory, 'pdbx_PDB_ins_code'):
+                    keyItems.append({'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
 
                 try:
                     polySeq = cR.getPolymerSequence(lpCategory, keyItems,
@@ -2245,6 +2465,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     altPolySeq.append(ps)
                     lastSeqId = ps['auth_seq_id'][-1]
 
+            for ps in polySeq:
+                if len(collections.Counter(ps['pdb_ins_code']).most_common()) == 1:
+                    del ps['pdb_ins_code']
+
         except Exception as e:
             if verbose:
                 log.write(f"+ParserListenerUtil.coordAssemblyChecker() ++ Error  - {str(e)}\n")
@@ -2257,6 +2481,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         nonPoly = None
 
         if cR.hasCategory(lpCategory):
+
+            if cR.hasItem(lpCategory, 'pdb_ins_code'):
+                keyItems.append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
 
             try:
                 nonPoly = cR.getPolymerSequence(lpCategory, keyItems,
@@ -2290,6 +2517,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     if conflict:
                         np['alt_auth_seq_id'] = altAuthSeqIds
 
+                    if len(collections.Counter(np['pdb_ins_code']).most_common()) == 1:
+                        del np['pdb_ins_code']
+
             except KeyError:
                 nonPoly = None
 
@@ -2301,6 +2531,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         branched = None
 
         if cR.hasCategory(lpCategory):
+
+            if cR.hasItem(lpCategory, 'pdb_ins_code'):
+                _keyItems['branched'].append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
 
             try:
                 branched = cR.getPolymerSequence(lpCategory, keyItems,
@@ -2334,6 +2567,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     if conflict:
                         bp['alt_auth_seq_id'] = altAuthSeqIds
 
+                    if len(collections.Counter(bp['pdb_ins_code']).most_common()) == 1:
+                        del bp['pdb_ins_code']
+
             except KeyError:
                 branched = None
 
@@ -2357,6 +2593,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     authToLabelSeq = None if prevResult is None or 'auth_to_label_seq' not in prevResult else prevResult['auth_to_label_seq']
     authToStarSeq = None if prevResult is None or 'auth_to_star_seq' not in prevResult else prevResult['auth_to_star_seq']
     authToOrigSeq = None if prevResult is None or 'auth_to_orig_seq' not in prevResult else prevResult['auth_to_orig_seq']
+    authToInsCode = None if prevResult is None or 'auth_to_ins_code' not in prevResult else prevResult['auth_to_ins_code']
     authToEntityType = None if prevResult is None or 'auth_to_entity_type' not in prevResult else prevResult['auth_to_entity_type']
     labelToAuthChain = None if prevResult is None or 'label_to_auth_chain' not in prevResult else prevResult['label_to_auth_chain']
     authToLabelChain = None if prevResult is None or 'auth_to_label_chain' not in prevResult else prevResult['auth_to_label_chain']
@@ -2552,6 +2789,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         if authToStarSeq is None or authToEntityType is None:
             authToStarSeq = {}
             authToOrigSeq = {}
+            authToInsCode = {}
             authToEntityType = {}
             entityAssembly = []
 
@@ -2629,15 +2867,27 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 nstdChirality = polyType['nstd_chirality']
 
                     if cR.hasCategory('pdbx_poly_seq_scheme'):
-                        mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
-                                                            [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                                             {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
-                                                             {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                             {'name': 'seq_id', 'type': 'int'},
-                                                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
-                                                            [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        if cR.hasItem('pdbx_poly_seq_scheme', 'pdb_ins_code'):
+                            mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
+                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                                                 {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                                 {'name': 'seq_id', 'type': 'int'},
+                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'},
+                                                                 {'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code'}],
+                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        else:
+                            mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
+                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                                                 {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                                 {'name': 'seq_id', 'type': 'int'},
+                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
+                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         authAsymIds = []
                         compIds = set()
@@ -2652,6 +2902,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                 authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
                                 authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
+                                if item['ins_code'] not in emptyValue:
+                                    authToInsCode[seqKey] = item['ins_code']
                                 authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                 if item['label_asym_id'] not in labelAsymIds:
                                     labelAsymIds.append(item['label_asym_id'])
@@ -2660,6 +2912,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                 if altKey not in authToStarSeq:
                                     authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                    if item['ins_code'] not in emptyValue:
+                                        authToInsCode[altKey] = item['ins_code']
                                     authToEntityType[altKey] = entityPolyType
 
                             entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
@@ -2693,6 +2947,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                         authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
                                         authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
+                                        if item['ins_code'] not in emptyValue:
+                                            authToInsCode[seqKey] = item['ins_code']
                                         authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                         if item['label_asym_id'] not in labelAsymIds:
                                             labelAsymIds.append(item['label_asym_id'])
@@ -2702,6 +2958,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                         if altKey not in authToStarSeq:
                                             authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                            if item['ins_code'] not in emptyValue:
+                                                authToInsCode[altKey] = item['ins_code']
                                             authToEntityType[altKey] = entityPolyType
 
                                 entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
@@ -2736,15 +2994,27 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             entityPolyType = polyTypes[0]['type']
 
                     if cR.hasCategory('pdbx_branch_scheme'):
-                        mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
-                                                            [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                                             {'name': 'auth_asym_id', 'type': 'str'},
-                                                             {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                             {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
-                                                            [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        if cR.hasItem('pdbx_branch_scheme', 'pdb_ins_code'):
+                            mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
+                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                                                 {'name': 'auth_asym_id', 'type': 'str'},
+                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                                 {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'},
+                                                                 {'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code'}],
+                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        else:
+                            mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
+                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                                                 {'name': 'auth_asym_id', 'type': 'str'},
+                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                                 {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
+                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         authAsymIds = []
                         for item in mappings:
@@ -2757,6 +3027,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                 authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
                                 authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
+                                if item['ins_code'] not in emptyValue:
+                                    authToInsCode[seqKey] = item['ins_code']
                                 authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
                                 if item['label_asym_id'] not in labelAsymIds:
                                     labelAsymIds.append(item['label_asym_id'])
@@ -2765,6 +3037,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                 if altKey not in authToStarSeq:
                                     authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                    if item['ins_code'] not in emptyValue:
+                                        authToInsCode[altKey] = item['ins_code']
                                     authToEntityType[altKey] = entityPolyType
 
                             entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
@@ -2787,6 +3061,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     if item['auth_asym_id'] == authAsymId:
                                         seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                         authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
+                                        if item['ins_code'] not in emptyValue:
+                                            authToInsCode[seqKey] = item['ins_code']
                                         authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
                                         if item['label_asym_id'] not in labelAsymIds:
                                             labelAsymIds.append(item['label_asym_id'])
@@ -2796,6 +3072,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                         if altKey not in authToStarSeq:
                                             authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                            if item['ins_code'] not in emptyValue:
+                                                authToInsCode[altKey] = item['ins_code']
                                             authToEntityType[altKey] = entityPolyType
 
                                 entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
@@ -2812,15 +3090,28 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                 elif entityType == 'non-polymer':
                     if cR.hasCategory('pdbx_nonpoly_scheme'):
-                        mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
-                                                            [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                                             {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
-                                                             {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                             {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                             {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
-                                                            [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        if cR.hasItem('pdbx_nonpoly_scheme', 'pdb_ins_code'):
+                            mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
+                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                                                 {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                                 {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'},
+                                                                 {'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code'}],
+                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+
+                        else:
+                            mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
+                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                                                 {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                                 {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
+                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
                         authAsymIds = []
                         compId = None
@@ -2828,6 +3119,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                             authToStarSeq[seqKey] = (entityAssemblyId, idx + 1, entityId, True)
                             authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
+                            if item['ins_code'] not in emptyValue:
+                                authToInsCode[seqKey] = item['ins_code']
                             authToEntityType[seqKey] = 'non-polymer'
                             if item['auth_asym_id'] not in authAsymIds:
                                 authAsymIds.append(item['auth_asym_id'])
@@ -2838,6 +3131,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                             if altKey not in authToStarSeq:
                                 authToStarSeq[altKey] = (entityAssemblyId, idx + 1, entityId, False)
+                                if item['ins_code'] not in emptyValue:
+                                    authToInsCode[altKey] = item['ins_code']
                                 authToEntityType[altKey] = 'non-polymer'
 
                         labelAsymIds = []
@@ -2860,6 +3155,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         if verbose:
             log.write(f"+ParserListenerUtil.coordAssemblyChecker() ++ Error  - {str(e)}\n")
 
+    if len(authToInsCode) == 0:
+        authToInsCode = None
+
     if not changed:
         return prevResult
 
@@ -2880,6 +3178,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'auth_to_label_chain': authToLabelChain,
             'auth_to_star_seq': authToStarSeq,
             'auth_to_orig_seq': authToOrigSeq,
+            'auth_to_ins_code': authToInsCode,
             'auth_to_entity_type': authToEntityType,
             'entity_assembly': entityAssembly}
 
@@ -3946,7 +4245,7 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
     return sf
 
 
-def getLoop(mrSubtype, reduced=True):
+def getLoop(mrSubtype, reduced=True, hasInsCode=False):
     """ Return pynmrstart loop for a given internal restraint subtype (default)/content subtype (reduced=False)..
         @return: pynmrstar loop
     """
@@ -3967,7 +4266,10 @@ def getLoop(mrSubtype, reduced=True):
     lp = pynmrstar.Loop.from_scratch()
 
     tags = [prefix + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[contentSubtype]]
-    tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[contentSubtype]])
+    if hasInsCode and contentSubtype in NMR_STAR_LP_DATA_ITEMS_INSCODE:
+        tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS_INSCODE[contentSubtype]])
+    else:
+        tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[contentSubtype]])
 
     for tag in tags:
         lp.add_tag(tag)
@@ -4040,7 +4342,35 @@ def getStarAtom(authToStarSeq, atom):
     return None
 
 
-def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryId, dstFunc, authToStarSeq,
+def getInsCode(authToInsCode, atom):
+    """ Return PDB_ins_code for a given auth atom of the cooridnates.
+        @return: PDB_ins_code
+    """
+
+    if authToInsCode is None:
+        return None
+
+    chainId = atom['chain_id']
+    seqId = atom['seq_id']
+    compId = atom['comp_id']
+    seqKey = (chainId, seqId, compId)
+
+    if seqKey in authToInsCode:
+        return authToInsCode[seqKey]
+
+    for offset in range(1, 1000):
+        seqKey = (chainId, seqId + offset, compId)
+        if seqKey in authToInsCode:
+            return authToInsCode[seqKey]
+        seqKey = (chainId, seqId - offset, compId)
+        if seqKey in authToInsCode:
+            return authToInsCode[seqKey]
+
+    return None
+
+
+def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryId, dstFunc,
+           authToStarSeq, authToInsCode,
            atom1, atom2=None, atom3=None, atom4=None, atom5=None):
     """ Return row data for a given internal restraint subtype.
         @return: data array
@@ -4054,8 +4384,10 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
     if contentSubtype == 'other_restraint':
         return None
 
+    has_ins_code = authToInsCode is not None and contentSubtype in NMR_STAR_LP_DATA_ITEMS_INSCODE
+
     key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
-    data_size = len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
+    data_size = len(NMR_STAR_LP_DATA_ITEMS_INSCODE[contentSubtype]) if has_ins_code else len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
 
     float_row_idx = []
 
@@ -4064,27 +4396,38 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
     row[0] = id
 
     star_atom1 = star_atom2 = star_atom3 = star_atom4 = star_atom4 = star_atom5 = None
+    ins_code1 = ins_code2 = ins_code3 = ins_code4 = ins_code5 = None
 
     if atom1 is not None:
         star_atom1 = getStarAtom(authToStarSeq, atom1)
         if 'atom_id' not in atom1:
             atom1['atom_id'] = None
+        if has_ins_code:
+            ins_code1 = getInsCode(authToInsCode, atom1)
     if atom2 is not None:
         star_atom2 = getStarAtom(authToStarSeq, atom2)
         if 'atom_id' not in atom2:
             atom2['atom_id'] = None
+        if has_ins_code:
+            ins_code2 = getInsCode(authToInsCode, atom2)
     if atom3 is not None:
         star_atom3 = getStarAtom(authToStarSeq, atom3)
         if 'atom_id' not in atom3:
             atom3['atom_id'] = None
+        if has_ins_code:
+            ins_code3 = getInsCode(authToInsCode, atom3)
     if atom4 is not None:
         star_atom4 = getStarAtom(authToStarSeq, atom4)
         if 'atom_id' not in atom4:
             atom4['atom_id'] = None
+        if has_ins_code:
+            ins_code4 = getInsCode(authToInsCode, atom4)
     if atom5 is not None:
         star_atom5 = getStarAtom(authToStarSeq, atom5)
         if 'atom_id' not in atom5:
             atom5['atom_id'] = None
+        if has_ins_code:
+            ins_code5 = getInsCode(authToInsCode, atom5)
 
     if star_atom1 is None and star_atom2 is not None:  # procs
         row[1], row[2], row[3], row[4], row[5] =\
@@ -4144,6 +4487,10 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 21] = atom2['auth_atom_id']
+
+        if has_ins_code:
+            row[key_size + 22] = ins_code1
+            row[key_size + 23] = ins_code2
 
     elif mrSubtype == 'dihed':
         if atom1 is not None and star_atom3 is not None:
@@ -4217,6 +4564,12 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             if hasKeyValue(atom5, 'auth_atom_id'):
                 row[key_size + 29] = atom5['auth_atom_id']
 
+        if has_ins_code:
+            row[key_size + 30] = ins_code1 if atom1 is not None else ins_code5
+            row[key_size + 31] = ins_code2 if atom2 is not None else ins_code5
+            row[key_size + 32] = ins_code3 if atom3 is not None else ins_code5
+            row[key_size + 33] = ins_code4 if atom4 is not None else ins_code5
+
     elif mrSubtype == 'rdc':
         # row[key_size + 1] = combinationId
         if hasKeyValue(dstFunc, 'target_value'):
@@ -4252,6 +4605,10 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 22] = atom2['auth_atom_id']
+
+        if has_ins_code:
+            row[key_size + 22] = ins_code1
+            row[key_size + 23] = ins_code2
 
     elif mrSubtype == 'noepk':
         if hasKeyValue(dstFunc, 'target_value'):
@@ -4531,7 +4888,7 @@ def getDstFuncForSsBond(atom1, atom2):
 
 
 def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
-                   originalTagNames, originalRow, authToStarSeq,
+                   originalTagNames, originalRow, authToStarSeq, authToInsCode,
                    atoms):
     """ Return row data for a given constraint subtype and corresponding NMR-STAR row.
         @return: data array
@@ -4566,23 +4923,28 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         atom5 = atom5[0]
 
     star_atom1 = star_atom2 = star_atom3 = star_atom4 = star_atom5 = None
+    ins_code1 = ins_code2 = ins_code3 = ins_code4 = None
 
     if atom1 is not None:
         star_atom1 = getStarAtom(authToStarSeq, atom1)
         if 'atom_id' not in atom1:
             atom1['atom_id'] = None
+        ins_code1 = getInsCode(authToInsCode, atom1)
     if atom2 is not None:
         star_atom2 = getStarAtom(authToStarSeq, atom2)
         if 'atom_id' not in atom2:
             atom2['atom_id'] = None
+        ins_code2 = getInsCode(authToInsCode, atom2)
     if atom3 is not None:
         star_atom3 = getStarAtom(authToStarSeq, atom3)
         if 'atom_id' not in atom3:
             atom3['atom_id'] = None
+        ins_code3 = getInsCode(authToInsCode, atom3)
     if atom4 is not None:
         star_atom4 = getStarAtom(authToStarSeq, atom4)
         if 'atom_id' not in atom4:
             atom4['atom_id'] = None
+        ins_code4 = getInsCode(authToInsCode, atom4)
     if atom5 is not None:
         star_atom5 = getStarAtom(authToStarSeq, atom5)
         if 'atom_id' not in atom5:
@@ -4673,6 +5035,10 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 21] = atom2['auth_atom_id']
 
+        if authToInsCode is not None:
+            row[key_size + 22] = ins_code1
+            row[key_size + 23] = ins_code2
+
     elif contentSubtype == 'dihed_restraint':
         if star_atom3 is not None:
             row[11], row[12], row[13], row[14], row[15] =\
@@ -4736,6 +5102,12 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if hasKeyValue(atom4, 'auth_atom_id'):
             row[key_size + 29] = atom4['auth_atom_id']
 
+        if authToInsCode is not None:
+            row[key_size + 30] = ins_code1
+            row[key_size + 31] = ins_code2
+            row[key_size + 32] = ins_code3
+            row[key_size + 33] = ins_code4
+
     elif contentSubtype == 'rdc_restraint':
         val = getRowValue('Combination_ID')
         if val is not None:
@@ -4792,6 +5164,10 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 22] = atom2['auth_atom_id']
+
+        if authToInsCode is not None:
+            row[key_size + 23] = ins_code1
+            row[key_size + 24] = ins_code2
 
     elif contentSubtype == 'noepk_restraint':
         val = getRowValue('Val')

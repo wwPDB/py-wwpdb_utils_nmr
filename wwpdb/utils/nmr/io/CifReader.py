@@ -373,14 +373,14 @@ class CifReader:
             seq_id_col = altDict['seq_id']
             comp_id_col = altDict['comp_id']
             ins_code_col = -1 if 'ins_code' not in altDict else altDict['ins_code']
-            label_seq_col = -1 if 'label_seq_id' not in altDict else altDict['label_seq_id']
+            label_seq_col = seq_id_col if 'label_seq_id' not in altDict else altDict['label_seq_id']
             auth_chain_id_col = -1 if 'auth_chain_id' not in altDict else altDict['auth_chain_id']
             auth_seq_id_col = -1 if 'auth_seq_id' not in altDict else altDict['auth_seq_id']
             auth_comp_id_col = -1 if 'auth_comp_id' not in altDict else altDict['auth_comp_id']
 
             chainIds = sorted(set(row[chain_id_col] for row in rowList), key=lambda x: (len(x), x))
 
-            if ins_code_col == -1 or label_seq_col == -1:
+            if ins_code_col == -1:
                 if catName == 'pdbx_nonpoly_scheme':
                     sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList),
                                        key=lambda x: x[1])
@@ -411,8 +411,12 @@ class CifReader:
                     sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList),
                                        key=lambda x: x[1])
                 else:
-                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList),
-                                       key=lambda x: (len(x[0]), x[0], x[1]))
+                    if all(row[label_seq_col].isdigit() for row in rowList):
+                        sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], int(row[label_seq_col]), row[comp_id_col]) for row in rowList),
+                                           key=lambda x: (len(x[0]), x[0], x[3]))
+                    else:
+                        sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList),
+                                           key=lambda x: (len(x[0]), x[0], x[1]))
 
                 keyDict = {(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col]): row[comp_id_col] for row in rowList}
 
@@ -471,12 +475,14 @@ class CifReader:
 
                     ent['seq_id'] = seqDict[c]
                     ent['comp_id'] = compDict[c]
-                    if c in insCodeDict and any(s not in self.emptyValue for s in labelSeqDict[c]):
-                        ent['ins_code'] = insCodeDict[c]
-                        if c in labelSeqDict and all(s.isdigit() for s in labelSeqDict[c]):
-                            ent['auth_seq_id'] = seqDict[c]
-                            ent['label_seq_id'] = [int(s) for s in labelSeqDict[c]]
-                            ent['seq_id'] = ent['label_seq_id']
+                    if c in insCodeDict:
+                        if any(i for i in insCodeDict[c] if i not in self.emptyValue):
+                            ent['ins_code'] = insCodeDict[c]
+                        if any(s for s in labelSeqDict[c] if s not in self.emptyValue):
+                            if c in labelSeqDict and all(isinstance(s, int) for s in labelSeqDict[c]):
+                                ent['auth_seq_id'] = seqDict[c]
+                                ent['label_seq_id'] = [s for s in labelSeqDict[c]]
+                                ent['seq_id'] = ent['label_seq_id']
 
                     if auth_seq_id_col != -1:
                         ent['auth_seq_id'] = []

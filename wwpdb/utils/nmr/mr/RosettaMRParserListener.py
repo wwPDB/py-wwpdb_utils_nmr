@@ -1114,6 +1114,30 @@ class RosettaMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
         if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                if fixedChainId is not None and chainId != fixedChainId:
+                    continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__labelToAuthSeq:
+                    _, seqId = self.__labelToAuthSeq[seqKey]
+                    if seqId in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(seqId)
+                        cifCompId = ps['comp_id'][idx]
+                        updatePolySeqRst(self.__polySeqRst, chainId, seqId, cifCompId)
+                        if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                            origCompId = ps['auth_comp_id'][idx]
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        if atomId is None\
+                           or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
+                            chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                            self.__authSeqId = 'label_seq_id'
+                            self.__setLocalSeqScheme()
+                            # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            #     self.reasonsForReParsing['label_seq_scheme'] = True
+
+        if len(chainAssign) == 0:
             if atomId is not None:
                 if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                     if atomId in aminoProtonCode and atomId != 'H1':
@@ -1211,6 +1235,21 @@ class RosettaMRParserListener(ParseTreeListener):
                 continue
 
             for cifAtomId in _atomId:
+
+                if seqKey in self.__coordUnobsRes and cifCompId in monDict3 and self.__reasons is not None and 'non_poly_remap' in self.__reasons:
+                    if self.__ccU.updateChemCompDict(cifCompId):
+                        try:
+                            next(cca for cca in self.__ccU.lastAtomList
+                                 if cca[self.__ccU.ccaAtomId] == cifAtomId and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y')
+                        except StopIteration:
+                            continue
+                        try:
+                            if len(authAtomId) > len(cifAtomId):
+                                next(cca for cca in self.__ccU.lastAtomList
+                                     if cca[self.__ccU.ccaAtomId] == authAtomId and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y')
+                        except StopIteration:
+                            break
+
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                       'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 

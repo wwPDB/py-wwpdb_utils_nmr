@@ -7741,6 +7741,18 @@ class AmberMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
         if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__labelToAuthSeq:
+                    _, seqId = self.__labelToAuthSeq[seqKey]
+                    if seqId in ps['auth_seq_id']:
+                        cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                        if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                            self.__authSeqId = 'label_seq_id'
+
+        if len(chainAssign) == 0:
             if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId is not None and atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')

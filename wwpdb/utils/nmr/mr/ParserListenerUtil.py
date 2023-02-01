@@ -2330,9 +2330,6 @@ def translateToStdResName(compId, ccU=None):
                and 'CYSTEINE' in ccU.lastChemCompDict['_chem_comp.name']:
                 return 'CYS'
 
-    if compId.startswith('CYS'):
-        return 'CYS'
-
     if len(compId) == 3:
         if compId == 'ADE' or compId.startswith('DA'):
             return 'DA'

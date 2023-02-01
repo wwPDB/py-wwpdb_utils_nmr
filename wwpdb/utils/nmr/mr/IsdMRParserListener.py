@@ -924,6 +924,44 @@ class IsdMRParserListener(ParseTreeListener):
                     # """
 
         if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__labelToAuthSeq:
+                    _, seqId = self.__labelToAuthSeq[seqKey]
+                    if seqId in ps['auth_seq_id']:
+                        idx = ps['aut_seq_id'].index(seqId)
+                        cifCompId = ps['comp_id'][idx]
+                        origCompId = ps['auth_comp_id'][idx]
+                        if cifCompId != compId:
+                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                            if compId in compIds:
+                                cifCompId = compId
+                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                  if _seqId == seqId and _compId == compId)
+                        if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        if compId in (cifCompId, origCompId):
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                                # self.__authSeqId = 'label_seq_id'
+                                self.__setLocalSeqScheme()
+                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                #     self.reasonsForReParsing['label_seq_scheme'] = True
+                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                            # self.__authSeqId = 'label_seq_id'
+                            self.__setLocalSeqScheme()
+                            # """ defer to sequence alignment error
+                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
+                            #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            # """
+
+        if len(chainAssign) == 0:
             if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
@@ -1043,6 +1081,21 @@ class IsdMRParserListener(ParseTreeListener):
                 continue
 
             for cifAtomId in _atomId:
+
+                if seqKey in self.__coordUnobsRes and cifCompId in monDict3 and self.__reasons is not None and 'non_poly_remap' in self.__reasons:
+                    if self.__ccU.updateChemCompDict(cifCompId):
+                        try:
+                            next(cca for cca in self.__ccU.lastAtomList
+                                 if cca[self.__ccU.ccaAtomId] == cifAtomId and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y')
+                        except StopIteration:
+                            continue
+                        try:
+                            if len(authAtomId) > len(cifAtomId):
+                                next(cca for cca in self.__ccU.lastAtomList
+                                     if cca[self.__ccU.ccaAtomId] == authAtomId and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y')
+                        except StopIteration:
+                            break
+
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                       'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 

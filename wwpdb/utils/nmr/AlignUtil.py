@@ -669,6 +669,11 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             if i2 >= LEN_LARGE_ASYM_ID:
                 continue
 
+            not_decided_s2_comp_id = any(c2 for c2 in s2['comp_id'] if c2.endswith('?'))  # AMBER/GROMACS topology
+            if not_decided_s2_comp_id:
+                s2 = copy.deepcopy(s2)
+                s2['comp_id'] = [c2[:-1] if c2.endswith('?') else c2 for c2 in s2['comp_id']]
+
             pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
             pA.addTestSequence(s2['comp_id'], chain_id)
             pA.doAlign()
@@ -683,37 +688,27 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-            if conflict > 0:
-
-                if any(c2 for c2 in s2['comp_id'] if c2.endswith('?')):  # AMBER/GROMACS topology
-                    s2_comp_id_copy = copy.copy(s2['comp_id'])
-                    for p in range(length):
-                        myPr = myAlign[p]
-                        myPr0 = str(myPr[0])
-                        myPr1 = str(myPr[1])
-                        if myPr0 != myPr1 and myPr1.endswith('?'):
-                            idx = s2_comp_id_copy.index(myPr1)
-                            s2_seq_id = s2['seq_id'][idx]
-                            s2_auth_comp_id = s2['auth_comp_id'][idx]
-                            s2_comp_id_copy[idx] = myPr0
-
-                            pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                            pA.addTestSequence(s2_comp_id_copy, chain_id)
-                            pA.doAlign()
-
-                            myAlign = pA.getAlignment(chain_id)
-
-                            _matched, unmapped, _conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
-
-                            if _conflict < conflict:
-                                s2['comp_id'] = s2_comp_id_copy
-                                conflict = _conflict
-                                compIdMapping.append({'chain_id': chain_id2, 'seq_id': s2_seq_id,
-                                                      'comp_id': myPr0, 'auth_comp_id': s2_auth_comp_id})
-
             if length == unmapped + conflict or _matched <= conflict:
                 inhibitList.append({chain_id, chain_id2})
                 continue
+
+            if not_decided_s2_comp_id:  # AMBER/GROMACS topology
+                idx2 = 0
+                for i in range(length):
+                    myPr = myAlign[i]
+                    myPr0 = str(myPr[0])
+                    myPr1 = str(myPr[1])
+                    if myPr1 != '.':
+                        while idx2 < len(s2['seq_id']):
+                            if s2['comp_id'][idx2] == myPr1:
+                                s2_seq_id = s2['seq_id'][idx2]
+                                s2_auth_comp_id = s2['auth_comp_id'][idx2]
+                                if myPr0 == myPr1:
+                                    compIdMapping.append({'chain_id': chain_id2, 'seq_id': s2_seq_id,
+                                                          'comp_id': myPr0, 'auth_comp_id': s2_auth_comp_id})
+                                idx2 += 1
+                                break
+                            idx2 += 1
 
             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1, seqIdName=seq_id_name)
             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)

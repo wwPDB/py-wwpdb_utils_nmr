@@ -26969,7 +26969,7 @@ class NmrDpUtility:
                             else:
 
                                 sf_item['index_id'] += 1
-                                _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['idx'],
+                                _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
                                                       None, None, list_id, self.__entry_id,
                                                       loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, atom_sels)
                                 lp.add_data(_row)

@@ -1900,7 +1900,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if fixedChainId is not None:
                     if fixedChainId != chainId:
                         continue
-                    seqId = fixedSeqId
+                    if fixedSeqId is not None:
+                        seqId = fixedSeqId
                 elif fixedSeqId is not None:
                     seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
@@ -1971,7 +1972,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if fixedChainId is not None:
                         if fixedChainId != chainId:
                             continue
-                        seqId = fixedSeqId
+                        if fixedSeqId is not None:
+                            seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
@@ -2164,6 +2166,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
         updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId, self.__ccU), compId)
 
+        if refChainId is not None:
+            if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == refChainId):
+                fixedChainId = refChainId
+            elif self.__hasNonPolySeq:
+                if any(np for np in self.__nonPolySeq if np['auth_chain_id'] == refChainId):
+                    fixedChainId = refChainId
+
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
             if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
@@ -2173,7 +2182,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if fixedChainId is not None:
                     if fixedChainId != chainId:
                         continue
-                    seqId = fixedSeqId
+                    if fixedSeqId is not None:
+                        seqId = fixedSeqId
                 elif fixedSeqId is not None:
                     seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
@@ -2251,7 +2261,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if fixedChainId is not None:
                         if fixedChainId != chainId:
                             continue
-                        seqId = fixedSeqId
+                        if fixedSeqId is not None:
+                            seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
@@ -2355,7 +2366,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if fixedChainId is not None:
                     if fixedChainId != chainId:
                         continue
-                    _seqId = fixedSeqId
+                    if fixedSeqId is not None:
+                        _seqId = fixedSeqId
                 elif fixedSeqId is not None:
                     _seqId = fixedSeqId
                 if _seqId in ps['auth_seq_id']:
@@ -6269,6 +6281,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if len(chainAssign1) == 0 or len(chainAssign2) == 0:
                 return
+
+            self.atomSelectionSet.clear()
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
             self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)

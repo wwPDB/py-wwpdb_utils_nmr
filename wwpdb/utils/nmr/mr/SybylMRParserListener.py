@@ -763,7 +763,8 @@ class SybylMRParserListener(ParseTreeListener):
                 if fixedChainId is not None:
                     if fixedChainId != chainId:
                         continue
-                    seqId = fixedSeqId
+                    if fixedSeqId is not None:
+                        seqId = fixedSeqId
                 elif fixedSeqId is not None:
                     seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
@@ -834,7 +835,8 @@ class SybylMRParserListener(ParseTreeListener):
                     if fixedChainId is not None:
                         if fixedChainId != chainId:
                             continue
-                        seqId = fixedSeqId
+                        if fixedSeqId is not None:
+                            seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
                 if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:

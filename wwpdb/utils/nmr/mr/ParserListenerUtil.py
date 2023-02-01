@@ -124,6 +124,7 @@ SCALE_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 100.0}
 PROBABILITY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 1.0}
 
 DIST_AMBIG_LOW = 1.0
+DIST_AMBIG_BND = 4.0
 DIST_AMBIG_MED = 6.0
 DIST_AMBIG_UP = 12.0
 
@@ -6190,12 +6191,17 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
     if atom1['comp_id'] == atom_id_1 or atom2['comp_id'] == atom_id_2:
         return 'metal coordination'
 
-    if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']:
-        return None
-
     upperLimit = 0.0
     if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
         upperLimit = float(dstFunc['upper_limit'])
+    lowerLimit = -1.0
+    if 'lower_limit' in dstFunc and dstFunc['lower_limit'] is not None:
+        lowerLimit = float(dstFunc['lower_limit'])
+
+    if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']:
+        if upperLimit >= DIST_AMBIG_UP or lowerLimit >= DIST_AMBIG_UP:
+            return 'general distance'
+        return None
 
     _fileName = fileName.lower()
 
@@ -6229,7 +6235,46 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
     if 'roe' in _fileName:
         return 'ROE'
 
-    if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig:
+    if upperLimit >= DIST_AMBIG_UP or lowerLimit >= DIST_AMBIG_UP:
+        return 'general distance'
+
+    atom_id_1_ = atom_id_1[0]
+    atom_id_2_ = atom_id_2[0]
+
+    if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_BND or ambig:
+
+        if upperLimit >= DIST_AMBIG_BND:
+
+            if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _fileName:
+                return 'general distance'
+
+            if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _fileName or ('ss' in _fileName and 'bond' in _fileName)):
+                return 'general distance'
+
+            if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+                return 'general distance'
+
+            if (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+                return 'general distance'
+
+            if (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+                return 'general distance'
+
+            if (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+                return 'general distance'
+
+            if (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+                return 'general distance'
+
+            if (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+                return 'general distance'
+
+            if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+                return 'general distance'
+
+        if upperLimit >= DIST_AMBIG_MED and lowerLimit < 0.0:
+            return 'general distance'
+
         return None
 
     if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _fileName:
@@ -6237,9 +6282,6 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
 
     if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _fileName or ('ss' in _fileName and 'bond' in _fileName)):
         return 'disulfide bond'
-
-    atom_id_1_ = atom_id_1[0]
-    atom_id_2_ = atom_id_2[0]
 
     if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
         return 'hydrogen bond'

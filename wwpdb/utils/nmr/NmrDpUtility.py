@@ -23728,7 +23728,7 @@ class NmrDpUtility:
                             else:
                                 _row[12] = ambig_id = 4
 
-                    elif ambig_id == 6 and len(self.__caC['entity_assembly']) < 2:
+                    elif ambig_id == 6 and len(self.__caC['entity_assembly']) < 2 and len(self.__caC['entity_assembly'][0]['label_asym_id'].split(',')) == 1:
                         _row[12] = ambig_id = 5
 
                     if ambig_id in (1, 2, 3):

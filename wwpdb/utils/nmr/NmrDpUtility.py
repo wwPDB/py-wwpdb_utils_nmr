@@ -20948,7 +20948,7 @@ class NmrDpUtility:
                                             "Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. "\
                                             "Please check for folded/aliased signals."
 
-                                        if self.__nonblk_anomalous_cs:
+                                        if self.__nonblk_anomalous_cs or self.__remediation_mode:
 
                                             self.report.warning.appendDescription('anomalous_data',
                                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -20999,7 +20999,7 @@ class NmrDpUtility:
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                        if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
+                                        if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
 
                                             self.report.warning.appendDescription('anomalous_data'
                                                                                   if na['ring_angle'] - self.magic_angle * z_score < 0.0
@@ -21240,7 +21240,7 @@ class NmrDpUtility:
                                             "Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. "\
                                             "Please check for folded/aliased signals."
 
-                                        if self.__nonblk_anomalous_cs:
+                                        if self.__nonblk_anomalous_cs or self.__remediation_mode:
 
                                             self.report.warning.appendDescription('anomalous_data',
                                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -21291,7 +21291,7 @@ class NmrDpUtility:
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                        if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
+                                        if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
 
                                             if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
@@ -21549,7 +21549,7 @@ class NmrDpUtility:
                                         "Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. "\
                                         "Please check for folded/aliased signals."
 
-                                    if self.__nonblk_anomalous_cs:
+                                    if self.__nonblk_anomalous_cs or self.__remediation_mode:
 
                                         self.report.warning.appendDescription('anomalous_data',
                                                                               {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -21600,7 +21600,7 @@ class NmrDpUtility:
                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                    if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
+                                    if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
 
                                         self.report.warning.appendDescription('anomalous_data'
                                                                               if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic
@@ -22409,9 +22409,7 @@ class NmrDpUtility:
 
             return auth_asym_id, auth_seq_id
 
-        def fill_cs_row(lp, index, _row, _seq_key, comp_id, atom_id):
-            coord_atom_site = self.__caC['coord_atom_site']
-
+        def fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id):
             fill_auth_atom_id = _row[19] in emptyValue and _row[18] not in emptyValue
 
             if _seq_key in coord_atom_site:
@@ -22999,7 +22997,7 @@ class NmrDpUtility:
                                 if has_ins_code and seq_key in auth_to_ins_code:
                                     _row[27] = auth_to_ins_code[seq_key]
 
-                        index, _row = fill_cs_row(lp, index, _row, _seq_key, comp_id, atom_id)
+                        index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
                     elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
 
@@ -23063,7 +23061,7 @@ class NmrDpUtility:
                                         if has_ins_code and seq_key in auth_to_ins_code:
                                             _row[27] = auth_to_ins_code[seq_key]
 
-                                index, _row = fill_cs_row(lp, index, _row, _seq_key, comp_id, atom_id)
+                                index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
                             else:
                                 resolved = False
@@ -23151,7 +23149,7 @@ class NmrDpUtility:
                                     if has_ins_code and seq_key in auth_to_ins_code:
                                         _row[27] = auth_to_ins_code[seq_key]
 
-                            index, _row = fill_cs_row(lp, index, _row, _seq_key, comp_id, atom_id)
+                            index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
                         else:
 
@@ -23179,7 +23177,7 @@ class NmrDpUtility:
                                     if has_ins_code and seq_key in auth_to_ins_code:
                                         _row[27] = auth_to_ins_code[seq_key]
 
-                                index, _row = fill_cs_row(lp, index, _row, _seq_key, comp_id, atom_id)
+                                index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
                             else:
                                 resolved = False
@@ -23217,7 +23215,7 @@ class NmrDpUtility:
                                         if has_ins_code and seq_key in auth_to_ins_code:
                                             _row[27] = auth_to_ins_code[seq_key]
 
-                                    index, _row = fill_cs_row(lp, index, _row, _seq_key, comp_id, atom_id)
+                                    index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
                             except ValueError:
                                 resolved = False

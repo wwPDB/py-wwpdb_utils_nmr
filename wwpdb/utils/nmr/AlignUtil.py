@@ -703,12 +703,10 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                             if s2['comp_id'][idx2] == myPr1:
                                 s2_seq_id = s2['seq_id'][idx2]
                                 s2_auth_comp_id = s2['auth_comp_id'][idx2]
-                                if myPr0 == myPr1:
-                                    compIdMapping.append({'chain_id': chain_id2, 'seq_id': s2_seq_id,
-                                                          'comp_id': myPr0, 'auth_comp_id': s2_auth_comp_id})
+                                compIdMapping.append({'chain_id': chain_id2, 'seq_id': s2_seq_id,
+                                                      'comp_id': myPr0, 'auth_comp_id': s2_auth_comp_id})
                                 idx2 += 1
                                 break
-                            idx2 += 1
 
             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1, seqIdName=seq_id_name)
             _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)

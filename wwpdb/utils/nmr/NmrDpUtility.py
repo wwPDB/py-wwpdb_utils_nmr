@@ -22752,6 +22752,9 @@ class NmrDpUtility:
                         row[auth_asym_id_col], row[auth_seq_id_col],\
                         row[auth_comp_id_col], row[auth_atom_id_col]
 
+                    if _row[19] in emptyValue:
+                        _row[19] = atom_id
+
                 if has_orig_seq:
                     _row[20], _row[21], _row[22], _row[23] =\
                         row[orig_asym_id_col], row[orig_seq_id_col],\
@@ -22822,7 +22825,7 @@ class NmrDpUtility:
 
                             if seq_key is not None:
                                 _row[16], _row[17], _row[18], _row[19] =\
-                                    seq_key[0], seq_key[1], seq_key[2], None
+                                    seq_key[0], seq_key[1], seq_key[2], atom_id
 
                                 if has_ins_code and seq_key in auth_to_ins_code:
                                     _row[27] = auth_to_ins_code[seq_key]
@@ -22832,7 +22835,7 @@ class NmrDpUtility:
                             _row[5] = comp_id  # _coord_atom_site['comp_id']
                             if atom_id in _coord_atom_site['atom_id']:
                                 _row[6] = atom_id
-                                if _row[19] is None:
+                                if _row[19] in emptyValue:
                                     _row[19] = _row[6]
                                 _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -22848,7 +22851,7 @@ class NmrDpUtility:
                                 len_atom_ids = len(atom_ids)
                                 if len_atom_ids == 0:
                                     _row[6] = atom_id
-                                    if _row[19] is None:
+                                    if _row[19] in emptyValue:
                                         _row[19] = _row[6]
                                     _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -22873,7 +22876,7 @@ class NmrDpUtility:
 
                                     if len_atom_ids > 1:
                                         __row = copy.copy(_row)
-                                        if __row[19] is None:
+                                        if __row[19] in emptyValue:
                                             __row[19] = __row[6]
                                         lp.add_data(__row)
 
@@ -22884,7 +22887,7 @@ class NmrDpUtility:
 
                                             __row[0] = index
                                             __row[6] = _atom_id
-                                            if __row[19] is None:
+                                            if __row[19] in emptyValue:
                                                 __row[19] = __row[6]
 
                                             lp.add_data(__row)
@@ -22894,7 +22897,7 @@ class NmrDpUtility:
                                         _row[0] = index
                                         _row[6] = atom_ids[-1]
 
-                                    if _row[19] is None:
+                                    if _row[19] in emptyValue:
                                         _row[19] = _row[6]
 
                         else:
@@ -22906,7 +22909,7 @@ class NmrDpUtility:
                             len_atom_ids = len(atom_ids)
                             if len_atom_ids == 0:
                                 _row[6] = atom_id
-                                if _row[19] is None:
+                                if _row[19] in emptyValue:
                                     _row[19] = _row[6]
                                 _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -22931,7 +22934,7 @@ class NmrDpUtility:
 
                                 if len_atom_ids > 1:
                                     __row = copy.copy(_row)
-                                    if __row[19] is None:
+                                    if __row[19] in emptyValue:
                                         __row[19] = __row[6]
                                     lp.add_data(__row)
 
@@ -22942,7 +22945,7 @@ class NmrDpUtility:
 
                                         __row[0] = index
                                         __row[6] = _atom_id
-                                        if __row[19] is None:
+                                        if __row[19] in emptyValue:
                                             __row[19] = __row[6]
 
                                         lp.add_data(__row)
@@ -22952,7 +22955,7 @@ class NmrDpUtility:
                                     _row[0] = index
                                     _row[6] = atom_ids[-1]
 
-                                if _row[19] is None:
+                                if _row[19] in emptyValue:
                                     _row[19] = _row[6]
 
                     elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
@@ -23012,7 +23015,7 @@ class NmrDpUtility:
 
                                     if seq_key is not None:
                                         _row[16], _row[17], _row[18], _row[19] =\
-                                            seq_key[0], seq_key[1], seq_key[2], None
+                                            seq_key[0], seq_key[1], seq_key[2], atom_id
 
                                         if has_ins_code and seq_key in auth_to_ins_code:
                                             _row[27] = auth_to_ins_code[seq_key]
@@ -23022,7 +23025,7 @@ class NmrDpUtility:
                                     _row[5] = comp_id  # _coord_atom_site['comp_id']
                                     if atom_id in _coord_atom_site['atom_id']:
                                         _row[6] = atom_id
-                                        if _row[19] is None:
+                                        if _row[19] in emptyValue:
                                             _row[19] = _row[6]
                                         _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -23038,7 +23041,7 @@ class NmrDpUtility:
                                         len_atom_ids = len(atom_ids)
                                         if len_atom_ids == 0:
                                             _row[6] = atom_id
-                                            if _row[19] is None:
+                                            if _row[19] in emptyValue:
                                                 _row[19] = _row[6]
                                             _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -23063,7 +23066,7 @@ class NmrDpUtility:
 
                                             if len_atom_ids > 1:
                                                 __row = copy.copy(_row)
-                                                if __row[19] is None:
+                                                if __row[19] in emptyValue:
                                                     __row[19] = __row[6]
                                                 lp.add_data(__row)
 
@@ -23074,7 +23077,7 @@ class NmrDpUtility:
 
                                                     __row[0] = index
                                                     __row[6] = _atom_id
-                                                    if __row[19] is None:
+                                                    if __row[19] in emptyValue:
                                                         __row[19] = __row[6]
 
                                                     lp.add_data(__row)
@@ -23084,7 +23087,7 @@ class NmrDpUtility:
                                                 _row[0] = index
                                                 _row[6] = atom_ids[-1]
 
-                                            if _row[19] is None:
+                                            if _row[19] in emptyValue:
                                                 _row[19] = _row[6]
 
                                 else:
@@ -23096,7 +23099,7 @@ class NmrDpUtility:
                                     len_atom_ids = len(atom_ids)
                                     if len_atom_ids == 0:
                                         _row[6] = atom_id
-                                        if _row[19] is None:
+                                        if _row[19] in emptyValue:
                                             _row[19] = _row[6]
                                         _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -23121,7 +23124,7 @@ class NmrDpUtility:
 
                                         if len_atom_ids > 1:
                                             __row = copy.copy(_row)
-                                            if __row[19] is None:
+                                            if __row[19] in emptyValue:
                                                 __row[19] = __row[6]
                                             lp.add_data(__row)
 
@@ -23132,7 +23135,7 @@ class NmrDpUtility:
 
                                                 __row[0] = index
                                                 __row[6] = _atom_id
-                                                if __row[19] is None:
+                                                if __row[19] in emptyValue:
                                                     __row[19] = __row[6]
 
                                                 lp.add_data(__row)
@@ -23142,7 +23145,7 @@ class NmrDpUtility:
                                             _row[0] = index
                                             _row[6] = atom_ids[-1]
 
-                                        if _row[19] is None:
+                                        if _row[19] in emptyValue:
                                             _row[19] = _row[6]
 
                             else:
@@ -23229,7 +23232,7 @@ class NmrDpUtility:
 
                                 if seq_key is not None:
                                     _row[16], _row[17], _row[18], _row[19] =\
-                                        seq_key[0], seq_key[1], seq_key[2], None
+                                        seq_key[0], seq_key[1], seq_key[2], atom_id
 
                                     if has_ins_code and seq_key in auth_to_ins_code:
                                         _row[27] = auth_to_ins_code[seq_key]
@@ -23239,7 +23242,7 @@ class NmrDpUtility:
                                 _row[5] = comp_id  # _coord_atom_site['comp_id']
                                 if atom_id in _coord_atom_site['atom_id']:
                                     _row[6] = atom_id
-                                    if _row[19] is None:
+                                    if _row[19] in emptyValue:
                                         _row[19] = _row[6]
                                     _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -23255,7 +23258,7 @@ class NmrDpUtility:
                                     len_atom_ids = len(atom_ids)
                                     if len_atom_ids == 0:
                                         _row[6] = atom_id
-                                        if _row[19] is None:
+                                        if _row[19] in emptyValue:
                                             _row[19] = _row[6]
                                         _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -23280,7 +23283,7 @@ class NmrDpUtility:
 
                                         if len_atom_ids > 1:
                                             __row = copy.copy(_row)
-                                            if __row[19] is None:
+                                            if __row[19] in emptyValue:
                                                 __row[19] = __row[6]
                                             lp.add_data(__row)
 
@@ -23291,7 +23294,7 @@ class NmrDpUtility:
 
                                                 __row[0] = index
                                                 __row[6] = _atom_id
-                                                if __row[19] is None:
+                                                if __row[19] in emptyValue:
                                                     __row[19] = __row[6]
 
                                                 lp.add_data(__row)
@@ -23301,7 +23304,7 @@ class NmrDpUtility:
                                             _row[0] = index
                                             _row[6] = atom_ids[-1]
 
-                                        if _row[19] is None:
+                                        if _row[19] in emptyValue:
                                             _row[19] = _row[6]
 
                             else:
@@ -23353,6 +23356,9 @@ class NmrDpUtility:
                                         _row[0] = index
                                         _row[6] = atom_ids[-1]
 
+                                    if _row[19] in emptyValue:
+                                        _row[19] = _row[6]
+
                         else:
 
                             item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
@@ -23374,7 +23380,7 @@ class NmrDpUtility:
 
                                 if seq_key is not None:
                                     _row[16], _row[17], _row[18], _row[19] =\
-                                        seq_key[0], seq_key[1], seq_key[2], None
+                                        seq_key[0], seq_key[1], seq_key[2], atom_id
 
                                     if has_ins_code and seq_key in auth_to_ins_code:
                                         _row[27] = auth_to_ins_code[seq_key]
@@ -23384,7 +23390,7 @@ class NmrDpUtility:
                                     _row[5] = comp_id  # _coord_atom_site['comp_id']
                                     if atom_id in _coord_atom_site['atom_id']:
                                         _row[6] = atom_id
-                                        if _row[19] is None:
+                                        if _row[19] in emptyValue:
                                             _row[19] = _row[6]
                                         _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -23400,7 +23406,7 @@ class NmrDpUtility:
                                         len_atom_ids = len(atom_ids)
                                         if len_atom_ids == 0:
                                             _row[6] = atom_id
-                                            if _row[19] is None:
+                                            if _row[19] in emptyValue:
                                                 _row[19] = _row[6]
                                             _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -23425,7 +23431,7 @@ class NmrDpUtility:
 
                                             if len_atom_ids > 1:
                                                 __row = copy.copy(_row)
-                                                if __row[19] is None:
+                                                if __row[19] in emptyValue:
                                                     __row[19] = __row[6]
                                                 lp.add_data(__row)
 
@@ -23436,7 +23442,7 @@ class NmrDpUtility:
 
                                                     __row[0] = index
                                                     __row[6] = _atom_id
-                                                    if __row[19] is None:
+                                                    if __row[19] in emptyValue:
                                                         __row[19] = __row[6]
 
                                                     lp.add_data(__row)
@@ -23446,7 +23452,7 @@ class NmrDpUtility:
                                                 _row[0] = index
                                                 _row[6] = atom_ids[-1]
 
-                                            if _row[19] is None:
+                                            if _row[19] in emptyValue:
                                                 _row[19] = _row[6]
 
                                 else:
@@ -23498,6 +23504,9 @@ class NmrDpUtility:
                                             _row[0] = index
                                             _row[6] = atom_ids[-1]
 
+                                        if _row[19] in emptyValue:
+                                            _row[19] = _row[6]
+
                             else:
                                 resolved = False
 
@@ -23529,7 +23538,7 @@ class NmrDpUtility:
 
                                     if seq_key is not None:
                                         _row[16], _row[17], _row[18], _row[19] =\
-                                            seq_key[0], seq_key[1], seq_key[2], None
+                                            seq_key[0], seq_key[1], seq_key[2], atom_id
 
                                         if has_ins_code and seq_key in auth_to_ins_code:
                                             _row[27] = auth_to_ins_code[seq_key]
@@ -23539,7 +23548,7 @@ class NmrDpUtility:
                                         _row[5] = comp_id  # _coord_atom_site['comp_id']
                                         if atom_id in _coord_atom_site['atom_id']:
                                             _row[6] = atom_id
-                                            if _row[19] is None:
+                                            if _row[19] in emptyValue:
                                                 _row[19] = _row[6]
                                             _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
                                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -23555,7 +23564,7 @@ class NmrDpUtility:
                                             len_atom_ids = len(atom_ids)
                                             if len_atom_ids == 0:
                                                 _row[6] = atom_id
-                                                if _row[19] is None:
+                                                if _row[19] in emptyValue:
                                                     _row[19] = _row[6]
                                                 _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -23580,7 +23589,7 @@ class NmrDpUtility:
 
                                                 if len_atom_ids > 1:
                                                     __row = copy.copy(_row)
-                                                    if __row[19] is None:
+                                                    if __row[19] in emptyValue:
                                                         __row[19] = __row[6]
                                                     lp.add_data(__row)
 
@@ -23591,7 +23600,7 @@ class NmrDpUtility:
 
                                                         __row[0] = index
                                                         __row[6] = _atom_id
-                                                        if __row[19] is None:
+                                                        if __row[19] in emptyValue:
                                                             __row[19] = __row[6]
 
                                                         lp.add_data(__row)
@@ -23601,7 +23610,7 @@ class NmrDpUtility:
                                                     _row[0] = index
                                                     _row[6] = atom_ids[-1]
 
-                                                if _row[19] is None:
+                                                if _row[19] in emptyValue:
                                                     _row[19] = _row[6]
 
                                     else:
@@ -23652,6 +23661,9 @@ class NmrDpUtility:
 
                                                 _row[0] = index
                                                 _row[6] = atom_ids[-1]
+
+                                            if _row[19] in emptyValue:
+                                                _row[19] = _row[6]
 
                             except ValueError:
                                 resolved = False
@@ -23715,6 +23727,9 @@ class NmrDpUtility:
                                 _row[0] = index
                                 _row[6] = atom_ids[-1]
 
+                            if _row[19] in emptyValue:
+                                _row[19] = _row[6]
+
                 if isinstance(_row[12], int):
                     comp_id = _row[5]
                     atom_id = _row[6]
@@ -23728,8 +23743,11 @@ class NmrDpUtility:
                             else:
                                 _row[12] = ambig_id = 4
 
-                    elif ambig_id == 6 and len(self.__caC['entity_assembly']) < 2 and len(self.__caC['entity_assembly'][0]['label_asym_id'].split(',')) == 1:
-                        _row[12] = ambig_id = 5
+                    elif ambig_id == 6:
+                        if len([item for item in self.__caC['entity_assembly']
+                                if item['entity_type'] != 'non-polymer']) == 1\
+                           and len(self.__caC['entity_assembly'][0]['label_asym_id'].split(',')) == 1:
+                            _row[12] = ambig_id = 5
 
                     if ambig_id in (1, 2, 3):
                         if _row[13] is not None:

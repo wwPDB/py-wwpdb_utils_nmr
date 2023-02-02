@@ -24,6 +24,18 @@ save_nef_nmr_meta_data
 
    stop_
 
+   loop_
+      _Data_set.Type
+      _Data_set.Count
+      _Data_set.Entry_ID
+
+     assigned_chemical_shifts       1   NEED_ACC_NO    
+     spectral_peak_list             4   NEED_ACC_NO    
+     general_distance_constraints   2   NEED_ACC_NO    
+     torsion_angle_constraints      1   NEED_ACC_NO    
+
+   stop_
+
 save_
 
 save_nef_molecular_system

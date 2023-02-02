@@ -5961,7 +5961,7 @@ class NmrDpUtility:
             if srcPath_ is not None:
                 try:
                     os.remove(srcPath_)
-                except:  # noqa: E722 pylint: disable=bare-except
+                except IOError:
                     pass
 
         else:
@@ -6089,7 +6089,7 @@ class NmrDpUtility:
                 if csPath_ is not None:
                     try:
                         os.remove(csPath_)
-                    except:  # noqa: E722 pylint: disable=bare-except
+                    except IOError:
                         pass
 
             mr_file_path_list = 'restraint_file_path_list'
@@ -6118,7 +6118,7 @@ class NmrDpUtility:
                     if mrPath_ is not None:
                         try:
                             os.remove(mrPath_)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except IOError:
                             pass
 
                 has_atypical_restraint = False
@@ -6228,7 +6228,7 @@ class NmrDpUtility:
                     if mrPath_ is not None:
                         try:
                             os.remove(mrPath_)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except IOError:
                             pass
 
             if ar_file_path_list in self.__inputParamDict:
@@ -6271,7 +6271,7 @@ class NmrDpUtility:
                     if arPath_ is not None:
                         try:
                             os.remove(arPath_)
-                        except:  # noqa: E722 pylint: disable=bare-except
+                        except IOError:
                             pass
 
         return is_done
@@ -7255,7 +7255,7 @@ class NmrDpUtility:
                     if os.path.exists(tmpPath):
                         os.remove(tmpPath)
 
-        except:  # noqa: E722 pylint: disable=bare-except
+        except IOError:
             pass
 
         return is_done
@@ -7393,13 +7393,13 @@ class NmrDpUtility:
         """ Rescue former NEF version prior to 1.0.
         """
 
-        try:
+        if isinstance(sf_data, pynmrstar.Loop):
+            loop = sf_data
+        else:
             if __pynmrstar_v3_2__:
                 loop = sf_data.get_loop(lp_category)
             else:
                 loop = sf_data.get_loop_by_category(lp_category)
-        except:  # noqa: E722 pylint: disable=bare-except
-            loop = sf_data
 
         try:
 
@@ -7753,13 +7753,14 @@ class NmrDpUtility:
         """ Rescue immature NMR-STAR.
         """
 
-        try:
+        if isinstance(sf_data, pynmrstar.Loop):
+            loop = sf_data
+
+        else:
             if __pynmrstar_v3_2__:
                 loop = sf_data.get_loop(lp_category)
             else:
                 loop = sf_data.get_loop_by_category(lp_category)
-        except:  # noqa: E722 pylint: disable=bare-except
-            loop = sf_data
 
         try:
 
@@ -12680,7 +12681,7 @@ class NmrDpUtility:
                         if mrPath_ is not None:
                             try:
                                 os.remove(mrPath_)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except IOError:
                                 pass
 
                 elif has_cif_format and not has_mr_header:
@@ -12845,7 +12846,7 @@ class NmrDpUtility:
                         if mrPath_ is not None:
                             try:
                                 os.remove(mrPath_)
-                            except:  # noqa: E722 pylint: disable=bare-except
+                            except IOError:
                                 pass
 
             except Exception as e:
@@ -13398,7 +13399,7 @@ class NmrDpUtility:
                             if mrPath_ is not None:
                                 try:
                                     os.remove(mrPath_)
-                                except:  # noqa: E722 pylint: disable=bare-except
+                                except IOError:
                                     pass
 
                             continue
@@ -13519,7 +13520,7 @@ class NmrDpUtility:
                             if mrPath_ is not None:
                                 try:
                                     os.remove(mrPath_)
-                                except:  # noqa: E722 pylint: disable=bare-except
+                                except IOError:
                                     pass
 
                             continue
@@ -19877,9 +19878,11 @@ class NmrDpUtility:
                 data_items = self.data_items[file_type][content_subtype]
 
                 try:
+
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                      enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
+
                 except:  # noqa: E722 pylint: disable=bare-except
                     return False
 
@@ -22457,7 +22460,9 @@ class NmrDpUtility:
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                 try:
+
                     cs_list = get_first_sf_tag(sf_data, self.cs_list_sf_tag_name[file_type])
+
                 except:  # noqa: E722 pylint: disable=bare-except
                     continue
 
@@ -33717,40 +33722,33 @@ class NmrDpUtility:
                                 unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
                                 if not aligned[i]:
-                                    cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                    cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
 
-                                    auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                     if seq_align['chain_id'] == chain_id), None)
-
-                                    if auth_seq is not None:
-                                        try:
-                                            auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
-                                            if seq_id1[i] != auth_seq_id:
-                                                cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme)"
-                                        except:  # noqa: E722 pylint: disable=bare-except
-                                            pass
+                                    try:
+                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
+                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
+                                            cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme)"
+                                    except IndexError:
+                                        pass
 
                             elif nmr_comp_id != cif_comp_id and aligned[i]:
 
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
 
-                                cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id2}:{seq_id2[i]}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insertion error'
 
-                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                 if seq_align['chain_id'] == chain_id), None)
-
-                                if auth_seq is not None and cif_comp_id != '.':
+                                if cif_comp_id != '.':
                                     try:
-                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
-                                        if seq_id1[i] != auth_seq_id:
-                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
+                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
+                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme"
+                                    except IndexError:
                                         pass
 
                         if len(unmapped) > 0:
@@ -33979,22 +33977,22 @@ class NmrDpUtility:
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': cif_comp_id})
 
-                                cif_seq_code = f"{auth_chain_id2}:{seq_id2[i]}:{cif_comp_id}"
+                                try:
+                                    label_seq_id = s2['seq_id'][s2['auth_seq_id'].index(seq_id2[i])]
+                                except IndexError:
+                                    label_seq_id = seq_id2[i]
+                                cif_seq_code = f"{chain_id2}:{label_seq_id}:{cif_comp_id}"
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insertion error'
 
-                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                 if seq_align['chain_id'] == chain_id2), None)
-
-                                if auth_seq is not None and cif_comp_id != '.':
+                                if cif_comp_id != '.':
                                     try:
-                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id2[i])]
-                                        if seq_id2[i] != auth_seq_id:
-                                            cif_seq_code += f", or {auth_chain_id2}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                        if chain_id2 != auth_chain_id2 or seq_id2[i] != label_seq_id:
+                                            cif_seq_code += f", or {auth_chain_id2}:{seq_id2[i]}:{cif_comp_id} in author sequence scheme"
+                                    except IndexError:
                                         pass
 
                                 err = f"Sequence alignment error between the NMR data ({nmr_seq_code}) and the coordinate ({cif_seq_code}). "\
@@ -34278,18 +34276,14 @@ class NmrDpUtility:
                                 unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
                                 if not aligned[i]:
-                                    cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                    cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
 
-                                    auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                     if seq_align['chain_id'] == chain_id), None)
-
-                                    if auth_seq is not None:
-                                        try:
-                                            auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
-                                            if seq_id1[i] != auth_seq_id:
-                                                cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme)"
-                                        except:  # noqa: E722 pylint: disable=bare-except
-                                            pass
+                                    try:
+                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
+                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
+                                            cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme)"
+                                    except IndexError:
+                                        pass
 
                                     warn = f"{cif_seq_code} is not present in the NMR data (chain_id {chain_id2})."
 
@@ -34305,22 +34299,19 @@ class NmrDpUtility:
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
 
-                                cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id2}:{seq_id2[i]}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insertion error'
 
-                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                 if seq_align['chain_id'] == chain_id), None)
-
-                                if auth_seq is not None and cif_comp_id != '.':
+                                if cif_comp_id != '.':
                                     try:
-                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
-                                        if seq_id1[i] != auth_seq_id:
-                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
-                                    except:  # noqa: E722 pylint: disable=bare-except
+                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
+                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
+                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme"
+                                    except IndexError:
                                         pass
 
                                 err = f"Sequence alignment error between the coordinate ({cif_seq_code}) and the NMR data ({nmr_seq_code}). "\
@@ -34605,9 +34596,11 @@ class NmrDpUtility:
                     data_items = self.aux_data_items[file_type][content_subtype][lp_category]
 
             try:
+
                 lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
                                                  excl_missing_data=self.__excl_missing_data)[0]
+
             except:  # noqa: E722 pylint: disable=bare-except
                 return False
 
@@ -35455,10 +35448,13 @@ class NmrDpUtility:
                                  if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)  # noqa: E741
 
             if orig_lp_data is None:
+
                 try:
+
                     orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None, None,
                                                           enforce_allowed_tags=(file_type == 'nmr-star'),
                                                           excl_missing_data=self.__excl_missing_data)[0]
+
                 except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
@@ -35901,8 +35897,10 @@ class NmrDpUtility:
                         continue
 
                     try:
+
                         auth_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]
                         self.authSeqMap[(star_chain, star_seq)] = (seq_align['test_chain_id'], auth_seq)
+
                     except:  # noqa: E722 pylint: disable=bare-except
                         pass
 

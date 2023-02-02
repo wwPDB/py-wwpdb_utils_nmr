@@ -12,6 +12,8 @@ chardet
 scikit-learn
 antlr4-python2-runtime; python_version == '2.7'
 antlr4-python3-runtime; python_version >= '3'
+# typing_extensions was missing from rmsd 1.5.  Remove someday from here.
+typing_extensions
 #
 # For testing
 testfixtures

@@ -37868,39 +37868,32 @@ class NmrDpUtility:
                                 unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
                                 if not aligned[i]:
-                                    cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                    cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
 
-                                    auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                     if seq_align['chain_id'] == chain_id), None)
-
-                                    if auth_seq is not None:
-                                        try:
-                                            auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
-                                            if seq_id1[i] != auth_seq_id:
-                                                cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme)"
-                                        except (IndexError, ValueError):
-                                            pass
+                                    try:
+                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
+                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
+                                            cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme)"
+                                    except (IndexError, ValueError):
+                                        pass
 
                             elif nmr_comp_id != cif_comp_id and aligned[i]:
 
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
 
-                                cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id2}:{seq_id2[i]}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insertion error'
 
-                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                 if seq_align['chain_id'] == chain_id), None)
-
-                                if auth_seq is not None and cif_comp_id != '.':
+                                if cif_comp_id != '.':
                                     try:
-                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
-                                        if seq_id1[i] != auth_seq_id:
-                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
+                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
+                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
+                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme"
                                     except (IndexError, ValueError):
                                         pass
 
@@ -38135,21 +38128,21 @@ class NmrDpUtility:
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': cif_comp_id})
 
-                                cif_seq_code = f"{auth_chain_id2}:{seq_id2[i]}:{cif_comp_id}"
+                                try:
+                                    label_seq_id = s2['seq_id'][s2['auth_seq_id'].index(seq_id2[i])]
+                                except IndexError:
+                                    label_seq_id = seq_id2[i]
+                                cif_seq_code = f"{chain_id2}:{label_seq_id}:{cif_comp_id}"
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insertion error'
 
-                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                 if seq_align['chain_id'] == chain_id2), None)
-
-                                if auth_seq is not None and cif_comp_id != '.':
+                                if cif_comp_id != '.':
                                     try:
-                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id2[i])]
-                                        if seq_id2[i] != auth_seq_id:
-                                            cif_seq_code += f", or {auth_chain_id2}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
+                                        if chain_id2 != auth_chain_id2 or seq_id2[i] != label_seq_id:
+                                            cif_seq_code += f", or {auth_chain_id2}:{seq_id2[i]}:{cif_comp_id} in author sequence scheme"
                                     except (IndexError, ValueError):
                                         pass
 
@@ -38496,18 +38489,14 @@ class NmrDpUtility:
                                 unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
                                 if not aligned[i]:
-                                    cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                    cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
 
-                                    auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                     if seq_align['chain_id'] == chain_id), None)
-
-                                    if auth_seq is not None:
-                                        try:
-                                            auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
-                                            if seq_id1[i] != auth_seq_id:
-                                                cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme)"
-                                        except (IndexError, ValueError):
-                                            pass
+                                    try:
+                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
+                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
+                                            cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme)"
+                                    except (IndexError, ValueError):
+                                        pass
 
                                     warn = f"{cif_seq_code} is not present in the NMR data (chain_id {chain_id2})."
 
@@ -38526,21 +38515,18 @@ class NmrDpUtility:
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
 
-                                cif_seq_code = f"{auth_chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id2}:{seq_id2[i]}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insertion error'
 
-                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate']
-                                                 if seq_align['chain_id'] == chain_id), None)
-
-                                if auth_seq is not None and cif_comp_id != '.':
+                                if cif_comp_id != '.':
                                     try:
-                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
-                                        if seq_id1[i] != auth_seq_id:
-                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author numbering scheme"
+                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
+                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
+                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme"
                                     except (IndexError, ValueError):
                                         pass
 

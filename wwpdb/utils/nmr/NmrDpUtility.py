@@ -527,6 +527,15 @@ def uncompress_gzip_file(inPath, outPath):
             ofp.write(line)
 
 
+def compress_as_gzip_file(inPath, outPath):
+    """ Compress a given file as a gzip file.
+    """
+
+    with open(inPath, mode='r') as ifp, gzip.open(outPath, 'wt') as ofp:
+        for line in ifp:
+            ofp.write(line)
+
+
 def get_type_of_star_file(fPath):
     """ Return type of a STAR file.
         @return: 'str' for STAR, 'cif' for CIF, 'other' otherwise
@@ -6900,7 +6909,7 @@ class NmrDpUtility:
                             f"but recognized as {self.readable_file_type[_file_type]} file."
 
                         if _file_type == 'nef':  # DAOTHER-5673
-                            err += " Please re-upload the NEF file as an NMR combined data file."
+                            err += " Please re-upload the NEF file as an NMR unified data file."
                         else:
                             err += " Please re-upload the file."
 
@@ -7044,7 +7053,7 @@ class NmrDpUtility:
                                 f"but recognized as {self.readable_file_type[_file_type]} file."
 
                             if _file_type == 'nef':  # DAOTHER-5673
-                                err += " Please re-upload the NEF file as an NMR combined data file."
+                                err += " Please re-upload the NEF file as an NMR unified data file."
                             else:
                                 err += " Please re-upload the file."
 
@@ -9034,6 +9043,44 @@ class NmrDpUtility:
                                             del self.__suspended_errors_for_lazy_eval[idx]
                                             break
 
+                            cs_file_path_list = 'chem_shift_file_path_list'
+
+                            cs = self.__inputParamDict[cs_file_path_list][0]
+
+                            if isinstance(cs, str):
+                                cs_path = cs
+                            else:
+                                cs_path = cs['file_name']
+
+                            dir_path = os.path.dirname(cs_path)
+                            cs_file_name = os.path.basename(cs_path)
+
+                            if cs_file_name.endswith('.gz'):
+                                cs_file_name = os.path.splitext(cs_file_name)[0]
+
+                            if cs_file_name.endswith('.cif2str'):
+                                cs_file_name = os.path.splitext(cs_file_name)[0]
+
+                            if cs_file_name.endswith('.str'):
+                                cs_file_name = os.path.splitext(cs_file_name)[0]
+
+                            if cs_file_name.endswith('-corrected'):
+                                cs_file_name = cs_file_name[:-10]
+
+                            cs_file_name += '-corrected.str'
+
+                            cs_file_path = os.path.join(dir_path, cs_file_name)
+
+                            if not os.path.exists(cs_file_path):
+                                master_entry = self.__star_data[0]
+
+                                if __pynmrstar_v3__:
+                                    master_entry.write_to_file(cs_file_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+                                else:
+                                    master_entry.write_to_file(cs_file_path)
+
+                                compress_as_gzip_file(cs_file_path, cs_file_path + '.gz')
+
                         self.__star_data[file_list_id].remove_saveframe(sf_framecode)
 
                     lp_counts[content_subtype] = 0
@@ -9090,7 +9137,7 @@ class NmrDpUtility:
             else:
 
                 err = "NMR restraint file includes assigned chemical shifts. "\
-                    f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+                    f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -9135,7 +9182,7 @@ class NmrDpUtility:
            and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
 
             err = "The assigned chemical shift file includes NMR restraints. "\
-                f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+                f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
 
             self.report.error.appendDescription('content_mismatch',
                                                 {'file_name': file_name, 'description': err})
@@ -9161,7 +9208,7 @@ class NmrDpUtility:
         if has_spectral_peak and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
 
             err = "The assigned chemical shift file includes spectral peak lists. "\
-                f"Please re-upload the {file_type.upper()} file as an NMR combined data file."
+                f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
 
             self.report.error.appendDescription('content_mismatch',
                                                 {'file_name': file_name, 'description': err})
@@ -13301,6 +13348,8 @@ class NmrDpUtility:
             ar['original_file_name'] = src_basename + '.mr'
 
             dst_file = src_basename + '-trimmed.mr'
+            header_file = src_basename + '-header.mr'
+            footer_file = src_basename + '-footer.mr'
             cor_dst_file = src_basename + '-corrected.mr'
             ign_dst_file = src_basename + '-ignored.mr'
 
@@ -13365,13 +13414,16 @@ class NmrDpUtility:
                 i = 0
 
                 with open(src_file, 'r') as ifp,\
-                        open(dst_file, 'w') as ofp:
+                        open(dst_file, 'w') as ofp,\
+                        open(header_file, 'w') as hofp,\
+                        open(footer_file, 'w') as fofp:
                     for line in ifp:
                         i += 1
 
                         # skip MR header
                         if header:
                             if line.startswith('*'):
+                                hofp.write(line)
                                 continue
                             if startsWithPdbRecord(line):
                                 continue
@@ -13413,10 +13465,12 @@ class NmrDpUtility:
 
                         # skip MR footer
                         if 'Submitted Coord H atom name' in line:
+                            fofp.write(line)
                             footer = True
                             continue
 
                         if footer:
+                            fofp.write(line)
                             col = line.split()
                             if len(col) == 10:
                                 original_comp_id = col[5]
@@ -13544,7 +13598,7 @@ class NmrDpUtility:
                                     f"but recognized as {self.readable_file_type[_file_type]} file."
 
                                 if _file_type == 'nef':  # DAOTHER-5673
-                                    err += " Please re-upload the NEF file as an NMR combined data file."
+                                    err += " Please re-upload the NEF file as an NMR unified data file."
                                 else:
                                     err += " Please re-upload the file."
 
@@ -13714,7 +13768,7 @@ class NmrDpUtility:
                                     f"but recognized as {self.readable_file_type[_file_type]} file."
 
                                 if _file_type == 'nef':  # DAOTHER-5673
-                                    err += " Please re-upload the NEF file as an NMR combined data file."
+                                    err += " Please re-upload the NEF file as an NMR unified data file."
                                 else:
                                     err += " Please re-upload the file."
 
@@ -14262,7 +14316,7 @@ class NmrDpUtility:
                                         f"but recognized as {self.readable_file_type[_file_type]} file."
 
                                     if _file_type == 'nef':  # DAOTHER-5673
-                                        err += " Please re-upload the NEF file as an NMR combined data file."
+                                        err += " Please re-upload the NEF file as an NMR unified data file."
                                     else:
                                         err += " Please re-upload the file."
 
@@ -14383,7 +14437,7 @@ class NmrDpUtility:
                                         f"but recognized as {self.readable_file_type[_file_type]} file."
 
                                     if _file_type == 'nef':  # DAOTHER-5673
-                                        err += " Please re-upload the NEF file as an NMR combined data file."
+                                        err += " Please re-upload the NEF file as an NMR unified data file."
                                     else:
                                         err += " Please re-upload the file."
 

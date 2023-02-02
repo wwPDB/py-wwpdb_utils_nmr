@@ -36,6 +36,7 @@ import hashlib
 import collections
 import re
 import copy
+import inspect
 
 import numpy as np
 
@@ -129,11 +130,18 @@ def calculate_rmsd(p, q):
     result_rmsd = None
 
     if USE_REFLECTIONS or USE_REFLECTIONS_KEEP_STEREO:
-        result_rmsd, _, _, q_review = check_reflections(p_atoms, q_atoms,
-                                                        p_coord, q_coord,
-                                                        reorder_method=REORDER_METHOD,
-                                                        rotation_method=ROTATION_METHOD,
-                                                        keep_stereo=USE_REFLECTIONS_KEEP_STEREO)
+        if 'rmsd_method' in inspect.getfullargspec(check_reflections).args:  # API changed - detect
+            result_rmsd, _, _, q_review = check_reflections(p_atoms, q_atoms,  # pylint: disable=unexpected-keyword-arg
+                                                            p_coord, q_coord,
+                                                            reorder_method=REORDER_METHOD,
+                                                            rmsd_method=ROTATION_METHOD,
+                                                            keep_stereo=USE_REFLECTIONS_KEEP_STEREO)
+        else:
+            result_rmsd, _, _, q_review = check_reflections(p_atoms, q_atoms,  # pylint: disable=unexpected-keyword-arg
+                                                            p_coord, q_coord,
+                                                            reorder_method=REORDER_METHOD,
+                                                            rotation_method=ROTATION_METHOD,
+                                                            keep_stereo=USE_REFLECTIONS_KEEP_STEREO)
 
     elif REORDER:
         q_review = REORDER_METHOD(p_atoms, q_atoms, p_coord, q_coord)

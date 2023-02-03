@@ -6905,14 +6905,13 @@ class NmrDpUtility:
                             cs_file_name = os.path.splitext(cs_file_name)[0]
 
                         if cs_file_name.endswith('-corrected'):
-                            rem_cs_file_path = os.path.join(rem_dir, cs_file_name[:-10] + '.str')
-
-                            if os.path.islink(rem_cs_file_path):
-                                os.remove(rem_cs_file_path)
-
+                            cs_file_link = os.path.join(rem_dir, cs_file_name[:-10] + '.str')
                             cs_file_path = os.path.join(dir_path, cs_file_name + '.str')
 
-                            os.symlink(cs_file_path, rem_cs_file_path)
+                            if os.path.exists(cs_file_link):
+                                os.remove(cs_file_link)
+
+                            os.symlink(cs_file_path, cs_file_link)
 
                     except OSError:
                         pass
@@ -9128,12 +9127,12 @@ class NmrDpUtility:
                                 if not os.path.isdir(rem_dir):
                                     os.makedirs(rem_dir)
 
-                                rem_cs_file_path = os.path.join(rem_dir, cs_base_name + '.str')
+                                cs_file_link = os.path.join(rem_dir, cs_base_name + '.str')
 
-                                if os.path.islink(rem_cs_file_path):
-                                    os.remove(rem_cs_file_path)
+                                if os.path.exists(cs_file_link):
+                                    os.remove(cs_file_link)
 
-                                os.symlink(cs_file_path, rem_cs_file_path)
+                                os.symlink(cs_file_path, cs_file_link)
 
                             except OSError:
                                 pass
@@ -13330,6 +13329,12 @@ class NmrDpUtility:
 
         self.__mr_atom_name_mapping = []
 
+        remediated = False
+        aborted = False
+        mr_file_path = mr_file_link = None
+        mr_part_paths = []
+        pk_list_paths = []
+
         for ar in self.__inputParamDict[ar_file_path_list]:
 
             src_file = ar['file_name']
@@ -13422,6 +13427,8 @@ class NmrDpUtility:
                 _ar['file_type'] = 'nm-pea-any'
                 peak_file_list.append(_ar)
 
+                pk_list_paths.append({'nm-pea-any': src_basename + '.mr'})
+
                 continue
 
             designated = False
@@ -13445,6 +13452,24 @@ class NmrDpUtility:
 
             if designated:
                 continue
+
+            if mr_file_path is None:
+
+                rem_dir = os.path.join(dir_path, 'remediation')
+
+                try:
+
+                    if not os.path.isdir(rem_dir):
+                        os.makedirs(rem_dir)
+
+                except OSError:
+                    pass
+
+                mr_file_path = src_basename + '-remediated.mr'
+                mr_file_link = os.path.join(rem_dir, os.path.basename(src_basename) + '.mr')
+
+                mr_part_paths.append({'header': header_file})
+                mr_part_paths.append({'footer': footer_file})
 
             has_mr_header = False
             has_pdb_format = False
@@ -13551,6 +13576,8 @@ class NmrDpUtility:
 
                 # split STAR and others
                 if has_str_format and not has_mr_header:
+
+                    remediated = True
 
                     mrPath = os.path.splitext(src_file)[0] + '-ignored.str'
 
@@ -13700,8 +13727,9 @@ class NmrDpUtility:
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
-                                        if 'dist_restraint' in content_subtype or 'dihed_restraint' in content_subtype or 'rdc_restraint' in content_subtype:
+                                        if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
                                             has_mr_str = True
+                                            mr_part_paths.append({'nmr-star': mrPath})
 
                         elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                             pass
@@ -13713,6 +13741,8 @@ class NmrDpUtility:
                                 pass
 
                 elif has_cif_format and not has_mr_header:
+
+                    remediated = True
 
                     mrPath = os.path.splitext(src_file)[0] + '-ignored.cif'
 
@@ -13867,6 +13897,12 @@ class NmrDpUtility:
 
                                 if _is_done:
                                     self.__detectContentSubType__(insert_index, input_source, dir_path)
+                                    input_source_dic = input_source.get()
+                                    if 'content_subtype' in input_source_dic:
+                                        content_subtype = input_source_dic['content_subtype']
+                                        if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                            has_mr_str = True
+                                            mr_part_paths.append({'nmr-star': mrPath})
 
                         elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                             pass
@@ -13899,8 +13935,12 @@ class NmrDpUtility:
                 with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
                     ofp.write('')
 
+                remediated = False
+
             if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                 dst_file = cor_dst_file
+
+                remediated = True
 
             # has no MR haeder
             if not has_mr_header:
@@ -13919,6 +13959,7 @@ class NmrDpUtility:
                         ign_dst_file = dst_file + '-ignored'
 
                         if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
+                            remediated = True
                             continue
 
                         ign_pk_file = dst_file + '-ignored-as-pea-any'
@@ -13929,6 +13970,10 @@ class NmrDpUtility:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = 'nm-pea-any'
                             peak_file_list.append(_ar)
+
+                            pk_list_paths.append({'nm-pea-any': dst_file})
+
+                            remediated = True
 
                             continue
 
@@ -13947,6 +13992,8 @@ class NmrDpUtility:
                                 _ar['file_type'] = _file_type
                                 split_file_list.append(_ar)
 
+                                mr_part_paths.append({_file_type: dst_file})
+
                                 designated = True
 
                                 break
@@ -13960,6 +14007,8 @@ class NmrDpUtility:
                         _ar['file_type'] = 'nm-res-oth'
                         split_file_list.append(_ar)
 
+                        mr_part_paths.append({_ar['file_type']: dst_file})
+
                         continue
 
                     if dst_file.endswith('-div_dst.mr'):
@@ -13967,6 +14016,7 @@ class NmrDpUtility:
                         ign_dst_file = dst_file + '-ignored'
 
                         if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
+                            remediated = True
                             continue
 
                     _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(dst_file, file_name, file_type, [], True)
@@ -13994,6 +14044,8 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
+                        aborted = True
+
                         continue
 
                     if len_possible_types == 0:
@@ -14006,15 +14058,21 @@ class NmrDpUtility:
                             _ar['file_type'] = valid_types[0]
                             split_file_list.append(_ar)
 
+                            mr_part_paths.append({_ar['file_type']: dst_file})
+
                         elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = 'nm-res-xpl'
                             split_file_list.append(_ar)
 
+                            mr_part_paths.append({_ar['file_type']: dst_file})
+
                         elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
                             split_file_list.append(_ar)
+
+                            mr_part_paths.append({_ar['file_type']: dst_file})
 
                         elif len_valid_types == 3\
                                 and (set(valid_types) == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}
@@ -14023,11 +14081,15 @@ class NmrDpUtility:
                             _ar['file_type'] = 'nm-res-xpl'
                             split_file_list.append(_ar)
 
+                            mr_part_paths.append({_ar['file_type']: dst_file})
+
                         elif len_valid_types == 3\
                                 and set(valid_types) == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = 'nm-res-cha'
                             split_file_list.append(_ar)
+
+                            mr_part_paths.append({_ar['file_type']: dst_file})
 
                         else:
                             _ar['file_name'] = dst_file
@@ -14042,6 +14104,8 @@ class NmrDpUtility:
 
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+
+                            aborted = True
 
                     elif len_valid_types == 0:
                         # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
@@ -14061,6 +14125,8 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
+                        aborted = True
+
                     else:
                         # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.\n")
 
@@ -14076,6 +14142,8 @@ class NmrDpUtility:
 
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+
+                        aborted = True
 
             # has MR header
             else:
@@ -14126,6 +14194,7 @@ class NmrDpUtility:
                     ign_dst_file = dst_file + '-ignored'
 
                     if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
+                        remediated = True
                         continue
 
                     split_ext = os.path.splitext(dst_file)
@@ -14160,6 +14229,7 @@ class NmrDpUtility:
 
                         if is_crd:
                             shutil.copyfile(dst_file, ign_dst_file)  # ignore AMBER input coordinate file for the next time
+                            remediated = True
                             continue
 
                     if file_ext in ('frc', 'known') or 'frc' in file_ext:
@@ -14176,6 +14246,7 @@ class NmrDpUtility:
 
                         if is_frc:
                             shutil.copyfile(dst_file, ign_dst_file)  # ignore AMBER frcmod file for the next time
+                            remediated = True
                             continue
 
                     if file_ext == 'seq':
@@ -14211,6 +14282,7 @@ class NmrDpUtility:
 
                         if is_seq:
                             shutil.copyfile(dst_file, ign_dst_file)  # ignore sequence file for the next time
+                            remediated = True
                             continue
 
                     if file_ext == 'cor':
@@ -14233,6 +14305,7 @@ class NmrDpUtility:
 
                         if is_cor:
                             shutil.copyfile(dst_file, ign_dst_file)  # ignore CYANA coordinate file for the next time
+                            remediated = True
                             continue
 
                     ign_pk_file = dst_file + '-ignored-as-pea-any'
@@ -14244,6 +14317,11 @@ class NmrDpUtility:
                         _ar['file_type'] = 'nm-pea-any'
                         peak_file_list.append(_ar)
 
+                        pk_list_paths.append({'nm-pea-any': dst_file,
+                                              'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+
+                        remediated = True
+
                         continue
 
                     ign_ext_file = dst_file + '-ignored-as-res-oth'
@@ -14254,6 +14332,9 @@ class NmrDpUtility:
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = 'nm-res-oth'
                         split_file_list.append(_ar)
+
+                        mr_part_paths.append({_ar['file_type']: dst_file,
+                                              'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                         continue
 
@@ -14272,6 +14353,9 @@ class NmrDpUtility:
                             _ar['file_type'] = _file_type
                             split_file_list.append(_ar)
 
+                            mr_part_paths.append({_file_type: dst_file,
+                                                  'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+
                             designated = True
 
                             break
@@ -14283,6 +14367,8 @@ class NmrDpUtility:
 
                     if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                         dst_file = cor_dst_file
+
+                        remediated = True
 
                     has_spectral_peak = False
 
@@ -14303,6 +14389,11 @@ class NmrDpUtility:
                                 _ar['file_name'] = dst_file
                                 _ar['file_type'] = 'nm-pea-any'
                                 peak_file_list.append(_ar)
+
+                                pk_list_paths.append({'nm-pea-any': dst_file,
+                                                      'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+
+                                remediated = True
 
                             break
 
@@ -14415,6 +14506,12 @@ class NmrDpUtility:
 
                                     if _is_done:
                                         self.__detectContentSubType__(insert_index, input_source, dir_path)
+                                        input_source_dic = input_source.get()
+                                        if 'content_subtype' in input_source_dic:
+                                            content_subtype = input_source_dic['content_subtype']
+                                            if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                                mr_part_paths.append({'nmr-star': mrPath,
+                                                                      'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                             elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                                 pass
@@ -14536,6 +14633,12 @@ class NmrDpUtility:
 
                                     if _is_done:
                                         self.__detectContentSubType()
+                                        input_source_dic = input_source.get()
+                                        if 'content_subtype' in input_source_dic:
+                                            content_subtype = input_source_dic['content_subtype']
+                                            if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                                mr_part_paths.append({'nmr-star': mrPath,
+                                                                      'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                             elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
                                 pass
@@ -14566,6 +14669,11 @@ class NmrDpUtility:
                             _ar['file_type'] = 'nm-pea-any'
                             peak_file_list.append(_ar)
 
+                            pk_list_paths.append({'nm-pea-any': _dst_file,
+                                                  'original_file_name': None if file_name.endswith('-noname.mr') else os.path.basename(file_name)})
+
+                            remediated = True
+
                             continue
 
                         designated = False
@@ -14583,6 +14691,9 @@ class NmrDpUtility:
                                 _ar['file_type'] = _file_type
                                 split_file_list.append(_ar)
 
+                                mr_part_paths.append({_file_type: _dst_file,
+                                                      'original_file_name': None if file_name.endswith('-noname.mr') else os.path.basename(file_name)})
+
                                 designated = True
 
                                 break
@@ -14596,6 +14707,9 @@ class NmrDpUtility:
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = 'nm-res-oth'
                             split_file_list.append(_ar)
+
+                            mr_part_paths.append({_ar['file_type']: _dst_file,
+                                                  'original_file_name': None if file_name.endswith('-noname.mr') else os.path.basename(file_name)})
 
                             continue
 
@@ -14625,6 +14739,8 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
+                            aborted = True
+
                             continue
 
                         if len_possible_types == 0:
@@ -14639,6 +14755,9 @@ class NmrDpUtility:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
 
+                                mr_part_paths.append({_ar['file_type']: _dst_file,
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else os.path.basename(_dst_file)})
+
                             elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-xpl'
@@ -14646,12 +14765,18 @@ class NmrDpUtility:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
 
+                                mr_part_paths.append({_ar['file_type']: _dst_file,
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else os.path.basename(_dst_file)})
+
                             elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
                                 if distict:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
+
+                                mr_part_paths.append({_ar['file_type']: _dst_file,
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else os.path.basename(_dst_file)})
 
                             elif len_valid_types == 3\
                                     and (set(valid_types) == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}
@@ -14662,6 +14787,9 @@ class NmrDpUtility:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
 
+                                mr_part_paths.append({_ar['file_type']: _dst_file,
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else os.path.basename(_dst_file)})
+
                             elif len_valid_types == 3\
                                     and set(valid_types) == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
                                 _ar['file_name'] = _dst_file
@@ -14669,6 +14797,9 @@ class NmrDpUtility:
                                 if distict:
                                     _ar['original_file_name'] = file_name
                                 split_file_list.append(_ar)
+
+                                mr_part_paths.append({_ar['file_type']: _dst_file,
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else os.path.basename(_dst_file)})
 
                             else:
                                 _ar['file_name'] = _dst_file
@@ -14684,6 +14815,8 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+
+                                aborted = True
 
                         elif len_valid_types == 0:
                             # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
@@ -14702,6 +14835,8 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
+                            aborted = True
+
                         else:
                             # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.\n")
 
@@ -14718,6 +14853,8 @@ class NmrDpUtility:
 
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+
+                            aborted = True
 
         len_peak_file_list = len(peak_file_list)
         has_spectral_peak = len_peak_file_list > 0
@@ -14811,6 +14948,106 @@ class NmrDpUtility:
             if not os.path.exists(touch_file):
                 with open(os.path.join(dir_path, '.entry_with_pk'), 'w') as ofp:
                     ofp.write('')
+
+        if not aborted and remediated and mr_file_path is not None:
+            with open(mr_file_path, 'w') as ofp:
+
+                header_file = next(mr_part_path['header'] for mr_part_path in mr_part_paths if 'header' in mr_part_path)
+                with open(header_file, 'r') as ifp:
+                    for line in ifp:
+                        ofp.write(line)
+
+                file_idx = 1
+                for mr_part_path in mr_part_paths:
+                    if 'header' in mr_part_path or 'footer' in mr_part_path:
+                        continue
+
+                    for file_type in ['nmr-star',
+                                      'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth',
+                                      'nm-aux-amb', 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro',
+                                      'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-sax']:
+                        if file_type in mr_part_path:
+                            file_path = mr_part_path[file_type]
+                            if 'original_file_name' in mr_part_path and mr_part_path['original_file_name'] is not None:
+                                original_file_name = mr_part_path['original_file_name']
+                            else:
+                                original_file_name = os.path.basename(file_path)
+
+                            ofp.write(f'# Restraints file {file_idx}: {original_file_name}\n')
+
+                            if file_type == 'nm-res-xpl':
+                                mr_format_name = 'XPLOR-NIH/CNS'
+                            elif file_type == 'nm-res-cns':
+                                mr_format_name = 'CNS'
+                            elif file_type in ('nm-res-amb', 'nm-aux-amb'):
+                                mr_format_name = 'AMBER'
+                            elif file_type == 'nm-res-cya':
+                                mr_format_name = 'CYANA'
+                            elif file_type == 'nm-res-ros':
+                                mr_format_name = 'ROSETTA'
+                            elif file_type == 'nm-res-bio':
+                                mr_format_name = 'BIOSYM'
+                            elif file_type in ('nm-res-gro', 'nm-aux-gro'):
+                                mr_format_name = 'GROMACS'
+                            elif file_type == 'nm-res-dyn':
+                                mr_format_name = 'DYNAMO/PALES/TALOS'
+                            elif file_type == 'nm-res-syb':
+                                mr_format_name = 'SYBYL'
+                            elif file_type == 'nm-res-isd':
+                                mr_format_name = 'ISD'
+                            elif file_type == 'nm-res-cha':
+                                mr_format_name = 'CHARMM'
+                            elif file_type == 'nmr-star':
+                                mr_format_name = 'NMR-STAR'
+                            else:
+                                mr_format_name = 'other'
+
+                            ofp.write(f'# Restraint file format: {mr_format_name}\n')
+
+                            with open(file_path, 'r') as ifp:
+                                for line in ifp:
+                                    ofp.write(line)
+
+                            break
+
+                    file_idx += 1
+
+                footer_file = next(mr_part_path['footer'] for mr_part_path in mr_part_paths if 'footer' in mr_part_path)
+                with open(footer_file, 'r') as ifp:
+                    for line in ifp:
+                        ofp.write(line)
+
+            if os.path.exists(mr_file_link):
+                os.remove(mr_file_link)
+
+            os.symlink(mr_file_path, mr_file_link)
+
+            if len(pk_list_paths) > 0:
+
+                pk_dir = os.path.join(dir_path, 'nmr_peak_lists')
+
+                try:
+
+                    if not os.path.isdir(pk_dir):
+                        os.makedirs(pk_dir)
+
+                except OSError:
+                    pass
+
+                for pk_list_path in pk_list_paths:
+
+                    pk_file_path = pk_list_path['nm-pea-any']
+                    if 'original_file_name' in pk_list_path and pk_list_path['original_file_name'] is not None:
+                        original_file_name = pk_list_path['original_file_name']
+                    else:
+                        original_file_name = os.path.basename(file_path)
+
+                    rem_pk_file_path = os.path.join(pk_dir, original_file_name)
+
+                    if os.path.exists(rem_pk_file_path):
+                        os.remove(rem_pk_file_path)
+
+                    os.symlink(pk_file_path, rem_pk_file_path)
 
         return not self.report.isError()
 
@@ -45832,12 +46069,12 @@ class NmrDpUtility:
                 nmr_file_name = os.path.basename(self.__dstPath)
 
                 if nmr_file_name.endswith('_nmr_data.str'):
-                    rem_nmr_file_path = os.path.join(rem_dir, nmr_file_name)
+                    nmr_file_link = os.path.join(rem_dir, nmr_file_name)
 
-                    if os.path.islink(rem_nmr_file_path):
-                        os.remove(rem_nmr_file_path)
+                    if os.path.exists(nmr_file_link):
+                        os.remove(nmr_file_link)
 
-                    os.symlink(self.__dstPath, rem_nmr_file_path)
+                    os.symlink(self.__dstPath, nmr_file_link)
 
             except OSError:
                 pass

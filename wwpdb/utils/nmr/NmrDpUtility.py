@@ -403,7 +403,9 @@ ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
 
 RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 
-bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr\d+_3.str$')
+bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr\d[0-9]{1,5}_3.str$')
+mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
+pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
 
 datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
 sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
@@ -600,7 +602,7 @@ def has_key_value(d=None, key=None):
         return False
 
     if key in d:
-        return not d[key] is None
+        return d[key] is not None
 
     return False
 
@@ -2486,9 +2488,11 @@ class NmrDpUtility:
                                   }
 
         # key items for spectral peak
-        self.pk_key_items = {'nef': [{'name': 'position_%s', 'type': 'float'}
+        self.pk_key_items = {'nef': [{'name': 'position_%s', 'type': 'float'},
+                                     {'name': 'peak_id', 'type': 'positive-int'}
                                      ],
-                             'nmr-star': [{'name': 'Position_%s', 'type': 'float'}
+                             'nmr-star': [{'name': 'Position_%s', 'type': 'float'},
+                                          {'name': 'ID', 'type': 'positive-int'}
                                           ]
                              }
 
@@ -2643,8 +2647,6 @@ class NmrDpUtility:
                                                      {'name': 'distance_dependent', 'type': 'bool', 'mandatory': False}
                                                      ],
                                    'spectral_peak': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
-                                                     {'name': 'peak_id', 'type': 'positive-int', 'mandatory': True,
-                                                      'enforce-non-zero': True},
                                                      {'name': 'volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                       'group': {'member-with': ['height'],
                                                                 'coexist-with': None}},
@@ -6883,6 +6885,38 @@ class NmrDpUtility:
                     convert_codec(csPath, _csPath, codec, 'utf-8')
                     csPath = _csPath
 
+                if self.__op == 'nmr-cs-mr-merge':
+
+                    dir_path = os.path.dirname(csPath)
+
+                    rem_dir = os.path.join(dir_path, 'remediation')
+
+                    try:
+
+                        if not os.path.isdir(rem_dir):
+                            os.makedirs(rem_dir)
+
+                        cs_file_name = os.path.basename(csPath)
+
+                        if cs_file_name.endswith('.cif2str'):
+                            cs_file_name = os.path.splitext(cs_file_name)[0]
+
+                        if cs_file_name.endswith('.str'):
+                            cs_file_name = os.path.splitext(cs_file_name)[0]
+
+                        if cs_file_name.endswith('-corrected'):
+                            rem_cs_file_path = os.path.join(rem_dir, cs_file_name[:-10] + '.str')
+
+                            if os.path.islink(rem_cs_file_path):
+                                os.remove(rem_cs_file_path)
+
+                            cs_file_path = os.path.join(dir_path, cs_file_name + '.str')
+
+                            os.symlink(cs_file_path, rem_cs_file_path)
+
+                    except OSError:
+                        pass
+
                 is_valid, message = self.__nefT.validate_file(csPath, 'S')  # 'S' for assigned chemical shifts
 
                 self.__original_error_message.append(message)
@@ -8882,8 +8916,15 @@ class NmrDpUtility:
 
         self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id])
 
-        if self.__combined_mode and file_list_id == 0 and '_Constraint_file' in self.__lp_category_list:
-            self.__remediation_mode = True
+        if self.__combined_mode and file_list_id == 0 and file_type == 'nmr-star'\
+           and 'constraint_statistics' in self.__sf_category_list\
+           and '_Constraint_file' in self.__lp_category_list:
+            _sf_data = self.__star_data[file_list_id].get_saveframes_by_category('constraint_statistics')[0]
+            file_name = get_first_sf_tag(_sf_data, 'Data_file_name')
+            if mr_file_name_pattern.match(file_name):
+                entry_id = get_first_sf_tag(_sf_data, 'Entry_ID')
+                if pdb_id_pattern.match(entry_id):
+                    self.__remediation_mode = True
 
         is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[file_list_id])  # DAOTHER-7389, issue #4
         self.__sf_name_corr.append(corrections)
@@ -9052,11 +9093,10 @@ class NmrDpUtility:
                             else:
                                 cs_path = cs['file_name']
 
-                            dir_path = os.path.dirname(cs_path)
-                            cs_file_name = os.path.basename(cs_path)
+                            if dir_path is None:
+                                dir_path = os.path.dirname(cs_path)
 
-                            if cs_file_name.endswith('.gz'):
-                                cs_file_name = os.path.splitext(cs_file_name)[0]
+                            cs_file_name = os.path.basename(cs_path)
 
                             if cs_file_name.endswith('.cif2str'):
                                 cs_file_name = os.path.splitext(cs_file_name)[0]
@@ -9067,8 +9107,8 @@ class NmrDpUtility:
                             if cs_file_name.endswith('-corrected'):
                                 cs_file_name = cs_file_name[:-10]
 
-                            cs_file_name += '-corrected.str'
-
+                            cs_base_name = cs_file_name
+                            cs_file_name = cs_base_name + '-corrected.str'
                             cs_file_path = os.path.join(dir_path, cs_file_name)
 
                             if not os.path.exists(cs_file_path):
@@ -9080,6 +9120,23 @@ class NmrDpUtility:
                                     master_entry.write_to_file(cs_file_path)
 
                                 compress_as_gzip_file(cs_file_path, cs_file_path + '.gz')
+
+                            rem_dir = os.path.join(dir_path, 'remediation')
+
+                            try:
+
+                                if not os.path.isdir(rem_dir):
+                                    os.makedirs(rem_dir)
+
+                                rem_cs_file_path = os.path.join(rem_dir, cs_base_name + '.str')
+
+                                if os.path.islink(rem_cs_file_path):
+                                    os.remove(rem_cs_file_path)
+
+                                os.symlink(cs_file_path, rem_cs_file_path)
+
+                            except OSError:
+                                pass
 
                         self.__star_data[file_list_id].remove_saveframe(sf_framecode)
 
@@ -18853,10 +18910,14 @@ class NmrDpUtility:
             key_items = []
             for dim in range(1, max_dim):
                 for k in self.pk_key_items[file_type]:
-                    _k = copy.copy(k)
-                    if '%s' in k['name']:
-                        _k['name'] = k['name'] % dim
-                    key_items.append(_k)
+                    if k['type'] == 'float':  # position
+                        _k = copy.copy(k)
+                        if '%s' in k['name']:
+                            _k['name'] = k['name'] % dim
+                        key_items.append(_k)
+            for k in self.pk_key_items[file_type]:
+                if k['type'] == 'positive-int':  # peak_id
+                    key_items.append(k)
 
             data_items = []
             for d in self.data_items[file_type][content_subtype]:
@@ -20180,10 +20241,11 @@ class NmrDpUtility:
                 key_items = []
                 for dim in range(1, max_dim):
                     for k in self.pk_key_items[file_type]:
-                        _k = copy.copy(k)
-                        if '%s' in k['name']:
-                            _k['name'] = k['name'] % dim
-                        key_items.append(_k)
+                        if k['type'] == 'float':  # position
+                            _k = copy.copy(k)
+                            if '%s' in k['name']:
+                                _k['name'] = k['name'] % dim
+                            key_items.append(_k)
 
                 position_names = [k['name'] for k in key_items]
                 index_tag = self.index_tags[file_type][content_subtype]
@@ -38453,10 +38515,14 @@ class NmrDpUtility:
                 key_items = []
                 for dim in range(1, max_dim):
                     for k in self.pk_key_items[file_type]:
-                        _k = copy.copy(k)
-                        if '%s' in k['name']:
-                            _k['name'] = k['name'] % dim
-                        key_items.append(_k)
+                        if k['type'] == 'float':  # position
+                            _k = copy.copy(k)
+                            if '%s' in k['name']:
+                                _k['name'] = k['name'] % dim
+                            key_items.append(_k)
+                for k in self.pk_key_items[file_type]:
+                    if k['type'] == 'positive-int':  # peak_id
+                        key_items.append(k)
 
                 data_items = []
                 for d in self.data_items[file_type][content_subtype]:
@@ -38881,10 +38947,14 @@ class NmrDpUtility:
                     key_items = []
                     for dim in range(1, max_dim):
                         for k in self.pk_key_items[file_type]:
-                            _k = copy.copy(k)
-                            if '%s' in k['name']:
-                                _k['name'] = k['name'] % dim
-                            key_items.append(_k)
+                            if k['type'] == 'float':  # position
+                                _k = copy.copy(k)
+                                if '%s' in k['name']:
+                                    _k['name'] = k['name'] % dim
+                                key_items.append(_k)
+                    for k in self.pk_key_items[file_type]:
+                        if k['type'] == 'positive-int':  # peak_id
+                            key_items.append(k)
 
                     data_items = []
                     for d in self.data_items[file_type][content_subtype]:
@@ -39315,7 +39385,7 @@ class NmrDpUtility:
         """ Update entry information.
         """
 
-        if self.__combined_mode:
+        if not self.__combined_mode and not self.__remediation_mode:
             return True
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
@@ -44895,10 +44965,14 @@ class NmrDpUtility:
                     key_items = []
                     for dim in range(1, max_dim):
                         for k in self.pk_key_items[file_type]:
-                            _k = copy.copy(k)
-                            if '%s' in k['name']:
-                                _k['name'] = k['name'] % dim
-                            key_items.append(_k)
+                            if k['type'] == 'float':  # position
+                                _k = copy.copy(k)
+                                if '%s' in k['name']:
+                                    _k['name'] = k['name'] % dim
+                                key_items.append(_k)
+                    for k in self.pk_key_items[file_type]:
+                        if k['type'] == 'positive-int':  # peak_id
+                            key_items.append(k)
 
                     data_items = []
                     for d in self.data_items[file_type][content_subtype]:
@@ -45035,10 +45109,14 @@ class NmrDpUtility:
                     key_items = []
                     for dim in range(1, max_dim):
                         for k in self.pk_key_items[file_type]:
-                            _k = copy.copy(k)
-                            if '%s' in k['name']:
-                                _k['name'] = k['name'] % dim
-                            key_items.append(_k)
+                            if k['type'] == 'float':  # position
+                                _k = copy.copy(k)
+                                if '%s' in k['name']:
+                                    _k['name'] = k['name'] % dim
+                                key_items.append(_k)
+                    for k in self.pk_key_items[file_type]:
+                        if k['type'] == 'positive-int':  # peak_id
+                            key_items.append(k)
 
                     data_items = []
                     for d in self.data_items[file_type][content_subtype]:
@@ -45739,6 +45817,30 @@ class NmrDpUtility:
             master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
             master_entry.write_to_file(self.__dstPath)
+
+        if self.__op == 'nmr-str2str-deposit' and self.__remediation_mode:
+
+            dir_path = os.path.dirname(self.__dstPath)
+
+            rem_dir = os.path.join(dir_path, 'remediation')
+
+            try:
+
+                if not os.path.isdir(rem_dir):
+                    os.makedirs(rem_dir)
+
+                nmr_file_name = os.path.basename(self.__dstPath)
+
+                if nmr_file_name.endswith('_nmr_data.str'):
+                    rem_nmr_file_path = os.path.join(rem_dir, nmr_file_name)
+
+                    if os.path.islink(rem_nmr_file_path):
+                        os.remove(rem_nmr_file_path)
+
+                    os.symlink(self.__dstPath, rem_nmr_file_path)
+
+            except OSError:
+                pass
 
         if 'nef' not in self.__op and 'deposit' in self.__op and 'nmr_cif_file_path' in self.__outputParamDict:
 
@@ -47164,7 +47266,7 @@ class NmrDpUtility:
         """ Update _Constraint_stat_list saveframe.
         """
 
-        if not self.__combined_mode or self.__dstPath is None:
+        if (not self.__combined_mode and not self.__remediation_mode) or self.__dstPath is None:
             return True
 
         input_source = self.report.input_sources[0]

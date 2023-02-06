@@ -1855,6 +1855,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         chainAssign = set()
         _seqId = seqId
+        _compId = compId
 
         fixedChainId = None
         fixedSeqId = None
@@ -1892,7 +1893,8 @@ class CyanaMRParserListener(ParseTreeListener):
                and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
-        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, translateToStdResName(compId, self.__ccU), compId)
+        compId = translateToStdResName(_compId, self.__ccU)
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -1925,7 +1927,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
@@ -2022,7 +2024,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
                             #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
 
             if self.__hasNonPolySeq:
@@ -2063,7 +2065,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
 
         if len(chainAssign) == 0:
@@ -2101,7 +2103,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
                             #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
 
         if len(chainAssign) == 0:
@@ -2110,12 +2112,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
             if seqId < 1 and len(self.__polySeq) == 1:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{compId}:{atomId} is not present in the coordinates. "\
+                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "\
                     f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "\
                     "Please update the sequence in the Macromolecules page.\n"
             else:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.\n"
 
         return list(chainAssign)
 
@@ -2125,7 +2127,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
         chainAssign = set()
         _seqId = seqId
+        _compId = compId
 
+        _refChainId = refChainId
         fixedChainId = None
         fixedSeqId = None
 
@@ -2164,14 +2168,15 @@ class CyanaMRParserListener(ParseTreeListener):
             if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
-        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, translateToStdResName(compId, self.__ccU), compId)
+        compId = translateToStdResName(_compId, self.__ccU)
+        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId, _compId)
 
-        if refChainId is not None:
-            if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == refChainId):
-                fixedChainId = refChainId
+        if refChainId is not None or refChainId != _refChainId:
+            if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _refChainId):
+                fixedChainId = _refChainId
             elif self.__hasNonPolySeq:
-                if any(np for np in self.__nonPolySeq if np['auth_chain_id'] == refChainId):
-                    fixedChainId = refChainId
+                if any(np for np in self.__nonPolySeq if np['auth_chain_id'] == _refChainId):
+                    fixedChainId = _refChainId
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -2211,7 +2216,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
@@ -2323,7 +2328,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
                             #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
 
             if self.__hasNonPolySeq:
@@ -2382,7 +2387,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
 
         if len(chainAssign) == 0:
@@ -2428,7 +2433,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
                             #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
 
         if len(chainAssign) == 0:
@@ -2437,17 +2442,17 @@ class CyanaMRParserListener(ParseTreeListener):
                     return self.assignCoordPolymerSequenceWithChainId(refChainId, seqId, compId, 'H1')
             if compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId):
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{compId}:{atomId} is not present in the coordinates. "\
+                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "\
                     "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.\n"
             else:
                 if seqId < 1 and len(self.__polySeq) == 1:
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{_seqId}:{compId}:{atomId} is not present in the coordinates. "\
+                        f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "\
                         f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "\
                         "Please update the sequence in the Macromolecules page.\n"
                 else:
                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                        f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.\n"
 
         elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
@@ -2824,6 +2829,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         authAtomId = atomId
 
+        _compId = compId
         _atomId = atomId
 
         if compId is not None:
@@ -2881,6 +2887,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(atomSelection) > 0:
                         self.atomSelectionSet.append(atomSelection)
                     return
+
+            compId = translateToStdResName(_compId, self.__ccU)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
@@ -2959,21 +2967,26 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__setLocalSeqScheme()
                                 continue
                     self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-                        f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
+                        f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
                     continue
 
+            if compId != cifCompId and compId in monDict3 and not isPolySeq:
+                continue
+
             if lenAtomId == 0:
+                if compId != cifCompId and any(item for item in chainAssign if item[2] == compId):
+                    continue
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, offset=1)
                     return
                 if enableWarning:
                     self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
+                        f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.\n"
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 if enableWarning:
                     self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                        f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
+                        f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.\n"
                 continue
 
             for cifAtomId in _atomId:
@@ -5928,8 +5941,34 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.__col_order_of_dist_w_chain) == 0:
                 for j in range(3):
                     if len(jVal[j]) > 2 and translateToStdResName(jVal[j], self.__ccU) in monDict3:
+                        compId = translateToStdResName(jVal[j], self.__ccU)
+                        if self.__ccU.updateChemCompDict(compId):
+                            for k in range(3):
+                                if k == j:
+                                    continue
+                                atomId = jVal[k]
+                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                        _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                if details is not None:
+                                    _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                                    if _atomId_ != atomId:
+                                        if atomId.startswith('HT') and len(_atomId_) == 2:
+                                            _atomId_ = 'H'
+                                        _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                if len(_atomId) > 0:
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
+                                    if cca is not None:
+                                        self.__col_order_of_dist_w_chain['comp_id_1'] = j
+                                        self.__col_order_of_dist_w_chain['atom_id_1'] = k
+                                        self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
+                                        break
+                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], self.__ccU) not in monDict3:
                         self.__col_order_of_dist_w_chain['comp_id_1'] = j
-                        compId = jVal[j]
+                        compId = translateToStdResName(jVal[j], self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3):
                                 if k == j:
@@ -5955,8 +5994,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                         break
                 for j in range(3, 6):
                     if len(jVal[j]) > 2 and translateToStdResName(jVal[j], self.__ccU) in monDict3:
-                        self.__col_order_of_dist_w_chain['comp_id_2'] = j
-                        compId = jVal[j]
+                        compId = translateToStdResName(jVal[j], self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3, 6):
                                 if k == j:
@@ -5977,6 +6015,33 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if len(_atomId) > 0:
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
                                     if cca is not None:
+                                        self.__col_order_of_dist_w_chain['comp_id_2'] = j
+                                        self.__col_order_of_dist_w_chain['atom_id_2'] = k
+                                        self.__col_order_of_dist_w_chain['chain_id_2'] = 12 - (j + k)
+                                        break
+                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], self.__ccU) not in monDict3:
+                        compId = translateToStdResName(jVal[j], self.__ccU)
+                        if self.__ccU.updateChemCompDict(compId):
+                            for k in range(3, 6):
+                                if k == j:
+                                    continue
+                                atomId = jVal[k]
+                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                        _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                if details is not None:
+                                    _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                                    if atomId.startswith('HT') and len(_atomId_) == 2:
+                                        _atomId_ = 'H'
+                                    if _atomId_ != atomId:
+                                        _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                if len(_atomId) > 0:
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
+                                    if cca is not None:
+                                        self.__col_order_of_dist_w_chain['comp_id_2'] = j
                                         self.__col_order_of_dist_w_chain['atom_id_2'] = k
                                         self.__col_order_of_dist_w_chain['chain_id_2'] = 12 - (j + k)
                                         break

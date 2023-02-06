@@ -727,6 +727,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         chainAssign = set()
         _seqId = seqId
+        _compId = compId
 
         fixedChainId = None
         fixedSeqId = None
@@ -749,7 +750,8 @@ class IsdMRParserListener(ParseTreeListener):
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
-        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, translateToStdResName(compId, self.__ccU), compId)
+        compId = translateToStdResName(_compId, self.__ccU)
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
@@ -782,7 +784,7 @@ class IsdMRParserListener(ParseTreeListener):
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
@@ -881,7 +883,7 @@ class IsdMRParserListener(ParseTreeListener):
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
                             #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
 
             if self.__hasNonPolySeq:
@@ -922,7 +924,7 @@ class IsdMRParserListener(ParseTreeListener):
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
                     #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                     # """
 
         if len(chainAssign) == 0:
@@ -960,7 +962,7 @@ class IsdMRParserListener(ParseTreeListener):
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
                             #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
                             # """
 
         if len(chainAssign) == 0:
@@ -969,12 +971,12 @@ class IsdMRParserListener(ParseTreeListener):
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
             if seqId < 1 and len(self.__polySeq) == 1:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{compId}:{atomId} is not present in the coordinates. "\
+                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "\
                     f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "\
                     "Please update the sequence in the Macromolecules page.\n"
             else:
                 self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.\n"
 
         return list(chainAssign)
 
@@ -986,9 +988,13 @@ class IsdMRParserListener(ParseTreeListener):
 
         authAtomId = atomId
 
+        _compId = compId
         _atomId = atomId
+
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+
+        compId = translateToStdResName(_compId, self.__ccU)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
@@ -1067,19 +1073,24 @@ class IsdMRParserListener(ParseTreeListener):
                                 self.__setLocalSeqScheme()
                                 continue
                     self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-                        f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
+                        f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
                     continue
 
+            if compId != cifCompId and compId in monDict3 and not isPolySeq:
+                continue
+
             if lenAtomId == 0:
+                if compId != cifCompId and any(item for item in chainAssign if item[2] == compId):
+                    continue
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, offset=1)
                     return
                 self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
+                    f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.\n"
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
+                    f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.\n"
                 continue
 
             for cifAtomId in _atomId:

@@ -6449,7 +6449,7 @@ class NmrDpUtility:
 
                 for link_file in os.listdir(rem_dir):
 
-                    link_path = os.path.join(rem_dir, list_file)
+                    link_path = os.path.join(rem_dir, link_file)
 
                     if os.path.islink(link_path):
                         os.remove(link_path)
@@ -6462,7 +6462,7 @@ class NmrDpUtility:
 
                 for link_file in os.listdir(pk_dir):
 
-                    link_path = os.path.join(pk_dir, list_file)
+                    link_path = os.path.join(pk_dir, link_file)
 
                     if os.path.islink(link_path):
                         os.remove(link_path)
@@ -27075,6 +27075,8 @@ class NmrDpUtility:
 
             if content_subtype == 'dist_restraint':
 
+                self.__updateGenDistConstIdInMrStr(sf_item)
+
                 sf_item['constraint_type'] = 'distance'
                 sf_item['constraint_subsubtype'] = 'simple'
                 constraint_type = get_first_sf_tag(sf, 'Constraint_type')
@@ -27535,6 +27537,72 @@ class NmrDpUtility:
         self.__mr_sf_dict_holder[content_subtype].append(sf_item)
 
         return True
+
+    def __updateGenDistConstIdInMrStr(self, sf_item):
+        """ Update _Gen_dist_constraint.ID in NMR-STAR restraint file.
+        """
+
+        loop = sf_item['loop']
+
+        lp = pynmrstar.Loop.from_scratch(loop.category)
+
+        for tag in loop.tags:
+            lp.add_tag(loop.category + '.' + tag)
+
+        id_col = loop.tags.index('ID')
+        member_logic_code_col = loop.tags.index('Member_logic_code')
+
+        chain_id_1_col = loop.tags.index('Auth_asym_ID_1')
+        seq_id_1_col = loop.tags.index('Auth_seq_ID_1')
+        comp_id_1_col = loop.tags.index('Auth_comp_ID_1')
+        atom_id_1_col = loop.tags.index('Auth_atom_ID_1')
+
+        chain_id_2_col = loop.tags.index('Auth_asym_ID_2')
+        seq_id_2_col = loop.tags.index('Auth_seq_ID_2')
+        comp_id_2_col = loop.tags.index('Auth_comp_ID_2')
+        atom_id_2_col = loop.tags.index('Auth_atom_ID_2')
+
+        _atom1 = _atom2 = None
+
+        sf_item['id'] = 0
+
+        for row in loop:
+            _row = row
+
+            sf_item['id'] += 1
+
+            try:
+
+                atom1 = {'chain_id': row[chain_id_1_col],
+                         'seq_id': int(row[seq_id_1_col]),
+                         'comp_id': row[comp_id_1_col],
+                         'atom_id': row[atom_id_1_col]}
+
+                atom2 = {'chain_id': row[chain_id_2_col],
+                         'seq_id': int(row[seq_id_2_col]),
+                         'comp_id': row[comp_id_2_col],
+                         'atom_id': row[atom_id_2_col]}
+
+                if _atom1 is not None:
+
+                    if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
+                       and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
+                        _row[member_logic_code_col] = 'OR'
+                        sf_item['id'] -= 1
+
+                _atom1 = atom1
+                _atom2 = atom2
+
+            except ValueError:
+                _atom1 = _atom2 = None
+
+            _row[id_col] = sf_item['id']
+            lp.add_data(_row)
+
+        del sf_item['saveframe'][loop]
+
+        sf_item['saveframe'].add_loop(lp)
+        sf_item['loop'] = lp
 
     def __mergeStrPk(self):
         """ Merge spectral peak lists in NMR-STAR restraint files.

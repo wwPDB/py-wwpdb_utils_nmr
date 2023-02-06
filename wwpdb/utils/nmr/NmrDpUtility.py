@@ -6439,7 +6439,13 @@ class NmrDpUtility:
 
         self.__dumpDpReport()
 
-        if self.__op == 'nmr-str2str-deposit' and self.__remediation_mode and self.report.isError() and self.__dstPath is not None:
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        if ((self.__op == 'nmr-cs-mr-merge' and self.report.error.getValueList('missing_mandatory_content',
+                                                                               input_source_dic['file_name'],
+                                                                               key='_Atom_chem_shift') is not None)
+            or (self.__op == 'nmr-str2str-deposit' and self.__remediation_mode)) and self.report.isError() and self.__dstPath is not None:
 
             dir_path = os.path.dirname(self.__dstPath)
 

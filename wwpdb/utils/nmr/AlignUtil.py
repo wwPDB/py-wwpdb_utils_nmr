@@ -458,6 +458,43 @@ def indexToLetter(index):
         + str(chr(65 + (index % 27)))
 
 
+def getRestraintFormatName(fileType, ambig=False):
+    """ Return restraint format name.
+    """
+
+    if fileType == 'nm-res-xpl':
+        return 'XPLOR-NIH/CNS restraint' if ambig else 'XPLOR-NIH restraint'
+    if fileType == 'nm-res-cns':
+        return 'CNS/XPLOR-NIH restraint' if ambig else 'CNS restraint'
+    if fileType == 'nm-res-amb':
+        return 'AMBER restraint'
+    if fileType == 'nm-aux-amb':
+        return 'AMBER topology'
+    if fileType == 'nm-res-cya':
+        return 'CYANA restraint'
+    if fileType == 'nm-res-ros':
+        return 'ROSETTA restraint'
+    if fileType == 'nm-res-bio':
+        return 'BIOSYM restraint'
+    if fileType == 'nm-res-gro':
+        return 'GROMACS restraint'
+    if fileType == 'nm-aux-gro':
+        return 'GROMACS topology'
+    if fileType == 'nm-res-dyn':
+        return 'DYNAMO/PALES/TALOS restraint'
+    if fileType == 'nm-res-syb':
+        return 'SYBYL restraint'
+    if fileType == 'nm-res-isd':
+        return 'ISD restraint'
+    if fileType == 'nm-res-cha':
+        return 'CHARMM restraint'
+    if fileType == 'nmr-star':
+        return 'NMR-STAR data'
+    if fileType == 'nm-res-mr':
+        return 'MR data'
+    return 'other restraint'
+
+
 def updatePolySeqRst(polySeqRst, chainId, seqId, compId, authCompId=None):
     """ Update polymer sequence of the current MR file.
     """
@@ -956,51 +993,8 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
     if pA is None or polySeqModel is None or polySeqRst is None or seqAlign is None:
         return None, warningMessage
 
-    if fileType == 'nm-res-xpl':
-        _mr_format_name = 'XPLOR-NIH'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nm-res-cns':
-        _mr_format_name = 'CNS'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nm-res-amb':
-        _mr_format_name = 'AMBER'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nm-aux-amb':
-        _mr_format_name = 'AMBER'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' parameter/topology'
-    elif fileType == 'nm-res-cya':
-        _mr_format_name = 'CYANA'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nm-res-ros':
-        _mr_format_name = 'ROSETTA'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nm-res-bio':
-        _mr_format_name = 'BIOSYM'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nm-res-gro':
-        _mr_format_name = 'GROMACS'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nm-aux-gro':
-        _mr_format_name = 'GROMACS'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' parameter/topology'
-    elif fileType == 'nm-res-dyn':
-        _mr_format_name = 'DYNAMO/PALES/TALOS'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nm-res-syb':
-        _mr_format_name = 'SYBYL'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nm-res-isd':
-        _mr_format_name = 'ISD'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nm-res-cha':
-        _mr_format_name = 'CHARMM'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
-    elif fileType == 'nmr-star':
-        _mr_format_name = 'NMR-STAR'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' data'
-    else:
-        _mr_format_name = 'MR'
-        _a_mr_format_name = 'the ' + _mr_format_name + ' restraint'
+    mrFormatName = getRestraintFormatName(fileType)
+    _a_mr_format_name = 'the ' + mrFormatName
 
     mr_chains = len(polySeqRst) if len(polySeqRst) < LEN_LARGE_ASYM_ID else LEN_LARGE_ASYM_ID
 

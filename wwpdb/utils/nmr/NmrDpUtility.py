@@ -215,6 +215,7 @@ try:
                                            getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
                                            getOneLetterCode, getOneLetterCodeSequence,
                                            letterToDigit,
+                                           getRestraintFormatName,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -306,6 +307,7 @@ except ImportError:
                                getMiddleCode, getGaugeCode, getScoreOfSeqAlign,
                                getOneLetterCode, getOneLetterCodeSequence,
                                letterToDigit,
+                               getRestraintFormatName,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -6437,6 +6439,36 @@ class NmrDpUtility:
 
         self.__dumpDpReport()
 
+        if self.__op == 'nmr-str2str-deposit' and self.__remediation_mode and self.report.isError() and self.__dstPath is not None:
+
+            dir_path = os.path.dirname(self.__dstPath)
+
+            rem_dir = os.path.join(dir_path, 'remediation')
+
+            if os.path.isdir(rem_dir):
+
+                for link_file in os.listdir(rem_dir):
+
+                    link_path = os.path.join(rem_dir, list_file)
+
+                    if os.path.islink(link_path):
+                        os.remove(link_path)
+
+                os.removedirs(rem_dir)
+
+            pk_dir = os.path.join(dir_path, 'nmr_peak_lists')
+
+            if os.path.isdir(pk_dir):
+
+                for link_file in os.listdir(pk_dir):
+
+                    link_path = os.path.join(pk_dir, list_file)
+
+                    if os.path.islink(link_path):
+                        os.remove(link_path)
+
+                os.removedirs(pk_dir)
+
         return not self.report.isError()
 
     def __dumpDpReport(self):
@@ -9368,41 +9400,9 @@ class NmrDpUtility:
             is_aux_amb = file_type == 'nm-aux-amb'
             is_aux_gro = file_type == 'nm-aux-gro'
 
-            if file_type == 'nm-res-xpl':
-                mr_format_name = 'XPLOR-NIH'
-                a_mr_format_name = 'an ' + mr_format_name
-            elif file_type == 'nm-res-cns':
-                mr_format_name = 'CNS'
-                a_mr_format_name = 'a ' + mr_format_name
-            elif file_type in ('nm-res-amb', 'nm-aux-amb'):
-                mr_format_name = 'AMBER'
-                a_mr_format_name = 'an ' + mr_format_name
-            elif file_type == 'nm-res-cya':
-                mr_format_name = 'CYANA'
-                a_mr_format_name = 'a ' + mr_format_name
-            elif file_type == 'nm-res-ros':
-                mr_format_name = 'ROSETTA'
-                a_mr_format_name = 'a ' + mr_format_name
-            elif file_type == 'nm-res-bio':
-                mr_format_name = 'BIOSYM'
-                a_mr_format_name = 'a ' + mr_format_name
-            elif file_type in ('nm-res-gro', 'nm-aux-gro'):
-                mr_format_name = 'GROMACS'
-                a_mr_format_name = 'a ' + mr_format_name
-            elif file_type == 'nm-res-dyn':
-                mr_format_name = 'DYNAMO/PALES/TALOS'
-                a_mr_format_name = 'a ' + mr_format_name
-            elif file_type == 'nm-res-syb':
-                mr_format_name = 'SYBYL'
-                a_mr_format_name = 'a ' + mr_format_name
-            elif file_type == 'nm-res-isd':
-                mr_format_name = 'ISD'
-                a_mr_format_name = 'an ' + mr_format_name
-            elif file_type == 'nm-res-cha':
-                mr_format_name = 'CHARMM'
-                a_mr_format_name = 'a ' + mr_format_name
-            else:
-                mr_format_name = 'other'
+            _mr_format_name = getRestraintFormatName(file_type)
+            mr_format_name = _mr_format_name.split()[0]
+            a_mr_format_name = ('an ' if mr_format_name[0] in ('AINMX') else 'a ') + _mr_format_name
 
             atom_like_names =\
                 self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
@@ -10424,7 +10424,7 @@ class NmrDpUtility:
                     if len(err) > 0:
                         valid = False
 
-                        err = f"Could not interpret {file_name!r} as {a_mr_format_name} restraint file:\n{err[0:-1]}"
+                        err = f"Could not interpret {file_name!r} as {a_mr_format_name} file:\n{err[0:-1]}"
 
                         ar['format_mismatch'], _err, _, _ = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(file_path, file_name, file_type, err_lines)
 
@@ -10500,7 +10500,7 @@ class NmrDpUtility:
                     err = f"The {mr_format_name} restraint file includes coordinates. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
                 else:
-                    err = f"The {mr_format_name} parameter/topology file includes coordinates. "\
+                    err = f"The {mr_format_name} topology file includes coordinates. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -10539,7 +10539,7 @@ class NmrDpUtility:
                         err = f"The {mr_format_name} restraint file includes assigned chemical shifts. "\
                             "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
                     else:
-                        err = f"The {mr_format_name} parameter/topology file includes assigned chemical shifts. "\
+                        err = f"The {mr_format_name} topology file includes assigned chemical shifts. "\
                             "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                     self.report.error.appendDescription('content_mismatch',
@@ -10642,7 +10642,7 @@ class NmrDpUtility:
                         "to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
                 err = f"{file_name} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
-                    + hint + " Did you accidentally select the wrong format? Please re-upload the AMBER parameter/topology file."
+                    + hint + " Did you accidentally select the wrong format? Please re-upload the AMBER topology file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -10676,7 +10676,7 @@ class NmrDpUtility:
                     "and '[ atoms ]' lines must be present in the file."
 
                 err = f"{file_name} is not GROMACS topology {subtype_name}."\
-                    + hint + " Did you accidentally select the wrong format? Please re-upload the GROMACS parameter/topology file."
+                    + hint + " Did you accidentally select the wrong format? Please re-upload the GROMACS topology file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -11034,37 +11034,26 @@ class NmrDpUtility:
             print('DIV-MR')
 
         if file_type == 'nm-res-xpl':
-            # mr_format_name = 'XPLOR-NIH'
             pass
         elif file_type == 'nm-res-cns':
-            # mr_format_name = 'CNS'
             pass
         elif file_type in ('nm-res-amb', 'nm-aux-amb'):
-            # mr_format_name = 'AMBER'
             pass
         elif file_type == 'nm-res-cya':
-            # mr_format_name = 'CYANA'
             pass
         elif file_type == 'nm-res-ros':
-            # mr_format_name = 'ROSETTA'
             pass
         elif file_type == 'nm-res-bio':
-            # mr_format_name = 'BIOSYM'
             pass
         elif file_type in ('nm-res-gro', 'nm-aux-gro'):
-            # mr_format_name = 'GROMACS'
             pass
         elif file_type == 'nm-res-dyn':
-            # mr_format_name = 'DYNAMO/PALES/TALOS'
             pass
         elif file_type == 'nm-res-syb':
-            # mr_format_name = 'SYBYL'
             pass
         elif file_type == 'nm-res-isd':
-            # mr_format_name = 'ISD'
             pass
         elif file_type == 'nm-res-cha':
-            # mr_format_name = 'CHARMM'
             pass
         else:
             return False
@@ -12360,37 +12349,26 @@ class NmrDpUtility:
             print('DO-DIV-MR')
 
         if file_type == 'nm-res-xpl':
-            # mr_format_name = 'XPLOR-NIH'
             pass
         elif file_type == 'nm-res-cns':
-            # mr_format_name = 'CNS'
             pass
         elif file_type in ('nm-res-amb', 'nm-aux-amb'):
-            # mr_format_name = 'AMBER'
             pass
         elif file_type == 'nm-res-cya':
-            # mr_format_name = 'CYANA'
             pass
         elif file_type == 'nm-res-ros':
-            # mr_format_name = 'ROSETTA'
             pass
         elif file_type == 'nm-res-bio':
-            # mr_format_name = 'BIOSYM'
             pass
         elif file_type in ('nm-res-gro', 'nm-aux-gro'):
-            # mr_format_name = 'GROMACS'
             pass
         elif file_type == 'nm-res-dyn':
-            # mr_format_name = 'DYNAMO/PALES/TALOS'
             pass
         elif file_type == 'nm-res-syb':
-            # mr_format_name = 'SYBYL'
             pass
         elif file_type == 'nm-res-isd':
-            # mr_format_name = 'ISD'
             pass
         elif file_type == 'nm-res-cha':
-            # mr_format_name = 'CHARMM'
             pass
         else:
             return False
@@ -13146,72 +13124,12 @@ class NmrDpUtility:
         """ Report other possible format as error of a given legacy NMR restraint file.
         """
 
-        if file_type == 'nm-res-xpl':
-            mr_format_name = 'XPLOR-NIH'
-        elif file_type == 'nm-res-cns':
-            mr_format_name = 'CNS'
-        elif file_type in ('nm-res-amb', 'nm-aux-amb'):
-            mr_format_name = 'AMBER'
-        elif file_type == 'nm-res-cya':
-            mr_format_name = 'CYANA'
-        elif file_type == 'nm-res-ros':
-            mr_format_name = 'ROSETTA'
-        elif file_type == 'nm-res-bio':
-            mr_format_name = 'BIOSYM'
-        elif file_type in ('nm-res-gro', 'nm-aux-gro'):
-            mr_format_name = 'GROMACS'
-        elif file_type == 'nm-res-dyn':
-            mr_format_name = 'DYNAMO/PALES/TALOS'
-        elif file_type == 'nm-res-syb':
-            mr_format_name = 'SYBYL'
-        elif file_type == 'nm-res-isd':
-            mr_format_name = 'ISD'
-        elif file_type == 'nm-res-cha':
-            mr_format_name = 'CHARMM'
-        elif file_type == 'nm-res-mr':
-            mr_format_name = 'MR'
-        else:
-            mr_format_name = 'other'
+        _mr_format_name = getRestraintFormatName(file_type)
+        mr_format_name = _mr_format_name.split()[0]
 
-        if _file_type == 'nm-res-xpl':
-            _mr_format_name = 'XPLOR-NIH'
-            _a_mr_format_name = 'an ' + _mr_format_name + ' restraint'
-        elif _file_type == 'nm-res-cns':
-            _mr_format_name = 'CNS'
-            _a_mr_format_name = 'a ' + _mr_format_name + ' or XPLOR-NIH restraint'
-        elif _file_type == 'nm-res-amb':
-            _mr_format_name = 'AMBER'
-            _a_mr_format_name = 'an ' + _mr_format_name + ' restraint'
-        elif _file_type == 'nm-aux-amb':
-            _mr_format_name = 'AMBER'
-            _a_mr_format_name = 'an ' + _mr_format_name + ' parameter/topology'
-        elif _file_type == 'nm-res-cya':
-            _mr_format_name = 'CYANA'
-            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
-        elif _file_type == 'nm-res-ros':
-            _mr_format_name = 'ROSETTA'
-            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
-        elif _file_type == 'nm-res-bio':
-            _mr_format_name = 'BIOSYM'
-            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
-        elif _file_type == 'nm-res-gro':
-            _mr_format_name = 'GROMACS'
-            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
-        elif _file_type == 'nm-aux-gro':
-            _mr_format_name = 'GROMACS'
-            _a_mr_format_name = 'a ' + _mr_format_name + ' parameter/topology'
-        elif _file_type == 'nm-res-dyn':
-            _mr_format_name = 'DYNAMO/PALES/TALOS'
-            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
-        elif _file_type == 'nm-res-syb':
-            _mr_format_name = 'SYBYL'
-            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
-        elif _file_type == 'nm-res-isd':
-            _mr_format_name = 'ISD'
-            _a_mr_format_name = 'an ' + _mr_format_name + ' restraint'
-        elif _file_type == 'nm-res-cha':
-            _mr_format_name = 'CHARMM'
-            _a_mr_format_name = 'a ' + _mr_format_name + ' restraint'
+        __mr_format_name = getRestraintFormatName(_file_type, True)
+        _mr_format_name = __mr_format_name.split()[0]
+        _a_mr_format_name = ('an ' if _mr_format_name[0] in ('AINMX') else 'a ') + __mr_format_name
 
         is_valid = False
         err = ''
@@ -13331,6 +13249,7 @@ class NmrDpUtility:
 
         remediated = False
         aborted = False
+        src_basename = mr_core_path = None
         mr_file_path = mr_file_link = None
         mr_part_paths = []
         pk_list_paths = []
@@ -13941,6 +13860,8 @@ class NmrDpUtility:
                 dst_file = cor_dst_file
 
                 remediated = True
+
+            mr_core_path = dst_file
 
             # has no MR haeder
             if not has_mr_header:
@@ -14971,38 +14892,10 @@ class NmrDpUtility:
                             if 'original_file_name' in mr_part_path and mr_part_path['original_file_name'] is not None:
                                 original_file_name = mr_part_path['original_file_name']
                             else:
-                                original_file_name = os.path.basename(file_path)
+                                original_file_name = f'{os.path.basename(src_basename)}-division_P{file_idx}.mr'
 
                             ofp.write(f'# Restraints file {file_idx}: {original_file_name}\n')
-
-                            if file_type == 'nm-res-xpl':
-                                mr_format_name = 'XPLOR-NIH/CNS'
-                            elif file_type == 'nm-res-cns':
-                                mr_format_name = 'CNS'
-                            elif file_type in ('nm-res-amb', 'nm-aux-amb'):
-                                mr_format_name = 'AMBER'
-                            elif file_type == 'nm-res-cya':
-                                mr_format_name = 'CYANA'
-                            elif file_type == 'nm-res-ros':
-                                mr_format_name = 'ROSETTA'
-                            elif file_type == 'nm-res-bio':
-                                mr_format_name = 'BIOSYM'
-                            elif file_type in ('nm-res-gro', 'nm-aux-gro'):
-                                mr_format_name = 'GROMACS'
-                            elif file_type == 'nm-res-dyn':
-                                mr_format_name = 'DYNAMO/PALES/TALOS'
-                            elif file_type == 'nm-res-syb':
-                                mr_format_name = 'SYBYL'
-                            elif file_type == 'nm-res-isd':
-                                mr_format_name = 'ISD'
-                            elif file_type == 'nm-res-cha':
-                                mr_format_name = 'CHARMM'
-                            elif file_type == 'nmr-star':
-                                mr_format_name = 'NMR-STAR'
-                            else:
-                                mr_format_name = 'other'
-
-                            ofp.write(f'# Restraint file format: {mr_format_name}\n')
+                            ofp.write(f'# Restraint file format: {getRestraintFormatName(file_type).split()[0]}\n')
 
                             with open(file_path, 'r') as ifp:
                                 for line in ifp:
@@ -15011,6 +14904,16 @@ class NmrDpUtility:
                             break
 
                     file_idx += 1
+
+                if file_idx == 1 and len(split_file_list) > 0:
+
+                    ofp.write(f'# Restraints file {file_idx}: {os.path.basename(src_basename)}.mr\n')
+                    file_type = split_file_list[0]['file_type']
+                    ofp.write(f'# Restraint file format: {getRestraintFormatName(file_type).split()[0]}\n')
+
+                    with open(mr_core_path, 'r') as ifp:
+                        for line in ifp:
+                            ofp.write(line)
 
                 footer_file = next(mr_part_path['footer'] for mr_part_path in mr_part_paths if 'footer' in mr_part_path)
                 with open(footer_file, 'r') as ifp:
@@ -27963,7 +27866,7 @@ class NmrDpUtility:
 
             if file_type == 'nm-res-amb' and amberAtomNumberDict is None and 'has_comments' in ar and not ar['has_comments']:
 
-                err = f"To verify AMBER restraint file {file_name!r}, AMBER parameter/topology file must be uploaded "\
+                err = f"To verify AMBER restraint file {file_name!r}, AMBER topology file must be uploaded "\
                     "or Sander comments should be included in the AMBER restraint file."
 
                 self.report.error.appendDescription('missing_mandatory_content',
@@ -27977,7 +27880,7 @@ class NmrDpUtility:
 
             if file_type == 'nm-res-gro' and not has_nm_aux_gro_file:
 
-                err = f"GROMACS parameter/topology file must be uploaded to verify GROMACS restraint file {file_name!r}."
+                err = f"GROMACS topology file must be uploaded to verify GROMACS restraint file {file_name!r}."
 
                 self.report.error.appendDescription('missing_mandatory_content',
                                                     {'file_name': file_name, 'description': err})

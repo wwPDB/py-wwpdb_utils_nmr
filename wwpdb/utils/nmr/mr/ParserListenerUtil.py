@@ -1785,6 +1785,10 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                         return "H2'1"
                     if atomId == "H2''2" and "H2'2" in refAtomIdList:  # 4EN
                         return "H2'2"
+                    if atomId == "H2''1" and "H2'" in refAtomIdList:
+                        return "H2'"
+                    if atomId == "H2''2" and "H2''" in refAtomIdList:
+                        return "H2''"
                 if atomId == "H2'" and "H2'1" in _refAtomIdList:  # DCZ, THM
                     return "H2'1"
                 if atomId == "H2''" and "H2'2" in _refAtomIdList:  # DCZ, THM
@@ -1801,6 +1805,10 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                     return "H2'1"
                 if atomId == "H2''2" and "H2'2" in _refAtomIdList:  # 4EN
                     return "H2'2"
+                if atomId == "H2''1" and "H2'" in _refAtomIdList:
+                    return "H2'"
+                if atomId == "H2''2" and "H2''" in _refAtomIdList:
+                    return "H2''"
             elif atomId.startswith("H3'"):
                 if refAtomIdList is not None:
                     if atomId == "H3''" and "H3'A" in refAtomIdList:
@@ -1837,6 +1845,10 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                         return "H5'1"
                     if atomId == "H5''2" and "H5'2" in refAtomIdList:  # 4EN
                         return "H5'2"
+                    if atomId == "H5''1" and "H5'" in refAtomIdList:
+                        return "H5'"
+                    if atomId == "H5''2" and "H5''" in refAtomIdList:
+                        return "H5''"
                 if atomId == "H5'" and "H5'1" in _refAtomIdList:  # DCZ, THM
                     return "H5'1"
                 if atomId == "H5''" and "H5'2" in _refAtomIdList:  # DCZ, THM
@@ -1851,6 +1863,10 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                     return "H5'1"
                 if atomId == "H5''2" and "H5'2" in _refAtomIdList:  # 4EN
                     return "H5'2"
+                if atomId == "H5''1" and "H5'" in _refAtomIdList:
+                    return "H5'"
+                if atomId == "H5''2" and "H5''" in _refAtomIdList:
+                    return "H5''"
 
             if atomId in _refAtomIdList:
                 return atomId

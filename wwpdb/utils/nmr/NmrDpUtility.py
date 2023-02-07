@@ -6477,7 +6477,33 @@ class NmrDpUtility:
 
                 os.removedirs(pk_dir)
 
-        return not self.report.isError()
+        self.__srcPath = None
+        self.__srcName = None
+        self.__dstPath = None
+        self.__logPath = None
+        self.__cifPath = None
+        self.__tmpPath = None
+        self.__dirPath = None
+
+        self.__inputParamDict = {}
+        self.__inputParamDictCopy = None
+        self.__outputParamDict = {}
+
+        self.__star_data_type = []
+        self.__star_data = []
+        self.__sf_name_corr = []
+
+        self.__original_error_message = []
+        self.__divide_mr_error_message = []
+        self.__peel_mr_error_message = []
+
+        self.__sf_category_list = []
+        self.__lp_category_list = []
+
+        try:
+            return not self.report.isError()
+        finally:
+            self.report = self.report_prev = None
 
     def __dumpDpReport(self):
         """ Dump current NMR data processing report.
@@ -21133,7 +21159,17 @@ class NmrDpUtility:
                                         + "] Chemical shift values in the same methyl group "\
                                         f"({full_value_name} {value} vs {methyl_cs_vals[methyl_cs_key]}) are inconsistent."
 
-                                    if self.__combined_mode and self.__remediation_mode:
+                                    if self.__combined_mode and not self.__remediation_mode:
+
+                                        self.report.error.appendDescription('invalid_data',
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                             'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+
+                                    else:
 
                                         self.report.warning.appendDescription('conflicted_data',
                                                                               {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -21143,16 +21179,6 @@ class NmrDpUtility:
 
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
-
-                                    else:
-
-                                        self.report.error.appendDescription('invalid_data',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                             'description': err})
-                                        self.report.setError()
-
-                                        if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
 
                                     break
 
@@ -21736,7 +21762,17 @@ class NmrDpUtility:
                                         + "] Chemical shift values in the same methyl group "\
                                         f"({full_value_name} {value} vs {methyl_cs_vals[methyl_cs_key]}) are inconsistent."
 
-                                    if self.__combined_mode and self.__remediation_mode:
+                                    if self.__combined_mode and not self.__remediation_mode:
+
+                                        self.report.error.appendDescription('invalid_data',
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                             'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+
+                                    else:
 
                                         self.report.warning.appendDescription('conflicted_data',
                                                                               {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -21746,16 +21782,6 @@ class NmrDpUtility:
 
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
-
-                                    else:
-
-                                        self.report.error.appendDescription('invalid_data',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                             'description': err})
-                                        self.report.setError()
-
-                                        if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
 
                                     break
 
@@ -22355,6 +22381,10 @@ class NmrDpUtility:
 
                                         if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
 
+                                            if chain_id == chain_id2 and seq_id == seq_id2:
+                                                if _atom_id2 in self.__csStat.getProtonsInSameGroup(comp_id, _atom_id):
+                                                    continue
+
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
                                                 + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
                                                 "It indicates inter-residue ambiguities. However, row of "\
@@ -22384,6 +22414,10 @@ class NmrDpUtility:
                                             _atom_id2 = self.__getRepresentativeAtomId(comp_id2, atom_id2)
 
                                         if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and _atom_id < _atom_id2)):
+
+                                            if chain_id == chain_id2 and seq_id == seq_id2:
+                                                if _atom_id2 in self.__csStat.getProtonsInSameGroup(comp_id, _atom_id):
+                                                    continue
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
                                                 + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
@@ -22425,7 +22459,7 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
 
-                                    elif abs(value2 - value) > CS_UNCERT_MAX and value < value2:
+                                    elif abs(value2 - value) > CS_UNCERT_MAX and value < value2 and ambig_code <= 4:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
                                             + f", {value_name} {value}, {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
@@ -27083,7 +27117,8 @@ class NmrDpUtility:
 
             if content_subtype == 'dist_restraint':
 
-                self.__updateGenDistConstIdInMrStr(sf_item)
+                if sf_item['file_type'] not in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
+                    self.__updateGenDistConstIdInMrStr(sf_item)
 
                 sf_item['constraint_type'] = 'distance'
                 sf_item['constraint_subsubtype'] = 'simple'
@@ -27558,6 +27593,7 @@ class NmrDpUtility:
             lp.add_tag(loop.category + '.' + tag)
 
         id_col = loop.tags.index('ID')
+        member_id_col = loop.tags.index('Member_ID')
         member_logic_code_col = loop.tags.index('Member_logic_code')
 
         chain_id_1_col = loop.tags.index('Auth_asym_ID_1')
@@ -27585,6 +27621,7 @@ class NmrDpUtility:
             try:
 
                 rest_id = row[id_col]
+                member_id = row[member_id_col]
 
                 atom1 = {'chain_id': row[chain_id_1_col],
                          'seq_id': int(row[seq_id_1_col]),
@@ -27596,14 +27633,22 @@ class NmrDpUtility:
                          'comp_id': row[comp_id_2_col],
                          'atom_id': row[atom_id_2_col]}
 
-                if _rest_id is not None and rest_id != _rest_id:
+                if _rest_id is None:
+                    pass
 
-                    if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
-                       and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
-                        _row[member_logic_code_col] = 'OR'
-                        sf_item['id'] -= 1
+                elif rest_id != _rest_id:
 
-                        modified = True
+                    if member_id in emptyValue:
+
+                        if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
+                           and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
+                            _row[member_logic_code_col] = 'OR'
+                            sf_item['id'] -= 1
+
+                            modified = True
+
+                else:
+                    sf_item['id'] -= 1
 
                 _rest_id = rest_id
                 _atom1 = atom1
@@ -46264,9 +46309,12 @@ class NmrDpUtility:
 
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
 
-                self.__updateGenDistConstIdInMrStr(sf_item)
-
                 sf = sf_item['saveframe']
+                sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
+
+                if not sf_framecode.startswith('XPLOR') and not sf_framcode.startswith('CNS') and not sf_framecide.startswith('CHARMM'):
+                    self.__updateGenDistConstIdInMrStr(sf_item)
+
                 potential_type = get_first_sf_tag(sf, 'Potential_type')
                 if 'lower' in potential_type:
                     continue

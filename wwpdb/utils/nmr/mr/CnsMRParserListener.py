@@ -2554,16 +2554,6 @@ class CnsMRParserListener(ParseTreeListener):
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
                     return
 
-                elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
-
-                    if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
-
-                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an J-coupling vector over multiple covalent bonds in the 'COUPling' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
-                            return
-
             if self.__createSfDict:
                 sf = self.__getSf()
                 sf['id'] += 1
@@ -4187,6 +4177,9 @@ class CnsMRParserListener(ParseTreeListener):
             if 'atom_selection' not in _factor:
                 ambigAtomSelect = True
 
+        if 'seq_id' not in _factor and 'seq_ids' not in _factor:
+            _factor['seq_not_specified'] = True
+
         key = str(_factor)
         if key in self.__cachedDictForFactor:
             return copy.deepcopy(self.__cachedDictForFactor[key])
@@ -4688,6 +4681,8 @@ class CnsMRParserListener(ParseTreeListener):
             del _factor['atom_ids']
         if 'atom_not_specified' in _factor:
             del _factor['atom_not_specified']
+        if 'seq_not_specified' in _factor:
+            del _factor['seq_not_specified']
 
         atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
@@ -4764,6 +4759,9 @@ class CnsMRParserListener(ParseTreeListener):
         atomSpecified = True
         if 'atom_not_specified' in _factor:
             atomSpecified = not _factor['atom_not_specified']
+        seqSpecified = True
+        if 'seq_not_specified' in _factor:
+            seqSpecified = not _factor['seq_not_specified']
         foundCompId = False
 
         for chainId in (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]):
@@ -5102,6 +5100,11 @@ class CnsMRParserListener(ParseTreeListener):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId}
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
+                                        if not atomSpecified or not seqSpecified:
+                                            if self.__ccU.updateChemCompDict(compId):
+                                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                                if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                    continue
                                         _atomSelection.append(selection)
                                 else:
                                     ccdCheck = True
@@ -5132,13 +5135,15 @@ class CnsMRParserListener(ParseTreeListener):
                                         if len(typeSymbols) > 1:
                                             continue
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                    if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y' and not atomSpecified:
+                                    if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y' and (not atomSpecified or not seqSpecified):
                                         continue
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         if _atomId.startswith('HOP') and isinstance(origAtomId, str) and '*' in origAtomId:
+                                            continue
+                                        if not seqSpecified:
                                             continue
                                         _atomSelection.append(selection)
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
@@ -5203,7 +5208,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                         f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\
                                                         f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
                                                         "Please update the sequence in the Macromolecules page.\n"
-                                                else:
+                                                elif seqSpecified:
                                                     self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
                                                         f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
 

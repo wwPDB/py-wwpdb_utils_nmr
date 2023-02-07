@@ -6442,10 +6442,12 @@ class NmrDpUtility:
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        if ((self.__op == 'nmr-cs-mr-merge' and self.report.error.getValueList('missing_mandatory_content',
-                                                                               input_source_dic['file_name'],
-                                                                               key='_Atom_chem_shift') is not None)
-            or (self.__op == 'nmr-str2str-deposit' and self.__remediation_mode)) and self.report.isError() and self.__dstPath is not None:
+        if ((self.__op == 'nmr-cs-mr-merge'
+             and self.report.error.getValueList('missing_mandatory_content',
+                                                input_source_dic['file_name'],
+                                                key='_Atom_chem_shift') is not None)
+            or (self.__op == 'nmr-str2str-deposit' and self.__remediation_mode))\
+           and self.report.isError() and self.__dstPath is not None:
 
             dir_path = os.path.dirname(self.__dstPath)
 
@@ -27568,7 +27570,10 @@ class NmrDpUtility:
         comp_id_2_col = loop.tags.index('Auth_comp_ID_2')
         atom_id_2_col = loop.tags.index('Auth_atom_ID_2')
 
+        _rest_id = None
         _atom1 = _atom2 = None
+
+        modified = False
 
         sf_item['id'] = 0
 
@@ -27578,6 +27583,8 @@ class NmrDpUtility:
             sf_item['id'] += 1
 
             try:
+
+                rest_id = row[id_col]
 
                 atom1 = {'chain_id': row[chain_id_1_col],
                          'seq_id': int(row[seq_id_1_col]),
@@ -27589,13 +27596,16 @@ class NmrDpUtility:
                          'comp_id': row[comp_id_2_col],
                          'atom_id': row[atom_id_2_col]}
 
-                if _atom1 is not None:
+                if _rest_id is not None and rest_id != _rest_id:
 
                     if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
                        and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
                         _row[member_logic_code_col] = 'OR'
                         sf_item['id'] -= 1
 
+                        modified = True
+
+                _rest_id = rest_id
                 _atom1 = atom1
                 _atom2 = atom2
 
@@ -27604,6 +27614,9 @@ class NmrDpUtility:
 
             _row[id_col] = sf_item['id']
             lp.add_data(_row)
+
+        if not modified:
+            return
 
         del sf_item['saveframe'][loop]
 
@@ -46250,6 +46263,9 @@ class NmrDpUtility:
             NOE_other_tot_num = 0
 
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+
+                self.__updateGenDistConstIdInMrStr(sf_item)
+
                 sf = sf_item['saveframe']
                 potential_type = get_first_sf_tag(sf, 'Potential_type')
                 if 'lower' in potential_type:

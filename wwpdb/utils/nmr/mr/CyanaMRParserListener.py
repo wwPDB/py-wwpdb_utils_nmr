@@ -7432,7 +7432,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             len_split = len(_split)
 
-            if len_split < 3:
+            if len_split < 2:
                 self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
                     f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.\n"
                 return

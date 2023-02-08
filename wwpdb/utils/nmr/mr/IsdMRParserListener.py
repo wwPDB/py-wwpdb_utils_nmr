@@ -732,15 +732,19 @@ class IsdMRParserListener(ParseTreeListener):
         fixedChainId = None
         fixedSeqId = None
 
+        preferNonPoly = False
+
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         if self.__reasons is not None:
             if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
                and seqId in self.__reasons['non_poly_remap'][compId]:
+                preferNonPoly = True
                 fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, seqId, compId)
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+                preferNonPoly = True
             if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
             elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
@@ -754,6 +758,8 @@ class IsdMRParserListener(ParseTreeListener):
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         for ps in self.__polySeq:
+            if preferNonPoly:
+                continue
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
             if self.__reasons is not None:
                 if fixedChainId is not None:
@@ -854,6 +860,8 @@ class IsdMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
+                if preferNonPoly:
+                    continue
                 chainId = ps['chain_id']
                 if fixedChainId is not None and fixedChainId != chainId:
                     continue
@@ -911,6 +919,8 @@ class IsdMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
+                if preferNonPoly:
+                    continue
                 chainId = ps['auth_chain_id']
                 if fixedChainId is not None and fixedChainId != chainId:
                     continue
@@ -929,6 +939,8 @@ class IsdMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
+                if preferNonPoly:
+                    continue
                 chainId = ps['chain_id']
                 if fixedChainId is not None and fixedChainId != chainId:
                     continue

@@ -873,13 +873,16 @@ class BiosymMRParserListener(ParseTreeListener):
         """ Assign polymer sequences of the coordinates.
         """
 
+        _refChainId = refChainId
+
         chainAssign = set()
         _seqId = seqId
         _compId = compId
 
-        _refChainId = refChainId
         fixedChainId = None
         fixedSeqId = None
+
+        preferNonPoly = False
 
         if refChainId is not None:
             if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == refChainId):
@@ -894,9 +897,11 @@ class BiosymMRParserListener(ParseTreeListener):
                and seqId in self.__reasons['non_poly_remap'][compId]:
                 fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], str(refChainId), seqId, compId)
                 refChainId = fixedChainId
+                preferNonPoly = True
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                 refChainId = fixedChainId
+                preferNonPoly = True
             if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                 refChainId = fixedChainId
@@ -919,6 +924,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     fixedChainId = _refChainId
 
         for ps in self.__polySeq:
+            if preferNonPoly:
+                continue
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
             if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                 if chainId != self.__chainNumberDict[refChainId]:
@@ -1035,6 +1042,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
+                if preferNonPoly:
+                    continue
                 chainId = ps['chain_id']
                 if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
@@ -1106,6 +1115,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
+                if preferNonPoly:
+                    continue
                 chainId = ps['auth_chain_id']
                 if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
@@ -1129,6 +1140,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
+                if preferNonPoly:
+                    continue
                 chainId = ps['chain_id']
                 if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:

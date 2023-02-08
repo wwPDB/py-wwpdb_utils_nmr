@@ -6725,7 +6725,7 @@ class CnsMRParserListener(ParseTreeListener):
                             f"The symbol {symbol_name!r} is not defined.\n"
 
                 if eval_factor and 'atom_selection' in self.factor:
-                    if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
+                    if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor and __factor['atom_id'] is not None:
                         __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
                         if self.__with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass

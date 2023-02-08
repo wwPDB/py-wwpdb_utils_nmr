@@ -27593,6 +27593,7 @@ class NmrDpUtility:
         atom_id_2_col = loop.tags.index('Auth_atom_ID_2')
 
         _rest_id = None
+        _member_logic_code = None
         _atom1 = _atom2 = None
 
         modified = False
@@ -27608,6 +27609,7 @@ class NmrDpUtility:
 
                 rest_id = row[id_col]
                 member_id = row[member_id_col]
+                member_logic_code = row[member_logic_code_col]
 
                 atom1 = {'chain_id': row[chain_id_1_col],
                          'seq_id': int(row[seq_id_1_col]),
@@ -27629,14 +27631,32 @@ class NmrDpUtility:
                         if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
                            and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
                             _row[member_logic_code_col] = 'OR'
+
+                            if _member_logic_code in emptyValue:
+                                lp.data[-1][member_logic_code_col] = 'OR'
+
                             sf_item['id'] -= 1
 
                             modified = True
 
                 else:
+
+                    if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
+                       and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
+                        _row[member_logic_code_col] = 'OR'
+
+                        if member_logic_code in emptyValue:
+                            modified = True
+
+                        if _member_logic_code in emptyValue:
+                            lp.data[-1][member_logic_code_col] = 'OR'
+
+                            modified = True
+
                     sf_item['id'] -= 1
 
                 _rest_id = rest_id
+                _member_logic_code = member_logic_code
                 _atom1 = atom1
                 _atom2 = atom2
 

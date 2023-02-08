@@ -211,6 +211,7 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    """
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2lk5/test.mr',
@@ -220,17 +221,18 @@ if __name__ == "__main__":
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2m6i/2m6i-corrected-div_dst-div_dst-div_dst-div_dst.mr',
                  '../../tests-nmr/mock-data-remediation/2m6i/2m6i.cif')
-
+    """
     reader = CyanaMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2lrr/2lrr-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/2lrr/2lrr.cif')
+    print(reader_listener.getReasonsForReparsing())
     reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2lrr/2lrr-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2lrr/2lrr.cif')
-
+    sys.exit()
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2kym/2kym-corrected.mr',

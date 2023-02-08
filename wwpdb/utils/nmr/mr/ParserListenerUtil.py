@@ -1947,7 +1947,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                             return 'H' + atomId[1:-1] + '%'
                     if 'H' + atomId[1:-1] + '1' in _refAtomIdList or 'H' + atomId[1:-1] + '11' in _refAtomIdList:
                         return 'H' + atomId[1:-1] + '%'
-                elif refAtomIdList is not None and 'H' + atomId[1:] + '1' in refAtomIdList or 'H' + atomId[1:] + '11' in refAtomIdList:
+                elif refAtomIdList is not None and ('H' + atomId[1:] + '1' in refAtomIdList or 'H' + atomId[1:] + '11' in refAtomIdList):
                     return 'H' + atomId[1:] + '%'
                 elif 'H' + atomId[1:] + '1' in _refAtomIdList or 'H' + atomId[1:] + '11' in _refAtomIdList:
                     return 'H' + atomId[1:] + '%'

@@ -6401,7 +6401,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
 
-        except ValueError as e:
+        except ValueError:
             self.distRestraints -= 1
         finally:
             self.numberSelection.clear()

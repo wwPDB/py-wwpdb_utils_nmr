@@ -3397,7 +3397,7 @@ class NEFTranslator:
                                                              + f"Data item {name} {ent[name]!r} must not be equal to {ne} {ent[ne]!r}.")
 
                         elif group['member-with'] is not None:
-                            has_member = False
+                            has_member = not d['mandatory']
                             for mw in group['member-with']:
                                 if mw in ent and ent[mw] is not None:
                                     has_member = True
@@ -3999,7 +3999,7 @@ class NEFTranslator:
                                         raise ValueError(f"Tag item {name} {ent[name]!r} must not be equal to {ne} {ent[ne]!r}.")
 
                     elif group['member-with'] is not None:
-                        has_member = False
+                        has_member = not t['mandatory']
                         for mw in group['member-with']:
                             if mw in ent and ent[mw] is not None:
                                 has_member = True

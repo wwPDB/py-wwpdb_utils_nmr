@@ -13963,7 +13963,13 @@ class NmrDpUtility:
                         elif has_cs_str:
                             ins_msg = 'unexpectedly contains assigned chemical shifts, but '
 
-                        err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
+                        _file_name = os.path.basename(dst_file)
+                        if file_name != _file_name:
+                            _file_name = f'({_file_name}) '
+                        else:
+                            _file_name = ''
+
+                        err = f"The NMR restraint file {file_name!r} {_file_name}{ins_msg}does not match with any known restraint format. "\
                             "@todo: It needs to be reviewed or marked as entry without NMR restraints."
 
                         self.report.error.appendDescription('internal_error',
@@ -14658,7 +14664,13 @@ class NmrDpUtility:
                                 elif has_cs_str:
                                     ins_msg = 'unexpectedly contains assigned chemical shifts, but '
 
-                            err = f"The NMR restraint file {file_name!r} (MR format) {ins_msg}does not match with any known restraint format. "\
+                            _file_name = os.path.basename(dst_file)
+                            if file_name != _file_name:
+                                _file_name = f'({_file_name}) '
+                            else:
+                                _file_name = ''
+
+                            err = f"The NMR restraint file {file_name!r} {_file_name}{ins_msg}does not match with any known restraint format. "\
                                 "@todo: It needs to be reviewed or marked as entry without NMR restraints."
 
                             self.report.error.appendDescription('internal_error',

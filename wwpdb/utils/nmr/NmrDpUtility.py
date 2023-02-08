@@ -6477,33 +6477,7 @@ class NmrDpUtility:
 
                 os.removedirs(pk_dir)
 
-        self.__srcPath = None
-        self.__srcName = None
-        self.__dstPath = None
-        self.__logPath = None
-        self.__cifPath = None
-        self.__tmpPath = None
-        self.__dirPath = None
-
-        self.__inputParamDict = {}
-        self.__inputParamDictCopy = None
-        self.__outputParamDict = {}
-
-        self.__star_data_type = []
-        self.__star_data = []
-        self.__sf_name_corr = []
-
-        self.__original_error_message = []
-        self.__divide_mr_error_message = []
-        self.__peel_mr_error_message = []
-
-        self.__sf_category_list = []
-        self.__lp_category_list = []
-
-        try:
-            return not self.report.isError()
-        finally:
-            self.report = self.report_prev = None
+        return not self.report.isError()
 
     def __dumpDpReport(self):
         """ Dump current NMR data processing report.
@@ -13974,7 +13948,7 @@ class NmrDpUtility:
                             remediated = True
                             continue
 
-                    _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(dst_file, file_name, file_type, [], True)
+                    _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(dst_file, file_name, 'nm-res-mr', [], True)
 
                     len_valid_types = len(valid_types)
                     len_possible_types = len(possible_types)
@@ -14668,7 +14642,7 @@ class NmrDpUtility:
 
                             continue
 
-                        _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(_dst_file, file_name, file_type, [], True)
+                        _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(_dst_file, file_name, 'nm-res-mr', [], True)
 
                         len_valid_types = len(valid_types)
                         len_possible_types = len(possible_types)
@@ -46312,7 +46286,7 @@ class NmrDpUtility:
                 sf = sf_item['saveframe']
                 sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
-                if not sf_framecode.startswith('XPLOR') and not sf_framcode.startswith('CNS') and not sf_framecide.startswith('CHARMM'):
+                if not sf_framecode.startswith('XPLOR') and not sf_framecode.startswith('CNS') and not sf_framecode.startswith('CHARMM'):
                     self.__updateGenDistConstIdInMrStr(sf_item)
 
                 potential_type = get_first_sf_tag(sf, 'Potential_type')

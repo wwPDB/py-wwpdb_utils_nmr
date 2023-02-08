@@ -423,6 +423,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.__max_dist_value = DIST_ERROR_MIN
         self.__min_dist_value = DIST_ERROR_MAX
+        self.__col_order_of_dist_w_chain = {}
 
         self.__dihed_lb_greater_than_ub = False
         self.__dihed_ub_always_positive = True
@@ -5967,7 +5968,6 @@ class CyanaMRParserListener(ParseTreeListener):
                                         self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
                                         break
                     elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], self.__ccU) not in monDict3:
-                        self.__col_order_of_dist_w_chain['comp_id_1'] = j
                         compId = translateToStdResName(jVal[j], self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3):
@@ -5989,6 +5989,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if len(_atomId) > 0:
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
                                     if cca is not None:
+                                        self.__col_order_of_dist_w_chain['comp_id_1'] = j
                                         self.__col_order_of_dist_w_chain['atom_id_1'] = k
                                         self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
                                         break
@@ -6400,7 +6401,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
 
-        except ValueError:
+        except ValueError as e:
             self.distRestraints -= 1
         finally:
             self.numberSelection.clear()

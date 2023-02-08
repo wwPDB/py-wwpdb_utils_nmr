@@ -237,8 +237,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/5xbo/Tb_UBA1_PCS_correct_50p.tbl-corrected',
                  '../../tests-nmr/mock-data-remediation/5xbo/5xbo.cif')
 
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
+    reader = XplorMRReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2k31/2k31-corrected.mr',
                      '../../tests-nmr/mock-data-remediation/2k31/2k31.cif')
@@ -253,8 +253,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/2lrk/2lrk-corrected-div_src.mr',
                  '../../tests-nmr/mock-data-remediation/2lrk/2lrk.cif')
 
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
+    reader = XplorMRReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/1iio/1iio-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/1iio/1iio.cif')

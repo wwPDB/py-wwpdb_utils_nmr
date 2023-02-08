@@ -221,8 +221,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/2m6i/2m6i-corrected-div_dst-div_dst-div_dst-div_dst.mr',
                  '../../tests-nmr/mock-data-remediation/2m6i/2m6i.cif')
 
-    reader = CyanaMRReader(True)
-    reader.setDebugMode(True)
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2lrr/2lrr-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/2lrr/2lrr.cif')
@@ -276,8 +276,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/2m5b/2m5b-corrected.mr',
                  '../../tests-nmr/mock-data-remediation/2m5b/2m5b.cif')
 
-    reader = CyanaMRReader(True)
-    reader.setDebugMode(True)
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ = reader.parse('../../tests-nmr/mock-data-remediation/5ue2/pro_protect_28dec16.upl',
                                          '../../tests-nmr/mock-data-remediation/5ue2/5ue2.cif')
     reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
@@ -290,8 +290,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/2lxn/test.mr',
                  '../../tests-nmr/mock-data-remediation/2lxn/2lxn.cif')
 
-    reader = CyanaMRReader(True)
-    reader.setDebugMode(True)
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/7sa5/D_1000259911_mr_P4.cyana.V1',
                      '../../tests-nmr/mock-data-remediation/7sa5/7sa5.cif')
@@ -300,8 +300,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/7sa5/D_1000259911_mr_P4.cyana.V1',
                  '../../tests-nmr/mock-data-remediation/7sa5/7sa5.cif')
 
-    reader = CyanaMRReader(True)
-    reader.setDebugMode(True)
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2lum/2lum-corrected.mr',
                      '../../tests-nmr/mock-data-remediation/2lum/2lum.cif')

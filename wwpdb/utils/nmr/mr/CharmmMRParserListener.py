@@ -2565,7 +2565,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
         atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
-        if 'alt_chain_id' in _factor:
+        if 'alt_chain_id' in _factor and len(self.warningMessage) == len_warn_msg:
             for _atom in atomSelection:
                 self.updateSegmentIdDict(_factor, _atom['chain_id'])
 
@@ -3104,9 +3104,18 @@ class CharmmMRParserListener(ParseTreeListener):
         altChainId = factor['alt_chain_id']
         if altChainId not in self.reasonsForReParsing['segment_id_mismatch']:
             return
-        if self.reasonsForReParsing['segment_id_mismatch'][altChainId] is not None:
-            return
-        self.reasonsForReParsing['segment_id_mismatch'][altChainId] = chainId
+        if chainId not in self.reasonsForReParsing['segment_id_match_stats'][altChainId]:
+            self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] = 0
+        self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] += 1
+        stats = self.reasonsForReParsing['segment_id_match_stats'][altChainId]
+        _chainId = max(stats, key=lambda key: stats[key])[0]
+        self.reasonsForReParsing['segment_id_mismatch'][altChainId] = _chainId
+        # try to avoid multiple segment_id assignments
+        for k, _stats in self.reasonsForReParsing['segment_id_match_stats'].items():
+            if k == altChainId:
+                continue
+            if chainId in _stats:
+                _stats[chainId] -= 1
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)
@@ -3504,8 +3513,10 @@ class CharmmMRParserListener(ParseTreeListener):
                     else:
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['segment_id_mismatch'] = {}
+                            self.reasonsForReParsing['segment_id_match_stats'] = {}
                         if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
                             self.reasonsForReParsing['segment_id_mismatch'][chainId] = None
+                            self.reasonsForReParsing['segment_id_match_stats'][chainId] = {}
                         self.factor['alt_chain_id'] = chainId
 
                 if ctx.Integer(0):
@@ -4649,8 +4660,10 @@ class CharmmMRParserListener(ParseTreeListener):
                         else:
                             if 'segment_id_mismatch' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['segment_id_mismatch'] = {}
+                                self.reasonsForReParsing['segment_id_match_stats'] = {}
                             if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
                                 self.reasonsForReParsing['segment_id_mismatch'][chainId] = None
+                                self.reasonsForReParsing['segment_id_match_stats'][chainId] = {}
                             self.factor['alt_chain_id'] = chainId
 
                 if eval_factor and 'atom_selection' in self.factor:

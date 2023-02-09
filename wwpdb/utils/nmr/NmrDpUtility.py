@@ -38024,13 +38024,15 @@ class NmrDpUtility:
 
                             if cif_comp_id == '.' and nmr_comp_id != '.':
 
-                                unmapped.append({'ref_seq_id': seq_id1[i] - offset_1, 'ref_comp_id': nmr_comp_id})
+                                _seq_id1 = seq_id1[i] - offset_1 if seq_id1[i] is not None else None
+
+                                unmapped.append({'ref_seq_id': _seq_id1, 'ref_comp_id': nmr_comp_id})
 
                                 if not aligned[i]:
 
                                     if self.__combined_mode or chain_id not in concatenated_nmr_chain or chain_id2 not in concatenated_nmr_chain[chain_id]:
 
-                                        warn = f"{chain_id}:{seq_id1[i] - offset_1}:{nmr_comp_id} is not present in the coordinate (chain_id {chain_id2}). "\
+                                        warn = f"{chain_id}:{_seq_id1}:{nmr_comp_id} is not present in the coordinate (chain_id {chain_id2}). "\
                                             "Please update the sequence in the Macromolecules page."
 
                                         self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
@@ -38045,19 +38047,22 @@ class NmrDpUtility:
 
                             elif cif_comp_id != nmr_comp_id and aligned[i]:
 
-                                conflict.append({'ref_seq_id': seq_id1[i] - offset_1, 'ref_comp_id': nmr_comp_id,
-                                                 'test_seq_id': seq_id2[i] - offset_2, 'test_comp_id': cif_comp_id})
+                                _seq_id1 = seq_id1[i] - offset_1 if seq_id1[i] is not None else None
+                                _seq_id2 = seq_id2[i] - offset_2 if seq_id2[i] is not None else None
+
+                                conflict.append({'ref_seq_id': _seq_id1, 'ref_comp_id': nmr_comp_id,
+                                                 'test_seq_id': _seq_id2, 'test_comp_id': cif_comp_id})
 
                                 try:
-                                    label_seq_id = seq_id2[i] - offset_2
-                                    auth_seq_id = s2['auth_seq_id'][s2['seq_id'].index(label_seq_id)]
-                                except (KeyError, IndexError):
-                                    label_seq_id = seq_id2[i] - offset_2
+                                    label_seq_id = _seq_id2
+                                    auth_seq_id = s2['auth_seq_id'][s2['seq_id'].index(_seq_id2)]
+                                except (KeyError, IndexError, ValueError):
+                                    label_seq_id = _seq_id2
                                     auth_seq_id = label_seq_id
                                 cif_seq_code = f"{chain_id2}:{label_seq_id}:{cif_comp_id}"
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
-                                nmr_seq_code = f"{chain_id}:{seq_id1[i] - offset_1}:{nmr_comp_id}"
+                                nmr_seq_code = f"{chain_id}:{_seq_id1}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insertion error'
 
@@ -38412,7 +38417,7 @@ class NmrDpUtility:
                                 try:
                                     label_seq_id = seq_id1[i]
                                     auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(label_seq_id)]
-                                except (KeyError, IndexError):
+                                except (KeyError, IndexError, ValueError):
                                     label_seq_id = seq_id1[i]
                                     auth_seq_id = label_seq_id
 
@@ -38441,7 +38446,7 @@ class NmrDpUtility:
                                 try:
                                     label_seq_id = seq_id1[i]
                                     auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(label_seq_id)]
-                                except (KeyError, IndexError):
+                                except (KeyError, IndexError, ValueError):
                                     label_seq_id = seq_id1[i]
                                     auth_seq_id = label_seq_id
 

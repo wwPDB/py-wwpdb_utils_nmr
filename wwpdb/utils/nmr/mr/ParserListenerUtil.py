@@ -2820,7 +2820,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 nstdChirality = polyType['nstd_chirality']
 
                     if cR.hasCategory('pdbx_poly_seq_scheme'):
-                        if cR.hasItem('pdbx_poly_seq_scheme', 'pdb_ins_code'):
+                        has_ins_code = cR.hasItem('pdbx_poly_seq_scheme', 'pdb_ins_code')
+                        if has_ins_code:
                             mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
                                                                 [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
                                                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
@@ -2858,7 +2859,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                     authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
                                     authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                                    if item['ins_code'] not in emptyValue:
+                                    if has_ins_code and item['ins_code'] not in emptyValue:
                                         authToInsCode[seqKey] = item['ins_code']
                                     authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
 
@@ -2866,7 +2867,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                     if altKey not in authToStarSeq:
                                         authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                        if item['ins_code'] not in emptyValue:
+                                        if has_ins_code and item['ins_code'] not in emptyValue:
                                             authToInsCode[altKey] = item['ins_code']
                                         authToEntityType[altKey] = entityPolyType
 
@@ -2918,7 +2919,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                 seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                                 authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
                                                 authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                                                if item['ins_code'] not in emptyValue:
+                                                if has_ins_code and item['ins_code'] not in emptyValue:
                                                     authToInsCode[seqKey] = item['ins_code']
                                                 authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
 
@@ -2928,7 +2929,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                 altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                                 if altKey not in authToStarSeq:
                                                     authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                                    if item['ins_code'] not in emptyValue:
+                                                    if has_ins_code and item['ins_code'] not in emptyValue:
                                                         authToInsCode[altKey] = item['ins_code']
                                                     authToEntityType[altKey] = entityPolyType
 
@@ -2963,7 +2964,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                         authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
                                         authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                                        if item['ins_code'] not in emptyValue:
+                                        if has_ins_code and item['ins_code'] not in emptyValue:
                                             authToInsCode[seqKey] = item['ins_code']
                                         authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                         if item['label_asym_id'] not in labelAsymIds:
@@ -2974,7 +2975,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                         if altKey not in authToStarSeq:
                                             authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                            if item['ins_code'] not in emptyValue:
+                                            if has_ins_code and item['ins_code'] not in emptyValue:
                                                 authToInsCode[altKey] = item['ins_code']
                                             authToEntityType[altKey] = entityPolyType
 
@@ -3010,7 +3011,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             entityPolyType = polyTypes[0]['type']
 
                     if cR.hasCategory('pdbx_branch_scheme'):
-                        if cR.hasItem('pdbx_branch_scheme', 'pdb_ins_code'):
+                        has_ins_code = cR.hasItem('pdbx_branch_scheme', 'pdb_ins_code')
+                        if has_ins_code:
                             mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
                                                                 [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
                                                                  {'name': 'auth_asym_id', 'type': 'str'},
@@ -3043,7 +3045,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                 authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
                                 authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                                if item['ins_code'] not in emptyValue:
+                                if has_ins_code and item['ins_code'] not in emptyValue:
                                     authToInsCode[seqKey] = item['ins_code']
                                 authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
                                 if item['label_asym_id'] not in labelAsymIds:
@@ -3053,7 +3055,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                 if altKey not in authToStarSeq:
                                     authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                    if item['ins_code'] not in emptyValue:
+                                    if has_ins_code and item['ins_code'] not in emptyValue:
                                         authToInsCode[altKey] = item['ins_code']
                                     authToEntityType[altKey] = entityPolyType
 
@@ -3077,7 +3079,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     if item['auth_asym_id'] == authAsymId:
                                         seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                         authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
-                                        if item['ins_code'] not in emptyValue:
+                                        if has_ins_code and item['ins_code'] not in emptyValue:
                                             authToInsCode[seqKey] = item['ins_code']
                                         authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
                                         if item['label_asym_id'] not in labelAsymIds:
@@ -3088,7 +3090,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                         if altKey not in authToStarSeq:
                                             authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                            if item['ins_code'] not in emptyValue:
+                                            if has_ins_code and item['ins_code'] not in emptyValue:
                                                 authToInsCode[altKey] = item['ins_code']
                                             authToEntityType[altKey] = entityPolyType
 
@@ -3106,7 +3108,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                 elif entityType == 'non-polymer':
                     if cR.hasCategory('pdbx_nonpoly_scheme'):
-                        if cR.hasItem('pdbx_nonpoly_scheme', 'pdb_ins_code'):
+                        has_ins_code = cR.hasItem('pdbx_nonpoly_scheme', 'pdb_ins_code')
+                        if has_ins_code:
                             mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
                                                                 [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
                                                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
@@ -3135,7 +3138,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                             authToStarSeq[seqKey] = (entityAssemblyId, idx + 1, entityId, True)
                             authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                            if item['ins_code'] not in emptyValue:
+                            if has_ins_code and item['ins_code'] not in emptyValue:
                                 authToInsCode[seqKey] = item['ins_code']
                             authToEntityType[seqKey] = 'non-polymer'
                             if item['auth_asym_id'] not in authAsymIds:
@@ -3147,7 +3150,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                             if altKey not in authToStarSeq:
                                 authToStarSeq[altKey] = (entityAssemblyId, idx + 1, entityId, False)
-                                if item['ins_code'] not in emptyValue:
+                                if has_ins_code and item['ins_code'] not in emptyValue:
                                     authToInsCode[altKey] = item['ins_code']
                                 authToEntityType[altKey] = 'non-polymer'
 

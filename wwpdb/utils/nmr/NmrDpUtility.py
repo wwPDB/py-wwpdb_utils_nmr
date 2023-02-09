@@ -37811,38 +37811,11 @@ class NmrDpUtility:
                             nmr_comp_id = str(myPr[1])
 
                             if nmr_comp_id == '.' and cif_comp_id != '.':
-
                                 unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
-                                if not aligned[i]:
-                                    cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
-
-                                    try:
-                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
-                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
-                                            cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme)"
-                                    except (KeyError, IndexError):
-                                        pass
-
                             elif nmr_comp_id != cif_comp_id and aligned[i]:
-
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
-
-                                cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
-                                if cif_comp_id == '.':
-                                    cif_seq_code += ', insertion error'
-                                nmr_seq_code = f"{chain_id2}:{seq_id2[i]}:{nmr_comp_id}"
-                                if nmr_comp_id == '.':
-                                    nmr_seq_code += ', insertion error'
-
-                                if cif_comp_id != '.':
-                                    try:
-                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
-                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
-                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme"
-                                    except (KeyError, IndexError):
-                                        pass
 
                         if len(unmapped) > 0:
                             ca['unmapped_sequence'] = unmapped
@@ -38051,13 +38024,13 @@ class NmrDpUtility:
 
                             if cif_comp_id == '.' and nmr_comp_id != '.':
 
-                                unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id})
+                                unmapped.append({'ref_seq_id': seq_id1[i] - offset_1, 'ref_comp_id': nmr_comp_id})
 
                                 if not aligned[i]:
 
                                     if self.__combined_mode or chain_id not in concatenated_nmr_chain or chain_id2 not in concatenated_nmr_chain[chain_id]:
 
-                                        warn = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id} is not present in the coordinate (chain_id {chain_id2}). "\
+                                        warn = f"{chain_id}:{seq_id1[i] - offset_1}:{nmr_comp_id} is not present in the coordinate (chain_id {chain_id2}). "\
                                             "Please update the sequence in the Macromolecules page."
 
                                         self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
@@ -38072,26 +38045,25 @@ class NmrDpUtility:
 
                             elif cif_comp_id != nmr_comp_id and aligned[i]:
 
-                                conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id,
-                                                 'test_seq_id': seq_id2[i], 'test_comp_id': cif_comp_id})
+                                conflict.append({'ref_seq_id': seq_id1[i] - offset_1, 'ref_comp_id': nmr_comp_id,
+                                                 'test_seq_id': seq_id2[i] - offset_2, 'test_comp_id': cif_comp_id})
 
                                 try:
-                                    label_seq_id = s2['seq_id'][s2['auth_seq_id'].index(seq_id2[i])]
-                                except IndexError:
-                                    label_seq_id = seq_id2[i]
+                                    label_seq_id = seq_id2[i] - offset_2
+                                    auth_seq_id = s2['auth_seq_id'][s2['seq_id'].index(label_seq_id)]
+                                except (KeyError, IndexError):
+                                    label_seq_id = seq_id2[i] - offset_2
+                                    auth_seq_id = label_seq_id
                                 cif_seq_code = f"{chain_id2}:{label_seq_id}:{cif_comp_id}"
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
-                                nmr_seq_code = f"{chain_id}:{seq_id1[i]}:{nmr_comp_id}"
+                                nmr_seq_code = f"{chain_id}:{seq_id1[i] - offset_1}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insertion error'
 
                                 if cif_comp_id != '.':
-                                    try:
-                                        if chain_id2 != auth_chain_id2 or seq_id2[i] != label_seq_id:
-                                            cif_seq_code += f", or {auth_chain_id2}:{seq_id2[i]}:{cif_comp_id} in author sequence scheme"
-                                    except IndexError:
-                                        pass
+                                    if chain_id2 != auth_chain_id2 or auth_seq_id != label_seq_id:
+                                        cif_seq_code += f", or {auth_chain_id2}:{auth_seq_id}:{cif_comp_id} in author sequence scheme"
 
                                 err = f"Sequence alignment error between the NMR data ({nmr_seq_code}) and the coordinate ({cif_seq_code}). "\
                                     "Please verify the two sequences and re-upload the correct file(s)."
@@ -38437,15 +38409,17 @@ class NmrDpUtility:
 
                                 unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
-                                if not aligned[i]:
-                                    cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                try:
+                                    label_seq_id = seq_id1[i]
+                                    auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(label_seq_id)]
+                                except (KeyError, IndexError):
+                                    label_seq_id = seq_id1[i]
+                                    auth_seq_id = label_seq_id
 
-                                    try:
-                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
-                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
-                                            cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme)"
-                                    except (KeyError, IndexError):
-                                        pass
+                                if not aligned[i]:
+                                    cif_seq_code = f"{chain_id}:{label_seq_id}:{cif_comp_id}"
+                                    if chain_id != auth_chain_id or label_seq_id != auth_seq_id:
+                                        cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme)"
 
                                     warn = f"{cif_seq_code} is not present in the NMR data (chain_id {chain_id2})."
 
@@ -38464,7 +38438,14 @@ class NmrDpUtility:
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
 
-                                cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                                try:
+                                    label_seq_id = seq_id1[i]
+                                    auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(label_seq_id)]
+                                except (KeyError, IndexError):
+                                    label_seq_id = seq_id1[i]
+                                    auth_seq_id = label_seq_id
+
+                                cif_seq_code = f"{chain_id}:{label_seq_id}:{cif_comp_id}"
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                 nmr_seq_code = f"{chain_id2}:{seq_id2[i]}:{nmr_comp_id}"
@@ -38472,12 +38453,8 @@ class NmrDpUtility:
                                     nmr_seq_code += ', insertion error'
 
                                 if cif_comp_id != '.':
-                                    try:
-                                        auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(seq_id1[i])]
-                                        if chain_id != auth_chain_id or seq_id1[i] != auth_seq_id:
-                                            cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme"
-                                    except (KeyError, IndexError):
-                                        pass
+                                    if chain_id != auth_chain_id or label_seq_id != auth_seq_id:
+                                        cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme"
 
                                 err = f"Sequence alignment error between the coordinate ({cif_seq_code}) and the NMR data ({nmr_seq_code}). "\
                                     "Please verify the two sequences and re-upload the correct file(s)."

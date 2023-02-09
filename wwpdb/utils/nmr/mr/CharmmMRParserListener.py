@@ -2016,7 +2016,7 @@ class CharmmMRParserListener(ParseTreeListener):
                 return _factor
 
         if ('atom_id' in _factor and _factor['atom_id'][0] is None)\
-           or ('atom_selection' in _factor and len(_factor['atom_selection']) == 0):
+           or ('atom_selection' in _factor and (_factor['atom_selection'] is None or len(_factor['atom_selection']) == 0)):
             return {'atom_selection': []}
 
         if not any(key for key in _factor if not(key == 'atom_selection' or key.startswith('auth'))):

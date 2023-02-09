@@ -45791,7 +45791,7 @@ class NmrDpUtility:
                     iso_number = row[iso_number_name]
                     atom_id = row[atom_id_name]
 
-                    atoms.append((chain_id, seq_id - min_seq_ids[chain_id], iso_number, atom_id, idx))
+                    atoms.append((chain_id if isinstance(chain_id, int) else int(chain_id), seq_id - min_seq_ids[chain_id], iso_number, atom_id, idx))
 
                 sorted_atoms = sorted(atoms, key=lambda x: (x[0], x[1], x[2], x[3], x[4]))
 

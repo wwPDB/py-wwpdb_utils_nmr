@@ -9255,7 +9255,7 @@ class NmrDpUtility:
                        "The wwPDB NEF Working Group strongly recommends the submission of distance restraints "\
                        "used for the structure determination."
 
-                self.report.warning.appendDescription('missing_content',
+                self.report.warning.appendDescription('encouragement',
                                                       {'file_name': file_name, 'description': warn})
                 self.report.setWarning()
 

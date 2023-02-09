@@ -12189,8 +12189,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         if key not in self.sfDict:
             replaced = False
-            if potentialType is not None or rdcCode is not None:
-                old_key = (self.__cur_subtype, self.__cur_constraint_type, None, None, None if alignCenter is None else str(alignCenter))
+            if potentialType is not None or rdcCode is not None or alignCenter is not None:
+                old_key = (self.__cur_subtype, self.__cur_constraint_type, None, None, None)
                 if old_key in self.sfDict:
                     replaced = True
                     self.sfDict[key] = [self.sfDict[old_key].pop(-1)]

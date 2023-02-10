@@ -2616,7 +2616,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             if len(polySeq) > LEN_LARGE_ASYM_ID:
                 filterItems.append({'name': authAsymId, 'type': 'enum', 'enum': LARGE_ASYM_ID,
-                                    'fetch_first_match': True})
+                                    'fetch_first_match': True})  # to process large assembly avoiding forced timeout
 
             coord = cR.getDictListWithFilter('atom_site', dataItems, filterItems)
 

@@ -36739,9 +36739,9 @@ class NmrDpUtility:
                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
                             ]
 
-            if len(polymer_sequence) > LEN_MAJOR_ASYM_ID:
+            if len(polymer_sequence) >= LEN_MAJOR_ASYM_ID:
                 filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID, 'alt_name': 'chain_id',
-                                     'fetch_first_match': True})
+                                     'fetch_first_match': True})  # to process large assembly avoiding forced timeout
 
             coord = self.__cR.getDictListWithFilter('atom_site', data_items, filter_items)
 

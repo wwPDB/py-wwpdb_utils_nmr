@@ -18711,20 +18711,21 @@ class NmrDpUtility:
                             if allowed_ambig_code < 1:
 
                                 if self.__remediation_mode:
-                                    """
-                                    if __pynmrstar_v3_2__:
-                                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
-                                    else:
-                                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+                                    # """
+                                    # if __pynmrstar_v3_2__:
+                                    #     loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+                                    # else:
+                                    #     loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
-                                    comp_id_col = loop.tags.index('Comp_ID')
-                                    atom_id_col = loop.tags.index('Atom_ID')
-                                    ambig_code_col = loop.tags.index('Ambiguity_code')
+                                    # comp_id_col = loop.tags.index('Comp_ID')
+                                    # atom_id_col = loop.tags.index('Atom_ID')
+                                    # ambig_code_col = loop.tags.index('Ambiguity_code')
 
-                                    for row in loop:
-                                        if row[comp_id_col] == comp_id and row[atom_id_col] == atom_id and row[ambig_code_col] == ambig_code:
-                                            row[ambig_code_col] = 1
-                                    """
+                                    # for row in loop:
+                                    #     if row[comp_id_col] == comp_id and row[atom_id_col] == atom_id and row[ambig_code_col] == ambig_code:
+                                    #         row[ambig_code_col] = 1
+                                    # """
+                                    pass
                                 else:
 
                                     warn = f"Ambiguity code {str(ambig_code)!r} (comp_id {comp_id}, atom_id {atom_id}) "\
@@ -18741,20 +18742,21 @@ class NmrDpUtility:
                             else:
 
                                 if self.__remediation_mode:
-                                    """
-                                    if __pynmrstar_v3_2__:
-                                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
-                                    else:
-                                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+                                    # """
+                                    # if __pynmrstar_v3_2__:
+                                    #     loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+                                    # else:
+                                    #     loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
-                                    comp_id_col = loop.tags.index('Comp_ID')
-                                    atom_id_col = loop.tags.index('Atom_ID')
-                                    ambig_code_col = loop.tags.index('Ambiguity_code')
+                                    # comp_id_col = loop.tags.index('Comp_ID')
+                                    # atom_id_col = loop.tags.index('Atom_ID')
+                                    # ambig_code_col = loop.tags.index('Ambiguity_code')
 
-                                    for row in loop:
-                                        if row[comp_id_col] == comp_id and row[atom_id_col] == atom_id and row[ambig_code_col] == ambig_code:
-                                            row[ambig_code_col] = allowed_ambig_code
-                                    """
+                                    # for row in loop:
+                                    #     if row[comp_id_col] == comp_id and row[atom_id_col] == atom_id and row[ambig_code_col] == ambig_code:
+                                    #         row[ambig_code_col] = allowed_ambig_code
+                                    # """
+                                    pass
                                 else:
 
                                     err = f"Invalid ambiguity code {str(ambig_code)!r} (comp_id {comp_id}, atom_id {atom_id}, "\
@@ -22162,20 +22164,21 @@ class NmrDpUtility:
                             elif allowed_ambig_code > 0:
 
                                 if self.__remediation_mode:
-                                    """
-                                    chain_id_col = loop.tags.index(chain_id_name)
-                                    seq_id_col = loop.tags.index(seq_id_name)
-                                    comp_id_col = loop.tags.index(comp_id_name)
-                                    atom_id_col = loop.tags.index(atom_id_name)
-                                    ambig_code_col = loop.tags.index(ambig_code_name)
+                                    # """
+                                    # chain_id_col = loop.tags.index(chain_id_name)
+                                    # seq_id_col = loop.tags.index(seq_id_name)
+                                    # comp_id_col = loop.tags.index(comp_id_name)
+                                    # atom_id_col = loop.tags.index(atom_id_name)
+                                    # ambig_code_col = loop.tags.index(ambig_code_name)
 
-                                    row = next(row for row in loop
-                                               if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
-                                               and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
+                                    # row = next(row for row in loop
+                                    #            if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
+                                    #            and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
 
-                                    row[ambig_code_col] = allowed_ambig_code
-                                    modified = True
-                                    """
+                                    # row[ambig_code_col] = allowed_ambig_code
+                                    # modified = True
+                                    # """
+                                    pass
                                 else:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
@@ -22206,20 +22209,21 @@ class NmrDpUtility:
                                     loop.data[lp_data.index(_row)][loop.tags.index(ambig_code_name)] = ambig_code
 
                                 if self.__remediation_mode:
-                                    """
-                                    chain_id_col = loop.tags.index(chain_id_name)
-                                    seq_id_col = loop.tags.index(seq_id_name)
-                                    comp_id_col = loop.tags.index(comp_id_name)
-                                    atom_id_col = loop.tags.index(atom_id_name)
-                                    ambig_code_col = loop.tags.index(ambig_code_name)
+                                    # """
+                                    # chain_id_col = loop.tags.index(chain_id_name)
+                                    # seq_id_col = loop.tags.index(seq_id_name)
+                                    # comp_id_col = loop.tags.index(comp_id_name)
+                                    # atom_id_col = loop.tags.index(atom_id_name)
+                                    # ambig_code_col = loop.tags.index(ambig_code_name)
 
-                                    row = next(row for row in loop
-                                               if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
-                                               and row[comp_id_col] == comp_id and row[atom_id_col] == _atom_id2)
+                                    # row = next(row for row in loop
+                                    #            if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
+                                    #            and row[comp_id_col] == comp_id and row[atom_id_col] == _atom_id2)
 
-                                    row[ambig_code_col] = ambig_code
-                                    modified = True
-                                    """
+                                    # row[ambig_code_col] = ambig_code
+                                    # modified = True
+                                    # """
+                                    pass
                                 else:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
@@ -38004,11 +38008,11 @@ class NmrDpUtility:
 
                                         self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
                                                                                         {'ca_idx': ca_idx, 'file_name': nmr_file_name, 'description': warn}})
-                                        """
-                                        self.report.warning.appendDescription('sequence_mismatch',
-                                                                              {'file_name': nmr_file_name, 'description': warn})
-                                        self.report.setWarning()
-                                        """
+                                        # """
+                                        # self.report.warning.appendDescription('sequence_mismatch',
+                                        #                                       {'file_name': nmr_file_name, 'description': warn})
+                                        # self.report.setWarning()
+                                        # """
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
 
@@ -38043,22 +38047,22 @@ class NmrDpUtility:
                                 if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(cif_comp_id, nmr_comp_id):
                                     self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
                                                                                     {'ca_idx': ca_idx, 'file_name': nmr_file_name, 'description': err}})
-                                    """
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': nmr_file_name, 'description': err})
-                                    self.report.setWarning()
-                                    """
+                                    # """
+                                    # self.report.warning.appendDescription('sequence_mismatch',
+                                    #                                       {'file_name': nmr_file_name, 'description': err})
+                                    # self.report.setWarning()
+                                    # """
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
 
                                 else:
                                     self.__suspended_errors_for_lazy_eval.append({'sequence_mismatch':
                                                                                   {'ca_idx': ca_idx, 'file_name': nmr_file_name, 'description': err}})
-                                    """
-                                    self.report.error.appendDescription('sequence_mismatch',
-                                                                        {'file_name': nmr_file_name, 'description': err})
-                                    self.report.setError()
-                                    """
+                                    # """
+                                    # self.report.error.appendDescription('sequence_mismatch',
+                                    #                                     {'file_name': nmr_file_name, 'description': err})
+                                    # self.report.setError()
+                                    # """
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - {err}\n")
 
@@ -38397,11 +38401,11 @@ class NmrDpUtility:
 
                                     self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
                                                                                     {'ca_idx': ca_idx, 'file_name': cif_file_name, 'description': warn}})
-                                    """
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': cif_file_name, 'description': warn})
-                                    self.report.setWarning()
-                                    """
+                                    # """
+                                    # self.report.warning.appendDescription('sequence_mismatch',
+                                    #                                       {'file_name': cif_file_name, 'description': warn})
+                                    # self.report.setWarning()
+                                    # """
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
 
@@ -38434,22 +38438,22 @@ class NmrDpUtility:
                                 if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(nmr_comp_id, cif_comp_id):
                                     self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
                                                                                     {'ca_idx': ca_idx, 'file_name': cif_file_name, 'description': err}})
-                                    """
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': cif_file_name, 'description': err})
-                                    self.report.setWarning()
-                                    """
+                                    # """
+                                    # self.report.warning.appendDescription('sequence_mismatch',
+                                    #                                       {'file_name': cif_file_name, 'description': err})
+                                    # self.report.setWarning()
+                                    # """
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
 
                                 else:
                                     self.__suspended_errors_for_lazy_eval.append({'sequence_mismatch':
                                                                                   {'ca_idx': ca_idx, 'file_name': cif_file_name, 'description': err}})
-                                    """
-                                    self.report.error.appendDescription('sequence_mismatch',
-                                                                        {'file_name': cif_file_name, 'description': err})
-                                    self.report.setError()
-                                    """
+                                    # """
+                                    # self.report.error.appendDescription('sequence_mismatch',
+                                    #                                     {'file_name': cif_file_name, 'description': err})
+                                    # self.report.setError()
+                                    # """
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - {err}\n")
 
@@ -40028,33 +40032,33 @@ class NmrDpUtility:
                 row[chain_id_col], row[seq_id_col] = auth_asym_id, auth_seq_id
 
                 entity_type = entity_type_of[entity_id]
-                """
-                if entity_type == 'polymer':
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
-                    try:
-                        idx = ps['auth_seq_id'].index(auth_seq_id)
-                        comp_id = ps['comp_id'][idx]
-                    except IndexError:
-                        comp_id = None
-                    except ValueError:
-                        comp_id = None
+                # """
+                # if entity_type == 'polymer':
+                #     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                #     try:
+                #         idx = ps['auth_seq_id'].index(auth_seq_id)
+                #         comp_id = ps['comp_id'][idx]
+                #     except IndexError:
+                #         comp_id = None
+                #     except ValueError:
+                #         comp_id = None
 
-                elif entity_type == 'branched':
-                    br = next(br for br in self.__caC['branched'] if br['auth_chain_id'] == auth_asym_id)
-                    try:
-                        comp_id = br['comp_id'][seq_id - 1]
-                    except IndexError:
-                        comp_id = None
+                # elif entity_type == 'branched':
+                #     br = next(br for br in self.__caC['branched'] if br['auth_chain_id'] == auth_asym_id)
+                #     try:
+                #         comp_id = br['comp_id'][seq_id - 1]
+                #     except IndexError:
+                #         comp_id = None
 
-                elif entity_type == 'non-polymer':
-                    np = next(np for np in self.__caC['non_polymer']
-                              if np['auth_chain_id'] == auth_asym_id
-                              and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
-                    try:
-                        comp_id = np['comp_id'][0]
-                    except IndexError:
-                        comp_id = None
-                """
+                # elif entity_type == 'non-polymer':
+                #     np = next(np for np in self.__caC['non_polymer']
+                #               if np['auth_chain_id'] == auth_asym_id
+                #               and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
+                #     try:
+                #         comp_id = np['comp_id'][0]
+                #     except IndexError:
+                #         comp_id = None
+                # """
                 row[comp_id_col] = comp_id
 
                 if entity_type == 'polymer':
@@ -40213,33 +40217,33 @@ class NmrDpUtility:
                 row[chain_id_col], row[ent_id_col], row[seq_id_col], row[alt_seq_id_col] = entity_assembly_id, entity_id, seq_id, seq_id
 
                 entity_type = entity_type_of[entity_id]
-                """
-                if entity_type == 'polymer':
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
-                    try:
-                        idx = ps['auth_seq_id'].index(auth_seq_id)
-                        comp_id = ps['comp_id'][idx]
-                    except IndexError:
-                        comp_id = None
-                    except ValueError:
-                        comp_id = None
+                # """
+                # if entity_type == 'polymer':
+                #     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                #     try:
+                #         idx = ps['auth_seq_id'].index(auth_seq_id)
+                #         comp_id = ps['comp_id'][idx]
+                #     except IndexError:
+                #         comp_id = None
+                #     except ValueError:
+                #         comp_id = None
 
-                elif entity_type == 'branched':
-                    br = next(br for br in self.__caC['branched'] if br['auth_chain_id'] == auth_asym_id)
-                    try:
-                        comp_id = br['comp_id'][seq_id - 1]
-                    except IndexError:
-                        comp_id = None
+                # elif entity_type == 'branched':
+                #     br = next(br for br in self.__caC['branched'] if br['auth_chain_id'] == auth_asym_id)
+                #     try:
+                #         comp_id = br['comp_id'][seq_id - 1]
+                #     except IndexError:
+                #         comp_id = None
 
-                elif entity_type == 'non-polymer':
-                    np = next(np for np in self.__caC['non_polymer']
-                              if np['auth_chain_id'] == auth_asym_id
-                              and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
-                    try:
-                        comp_id = np['comp_id'][0]
-                    except IndexError:
-                        comp_id = None
-                """
+                # elif entity_type == 'non-polymer':
+                #     np = next(np for np in self.__caC['non_polymer']
+                #               if np['auth_chain_id'] == auth_asym_id
+                #               and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
+                #     try:
+                #         comp_id = np['comp_id'][0]
+                #     except IndexError:
+                #         comp_id = None
+                # """
                 row[comp_id_col], row[auth_asym_id_col], row[auth_seq_id_col], row[auth_comp_id_col] = comp_id, auth_asym_id, auth_seq_id, comp_id
 
                 if entity_type == 'polymer':
@@ -45775,8 +45779,8 @@ class NmrDpUtility:
                     for tag in loop.tags:
                         lp.add_tag(lp_category + '.' + tag)
 
-                    for id in sorted_id:
-                        lp.add_data(loop[id])
+                    for l_id in sorted_id:
+                        lp.add_data(loop[l_id])
 
                     del sf_data[loop]
 

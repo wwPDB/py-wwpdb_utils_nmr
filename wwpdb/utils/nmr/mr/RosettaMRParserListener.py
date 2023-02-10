@@ -50,7 +50,8 @@ try:
                                                        RDC_RESTRAINT_RANGE,
                                                        RDC_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP)
+                                                       DIST_AMBIG_UP,
+                                                       CARTN_DATA_ITEMS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -109,7 +110,8 @@ except ImportError:
                                            RDC_RESTRAINT_RANGE,
                                            RDC_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP)
+                                           DIST_AMBIG_UP,
+                                           CARTN_DATA_ITEMS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -3629,10 +3631,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 _head =\
                     self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                     ],
+                                                    CARTN_DATA_ITEMS,
                                                     [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
                                                      {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
                                                      {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
@@ -3644,10 +3643,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 _tail =\
                     self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                     ],
+                                                    CARTN_DATA_ITEMS,
                                                     [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
                                                      {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
                                                      {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},

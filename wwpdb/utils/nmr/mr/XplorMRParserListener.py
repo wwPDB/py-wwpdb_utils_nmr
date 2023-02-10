@@ -71,7 +71,13 @@ try:
                                                        DIST_AMBIG_UP,
                                                        XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                                        XPLOR_NITROXIDE_NAMES,
-                                                       XPLOR_ORIGIN_AXIS_COLS)
+                                                       XPLOR_ORIGIN_AXIS_COLS,
+                                                       CARTN_DATA_ITEMS,
+                                                       AUTH_ATOM_DATA_ITEMS,
+                                                       ATOM_NAME_DATA_ITEMS,
+                                                       AUTH_ATOM_CARTN_DATA_ITEMS,
+                                                       PTNR1_AUTH_ATOM_DATA_ITEMS,
+                                                       PTNR2_AUTH_ATOM_DATA_ITEMS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -156,7 +162,13 @@ except ImportError:
                                            DIST_AMBIG_UP,
                                            XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                            XPLOR_NITROXIDE_NAMES,
-                                           XPLOR_ORIGIN_AXIS_COLS)
+                                           XPLOR_ORIGIN_AXIS_COLS,
+                                           CARTN_DATA_ITEMS,
+                                           AUTH_ATOM_DATA_ITEMS,
+                                           ATOM_NAME_DATA_ITEMS,
+                                           AUTH_ATOM_CARTN_DATA_ITEMS,
+                                           PTNR1_AUTH_ATOM_DATA_ITEMS,
+                                           PTNR2_AUTH_ATOM_DATA_ITEMS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -2347,10 +2359,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                             _head =\
                                 self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                 ],
+                                                                CARTN_DATA_ITEMS,
                                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_set[0]},
                                                                  {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
                                                                  {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
@@ -2362,10 +2371,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                             _tail =\
                                 self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                 ],
+                                                                CARTN_DATA_ITEMS,
                                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_set[-1]},
                                                                  {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
                                                                  {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
@@ -7252,10 +7258,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             _donor =\
                 self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
+                                                CARTN_DATA_ITEMS,
                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
                                                  {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
                                                  {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
@@ -7267,10 +7270,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             _hydrogen =\
                 self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
+                                                CARTN_DATA_ITEMS,
                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
                                                  {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
                                                  {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
@@ -7282,10 +7282,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             _acceptor =\
                 self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
+                                                CARTN_DATA_ITEMS,
                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_3},
                                                  {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_3},
                                                  {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_3},
@@ -7411,10 +7408,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             _acceptor =\
                 self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
+                                                CARTN_DATA_ITEMS,
                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
                                                  {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
                                                  {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
@@ -7426,10 +7420,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             _hydrogen =\
                 self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
+                                                CARTN_DATA_ITEMS,
                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
                                                  {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
                                                  {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
@@ -9276,11 +9267,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     atomSelection =\
                         self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
+                                                        AUTH_ATOM_DATA_ITEMS,
                                                         [{'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
@@ -9343,10 +9330,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                             _origin =\
                                 self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                 ],
+                                                                CARTN_DATA_ITEMS,
                                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': _atom['chain_id']},
                                                                  {'name': self.__authSeqId, 'type': 'int', 'value': _atom['seq_id']},
                                                                  {'name': self.__authAtomId, 'type': 'str', 'value': _atom['atom_id']},
@@ -9363,14 +9347,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                             _neighbor =\
                                 self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                 {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                 {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                                 {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                 ],
+                                                                AUTH_ATOM_CARTN_DATA_ITEMS,
                                                                 [{'name': 'Cartn_x', 'type': 'range-float',
                                                                   'range': {'min_exclusive': (origin[0] - around),
                                                                             'max_exclusive': (origin[0] + around)}},
@@ -9424,10 +9401,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                                         _origin =\
                                             self.__cR.getDictListWithFilter('atom_site',
-                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                             ],
+                                                                            CARTN_DATA_ITEMS,
                                                                             [{'name': self.__authAsymId, 'type': 'str', 'value': _atom['chain_id']},
                                                                              {'name': self.__authSeqId, 'type': 'int', 'value': _atom['seq_id']},
                                                                              {'name': self.__authAtomId, 'type': 'str', 'value': _atom['atom_id']},
@@ -9444,14 +9418,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                                         _neighbor =\
                                             self.__cR.getDictListWithFilter('atom_site',
-                                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                             ],
+                                                                            AUTH_ATOM_CARTN_DATA_ITEMS,
                                                                             [{'name': 'Cartn_x', 'type': 'range-float',
                                                                               'range': {'min_exclusive': (origin[0] - around),
                                                                                         'max_exclusive': (origin[0] + around)}},
@@ -9683,11 +9650,7 @@ class XplorMRParserListener(ParseTreeListener):
                         valueType['range'] = {'not_equal_to': attr_value}
                     atomSelection =\
                         self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
+                                                        AUTH_ATOM_DATA_ITEMS,
                                                         [valueType,
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
@@ -9730,11 +9693,7 @@ class XplorMRParserListener(ParseTreeListener):
                         valueType['range'] = {'not_equal_to': attr_value}
                     atomSelection =\
                         self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
+                                                        AUTH_ATOM_DATA_ITEMS,
                                                         [valueType,
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
@@ -9777,11 +9736,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     atomSelection =\
                         self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
+                                                        AUTH_ATOM_DATA_ITEMS,
                                                         [{'name': 'type_symbol', 'type': 'enum',
                                                           'enum': _typeSymbolSelect},
                                                          {'name': self.__modelNumName, 'type': 'int',
@@ -9814,11 +9769,7 @@ class XplorMRParserListener(ParseTreeListener):
                         valueType['range'] = {'not_equal_to': attr_value}
                     atomSelection =\
                         self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
+                                                        AUTH_ATOM_DATA_ITEMS,
                                                         [valueType,
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
@@ -9864,11 +9815,7 @@ class XplorMRParserListener(ParseTreeListener):
                         valueType['range'] = {'not_equal_to': attr_value}
                     atomSelection =\
                         self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
+                                                        AUTH_ATOM_DATA_ITEMS,
                                                         [valueType,
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
@@ -9958,10 +9905,7 @@ class XplorMRParserListener(ParseTreeListener):
                             if hasLeaavindAtomId:
                                 _origin =\
                                     self.__cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                     ],
+                                                                    CARTN_DATA_ITEMS,
                                                                     [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
                                                                      {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
                                                                      {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
@@ -9997,10 +9941,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                     for _atomId in _atomIdSelect:
                                                         _neighbor =\
                                                             self.__cR.getDictListWithFilter('atom_site',
-                                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                                             ],
+                                                                                            CARTN_DATA_ITEMS,
                                                                                             [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
                                                                                              {'name': self.__authSeqId, 'type': 'int', 'value': _seqId},
                                                                                              {'name': self.__authAtomId, 'type': 'str', 'value': _atomId},
@@ -10040,10 +9981,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                         for _atomId in _atomIdSelect:
                                                             _neighbor =\
                                                                 self.__cR.getDictListWithFilter('atom_site',
-                                                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                                                 ],
+                                                                                                CARTN_DATA_ITEMS,
                                                                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
                                                                                                  {'name': self.__authSeqId, 'type': 'int', 'value': _seqId},
                                                                                                  {'name': self.__authAtomId, 'type': 'str', 'value': _atomId},
@@ -10061,11 +9999,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                         # struct_conn category
                         _atom = self.__cR.getDictListWithFilter('struct_conn',
-                                                                [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                 {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                 {'name': 'ptnr1_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 {'name': 'ptnr1_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                                 ],
+                                                                PTNR1_AUTH_ATOM_DATA_ITEMS,
                                                                 [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': chainId},
                                                                  {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': seqId},
                                                                  {'name': 'ptnr2_label_atom_id', 'type': 'str', 'value': atomId},
@@ -10077,11 +10011,7 @@ class XplorMRParserListener(ParseTreeListener):
                             _atomSelection.append(_atom[0])
 
                         _atom = self.__cR.getDictListWithFilter('struct_conn',
-                                                                [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                 {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                 {'name': 'ptnr2_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 {'name': 'ptnr2_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                                 ],
+                                                                PTNR2_AUTH_ATOM_DATA_ITEMS,
                                                                 [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': chainId},
                                                                  {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': seqId},
                                                                  {'name': 'ptnr1_label_atom_id', 'type': 'str', 'value': atomId},
@@ -10146,10 +10076,7 @@ class XplorMRParserListener(ParseTreeListener):
                             if len(_nonBondedAtomIdSelect) > 0:
                                 _origin =\
                                     self.__cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                     ],
+                                                                    CARTN_DATA_ITEMS,
                                                                     [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
                                                                      {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
                                                                      {'name': self.__authAtomId, 'type': 'str', 'value': atomId},
@@ -10165,10 +10092,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     for _atomId in _nonBondedAtomIdSelect:
                                         _neighbor =\
                                             self.__cR.getDictListWithFilter('atom_site',
-                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                             ],
+                                                                            CARTN_DATA_ITEMS,
                                                                             [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
                                                                              {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
                                                                              {'name': self.__authAtomId, 'type': 'str', 'value': _atomId},
@@ -10234,9 +10158,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                         _atomByRes =\
                             self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                             ],
+                                                            ATOM_NAME_DATA_ITEMS,
                                                             [{'name': self.__authAsymId, 'type': 'str', 'value': chainId},
                                                              {'name': self.__authSeqId, 'type': 'int', 'value': seqId},
                                                              {'name': self.__modelNumName, 'type': 'int',
@@ -10446,11 +10368,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                         _atomSelection =\
                             self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                             ],
+                                                            AUTH_ATOM_DATA_ITEMS,
                                                             [{'name': self.__modelNumName, 'type': 'int',
                                                               'value': self.__representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum',
@@ -10482,10 +10400,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                             _tail =\
                                 self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                 ],
+                                                                CARTN_DATA_ITEMS,
                                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': self.inVector3D_tail['chain_id']},
                                                                  {'name': self.__authSeqId, 'type': 'int', 'value': self.inVector3D_tail['seq_id']},
                                                                  {'name': self.__authAtomId, 'type': 'str', 'value': self.inVector3D_tail['atom_id']},
@@ -10505,10 +10420,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                                     _head =\
                                         self.__cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                                         ],
+                                                                        CARTN_DATA_ITEMS,
                                                                         [{'name': self.__authAsymId, 'type': 'str', 'value': self.inVector3D_head['chain_id']},
                                                                          {'name': self.__authSeqId, 'type': 'int', 'value': self.inVector3D_head['seq_id']},
                                                                          {'name': self.__authAtomId, 'type': 'str', 'value': self.inVector3D_head['atom_id']},
@@ -10549,14 +10461,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                         _neighbor =\
                             self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                             ],
+                                                            AUTH_ATOM_CARTN_DATA_ITEMS,
                                                             [{'name': 'Cartn_x', 'type': 'range-float',
                                                               'range': {'min_exclusive': (self.vector3D[0] - cut),
                                                                         'max_exclusive': (self.vector3D[0] + cut)}},
@@ -10614,11 +10519,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     _atomSelection =\
                         self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
+                                                        AUTH_ATOM_DATA_ITEMS,
                                                         [{'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
@@ -10997,11 +10898,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     _atomSelection =\
                         self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
+                                                        AUTH_ATOM_DATA_ITEMS,
                                                         [{'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',

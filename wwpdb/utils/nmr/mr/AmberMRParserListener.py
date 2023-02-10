@@ -52,7 +52,9 @@ try:
                                                        CS_RESTRAINT_RANGE,
                                                        CS_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP)
+                                                       DIST_AMBIG_UP,
+                                                       CARTN_DATA_ITEMS,
+                                                       AUTH_ATOM_CARTN_DATA_ITEMS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -104,7 +106,9 @@ except ImportError:
                                            CS_RESTRAINT_RANGE,
                                            CS_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP)
+                                           DIST_AMBIG_UP,
+                                           CARTN_DATA_ITEMS,
+                                           AUTH_ATOM_CARTN_DATA_ITEMS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -4354,10 +4358,7 @@ class AmberMRParserListener(ParseTreeListener):
 
             _origin =\
                 self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
+                                                CARTN_DATA_ITEMS,
                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': src_atom['chain_id']},
                                                  {'name': self.__authSeqId, 'type': 'int', 'value': src_atom['seq_id']},
                                                  {'name': self.__authAtomId, 'type': 'str', 'value': src_atom['atom_id']},
@@ -4374,14 +4375,7 @@ class AmberMRParserListener(ParseTreeListener):
 
             _neighbor =\
                 self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                 {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                 {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                 {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                 {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                 ],
+                                                AUTH_ATOM_CARTN_DATA_ITEMS,
                                                 [{'name': 'Cartn_x', 'type': 'range-float',
                                                   'range': {'min_exclusive': (origin[0] - around),
                                                             'max_exclusive': (origin[0] + around)}},

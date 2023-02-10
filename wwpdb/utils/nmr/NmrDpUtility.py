@@ -25835,12 +25835,14 @@ class NmrDpUtility:
 
             model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
 
+            data_items = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                          {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                          {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                          {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                          ]
+
             atom_site_1 = self.__cR.getDictListWithFilter('atom_site',
-                                                          [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                           {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                           {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                           {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                           ],
+                                                          data_items,
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_1},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_1},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': cif_atom_id_1},
@@ -25848,11 +25850,7 @@ class NmrDpUtility:
                                                            ])
 
             atom_site_2 = self.__cR.getDictListWithFilter('atom_site',
-                                                          [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                           {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                           {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                           {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                           ],
+                                                          data_items,
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_2},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_2},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': cif_atom_id_2},
@@ -36726,63 +36724,26 @@ class NmrDpUtility:
             model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
             has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
 
+            data_items = [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                          {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                          {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                          {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                          {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                          {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                          ]
+
+            if has_pdbx_auth_atom_name:  # DAOTHER-7665
+                data_items.append({'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'})
+
+            filter_items = [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
+                            {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                            ]
+
             if len(polymer_sequence) > LEN_MAJOR_ASYM_ID:
+                filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID, 'alt_name': 'chain_id',
+                                     'fetch_first_match': True})
 
-                if has_pdbx_auth_atom_name:
-                    coord = self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                             {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                             {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
-                                                             ],
-                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
-                                                             {'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID, 'alt_name': 'chain_id'}
-                                                             ])
-                else:
-                    coord = self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                             {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                             ],
-                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
-                                                             {'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID, 'alt_name': 'chain_id'}
-                                                             ])
-
-            else:
-
-                if has_pdbx_auth_atom_name:
-                    coord = self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                             {'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'}  # DAOTHER-7665
-                                                             ],
-                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                             ])
-                else:
-                    coord = self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                             ],
-                                                            [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                             ])
+            coord = self.__cR.getDictListWithFilter('atom_site', data_items, filter_items)
 
             if has_poly_seq:
                 label_to_auth_chain = {ps['chain_id']: ps['auth_chain_id'] for ps in polymer_sequence}
@@ -36831,6 +36792,8 @@ class NmrDpUtility:
                 unobs_has_auth_seq = self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_asym_id')\
                     and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_seq_id')
 
+                filter_item_by_rep_model_id = [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}]
+
                 if unobs_has_auth_seq and unobs_has_label_seq:
                     unobs = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
                                                             [{'name': 'auth_asym_id', 'type': 'str'},
@@ -36838,8 +36801,7 @@ class NmrDpUtility:
                                                              {'name': 'label_asym_id', 'type': 'str'},
                                                              {'name': 'label_seq_id', 'type': 'str'}
                                                              ],
-                                                            [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
-                                                             ])
+                                                            filter_item_by_rep_model_id)
 
                     if len(unobs) > 0:
                         for u in unobs:
@@ -36857,8 +36819,7 @@ class NmrDpUtility:
                                                             [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                              {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'}
                                                              ],
-                                                            [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
-                                                             ])
+                                                            filter_item_by_rep_model_id)
 
                     if len(unobs) > 0:
                         for chain_id in chain_ids:
@@ -36872,8 +36833,7 @@ class NmrDpUtility:
                                                             [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                              {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'}
                                                              ],
-                                                            [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}
-                                                             ])
+                                                            filter_item_by_rep_model_id)
 
                     if len(unobs) > 0:
                         for chain_id in chain_ids:
@@ -37194,7 +37154,7 @@ class NmrDpUtility:
                 for i1, s1 in enumerate(polymer_sequence):
                     chain_id = s1['chain_id']
 
-                    if i1 >= LEN_MAJOR_ASYM_ID:  # save computing resource for large model
+                    if i1 >= LEN_MAJOR_ASYM_ID:  # to process large assembly avoiding forced timeout
                         continue
 
                     for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
@@ -37265,11 +37225,14 @@ class NmrDpUtility:
         for i1, s1 in enumerate(polymer_sequence):
             chain_id = s1['chain_id']
 
-            if i1 >= LEN_MAJOR_ASYM_ID:  # save computing resource for large model
+            if i1 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                 continue
 
-            for s2 in nmr_polymer_sequence:
+            for i2, s2 in enumerate(nmr_polymer_sequence):
                 chain_id2 = s2['chain_id']
+
+                if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
+                    continue
 
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
                 self.__pA.addTestSequence(s2['comp_id'], chain_id)
@@ -37395,13 +37358,16 @@ class NmrDpUtility:
 
         # has_conflict = False
 
-        for s1 in nmr_polymer_sequence:
+        for i1, s1 in enumerate(nmr_polymer_sequence):
             chain_id = s1['chain_id']
+
+            if i1 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
+                continue
 
             for i2, s2 in enumerate(polymer_sequence):
                 chain_id2 = s2['chain_id']
 
-                if i2 >= LEN_MAJOR_ASYM_ID:  # save computing resource for large model
+                if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                     continue
 
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
@@ -40602,45 +40568,47 @@ class NmrDpUtility:
 
         poly_seq = self.__getPolymerSequence(0, asm_sf, content_subtype)[0]
 
-        seq_align, _ = alignPolymerSequence(self.__pA, poly_seq, orig_poly_seq, conservative=False)
-        chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq, orig_poly_seq, seq_align)
-
         identical = True
-        self.__chain_id_map_for_remediation = {}
-        self.__seq_id_map_for_remediation = {}
 
-        for ps in orig_poly_seq:
-            chain_id = ps['chain_id']
-            for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
-                seq_key = (chain_id, seq_id)
+        if len(poly_seq) < LEN_MAJOR_ASYM_ID or len(poly_seq) != len(orig_poly_seq):  # to process large assembly avoiding forced timeout
+            seq_align, _ = alignPolymerSequence(self.__pA, poly_seq, orig_poly_seq, conservative=False)
+            chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq, orig_poly_seq, seq_align)
 
-                _chain_id = _seq_id = _comp_id = None
+            self.__chain_id_map_for_remediation = {}
+            self.__seq_id_map_for_remediation = {}
 
-                if chain_assign is not None:
-                    _chain_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
-                    if _chain_id is not None:
-                        sa = next((sa for sa in seq_align if sa['ref_chain_id'] == _chain_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
-                        if sa is not None:
-                            _seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']) if test_seq_id == seq_id), None)
-                            if _seq_id is not None:
-                                _ps = next(_ps for _ps in poly_seq if _ps['chain_id'] == _chain_id)
-                                if _seq_id in _ps['seq_id']:
-                                    _comp_id = _ps['comp_id'][_ps['seq_id'].index(_seq_id)]
+            for ps in orig_poly_seq:
+                chain_id = ps['chain_id']
+                for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
+                    seq_key = (chain_id, seq_id)
 
-                if _chain_id is not None and _seq_id is not None and comp_id == _comp_id:
-                    if chain_id not in self.__chain_id_map_for_remediation:
-                        self.__chain_id_map_for_remediation[chain_id] = _chain_id
-                    self.__seq_id_map_for_remediation[seq_key] = (_chain_id, _seq_id)
-                    if chain_id != _chain_id or seq_id != _seq_id:
-                        identical = False
-                else:
-                    _ps = next((_ps for _ps in poly_seq if _ps['chain_id'] == _chain_id and _ps['seq_id'] == _seq_id), None)
-                    if _ps is not None:
-                        _comp_id = _ps['comp_id'][_ps['seq_id'].index(_seq_id)]
-                        if comp_id == _comp_id:
-                            if chain_id not in self.__chain_id_map_for_remediation:
-                                self.__chain_id_map_for_remediation[chain_id] = _chain_id
-                            self.__seq_id_map_for_remediation[seq_key] = (_chain_id, _seq_id)
+                    _chain_id = _seq_id = _comp_id = None
+
+                    if chain_assign is not None:
+                        _chain_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
+                        if _chain_id is not None:
+                            sa = next((sa for sa in seq_align if sa['ref_chain_id'] == _chain_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                            if sa is not None:
+                                _seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']) if test_seq_id == seq_id), None)
+                                if _seq_id is not None:
+                                    _ps = next(_ps for _ps in poly_seq if _ps['chain_id'] == _chain_id)
+                                    if _seq_id in _ps['seq_id']:
+                                        _comp_id = _ps['comp_id'][_ps['seq_id'].index(_seq_id)]
+
+                    if _chain_id is not None and _seq_id is not None and comp_id == _comp_id:
+                        if chain_id not in self.__chain_id_map_for_remediation:
+                            self.__chain_id_map_for_remediation[chain_id] = _chain_id
+                        self.__seq_id_map_for_remediation[seq_key] = (_chain_id, _seq_id)
+                        if chain_id != _chain_id or seq_id != _seq_id:
+                            identical = False
+                    else:
+                        _ps = next((_ps for _ps in poly_seq if _ps['chain_id'] == _chain_id and _ps['seq_id'] == _seq_id), None)
+                        if _ps is not None:
+                            _comp_id = _ps['comp_id'][_ps['seq_id'].index(_seq_id)]
+                            if comp_id == _comp_id:
+                                if chain_id not in self.__chain_id_map_for_remediation:
+                                    self.__chain_id_map_for_remediation[chain_id] = _chain_id
+                                self.__seq_id_map_for_remediation[seq_key] = (_chain_id, _seq_id)
 
         self.__remediateCsLoop()
 
@@ -41311,25 +41279,19 @@ class NmrDpUtility:
 
         try:
 
+            filter_items = [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                            {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                            {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
+                            {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id}
+                            ]
+
             if not self.__bmrb_only:
-                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                              [{'name': 'conn_type_id', 'type': 'str'}
-                                                               ],
-                                                              [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
-                                                               {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                               {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
-                                                               {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},
-                                                               ])
-            else:
-                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                              [{'name': 'conn_type_id', 'type': 'str'}
-                                                               ],
-                                                              [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                               {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
-                                                               {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},
-                                                               ])
+                filter_items.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
+
+            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                          [{'name': 'conn_type_id', 'type': 'str'}
+                                                           ],
+                                                          filter_items)
 
         except Exception as e:
 
@@ -41583,7 +41545,7 @@ class NmrDpUtility:
                                                          {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                          {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                          {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                         {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                         {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
                                                          ],
                                                         [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                          {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
@@ -41692,7 +41654,7 @@ class NmrDpUtility:
                                                          {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                          {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                          {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                         {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                         {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
                                                          ],
                                                         [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                          {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
@@ -41822,7 +41784,7 @@ class NmrDpUtility:
                                                          {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                          {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                          {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                         {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                         {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
                                                          ],
                                                         [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                          {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
@@ -42949,7 +42911,7 @@ class NmrDpUtility:
                                                        {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                       {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                       {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
                                                        ],
                                                       [{'name': 'label_asym_id', 'type': 'str', 'value': na['cif_chain_id']},
                                                        {'name': 'label_seq_id', 'type': 'int', 'value': na['cif_seq_id']},

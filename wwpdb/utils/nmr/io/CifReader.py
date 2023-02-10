@@ -23,6 +23,7 @@
 # 30-Mar-2022   my  - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 # 06-Apr-2022   my  - add support for auth_comp_id (DAOTHER-7690)
 # 04-Aug-2022   my  - detect sequence gaps in auth_seq_id, 'gap_in_auth_seq' (NMR restraint remediation)
+# 10-Feb-2023   my  - add 'fetch_first_match' filter to process large assembly avoiding forced timeout (NMR restraint remediation)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -526,14 +527,14 @@ class CifReader:
                                 else:
                                     ent['auth_comp_id'].append('.')
 
-                    if withStructConf and i < LEN_MAJOR_ASYM_ID:  # save computing resource for large model
+                    if withStructConf and i < LEN_MAJOR_ASYM_ID:  # to process large assembly avoiding forced timeout
                         ent['struct_conf'] = self.__extractStructConf(c, seqDict[c])
 
                     entity_poly = self.getDictList('entity_poly')
 
                     etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
-                    if withRmsd and etype is not None and total_models > 1 and i < LEN_MAJOR_ASYM_ID:  # save computing resource for large model
+                    if withRmsd and etype is not None and total_models > 1 and i < LEN_MAJOR_ASYM_ID:  # to process large assembly avoiding forced timeout
                         ent['type'] = etype
 
                         randomM = None
@@ -1075,6 +1076,7 @@ class CifReader:
             # get column name index
             colDict = {}
             fcolDict = {}
+            fetchDict = {}  # 'fetch_first_match': True
 
             itNameList = [name[len_catName:] for name in catObj.getItemNameList()]
 
@@ -1093,11 +1095,14 @@ class CifReader:
             # get row list
             rowList = catObj.getRowList()
 
+            abort = False
+
             for row in rowList:
                 keep = True
                 if filterItems is not None:
                     for filterItem in filterItems:
-                        val = row[fcolDict[filterItem['name']]]
+                        name = filterItem['name']
+                        val = row[fcolDict[name]]
                         if val in self.emptyValue:
                             if 'value' in filterItem and not filterItem['value'] in self.emptyValue:
                                 keep = False
@@ -1129,10 +1134,24 @@ class CifReader:
                                 if val not in filterItem['enum']:
                                     keep = False
                                     break
+                                if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                                    if name not in fetchDict:
+                                        fetchDict[name] = val
+                                    elif val != fetchDict[name]:
+                                        keep = False
+                                        abort = True
+                                        break
                             else:
                                 if val != filterItem['value']:
                                     keep = False
                                     break
+                                if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                                    if name not in fetchDict:
+                                        fetchDict[name] = val
+                                    elif val != fetchDict[name]:
+                                        keep = False
+                                        abort = True
+                                        break
 
                 if keep:
                     tD = {}
@@ -1154,5 +1173,8 @@ class CifReader:
                         else:
                             tD[dataItem['name']] = val
                     dList.append(tD)
+
+                elif abort:
+                    break
 
         return dList

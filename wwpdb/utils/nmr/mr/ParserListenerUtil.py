@@ -1685,6 +1685,36 @@ NMR_STAR_AUX_LP_DATA_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_
                                                  }
                               }
 
+CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                    ]
+
+AUTH_ATOM_DATA_ITEMS = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                        {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                        {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                        {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                        ]
+
+ATOM_NAME_DATA_ITEMS = [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                        {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                        ]
+
+AUTH_ATOM_CARTN_DATA_ITEMS = CARTN_DATA_ITEMS
+AUTH_ATOM_CARTN_DATA_ITEMS.extend(AUTH_ATOM_DATA_ITEMS)
+
+PTNR1_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                              {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                              {'name': 'ptnr1_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                              {'name': 'ptnr1_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                              ]
+
+PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                              {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                              {'name': 'ptnr2_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                              {'name': 'ptnr2_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                              ]
+
 
 def toNpArray(atom):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
@@ -2567,71 +2597,28 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None:
             changed = True
 
+            dataItems = [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
+                         {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
+                         {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
+                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
+                         {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                         {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
+                         {'name': 'type_symbol', 'type': 'str'}
+                         ]
+
+            if altAuthAtomId is not None:
+                dataItems.append({'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'})
+
+            filterItems = [{'name': modelNumName, 'type': 'int',
+                            'value': representativeModelId},
+                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                           ]
+
             if len(polySeq) > LEN_LARGE_ASYM_ID:
+                filterItems.append({'name': authAsymId, 'type': 'enum', 'enum': LARGE_ASYM_ID,
+                                    'fetch_first_match': True})
 
-                if altAuthAtomId is not None:
-                    coord = cR.getDictListWithFilter('atom_site',
-                                                     [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
-                                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
-                                                      {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
-                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
-                                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                      {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
-                                                      {'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'},
-                                                      {'name': 'type_symbol', 'type': 'str'}
-                                                      ],
-                                                     [{'name': modelNumName, 'type': 'int',
-                                                       'value': representativeModelId},
-                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
-                                                      {'name': authAsymId, 'type': 'enum', 'enum': LARGE_ASYM_ID}
-                                                      ])
-                else:
-                    coord = cR.getDictListWithFilter('atom_site',
-                                                     [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
-                                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
-                                                      {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
-                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
-                                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                      {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
-                                                      {'name': 'type_symbol', 'type': 'str'}
-                                                      ],
-                                                     [{'name': modelNumName, 'type': 'int',
-                                                       'value': representativeModelId},
-                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
-                                                      {'name': authAsymId, 'type': 'enum', 'enum': LARGE_ASYM_ID}
-                                                      ])
-
-            else:
-
-                if altAuthAtomId is not None:
-                    coord = cR.getDictListWithFilter('atom_site',
-                                                     [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
-                                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
-                                                      {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
-                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
-                                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                      {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
-                                                      {'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'},
-                                                      {'name': 'type_symbol', 'type': 'str'}
-                                                      ],
-                                                     [{'name': modelNumName, 'type': 'int',
-                                                       'value': representativeModelId},
-                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                      ])
-                else:
-                    coord = cR.getDictListWithFilter('atom_site',
-                                                     [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
-                                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
-                                                      {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
-                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
-                                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                      {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'},
-                                                      {'name': 'type_symbol', 'type': 'str'}
-                                                      ],
-                                                     [{'name': modelNumName, 'type': 'int',
-                                                       'value': representativeModelId},
-                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                                      ])
+            coord = cR.getDictListWithFilter('atom_site', dataItems, filterItems)
 
             authToLabelChain = {ps['auth_chain_id']: ps['chain_id'] for ps in polySeq}
             labelToAuthChain = {ps['chain_id']: ps['auth_chain_id'] for ps in polySeq}
@@ -2646,16 +2633,20 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                 entities = cR.getDictList('entity')
 
+                dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
+                             {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'}
+                             ]
+
                 for entity in entities:
                     entityId = int(entity['id'])
                     entityType = entity['type']
 
                     if entityType == 'branched':
                         mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
-                                                            [{'name': 'asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
-                                                             {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                                             {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'}],
-                                                            [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                                                            dataItems,
+                                                            [{'name': 'entity_id', 'type': 'int', 'value': entityId}
+                                                             ])
 
                         for item in mappings:
                             seqKey = (item['alt_chain_id'], item['seq_id'])
@@ -2697,13 +2688,14 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             if cR.hasCategory('pdbx_unobs_or_zero_occ_residues'):
 
+                filterItemByRepModelId = [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}]
+
                 unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
                                                  [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                   {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
                                                   ],
-                                                 [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}
-                                                  ])
+                                                 filterItemByRepModelId)
 
                 if len(unobs) > 0:
                     chainIds = set(u['chain_id'] for u in unobs)
@@ -2725,8 +2717,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                               {'name': 'label_asym_id', 'type': 'str'},
                                                               {'name': 'label_seq_id', 'type': 'str'}
                                                               ],
-                                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}
-                                                              ])
+                                                             filterItemByRepModelId)
 
                             if len(unobs) > 0:
                                 for u in unobs:
@@ -2763,11 +2754,14 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 entityFragment = entity['pdbx_fragment'] if 'pdbx_fragment' in entity else '.'
                 entityDetails = entity['details'] if 'details' in entity else '.'
 
+                filterItemByEntityId = [{'name': 'entity_id', 'type': 'int', 'value': entityId}]
+
                 entityRole = '.'
                 if cR.hasCategory('entity_name_com'):
                     roles = cR.getDictListWithFilter('entity_name_com',
-                                                     [{'name': 'name', 'type': 'str'}],
-                                                     [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                                                     [{'name': 'name', 'type': 'str'}
+                                                      ],
+                                                     filterItemByEntityId)
                     if len(roles) > 0:
                         entityRole = ','.join([role['name'] for role in roles])
 
@@ -2801,8 +2795,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         if hasNstdChirality:
                             dataItems.append({'name': 'nstd_chirality', 'type': 'str'})
 
-                        polyTypes = cR.getDictListWithFilter('entity_poly', dataItems,
-                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        polyTypes = cR.getDictListWithFilter('entity_poly',
+                                                             dataItems,
+                                                             filterItemByEntityId)
 
                         if len(polyTypes) > 0:
                             polyType = polyTypes[0]
@@ -2821,27 +2816,22 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                     if cR.hasCategory('pdbx_poly_seq_scheme'):
                         has_ins_code = cR.hasItem('pdbx_poly_seq_scheme', 'pdb_ins_code')
+
+                        dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                     {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                     {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                                     {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                     {'name': 'seq_id', 'type': 'int'},
+                                     {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}
+                                     ]
+
                         if has_ins_code:
-                            mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
-                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                                                 {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
-                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                                 {'name': 'seq_id', 'type': 'int'},
-                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'},
-                                                                 {'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code'}],
-                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
-                        else:
-                            mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
-                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                                                 {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
-                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                                 {'name': 'seq_id', 'type': 'int'},
-                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
-                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                            dataItems.append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code'})
+
+                        mappings = cR.getDictListWithFilter('pdbx_poly_seq_scheme',
+                                                            dataItems,
+                                                            filterItemByEntityId)
 
                         authAsymIds = []
                         labelAsymIds = []
@@ -3005,34 +2995,30 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     entityPolyType = '.'
                     if cR.hasCategory('pdbx_entity_branch'):
                         polyTypes = cR.getDictListWithFilter('pdbx_entity_branch',
-                                                             [{'name': 'type', 'type': 'str'}],
-                                                             [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                                                             [{'name': 'type', 'type': 'str'}
+                                                              ],
+                                                             filterItemByEntityId)
                         if len(polyTypes) > 0:
                             entityPolyType = polyTypes[0]['type']
 
                     if cR.hasCategory('pdbx_branch_scheme'):
                         has_ins_code = cR.hasItem('pdbx_branch_scheme', 'pdb_ins_code')
+
+                        dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                     {'name': 'auth_asym_id', 'type': 'str'},
+                                     {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                                     {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                     {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
+                                     {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}
+                                     ]
+
                         if has_ins_code:
-                            mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
-                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                                                 {'name': 'auth_asym_id', 'type': 'str'},
-                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                                 {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'},
-                                                                 {'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code'}],
-                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
-                        else:
-                            mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
-                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                                                 {'name': 'auth_asym_id', 'type': 'str'},
-                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                                 {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
-                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                            dataItems.append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code'})
+
+                        mappings = cR.getDictListWithFilter('pdbx_branch_scheme',
+                                                            dataItems,
+                                                            filterItemByEntityId)
 
                         authAsymIds = []
                         for item in mappings:
@@ -3109,28 +3095,22 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 elif entityType == 'non-polymer':
                     if cR.hasCategory('pdbx_nonpoly_scheme'):
                         has_ins_code = cR.hasItem('pdbx_nonpoly_scheme', 'pdb_ins_code')
-                        if has_ins_code:
-                            mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
-                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                                                 {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
-                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                                 {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'},
-                                                                 {'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code'}],
-                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
 
-                        else:
-                            mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
-                                                                [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                                                 {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
-                                                                 {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                                                 {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                                 {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}],
-                                                                [{'name': 'entity_id', 'type': 'int', 'value': entityId}])
+                        dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
+                                     {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                     {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
+                                     {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                     {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                     {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}
+                                     ]
+
+                        if has_ins_code:
+                            dataItems.append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code'})
+
+                        mappings = cR.getDictListWithFilter('pdbx_nonpoly_scheme',
+                                                            dataItems,
+                                                            filterItemByEntityId)
 
                         authAsymIds = []
                         compId = None
@@ -3880,25 +3860,18 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=1, modelNumNa
 
     try:
 
+        filterItems = [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': labelAsymId},
+                       {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': labelAsymId},
+                       {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': begLabelSeqId},
+                       {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': endLabelSeqId},
+                       ]
+
         if cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
-            struct_conn = cR.getDictListWithFilter('struct_conn',
-                                                   [{'name': 'conn_type_id', 'type': 'str'}
-                                                    ],
-                                                   [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
-                                                    {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': labelAsymId},
-                                                    {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': labelAsymId},
-                                                    {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': begLabelSeqId},
-                                                    {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': endLabelSeqId},
-                                                    ])
-        else:
-            struct_conn = cR.getDictListWithFilter('struct_conn',
-                                                   [{'name': 'conn_type_id', 'type': 'str'}
-                                                    ],
-                                                   [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': labelAsymId},
-                                                    {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': labelAsymId},
-                                                    {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': begLabelSeqId},
-                                                    {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': endLabelSeqId},
-                                                    ])
+            filterItems.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
+
+        struct_conn = cR.getDictListWithFilter('struct_conn',
+                                               [{'name': 'conn_type_id', 'type': 'str'}],
+                                               filterItems)
 
     except Exception:
         return False
@@ -3948,12 +3921,14 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
 
     try:
 
+        dataItems = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                     {'name': modelNumName, 'type': 'int', 'alt_name': 'model_id'}
+                     ]
+
         atom_site_1 = cR.getDictListWithFilter('atom_site',
-                                               [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                {'name': modelNumName, 'type': 'int', 'alt_name': 'model_id'}
-                                                ],
+                                               dataItems,
                                                [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId1},
                                                 {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId1},
                                                 {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId1},
@@ -3961,11 +3936,7 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
                                                 ])
 
         atom_site_2 = cR.getDictListWithFilter('atom_site',
-                                               [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                {'name': modelNumName, 'type': 'int', 'alt_name': 'model_id'}
-                                                ],
+                                               dataItems,
                                                [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId2},
                                                 {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId2},
                                                 {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId2},

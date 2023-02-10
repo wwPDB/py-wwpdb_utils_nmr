@@ -10754,7 +10754,7 @@ class NmrDpUtility:
                                 "The wwPDB NMR Validation Task Force highly recommends the submission of distance restraints "\
                                 "used for the structure determination."
 
-                            self.__suspended_warnings_for_lazy_eval.append({'missing_content':
+                            self.__suspended_warnings_for_lazy_eval.append({'encouragement':
                                                                             {'file_name': file_name, 'description': warn}})
 
                             if self.__verbose:
@@ -48934,7 +48934,7 @@ class NmrDpUtility:
                                "The wwPDB NMR Validation Task Force highly recommends the submission of unambiguous distance restraints "\
                                "used for the structure determination."
 
-                        self.report.warning.appendDescription('missing_content',
+                        self.report.warning.appendDescription('encouragement',
                                                               {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                'description': warn})
 

@@ -1903,8 +1903,8 @@ class NmrDpReportError:
 
         self.__contents['total'] = 0
 
-        self.chk_row_pat = re.compile(r'^\[Check row of (.*)\] (.*)$')
-        self.chk_rows_pat = re.compile(r'\[Check rows of (.*)\] (.*)$')
+        self.chk_row_pat = re.compile(r'^\[Check row of ([^\[]*)\] (.*)$')
+        self.chk_rows_pat = re.compile(r'\[Check rows of (\^\[]*)\] (.*)$')
 
     def appendDescription(self, item, value):
         """ Append an error with a give description.

@@ -27577,6 +27577,7 @@ class NmrDpUtility:
         for tag in loop.tags:
             lp.add_tag(loop.category + '.' + tag)
 
+        index_id_col = loop.tags.index('Index_ID')
         id_col = loop.tags.index('ID')
         member_id_col = loop.tags.index('Member_ID')
         member_logic_code_col = loop.tags.index('Member_logic_code')
@@ -27596,6 +27597,7 @@ class NmrDpUtility:
         _atom1 = _atom2 = None
 
         modified = False
+        has_member_id = False
 
         sf_item['id'] = 0
 
@@ -27619,6 +27621,9 @@ class NmrDpUtility:
                          'seq_id': int(row[seq_id_2_col]),
                          'comp_id': row[comp_id_2_col],
                          'atom_id': row[atom_id_2_col]}
+
+                if member_id not in emptyValue:
+                    has_member_id = True
 
                 if _rest_id is None:
                     pass
@@ -27663,10 +27668,74 @@ class NmrDpUtility:
                 _atom1 = _atom2 = None
 
             _row[id_col] = sf_item['id']
+            _row[member_id_col] = None
             lp.add_data(_row)
 
-        if not modified:
+        if not modified and not has_member_id:
             return
+
+        member_id_dict = {}
+
+        def update_member_id_dict(rows):
+            if len(rows) < 2:
+                return
+
+            atom_sel1 = []
+            atom_sel2 = []
+
+            for row in rows:
+
+                atom1 = {'chain_id': row[chain_id_1_col],
+                         'seq_id': int(row[seq_id_1_col]),
+                         'comp_id': row[comp_id_1_col],
+                         'atom_id': row[atom_id_1_col]}
+
+                atom2 = {'chain_id': row[chain_id_2_col],
+                         'seq_id': int(row[seq_id_2_col]),
+                         'comp_id': row[comp_id_2_col],
+                         'atom_id': row[atom_id_2_col]}
+
+                atom_sel1.append(atom1)
+                atom_sel2.append(atom2)
+
+            if isAmbigAtomSelection(atom_sel1, self.__csStat)\
+               or isAmbigAtomSelection(atom_sel2, self.__csStat):
+                for member_id, row in enumerate(rows, start=1):
+                    index_id = row[index_id_col]
+                    member_id_dict[index_id] = member_id
+
+        _row = None
+        _rest_id = None
+        _union_rows = []
+
+        for row in lp:
+            rest_id = row[id_col]
+
+            if _rest_id is not None and rest_id == _rest_id:
+                if len(_union_rows) == 0:
+                    _union_rows.append(_row)
+
+                _union_rows.append(row)
+
+            else:
+
+                if len(_union_rows) > 0:
+                    update_member_id_dict(_union_rows)
+
+                _union_rows = []
+
+            _row = row
+            _rest_id = rest_id
+
+        if len(_union_rows) > 0:
+            update_member_id_dict(_union_rows)
+
+        if len(member_id_dict) > 0:
+            for row in lp:
+                index_id = row[index_id_col]
+
+                if index_id in member_id_dict:
+                    row[member_id_col] = member_id_dict[index_id]
 
         del sf_item['saveframe'][loop]
 

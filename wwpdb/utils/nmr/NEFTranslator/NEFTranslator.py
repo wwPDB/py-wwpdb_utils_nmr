@@ -1395,7 +1395,7 @@ class NEFTranslator:
 
                 data.append(asm)
 
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
 
         if len(data) == 0:
@@ -1638,7 +1638,7 @@ class NEFTranslator:
 
                 data.append(asm)
 
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
 
         if len(data) == 0:
@@ -1798,7 +1798,7 @@ class NEFTranslator:
 
                 data.append(asm)
 
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
 
         if len(data) == 0:

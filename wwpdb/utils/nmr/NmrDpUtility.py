@@ -27101,6 +27101,7 @@ class NmrDpUtility:
 
             if content_subtype == 'dist_restraint':
 
+                # MR parser for XPLOR-NIH/CNS/CHARMM already fills _Gen_dist_constraint.ID with genuine IDs
                 if sf_item['file_type'] not in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
                     self.__updateGenDistConstIdInMrStr(sf_item)
 
@@ -46262,6 +46263,7 @@ class NmrDpUtility:
                 sf = sf_item['saveframe']
                 sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
+                # MR parser for XPLOR-NIH/CNS/CHARMM already fills _Gen_dist_constraint.ID with genuine IDs
                 if not sf_framecode.startswith('XPLOR') and not sf_framecode.startswith('CNS') and not sf_framecode.startswith('CHARMM'):
                     self.__updateGenDistConstIdInMrStr(sf_item)
 

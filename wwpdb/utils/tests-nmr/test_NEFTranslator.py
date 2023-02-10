@@ -346,7 +346,7 @@ class TestNEFTranslator(unittest.TestCase):
     #
 
     def test_get_inventory_list(self):
-        (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.nef"))
+        (isValid, _content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.nef"))
         self.assertTrue(isValid)
         datacontent = self.neft.get_inventory_list(data)
         self.assertEqual(
@@ -375,7 +375,7 @@ class TestNEFTranslator(unittest.TestCase):
                 "_nef_dihedral_restraint",
             ],
         )
-        (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.str"))
+        (isValid, _content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.str"))
         self.assertTrue(isValid)
         datacontent = self.neft.get_inventory_list(data)
         self.assertEqual(
@@ -2814,6 +2814,7 @@ class TestNEFTranslator(unittest.TestCase):
     #     dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
     #     self.assertEqual(self.neft.check_star_data(dat)[0][1]["Val"], 56.002)
     #
+
     def test_validate_comp_atom(self):
         self.assertEqual(self.neft.validate_comp_atom("ALA", "HB1"), True)
         self.assertEqual(self.neft.validate_comp_atom("ALA", "HB"), False)

@@ -27624,7 +27624,7 @@ class NmrDpUtility:
 
                 elif rest_id != _rest_id:
 
-                    if member_id in emptyValue:
+                    if member_id in emptyValue or member_logic_code == 'OR':
 
                         if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
                            and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):

@@ -6261,7 +6261,7 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
             if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
                 return 'general distance'
 
-        if upperLimit >= DIST_AMBIG_MED and lowerLimit < 0.0:
+        if upperLimit >= DIST_AMBIG_MED and lowerLimit <= 0.0:
             return 'general distance'
 
         return None

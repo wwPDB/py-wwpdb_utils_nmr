@@ -4039,8 +4039,7 @@ class CnsMRParserListener(ParseTreeListener):
         while self.stackTerms:
             _term = self.stackTerms.pop()
             if _term is not None:
-                for _atom in _term:
-                    _atomSelection.extend(_term)
+                _atomSelection.extend(_term)
 
         atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
@@ -4076,7 +4075,10 @@ class CnsMRParserListener(ParseTreeListener):
 
             while self.stackFactors:
                 _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=True)
-                self.factor = self.__intersectionFactor_expressions(self.factor, None if 'atom_selection' not in _factor else _factor['atom_selection'])
+                self.factor = self.__intersectionFactor_expressions(self.factor,
+                                                                    None if 'atom_selection' not in _factor
+                                                                    or isinstance(_factor['atom_selection'], str)
+                                                                    else _factor['atom_selection'])
 
             if 'atom_selection' in self.factor:
                 self.stackTerms.append(self.factor['atom_selection'])
@@ -4084,9 +4086,8 @@ class CnsMRParserListener(ParseTreeListener):
             _atomSelection = []
             while self.stackTerms:
                 _term = self.stackTerms.pop()
-                if _term is not None:
-                    for _atom in _term:
-                        _atomSelection.extend(_term)
+                if _term is not None and not isinstance(_term, str):
+                    _atomSelection.extend(_term)
 
             atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
@@ -4121,7 +4122,7 @@ class CnsMRParserListener(ParseTreeListener):
                     self.factor['atom_selection'] = _atomSelection
             self.unionFactor = None
 
-        if 'atom_selection' in self.factor:
+        if 'atom_selection' in self.factor and not isinstance(self.factor['atom_selection'], str):
             self.stackTerms.append(self.factor['atom_selection'])
 
     def consumeFactor_expressions(self, clauseName='atom selection expression', cifCheck=True):
@@ -4717,31 +4718,32 @@ class CnsMRParserListener(ParseTreeListener):
                     return _factor
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
-            if self.__cur_subtype != 'plane':
-                if cifCheck:
-                    if self.__cur_union_expr:
-                        self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            f"The {clauseName} has no effect for a factor {__factor}.\n"
+            if _factor['atom_id'][0] is not None:
+                if self.__cur_subtype != 'plane':
+                    if cifCheck:
+                        if self.__cur_union_expr:
+                            self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                                f"The {clauseName} has no effect for a factor {__factor}.\n"
+                        else:
+                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                                f"The {clauseName} has no effect for a factor {__factor}.\n"
+                            self.__preferAuthSeq = not self.__preferAuthSeq
+                            self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
+                            self.__setLocalSeqScheme()
+                            # """
+                            # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
+                            #     if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            #         self.reasonsForReParsing['label_seq_scheme'] = True
+                            # """
                     else:
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            f"The {clauseName} has no effect for a factor {__factor}.\n"
-                        self.__preferAuthSeq = not self.__preferAuthSeq
-                        self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
-                        self.__setLocalSeqScheme()
-                        # """
-                        # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
-                        #     if 'label_seq_scheme' not in self.reasonsForReParsing:
-                        #         self.reasonsForReParsing['label_seq_scheme'] = True
-                        # """
+                        self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                            f"The {clauseName} has no effect for a factor {__factor}. "\
+                            "Please update the sequence in the Macromolecules page.\n"
                 else:
-                    self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        f"The {clauseName} has no effect for a factor {__factor}. "\
-                        "Please update the sequence in the Macromolecules page.\n"
-            else:
-                hint = f" Please verify that the planality restraints match with the residue {_factor['comp_id'][0]!r}"\
-                    if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
-                self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                    f"The {clauseName} has no effect for a factor {__factor}.{hint}\n"
+                    hint = f" Please verify that the planality restraints match with the residue {_factor['comp_id'][0]!r}"\
+                        if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
+                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
+                        f"The {clauseName} has no effect for a factor {__factor}.{hint}\n"
 
         if 'chain_id' in _factor:
             del _factor['chain_id']

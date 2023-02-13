@@ -4035,13 +4035,14 @@ class CnsMRParserListener(ParseTreeListener):
         if self.__sel_expr_debug:
             print("  " * self.depth + "exit_sel_expr")
 
-        atomSelection = []
+        _atomSelection = []
         while self.stackTerms:
             _term = self.stackTerms.pop()
             if _term is not None:
                 for _atom in _term:
-                    if _atom not in atomSelection:
-                        atomSelection.append(_atom)
+                    _atomSelection.extend(_term)
+
+        atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
         if len(atomSelection) > 0:
             self.stackSelections.append(atomSelection)
@@ -4080,13 +4081,14 @@ class CnsMRParserListener(ParseTreeListener):
             if 'atom_selection' in self.factor:
                 self.stackTerms.append(self.factor['atom_selection'])
 
-            atomSelection = []
+            _atomSelection = []
             while self.stackTerms:
                 _term = self.stackTerms.pop()
                 if _term is not None:
                     for _atom in _term:
-                        if _atom not in atomSelection:
-                            atomSelection.append(_atom)
+                        _atomSelection.extend(_term)
+
+            atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
             if len(atomSelection) > 0:
                 self.stackSelections.append(atomSelection)

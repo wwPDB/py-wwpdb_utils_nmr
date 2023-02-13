@@ -7142,6 +7142,7 @@ class RCI:
         # l_N_switch = l_C_switch = 0
         l_N_end_list = []
         l_C_end_list = []
+        l_N_max_place = l_C_max_place = 0
         l_N_max = l_C_max = None
         for l_item in l_list:
             l_res_num, l_sigma = l_item[0], l_item[2]
@@ -7214,6 +7215,7 @@ class RCI:
         l_N_end_list = []
         l_C_end_list = []
         l_N_max = None
+        l_C_max = None
         # l_N_min = None
         for l_item in l_list:
             l_res_num, l_sigma = l_item[0], l_item[2]

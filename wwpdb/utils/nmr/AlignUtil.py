@@ -2507,7 +2507,7 @@ def getPrettyJson(data):
     """ Return pretty JSON string.
     """
 
-    def getPrettyChunk(str):
+    def getPrettyChunk(str):  # pylint: disable=redefined-builtin
 
         # string
         str_ = re.sub(r'",\s+', '", ', str)

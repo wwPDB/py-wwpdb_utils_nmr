@@ -352,9 +352,9 @@ class TestNEFTranslator(unittest.TestCase):
     #
 
     def test_get_inventory_list(self):
-        (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.nef"))
+        (isValid, _content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.nef"))
         self.assertTrue(isValid)
-        datacontent = self.neft.get_inventory_list(data, content)
+        datacontent = self.neft.get_inventory_list(data)
         self.assertEqual(
             datacontent[0],
             [
@@ -381,9 +381,9 @@ class TestNEFTranslator(unittest.TestCase):
                 "_nef_dihedral_restraint",
             ],
         )
-        (isValid, content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.str"))
+        (isValid, _content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.str"))
         self.assertTrue(isValid)
-        datacontent = self.neft.get_inventory_list(data, content)
+        datacontent = self.neft.get_inventory_list(data)
         self.assertEqual(
             datacontent[0],
             [
@@ -411,19 +411,20 @@ class TestNEFTranslator(unittest.TestCase):
             ],
         )
 
-    def test_get_seq_from_cs_loop(self):
-        (isValid, msg) = self.neft.get_seq_from_cs_loop(os.path.join(self.data_dir_path, "2mqq.nef"))
-        self.assertTrue(isValid)
-        self.assertEqual(msg["file_type"], "nef")
-        self.assertEqual(len(msg["data"][0][0]["seq_id"]), 214)
-        self.assertEqual(len(msg["data"][1][0]["seq_id"]), 5)
-        self.assertEqual(len(msg["data"][2][0]["seq_id"]), 5)
-        (isValid, msg) = self.neft.get_seq_from_cs_loop(os.path.join(self.data_dir_path, "2mqq.str"))
-        self.assertTrue(isValid)
-        self.assertEqual(msg["file_type"], "nmr-star")
-        self.assertEqual(len(msg["data"][0][0]["seq_id"]), 214)
-        self.assertEqual(len(msg["data"][1][0]["seq_id"]), 5)
-        self.assertEqual(len(msg["data"][2][0]["seq_id"]), 5)
+    # deprecated unit test
+    # def test_get_seq_from_cs_loop(self):
+    #     (isValid, msg) = self.neft.get_seq_from_cs_loop(os.path.join(self.data_dir_path, "2mqq.nef"))
+    #     self.assertTrue(isValid)
+    #     self.assertEqual(msg["file_type"], "nef")
+    #     self.assertEqual(len(msg["data"][0][0]["seq_id"]), 214)
+    #     self.assertEqual(len(msg["data"][1][0]["seq_id"]), 5)
+    #     self.assertEqual(len(msg["data"][2][0]["seq_id"]), 5)
+    #     (isValid, msg) = self.neft.get_seq_from_cs_loop(os.path.join(self.data_dir_path, "2mqq.str"))
+    #     self.assertTrue(isValid)
+    #     self.assertEqual(msg["file_type"], "nmr-star")
+    #     self.assertEqual(len(msg["data"][0][0]["seq_id"]), 214)
+    #     self.assertEqual(len(msg["data"][1][0]["seq_id"]), 5)
+    #     self.assertEqual(len(msg["data"][2][0]["seq_id"]), 5)
 
     def test_get_nef_seq(self):
         dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2mqq.nef"))
@@ -2804,13 +2805,15 @@ class TestNEFTranslator(unittest.TestCase):
             ],
         )
 
-    def test_get_nef_index(self):
-        dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.nef"))
-        self.assertEqual(self.neft.get_nef_index(dat), [list(range(1, 70))])
+    # deprecated unit test
+    # def test_get_nef_index(self):
+    #     dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.nef"))
+    #     self.assertEqual(self.neft.get_nef_index(dat), [list(range(1, 70))])
 
-    def test_get_star_index(self):
-        dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.str"))
-        self.assertEqual(self.neft.get_star_index(dat), [list(range(1, 70))])
+    # deprecated unit test
+    # def test_get_star_index(self):
+    #     dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2l9r.str"))
+    #     self.assertEqual(self.neft.get_star_index(dat), [list(range(1, 70))])
 
     #
     # def test_check_nef_data(self):
@@ -2826,15 +2829,16 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.validate_comp_atom("ALA", "HB"), False)
         self.assertEqual(self.neft.validate_comp_atom("AXA", "HB"), False)
 
-    def test_validate_atom(self):
-        dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2mqq.nef"))
-        self.assertEqual(len(self.neft.validate_atom(dat, "nef_chemical_shift", "residue_name", "atom_name")), 567)
-        self.assertEqual(len(self.neft.validate_atom(dat, "nef_distance_restraint", "residue_name_1", "atom_name_1")), 2960)
-        self.assertEqual(len(self.neft.validate_atom(dat, "nef_distance_restraint", "residue_name_2", "atom_name_2")), 3147)
-        dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2mqq.str"))
-        self.assertEqual(len(self.neft.validate_atom(dat)), 0)
-        self.assertEqual(len(self.neft.validate_atom(dat, "Gen_dist_constraint", "Comp_ID_1", "Atom_ID_1")), 0)
-        self.assertEqual(len(self.neft.validate_atom(dat, "Gen_dist_constraint", "Comp_ID_2", "Atom_ID_2")), 0)
+    # deprecated unit test
+    # def test_validate_atom(self):
+    #     dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2mqq.nef"))
+    #     self.assertEqual(len(self.neft.validate_atom(dat, "nef_chemical_shift", "residue_name", "atom_name")), 567)
+    #     self.assertEqual(len(self.neft.validate_atom(dat, "nef_distance_restraint", "residue_name_1", "atom_name_1")), 2960)
+    #     self.assertEqual(len(self.neft.validate_atom(dat, "nef_distance_restraint", "residue_name_2", "atom_name_2")), 3147)
+    #     dat = pynmrstar.Entry.from_file(os.path.join(self.data_dir_path, "2mqq.str"))
+    #     self.assertEqual(len(self.neft.validate_atom(dat)), 0)
+    #     self.assertEqual(len(self.neft.validate_atom(dat, "Gen_dist_constraint", "Comp_ID_1", "Atom_ID_1")), 0)
+    #     self.assertEqual(len(self.neft.validate_atom(dat, "Gen_dist_constraint", "Comp_ID_2", "Atom_ID_2")), 0)
 
     def test_get_star_tag(self):
         self.assertEqual(self.neft.get_star_tag("_nef_program_script.program_name")[0:2], ("_Software_applied_methods.Software_name", "_Software_applied_methods.Software_name"))

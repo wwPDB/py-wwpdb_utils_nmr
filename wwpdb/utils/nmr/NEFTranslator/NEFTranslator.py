@@ -1224,7 +1224,7 @@ class NEFTranslator:
         return sf_list, lp_list
 
     def get_nef_seq(self, star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',  # pylint: disable=no-self-use
-                    chain_id='chain_code', allow_empty=False, allow_gap=False):
+                    chain_id='chain_code', allow_empty=False, allow_gap=False, check_identity=True):
         """ Extract sequence from any given loops in an NEF file.
             @change: re-written by Masashi Yokochi
             @return: list of sequence information for each loop
@@ -1367,7 +1367,7 @@ class NEFTranslator:
                         ent['seq_id'] = seq_dict[c]
                         ent['comp_id'] = cmp_dict[c]
 
-                    if len(chain_ids) > 1:
+                    if len(chain_ids) > 1 and check_identity:
                         identity = []
                         for _c in chain_ids:
                             if _c == c:
@@ -1405,7 +1405,7 @@ class NEFTranslator:
 
     def get_star_seq(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',  # pylint: disable=no-self-use
                      chain_id='Entity_assembly_ID', alt_seq_id='Seq_ID', alt_seq_id_offset=0, alt_chain_id='Auth_asym_ID',
-                     allow_empty=False, allow_gap=False):
+                     allow_empty=False, allow_gap=False, check_identity=True):
         """ Extract sequence from any given loops in an NMR-STAR file.
             @change: re-written by Masashi Yokochi
             @return: list of sequence information for each loop
@@ -1608,7 +1608,7 @@ class NEFTranslator:
                         ent['seq_id'] = seq_dict[c]
                         ent['comp_id'] = cmp_dict[c]
 
-                    if len(chain_ids) > 1:
+                    if len(chain_ids) > 1 and check_identity:
                         identity = []
                         for _c in chain_ids:
                             if _c == c:

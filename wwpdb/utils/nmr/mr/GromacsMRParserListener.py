@@ -629,12 +629,13 @@ class GromacsMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
-                sf['id'] += 1
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            first_item = True
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -648,6 +649,9 @@ class GromacsMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if first_item:
+                        sf['id'] += 1
+                        first_item = False
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, angleName,

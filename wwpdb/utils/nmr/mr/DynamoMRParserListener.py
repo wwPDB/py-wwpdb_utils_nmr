@@ -1953,10 +1953,11 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   softwareName='DYNAMO/TALOS')
-                sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            first_item = True
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -1970,6 +1971,9 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if first_item:
+                        sf['id'] += 1
+                        first_item = False
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, angleName,
@@ -2064,10 +2068,11 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   softwareName='DYNAMO/TALOS')
-                sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            first_item = True
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -2081,6 +2086,9 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if first_item:
+                        sf['id'] += 1
+                        first_item = False
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, angleName,
@@ -2175,10 +2183,11 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   softwareName='DYNAMO/TALOS')
-                sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            first_item = True
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -2192,6 +2201,9 @@ class DynamoMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} (index={index}) angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if first_item:
+                        sf['id'] += 1
+                        first_item = False
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, angleName,
@@ -3141,10 +3153,11 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   softwareName='DYNAMO')
-                sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            first_item = True
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -3172,6 +3185,9 @@ class DynamoMRParserListener(ParseTreeListener):
                               f"A={A} B={B} C={C} phase={phase} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if first_item:
+                        sf['id'] += 1
+                        first_item = False
                     if angleName == 'PHI':
                         if len(self.auxAtomSelectionSet) == 4:
                             sf['index_id'] += 1
@@ -3279,10 +3295,11 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   softwareName='DYNAMO')
-                sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            first_item = True
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -3310,6 +3327,9 @@ class DynamoMRParserListener(ParseTreeListener):
                               f"A={A} B={B} C={C} phase={phase} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if first_item:
+                        sf['id'] += 1
+                        first_item = False
                     if angleName == 'PHI':
                         if len(self.auxAtomSelectionSet) == 4:
                             sf['index_id'] += 1
@@ -3417,10 +3437,11 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   softwareName='DYNAMO')
-                sf['id'] += 1
 
             compId = self.atomSelectionSet[0][0]['comp_id']
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            first_item = True
 
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
@@ -3448,6 +3469,9 @@ class DynamoMRParserListener(ParseTreeListener):
                               f"A={A} B={B} C={C} phase={phase} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
                 if self.__createSfDict and sf is not None:
+                    if first_item:
+                        sf['id'] += 1
+                        first_item = False
                     if angleName == 'PHI':
                         if len(self.auxAtomSelectionSet) == 4:
                             sf['index_id'] += 1

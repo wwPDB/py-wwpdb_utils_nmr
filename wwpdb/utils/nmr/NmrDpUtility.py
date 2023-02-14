@@ -14983,17 +14983,25 @@ class NmrDpUtility:
 
         file_type = input_source_dic['file_type']
 
+        check_identity = content_subtype not in self.mr_content_subtypes
+
         if file_type == 'nef':  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
             return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(content_subtype not in ('poly_seq', 'entity')))
+                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')),
+                                           allow_gap=(content_subtype not in ('poly_seq', 'entity')),
+                                           check_identity=check_identity)
 
         if content_subtype == 'spectral_peak_alt':
             return self.__nefT.get_star_seq(sf_data, lp_category='_Assigned_peak_chem_shift',
-                                            allow_empty=True, allow_gap=True)
+                                            allow_empty=True,
+                                            allow_gap=True,
+                                            check_identity=check_identity)
 
         # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
         return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                        allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(content_subtype not in ('poly_seq', 'entity')))
+                                        allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')),
+                                        allow_gap=(content_subtype not in ('poly_seq', 'entity')),
+                                        check_identity=check_identity)
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.

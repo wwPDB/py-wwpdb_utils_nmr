@@ -6028,8 +6028,10 @@ class NmrDpUtility:
 
         # set of label_aysm_id having experimental data
         self.__label_asym_id_with_exptl_data = set()
-        # set of auth_asym_id indicating chemical exchange occurs
-        self.__auth_asym_ids_with_chem_exch = set()
+        # set of auth_asym_id indicating occurence of chemical exchange (eNOE)
+        self.__auth_asym_ids_with_chem_exch = {}
+        # set of residue numbering scheme indicating occurrence of chemical exchange (eNOE)
+        self.__auth_seq_ids_with_chem_exch = {}
 
         # extracted conformational annotation of coordinate file
         self.__nmr_struct_conf = {}
@@ -28137,8 +28139,9 @@ class NmrDpUtility:
                     if reasons is not None:
 
                         if 'model_chain_id_ext' in reasons:
-                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
-                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
                         reader = XplorMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
@@ -28307,8 +28310,9 @@ class NmrDpUtility:
                     if reasons is not None:
 
                         if 'model_chain_id_ext' in reasons:
-                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
-                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
                         reader = CnsMRReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
@@ -28633,8 +28637,9 @@ class NmrDpUtility:
                     if reasons is not None:
 
                         if 'model_chain_id_ext' in reasons:
-                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
-                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
                         reader = CyanaMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
@@ -28804,8 +28809,9 @@ class NmrDpUtility:
                     if reasons is not None:
 
                         if 'model_chain_id_ext' in reasons:
-                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
-                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
                         reader = RosettaMRReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
@@ -28963,8 +28969,9 @@ class NmrDpUtility:
                     if reasons is not None:
 
                         if 'model_chain_id_ext' in reasons:
-                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
-                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
                         reader = BiosymMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
@@ -29244,8 +29251,9 @@ class NmrDpUtility:
                     if reasons is not None:
 
                         if 'model_chain_id_ext' in reasons:
-                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
-                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
                         reader = DynamoMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
@@ -29410,8 +29418,9 @@ class NmrDpUtility:
                     if reasons is not None:
 
                         if 'model_chain_id_ext' in reasons:
-                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
-                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
                         reader = SybylMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
@@ -29568,8 +29577,9 @@ class NmrDpUtility:
                     if reasons is not None:
 
                         if 'model_chain_id_ext' in reasons:
-                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
-                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
                         reader = IsdMRReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
@@ -29726,8 +29736,9 @@ class NmrDpUtility:
                     if reasons is not None:
 
                         if 'model_chain_id_ext' in reasons:
-                            for auth_asym_id in reasons['model_chain_id_ext'].keys():
-                                self.__auth_asym_ids_with_chem_exch.add(auth_asym_id)
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
                         reader = CharmmMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
@@ -36437,7 +36448,8 @@ class NmrDpUtility:
                 self.__coord_bond_length = {}
                 self.__caC = None
                 self.__label_asym_id_with_exptl_data = set()
-                self.__auth_asym_ids_with_chem_exch = set()
+                self.__auth_asym_ids_with_chem_exch = {}
+                self.__auth_seq_ids_with_chem_exch = {}
                 self.__nmr_struct_conf = {}
                 self.__is_cyclic_polymer = {}
                 self.__chain_id_map_for_remediation = {}
@@ -40034,8 +40046,8 @@ class NmrDpUtility:
                 # Conformational_isomer
                 if len(self.__auth_asym_ids_with_chem_exch) > 0:
                     if any(auth_asym_id for auth_asym_id in item['auth_asym_id'].split(',')
-                           if auth_asym_id in self.__auth_asym_ids_with_chem_exch):
-                        row[9] = 'yes'
+                           if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys()):
+                        row[8] = row[9] = 'yes'
                 if entity_total[entity_id] > 0 and entity_type[entity_id] == 'polymer' and len(self.__label_asym_id_with_exptl_data) > 0:
                     equiv_entity_assemblies = [_item for _item in self.__caC['entity_assembly'] if _item['entity'] == entity_id]
                     _item = next((_item for _item in equiv_entity_assemblies if any(label_asym_id for label_asym_id in _item['label_asym_id'].split(',')
@@ -40048,7 +40060,37 @@ class NmrDpUtility:
                 row[11], row[12] = item['entity_role'], item['entity_details']
                 row[13], row[14] = 1, self.__entry_id
 
+                if len(self.__auth_asym_ids_with_chem_exch) > 0:
+                    auth_asym_id = row[5]
+                    if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys():
+                        seq_ids = [k for k, v in self.__auth_seq_ids_with_chem_exch.items()
+                                   if v['chain_id'] == auth_asym_id]
+                        row[12] = f'Conformational isomer 1 identified by eNOE, '\
+                            f'original sequence number range {min(seq_ids)}-{max(seq_ids)}'
+
                 ea_loop.add_data(row)
+
+            if len(self.__auth_asym_ids_with_chem_exch) > 0:
+                _entity_assembly_id = ea_loop.data[-1][0]
+                for idx, item in enumerate(self.__caC['entity_assembly']):
+                    entity_type = item['entity_type']
+                    if entity_type == 'non-polymer':
+                        continue
+                    auth_asym_id = item['auth_asym_id']
+                    if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys():
+                        for offset, _auth_asym_id in enumerate(self.__auth_asym_ids_with_chem_exch[auth_asym_id], start=2):
+                            row = ea_loop.data[idx]
+                            _row = copy.copy(row)
+                            _entity_assembly_id += 1
+                            _row[0] = _entity_assembly_id
+                            _row[1] = f'entity_{entity_id}_{offset}'
+                            _row[5] = _auth_asym_id
+                            seq_ids = [k for k, v in self.__auth_seq_ids_with_chem_exch.items()
+                                       if v['chain_id'] == _auth_asym_id]
+                            _row[12] = f'Conformational isomer {offset} identified by eNOE, '\
+                                f'original sequence number range {min(seq_ids)}-{max(seq_ids)}'
+
+                            ea_loop.add_data(_row)
 
             asm_sf.add_loop(ea_loop)
 
@@ -40185,6 +40227,24 @@ class NmrDpUtility:
                 loop.add_data(row)
 
                 nef_index += 1
+
+            if len(self.__auth_asym_ids_with_chem_exch) > 0:
+                for idx, item in enumerate(self.__caC['entity_assembly']):
+                    entity_type = item['entity_type']
+                    if entity_type == 'non-polymer':
+                        continue
+                    auth_asym_id = item['auth_asym_id']
+                    if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys():
+                        for _auth_asym_id in self.__auth_asym_ids_with_chem_exch[auth_asym_id]:
+                            for row in loop:
+                                if row[chain_id_col] == auth_asym_id:
+                                    _row = copy.copy(row)
+                                    _row[chain_id_col] = _auth_asym_id
+                                    _row[idx_col] = nef_index
+
+                                    loop.add_data(_row)
+
+                                    nef_index += 1
 
             asm_sf.add_loop(loop)
 
@@ -40376,6 +40436,30 @@ class NmrDpUtility:
                 loop.add_data(row)
 
                 nef_index += 1
+
+            if len(self.__auth_asym_ids_with_chem_exch) > 0:
+                _entity_assembly_id = loop.data[-1][chain_id_col]
+                for idx, item in enumerate(self.__caC['entity_assembly']):
+                    entity_type = item['entity_type']
+                    if entity_type == 'non-polymer':
+                        continue
+                    entity_id = item['entity_id']
+                    auth_asym_id = item['auth_asym_id']
+                    if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys():
+                        for _auth_asym_id in self.__auth_asym_ids_with_chem_exch[auth_asym_id]:
+                            _entity_assembly_id += 1
+                            for row in loop:
+                                if row[ent_id_col] == entity_id and row[auth_asym_id_col] == auth_asym_id:
+                                    _row = copy.copy(row)
+                                    _row[chain_id_col] = _entity_assembly_id
+                                    _row[auth_asym_id_col] = _auth_asym_id
+
+                                    if idx_col != -1:
+                                        _row[idx_col] = nef_index
+
+                                    loop.add_data(_row)
+
+                                    nef_index += 1
 
             asm_sf.add_loop(loop)
 
